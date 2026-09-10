@@ -42,8 +42,9 @@ Full design detail: `C:\Users\user\.claude\plans\plan-mode-prompt-you-peaceful-p
 - [ ] Pin versions: Node 24 LTS · Expo SDK 57 (RN 0.86) · NestJS 11 · nestjs-zod 5.5 + Zod 4 · drizzle-orm 0.45.2 · better-auth 1.6.x · pg-boss 12.30.x · Next.js 16.3.x · op-sqlite 18.2.x
   - _Pinned so far: Node 24, TypeScript 6.0.3 (not 7: typescript-eslint supports <6.1), pnpm 10.34.5, Expo 57.0.21 / RN 0.86.3 / React 19.2.3, NestJS 11.2.3, Zod 4.6.1, drizzle-orm 0.45.2, Next 16.3.4, Vite 8.2.2, Tailwind 4.3.3. The rest are pinned as they're added._
 - [x] Shared tsconfig, ESLint, Prettier
-- [ ] GitHub Actions CI: typecheck, lint, test (_workflow written; needs a GitHub repo to run_)
+- [ ] GitHub Actions CI: typecheck, lint, test (_pushed to github.com/huntdavid175/plateraa; tick once the first run is green_)
 - [ ] Neon project (AWS eu-central-1) + DB roles `app_owner` / `app_user`; a Neon branch per PR in CI
+  - _Project created (Postgres 18.6, eu-central-1); pooled and direct connection strings verified. Roles and per-PR branches come with Phase 1.3._
 - [ ] Render services: API + worker (Frankfurt)
 - [ ] Sentry set up for api, mobile, dashboard and storefront
 
