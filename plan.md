@@ -40,7 +40,7 @@ Full design detail: `C:\Users\user\.claude\plans\plan-mode-prompt-you-peaceful-p
 
 - [x] pnpm + Turborepo monorepo: `apps/{api,mobile,dashboard,storefront}`, `packages/{shared,db,ui}`
 - [ ] Pin versions: Node 24 LTS · Expo SDK 57 (RN 0.86) · NestJS 11 · nestjs-zod 5.5 + Zod 4 · drizzle-orm 0.45.2 · better-auth 1.6.x · pg-boss 12.30.x · Next.js 16.3.x · op-sqlite 18.2.x
-  - _Pinned so far: Node 24, TypeScript 6.0.3 (not 7: typescript-eslint supports <6.1), pnpm 10.34.5, Expo 57.0.21 / RN 0.86.3 / React 19.2.3, NestJS 11.2.3, Zod 4.6.1, drizzle-orm 0.45.2, Next 16.3.4, Vite 8.2.2, Tailwind 4.3.3. The rest are pinned as they're added._
+  - _Pinned so far: Node 24, TypeScript 6.0.3 (not 7: typescript-eslint supports <6.1), pnpm 10.34.5, Expo 57.0.21 / RN 0.86.3 / React 19.2.3, NestJS 11.2.3, Zod 4.6.1, drizzle-orm 0.45.2, Next 16.3.4, Vite 8.2.2, Tailwind 4.3.3, better-auth 1.7.4 (1.7 became `latest` on 10 Sep; the plan said 1.6.x), nestjs-zod 5.5.0, jose 6.2.12, @node-rs/argon2 2.2.1. The rest are pinned as they're added._
 - [x] Shared tsconfig, ESLint, Prettier
 - [x] GitHub Actions CI: typecheck, lint, test (_green on github.com/huntdavid175/plateraa_)
 - [ ] Neon project (AWS eu-central-1) + DB roles `app_owner` / `app_user`; a Neon branch per PR in CI
@@ -65,7 +65,8 @@ Full design detail: `C:\Users\user\.claude\plans\plan-mode-prompt-you-peaceful-p
   - _Applied by `secure_tenant_tables()`; re-run it at the end of any migration that adds tables._
 - [x] `sync_xid xid8` triggers + `deleted_at` on syncable tables
 - [x] `withTenant()` (runs `SET LOCAL ROLE app_user` + `set_config(..., true)` inside a transaction)
-- [ ] `withPlatform()`: `SECURITY DEFINER` lookups for device tokens and receipt tokens (_with Phase 1.5_)
+- [x] `withPlatform()` for pre-tenant lookups (device token, "my businesses")
+  - _Runs on the owner connection, which has BYPASSRLS on Neon. Becomes `SECURITY DEFINER` functions when the API gets its own runtime role._
 - [x] RLS catalogue test: fails if any table is missing RLS/FORCE (_7 isolation tests pass against Neon; skipped in CI until it gets a Neon branch_)
 - [x] Seed starter menu templates: chop bar, fast food, café/bakery, juice, cloud kitchen
   - _In `packages/shared` (`MENU_TEMPLATES`), since onboarding applies them per vendor; food truck and "start from scratch" added. Names only; owners set prices in the grid._
@@ -82,12 +83,16 @@ Full design detail: `C:\Users\user\.claude\plans\plan-mode-prompt-you-peaceful-p
 
 ### 1.5 Auth & identity (`apps/api`)
 
-- [ ] Better Auth mounted in NestJS, password hash switched to Argon2id
-- [ ] Signup → creates tenant + default location + OWNER staff member
-- [ ] `POST /devices/register` (device token stored hashed)
-- [ ] Staff with 6-digit PINs; obvious PINs refused
-- [ ] `POST /sessions/pin`: server-side Argon2id check, attempt counter, lockout → 15-minute access token
-- [ ] `@RequireCap()` guard
+- [x] Better Auth mounted in NestJS, password hash switched to Argon2id
+  - _Better Auth 1.7.4 at `/api/auth/*`, bearer plugin for the phone. Argon2id at OWASP's minimum (19 MiB, 2 passes)._
+- [x] Signup → creates tenant + default location + OWNER staff member (`POST /api/onboarding/business`, `GET /api/me/businesses`)
+- [x] `POST /devices/register` (device token stored hashed); `GET /api/devices/current/staff` roster with offline PIN checks
+- [x] Staff with 6-digit PINs; obvious PINs refused (`POST /api/staff`, `PUT /api/staff/:id/pin`)
+- [x] `POST /sessions/pin`: server-side Argon2id check, attempt counter, lockout → 15-minute access token
+  - _Lockout rule shared with the phone (`pinLockout`): 30 s from the 5th wrong PIN, doubling; disabled at the 10th._
+- [x] `@RequireCap()` guard (_as `@Authorized(...caps)`: works for phone PIN sessions and dashboard logins; permissions re-read every request_)
+  - _8 API tests pass against Neon, covering the whole journey. The built API runs as plain Node._
+- [ ] Follow-up: every request does 2–3 short transactions to Frankfurt. Measure from Ghana, then cache device lookups or merge the queries if it feels slow.
 
 ### 1.6 Sync & core API
 

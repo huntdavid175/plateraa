@@ -26,8 +26,20 @@ export async function withTenant<T>(
 ): Promise<T> {
   if (!TENANT_ID.test(tenantId)) throw new Error(`Invalid tenant id: ${tenantId}`);
   return db.transaction(async (tx) => {
-    await tx.execute(sql`set local role app_user`);
-    await tx.execute(sql`select set_config('app.tenant_id', ${tenantId}, true)`);
+    // One round trip: set_config('role', …, true) is SET LOCAL ROLE.
+    await tx.execute(
+      sql`select set_config('role', 'app_user', true), set_config('app.tenant_id', ${tenantId}, true)`,
+    );
     return fn(tx);
   });
+}
+
+/**
+ * For the few lookups that happen before the tenant is known: a device token, a receipt token,
+ * "which businesses does this login belong to". Runs as the connection's own role, which on Neon
+ * bypasses row-level security, so keep every use narrow. When the API gets its own runtime role
+ * without BYPASSRLS, these become SECURITY DEFINER functions.
+ */
+export function withPlatform<T>(db: Database, fn: (tx: Tx) => Promise<T>): Promise<T> {
+  return db.transaction(fn);
 }

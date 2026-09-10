@@ -7,6 +7,7 @@ import {
   timestamp,
   uniqueIndex,
 } from 'drizzle-orm/pg-core';
+import { user } from './auth.js';
 import { id, syncColumns, tenantId, timestamps } from './columns.js';
 import { staffRole } from './enums.js';
 import { locations } from './tenancy.js';
@@ -20,8 +21,8 @@ export const staffMembers = pgTable(
   {
     id: id(),
     tenantId: tenantId(),
-    /** Better Auth user, for Owner/Manager email logins. FK added with the auth tables. */
-    userId: text(),
+    /** Better Auth user, for Owner/Manager email logins. */
+    userId: text().references(() => user.id, { onDelete: 'set null' }),
     displayName: text().notNull(),
     role: staffRole().notNull(),
     /** Argon2id hash, checked by the server when online. */

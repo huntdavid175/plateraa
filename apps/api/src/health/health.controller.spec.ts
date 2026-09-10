@@ -1,16 +1,13 @@
-import type { INestApplication } from '@nestjs/common';
-import { Test } from '@nestjs/testing';
+import type { NestExpressApplication } from '@nestjs/platform-express';
 import request from 'supertest';
 import { afterAll, beforeAll, describe, it } from 'vitest';
-import { AppModule } from '../app.module';
+import { createTestApp } from '../test/test-app';
 
-describe('GET /health', () => {
-  let app: INestApplication;
+describe('GET /api/health', () => {
+  let app: NestExpressApplication;
 
   beforeAll(async () => {
-    const moduleRef = await Test.createTestingModule({ imports: [AppModule] }).compile();
-    app = moduleRef.createNestApplication();
-    await app.init();
+    app = await createTestApp();
   });
 
   afterAll(async () => {
@@ -18,6 +15,6 @@ describe('GET /health', () => {
   });
 
   it('returns ok', async () => {
-    await request(app.getHttpServer()).get('/health').expect(200, { status: 'ok' });
+    await request(app.getHttpServer()).get('/api/health').expect(200, { status: 'ok' });
   });
 });

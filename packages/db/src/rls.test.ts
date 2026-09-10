@@ -7,8 +7,8 @@ import { auditEvents, categories, tenants } from './schema/index.js';
 
 const url = process.env.DATABASE_URL_DIRECT;
 
-/** Tables that are deliberately not tenant-scoped (e.g. auth tables, added in Phase 1.5). */
-const NOT_TENANT_SCOPED = new Set<string>();
+/** Tables that are deliberately not tenant-scoped: Better Auth logins sit above any one business. */
+const NOT_TENANT_SCOPED = new Set(['user', 'session', 'account', 'verification']);
 
 /** Drizzle wraps driver errors; the Postgres message is on the cause. */
 async function errorOf(promise: Promise<unknown>): Promise<string> {
