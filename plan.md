@@ -42,9 +42,10 @@ Full design detail: `C:\Users\user\.claude\plans\plan-mode-prompt-you-peaceful-p
 - [ ] Pin versions: Node 24 LTS · Expo SDK 57 (RN 0.86) · NestJS 11 · nestjs-zod 5.5 + Zod 4 · drizzle-orm 0.45.2 · better-auth 1.6.x · pg-boss 12.30.x · Next.js 16.3.x · op-sqlite 18.2.x
   - _Pinned so far: Node 24, TypeScript 6.0.3 (not 7: typescript-eslint supports <6.1), pnpm 10.34.5, Expo 57.0.21 / RN 0.86.3 / React 19.2.3, NestJS 11.2.3, Zod 4.6.1, drizzle-orm 0.45.2, Next 16.3.4, Vite 8.2.2, Tailwind 4.3.3. The rest are pinned as they're added._
 - [x] Shared tsconfig, ESLint, Prettier
-- [ ] GitHub Actions CI: typecheck, lint, test (_pushed to github.com/huntdavid175/plateraa; tick once the first run is green_)
+- [x] GitHub Actions CI: typecheck, lint, test (_green on github.com/huntdavid175/plateraa_)
 - [ ] Neon project (AWS eu-central-1) + DB roles `app_owner` / `app_user`; a Neon branch per PR in CI
-  - _Project created (Postgres 18.6, eu-central-1); pooled and direct connection strings verified. Roles and per-PR branches come with Phase 1.3._
+  - _Project created (Postgres 18.6, eu-central-1); pooled and direct strings verified. `app_user` role created (NOLOGIN; `withTenant()` switches to it). `neondb_owner` acts as `app_owner` for now._
+  - [ ] _Before production: a dedicated LOGIN role for the API runtime, and Neon branch per PR in CI (needs a Neon API key in GitHub secrets)._
 - [ ] Render services: API + worker (Frankfurt)
 - [ ] Sentry set up for api, mobile, dashboard and storefront
 
@@ -58,12 +59,16 @@ Full design detail: `C:\Users\user\.claude\plans\plan-mode-prompt-you-peaceful-p
 
 ### 1.3 Database (`packages/db`)
 
-- [ ] Drizzle schema for every pilot table (tenants, locations, tenant_settings, staff_members, devices, catalog, price_history, customers, orders, order_items, order_events, payments, refunds, platform_receivables, shifts, cash_movements, stock_items, stock_movements, expenses, receipts, approval_requests, audit_events, sync_commands)
-- [ ] RLS `ENABLE` + `FORCE` + tenant policy on every tenant table (fails closed)
-- [ ] `sync_xid xid8` triggers + `deleted_at` on syncable tables
-- [ ] `withTenant()` (runs `set_config(..., true)` inside a transaction) and `withPlatform()` helpers
-- [ ] RLS catalogue test: CI fails if any table is missing RLS/FORCE
-- [ ] Seed starter menu templates: chop bar, fast food, café/bakery, juice, cloud kitchen
+- [x] Drizzle schema for every pilot table (tenants, locations, tenant_settings, staff_members, devices, catalog, price_history, customers, orders, order_items, order_events, payments, refunds, platform_receivables, shifts, cash_movements, stock_items, stock_movements, expenses, receipts, approval_requests, audit_events, sync_commands)
+  - _31 tables, migrated to Neon. Combos left out until needed (cheap to add later)._
+- [x] RLS `ENABLE` + `FORCE` + tenant policy on every tenant table (fails closed)
+  - _Applied by `secure_tenant_tables()`; re-run it at the end of any migration that adds tables._
+- [x] `sync_xid xid8` triggers + `deleted_at` on syncable tables
+- [x] `withTenant()` (runs `SET LOCAL ROLE app_user` + `set_config(..., true)` inside a transaction)
+- [ ] `withPlatform()`: `SECURITY DEFINER` lookups for device tokens and receipt tokens (_with Phase 1.5_)
+- [x] RLS catalogue test: fails if any table is missing RLS/FORCE (_7 isolation tests pass against Neon; skipped in CI until it gets a Neon branch_)
+- [x] Seed starter menu templates: chop bar, fast food, café/bakery, juice, cloud kitchen
+  - _In `packages/shared` (`MENU_TEMPLATES`), since onboarding applies them per vendor; food truck and "start from scratch" added. Names only; owners set prices in the grid._
 
 ### 1.4 Shared (`packages/shared`)
 
