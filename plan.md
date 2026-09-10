@@ -77,8 +77,8 @@ Full design detail: `C:\Users\user\.claude\plans\plan-mode-prompt-you-peaceful-p
 - [x] Order state machine
 - [x] Capabilities map (role → capabilities, per-staff override)
 - [x] Ghana phone normalisation (`+233…`, the customer key)
-- [ ] Zod schemas for sync commands
-- [ ] Unit + fast-check tests (_28 passing for the modules above; sync command schemas still to come_)
+- [x] Zod schemas for sync commands (_18 command types, max 50 per push; business rules enforced at the edge_)
+- [x] Unit + fast-check tests (_60 passing in `packages/shared`_)
 
 ### 1.5 Auth & identity (`apps/api`)
 
