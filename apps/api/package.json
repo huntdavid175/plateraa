@@ -7,12 +7,14 @@
     "dev": "tsc-watch -p tsconfig.build.json --onSuccess \"node --enable-source-maps dist/main.js\"",
     "start": "node --enable-source-maps dist/main.js",
     "typecheck": "tsc --noEmit",
-    "test": "vitest run --passWithNoTests"
+    "test": "vitest run --passWithNoTests",
+    "openapi": "tsc -p tsconfig.build.json && node dist/scripts/generate-openapi.js"
   },
   "dependencies": {
     "@nestjs/common": "11.2.3",
     "@nestjs/core": "11.2.3",
     "@nestjs/platform-express": "11.2.3",
+    "@nestjs/swagger": "11.4.7",
     "@node-rs/argon2": "2.2.1",
     "@plateraa/db": "workspace:*",
     "@plateraa/shared": "workspace:*",

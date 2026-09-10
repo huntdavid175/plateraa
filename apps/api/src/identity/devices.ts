@@ -8,7 +8,9 @@ import {
   Post,
   UseGuards,
 } from '@nestjs/common';
+import { ApiBearerAuth, ApiCreatedResponse, ApiOkResponse, ApiSecurity } from '@nestjs/swagger';
 import { and, devices, eq, isNull, locations, staffMembers, withTenant } from '@plateraa/db';
+import { ROLES } from '@plateraa/shared';
 import { createZodDto } from 'nestjs-zod';
 import { ulid } from 'ulid';
 import { z } from 'zod';
@@ -25,6 +27,29 @@ const registerDeviceSchema = z.object({
   appVersion: z.string().trim().max(40).optional(),
 });
 class RegisterDeviceDto extends createZodDto(registerDeviceSchema) {}
+
+class RegisteredDeviceDto extends createZodDto(
+  z.object({
+    /** Returned exactly once; the phone keeps it in secure storage. */
+    deviceToken: z.string(),
+    device: z.object({
+      id: z.string(),
+      tenantId: z.string(),
+      locationId: z.string(),
+      name: z.string(),
+      code: z.string(),
+    }),
+  }),
+) {}
+
+class RosterEntryDto extends createZodDto(
+  z.object({
+    id: z.string(),
+    displayName: z.string(),
+    role: z.enum(ROLES),
+    pinVerifier: z.string().nullable(),
+  }),
+) {}
 
 @Injectable()
 export class DevicesService {
@@ -115,12 +140,16 @@ export class DevicesController {
 
   @Post('register')
   @UseGuards(SessionGuard)
+  @ApiBearerAuth()
+  @ApiCreatedResponse({ type: RegisteredDeviceDto.Output })
   register(@CurrentUser() user: AuthUser, @Body() body: RegisterDeviceDto) {
     return this.devicesService.register(user, body);
   }
 
   @Get('current/staff')
   @UseGuards(DeviceGuard)
+  @ApiSecurity('device')
+  @ApiOkResponse({ type: RosterEntryDto.Output, isArray: true })
   roster(@CurrentDevice() device: DeviceContext) {
     return this.devicesService.roster(device);
   }

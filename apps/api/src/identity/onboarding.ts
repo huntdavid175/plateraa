@@ -11,7 +11,8 @@ import {
   withPlatform,
   withTenant,
 } from '@plateraa/db';
-import { VENDOR_TYPES } from '@plateraa/shared';
+import { ROLES, VENDOR_TYPES } from '@plateraa/shared';
+import { ApiBearerAuth, ApiCreatedResponse, ApiOkResponse } from '@nestjs/swagger';
 import { createZodDto } from 'nestjs-zod';
 import { ulid } from 'ulid';
 import { z } from 'zod';
@@ -25,6 +26,20 @@ const createBusinessSchema = z.object({
   vendorType: z.enum(VENDOR_TYPES),
 });
 class CreateBusinessDto extends createZodDto(createBusinessSchema) {}
+
+class BusinessCreatedDto extends createZodDto(
+  z.object({ tenantId: z.string(), slug: z.string(), staffId: z.string() }),
+) {}
+
+class BusinessDto extends createZodDto(
+  z.object({
+    tenantId: z.string(),
+    name: z.string(),
+    slug: z.string(),
+    staffId: z.string(),
+    role: z.enum(ROLES),
+  }),
+) {}
 
 function slugify(name: string): string {
   const slug = name
@@ -114,15 +129,18 @@ export class OnboardingService {
 
 @Controller()
 @UseGuards(SessionGuard)
+@ApiBearerAuth()
 export class OnboardingController {
   constructor(private readonly onboarding: OnboardingService) {}
 
   @Post('onboarding/business')
+  @ApiCreatedResponse({ type: BusinessCreatedDto.Output })
   create(@CurrentUser() user: AuthUser, @Body() body: CreateBusinessDto) {
     return this.onboarding.createBusiness(user, body);
   }
 
   @Get('me/businesses')
+  @ApiOkResponse({ type: BusinessDto.Output, isArray: true })
   list(@CurrentUser() user: AuthUser) {
     return this.onboarding.listBusinesses(user.id);
   }

@@ -12,7 +12,14 @@ import {
   UseGuards,
 } from '@nestjs/common';
 import { and, eq, isNull, staffMembers, withTenant } from '@plateraa/db';
-import { PIN_ATTEMPTS_BEFORE_LOCK, pinLockout, type Role } from '@plateraa/shared';
+import { ApiOkResponse, ApiSecurity } from '@nestjs/swagger';
+import {
+  CAPABILITIES,
+  PIN_ATTEMPTS_BEFORE_LOCK,
+  ROLES,
+  pinLockout,
+  type Role,
+} from '@plateraa/shared';
 import { createZodDto } from 'nestjs-zod';
 import { z } from 'zod';
 import { recordAudit } from '../audit/audit';
@@ -28,6 +35,15 @@ const pinLoginSchema = z.object({
   pin: z.string().regex(/^\d{6}$/),
 });
 class PinLoginDto extends createZodDto(pinLoginSchema) {}
+
+class PinSessionDto extends createZodDto(
+  z.object({
+    token: z.string(),
+    expiresAt: z.iso.datetime(),
+    staff: z.object({ id: z.string(), displayName: z.string(), role: z.enum(ROLES) }),
+    capabilities: z.array(z.enum(CAPABILITIES)),
+  }),
+) {}
 
 type Outcome =
   | { kind: 'ok'; staff: { id: string; displayName: string; role: Role } }
@@ -147,11 +163,13 @@ export class PinLoginService {
 
 @Controller('sessions')
 @UseGuards(DeviceGuard)
+@ApiSecurity('device')
 export class PinLoginController {
   constructor(private readonly pinLogin: PinLoginService) {}
 
   @Post('pin')
   @HttpCode(200)
+  @ApiOkResponse({ type: PinSessionDto.Output })
   login(@CurrentDevice() device: DeviceContext, @Body() body: PinLoginDto) {
     return this.pinLogin.login(device, body);
   }

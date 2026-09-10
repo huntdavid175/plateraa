@@ -11,8 +11,14 @@ import {
   Post,
   Put,
 } from '@nestjs/common';
+import {
+  ApiBearerAuth,
+  ApiCreatedResponse,
+  ApiNoContentResponse,
+  ApiSecurity,
+} from '@nestjs/swagger';
 import { and, eq, isNull, staffMembers, withTenant } from '@plateraa/db';
-import { pinProblem, type Role } from '@plateraa/shared';
+import { ROLES, pinProblem, type Role } from '@plateraa/shared';
 import { createZodDto } from 'nestjs-zod';
 import { ulid } from 'ulid';
 import { z } from 'zod';
@@ -31,6 +37,10 @@ class CreateStaffDto extends createZodDto(createStaffSchema) {}
 
 const setPinSchema = z.object({ pin: z.string() });
 class SetPinDto extends createZodDto(setPinSchema) {}
+
+class StaffCreatedDto extends createZodDto(
+  z.object({ id: z.string(), displayName: z.string(), role: z.enum(ROLES) }),
+) {}
 
 const RANK: Record<Role, number> = { OWNER: 3, MANAGER: 2, STAFF: 1, RIDER: 1 };
 
@@ -113,12 +123,16 @@ export class StaffService {
   }
 }
 
+/** Works from the dashboard (email login + x-tenant-id) or a phone (device token + PIN session). */
 @Controller('staff')
+@ApiBearerAuth()
+@ApiSecurity('device')
 export class StaffController {
   constructor(private readonly staff: StaffService) {}
 
   @Post()
   @Authorized('staff.manage')
+  @ApiCreatedResponse({ type: StaffCreatedDto.Output })
   create(@CurrentActor() actor: Actor, @Body() body: CreateStaffDto) {
     return this.staff.create(actor, body);
   }
@@ -126,6 +140,7 @@ export class StaffController {
   @Put(':id/pin')
   @Authorized()
   @HttpCode(204)
+  @ApiNoContentResponse()
   async setPin(@CurrentActor() actor: Actor, @Param('id') id: string, @Body() body: SetPinDto) {
     await this.staff.setPin(actor, id, body.pin);
   }

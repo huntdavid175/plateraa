@@ -15,6 +15,7 @@ export default defineConfig([
       '**/coverage/**',
       'apps/mobile/android/**',
       'apps/mobile/ios/**',
+      'packages/api-client/src/schema.ts',
     ],
   },
   js.configs.recommended,

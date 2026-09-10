@@ -106,7 +106,9 @@ Full design detail: `C:\Users\user\.claude\plans\plan-mode-prompt-you-peaceful-p
   - [ ] Offline approval codes (_Phase 2.2: needs the approvers' secrets_)
 - [x] Price check against `price_history` (_mismatches and unapproved discounts keep the sale but add `review_reasons` for the owner_)
 - [x] `audit.record()` in the same transaction as the change (_payments, refunds, drawer movements and close, raw counts, sold-out, flagged orders_)
-- [ ] OpenAPI generation → typed client
+- [x] OpenAPI generation → typed client
+  - _`packages/api-client` (rather than `packages/shared`, to keep generated code separate): `pnpm --filter @plateraa/api openapi` writes `openapi.json`, `pnpm --filter @plateraa/api-client generate` types it with openapi-typescript, and `createApiClient()` adds the device, bearer and business headers. Swagger UI at `/api/docs` in development._
+  - [ ] CI check that `openapi.json` and `schema.ts` are regenerated whenever the API changes
 
 ---
 

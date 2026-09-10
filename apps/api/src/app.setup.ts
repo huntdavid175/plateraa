@@ -1,8 +1,10 @@
 import type { NestExpressApplication } from '@nestjs/platform-express';
+import { SwaggerModule } from '@nestjs/swagger';
 import { toNodeHandler } from 'better-auth/node';
 import compression from 'compression';
 import { AUTH, type Auth } from './auth/auth.factory';
 import { ENV, type Env } from './config/env';
+import { buildOpenApiDocument } from './openapi';
 
 /** Shared by main.ts and the tests, so both run exactly the same app. */
 export function configureApp(app: NestExpressApplication): void {
@@ -19,4 +21,9 @@ export function configureApp(app: NestExpressApplication): void {
 
   app.setGlobalPrefix('api');
   app.enableShutdownHooks();
+
+  // Browsable API docs while developing: http://localhost:3000/api/docs
+  if (env.NODE_ENV === 'development') {
+    SwaggerModule.setup('api/docs', app, () => buildOpenApiDocument(app));
+  }
 }

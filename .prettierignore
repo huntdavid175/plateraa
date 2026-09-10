@@ -8,3 +8,5 @@ apps/mobile/android
 apps/mobile/ios
 **/next-env.d.ts
 packages/db/migrations/meta
+packages/api-client/openapi.json
+packages/api-client/src/schema.ts
