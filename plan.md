@@ -99,12 +99,13 @@ Full design detail: `C:\Users\user\.claude\plans\plan-mode-prompt-you-peaceful-p
 - [x] `POST /sync/push`: batches of ≤50, one transaction per command, idempotent via `sync_commands`
   - _Authenticated by the phone (device token), not a PIN session, so queued sales upload while the screen is locked. Each command's own staff member is permission-checked (`COMMAND_CAPABILITY`). Business refusals are recorded and never retried; server errors stop the batch for a retry._
 - [x] `GET /sync/pull`: xid8 cursor, filtered by what the device may hold, never includes aggregates (_one REPEATABLE READ snapshot; no cost prices, no PIN hashes_)
-  - [ ] gzip the response
-- [ ] Command handlers: orders, cash payments, paid-via-platform, cash refunds, shifts, cash movements, stock, sold-out, customers, receipt links
+  - [x] gzip the response (_`compression` on every response_)
+- [x] Command handlers: orders, cash payments, paid-via-platform, cash refunds, shifts, cash movements, stock, sold-out, customers, receipt links
   - [x] Orders: create (re-priced with `priceOrder`), edit items, status, hold/resume, cancel (refused while money is on the order); prep counts go down with each sale and sell out at zero
-  - [ ] Payments, refunds, shifts, cash movements, stock counts, sold-out, customers, receipts, offline approval codes
+  - [x] Payments (cash with change, no overpaying; platform with commission as a receivable), refunds (approval required, each approval used once), drawer open/payout/drop/close with expected vs counted, payouts booked as expenses, prep and raw counts, sold-out, customers by phone, receipt links
+  - [ ] Offline approval codes (_Phase 2.2: needs the approvers' secrets_)
 - [x] Price check against `price_history` (_mismatches and unapproved discounts keep the sale but add `review_reasons` for the owner_)
-- [x] `audit.record()` in the same transaction as the change (_used for flagged orders so far; money handlers next_)
+- [x] `audit.record()` in the same transaction as the change (_payments, refunds, drawer movements and close, raw counts, sold-out, flagged orders_)
 - [ ] OpenAPI generation → typed client
 
 ---

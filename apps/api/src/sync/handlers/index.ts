@@ -1,5 +1,6 @@
-import type { SyncCommandType } from '@plateraa/shared';
 import type { CommandHandler, CommandHandlers } from '../sync.types';
+import { customerUpsert, receiptCreateLink } from './customers';
+import { paymentRecordCash, paymentRecordPlatform, refundCreateCash } from './money';
 import {
   orderCancel,
   orderCreate,
@@ -8,16 +9,16 @@ import {
   orderSetStatus,
   orderUpdateItems,
 } from './orders';
+import { shiftCashMovement, shiftClose, shiftOpen } from './shifts';
+import { itemSetSoldOut, stockPrepCount, stockRawCount } from './stock';
 
 /**
- * Not built yet (Phase 1.6, stage 2). A plain error is treated as temporary, so the phone
- * keeps the command and retries it instead of getting a permanent refusal.
+ * Offline approval codes need the approvers' secrets, which Phase 2.2 provisions. Until then a
+ * plain error is treated as temporary, so the phone keeps the command and retries it.
  */
-function comingSoon<T extends SyncCommandType>(type: T): CommandHandler<T> {
-  return async () => {
-    throw new Error(`${type} is not handled yet`);
-  };
-}
+const approvalRecordOfflineCode: CommandHandler<'approval.record_offline_code'> = async () => {
+  throw new Error('approval.record_offline_code is not handled yet (Phase 2.2)');
+};
 
 /** One handler per command type; the compiler insists every type has one. */
 export const HANDLERS: CommandHandlers = {
@@ -27,16 +28,16 @@ export const HANDLERS: CommandHandlers = {
   'order.hold': orderHold,
   'order.resume': orderResume,
   'order.cancel': orderCancel,
-  'payment.record_cash': comingSoon('payment.record_cash'),
-  'payment.record_platform': comingSoon('payment.record_platform'),
-  'refund.create_cash': comingSoon('refund.create_cash'),
-  'shift.open': comingSoon('shift.open'),
-  'shift.cash_movement': comingSoon('shift.cash_movement'),
-  'shift.close': comingSoon('shift.close'),
-  'item.set_sold_out': comingSoon('item.set_sold_out'),
-  'stock.prep_count': comingSoon('stock.prep_count'),
-  'stock.raw_count': comingSoon('stock.raw_count'),
-  'customer.upsert': comingSoon('customer.upsert'),
-  'receipt.create_link': comingSoon('receipt.create_link'),
-  'approval.record_offline_code': comingSoon('approval.record_offline_code'),
+  'payment.record_cash': paymentRecordCash,
+  'payment.record_platform': paymentRecordPlatform,
+  'refund.create_cash': refundCreateCash,
+  'shift.open': shiftOpen,
+  'shift.cash_movement': shiftCashMovement,
+  'shift.close': shiftClose,
+  'item.set_sold_out': itemSetSoldOut,
+  'stock.prep_count': stockPrepCount,
+  'stock.raw_count': stockRawCount,
+  'customer.upsert': customerUpsert,
+  'receipt.create_link': receiptCreateLink,
+  'approval.record_offline_code': approvalRecordOfflineCode,
 };
