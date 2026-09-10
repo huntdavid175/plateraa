@@ -65,7 +65,11 @@ export const orders = pgTable(
     amountPaid: money()
       .notNull()
       .default(sql`0`),
-    priceMismatch: boolean().notNull().default(false),
+    /** Why the owner should look at this order (PRICE_MISMATCH, UNAPPROVED_DISCOUNT, …). */
+    reviewReasons: text()
+      .array()
+      .notNull()
+      .default(sql`'{}'::text[]`),
     cancelReason: text(),
     createdBy: text()
       .notNull()

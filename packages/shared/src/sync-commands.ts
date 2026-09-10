@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import type { Capability } from './capabilities.js';
 import {
   APPROVAL_ACTIONS,
   CASH_MOVEMENT_TYPES,
@@ -267,3 +268,28 @@ export type SyncCommand = z.output<typeof syncCommandSchema>;
 export type SyncCommandInput = z.input<typeof syncCommandSchema>;
 export type SyncCommandType = SyncCommand['type'];
 export type SyncCommandOf<T extends SyncCommandType> = Extract<SyncCommand, { type: T }>;
+
+/**
+ * The permission the staff member who did a command needs. The server checks it per command,
+ * against whoever did the action, not whoever happens to be logged in when the phone syncs.
+ */
+export const COMMAND_CAPABILITY: Record<SyncCommandType, Capability> = {
+  'order.create': 'orders.take',
+  'order.update_items': 'orders.take',
+  'order.set_status': 'orders.take',
+  'order.hold': 'orders.take',
+  'order.resume': 'orders.take',
+  'order.cancel': 'orders.cancel',
+  'payment.record_cash': 'payments.record',
+  'payment.record_platform': 'payments.record',
+  'refund.create_cash': 'refunds.request',
+  'shift.open': 'shift.operate',
+  'shift.cash_movement': 'shift.operate',
+  'shift.close': 'shift.operate',
+  'item.set_sold_out': 'stock.count',
+  'stock.prep_count': 'stock.count',
+  'stock.raw_count': 'stock.count',
+  'customer.upsert': 'orders.take',
+  'receipt.create_link': 'orders.take',
+  'approval.record_offline_code': 'orders.take',
+};

@@ -6,9 +6,10 @@ import { ConfigModule } from './config/config.module';
 import { DatabaseModule } from './database/database.module';
 import { HealthController } from './health/health.controller';
 import { IdentityModule } from './identity/identity.module';
+import { SyncModule } from './sync/sync.module';
 
 @Module({
-  imports: [ConfigModule, DatabaseModule, AuthModule, IdentityModule],
+  imports: [ConfigModule, DatabaseModule, AuthModule, IdentityModule, SyncModule],
   controllers: [HealthController],
   providers: [{ provide: APP_PIPE, useClass: ZodValidationPipe }],
 })

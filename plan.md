@@ -96,11 +96,15 @@ Full design detail: `C:\Users\user\.claude\plans\plan-mode-prompt-you-peaceful-p
 
 ### 1.6 Sync & core API
 
-- [ ] `POST /sync/push`: batches of ≤50, one transaction per command, idempotent via `sync_commands`
-- [ ] `GET /sync/pull`: xid8 cursor, filtered by what the device may hold, gzipped, never includes aggregates
+- [x] `POST /sync/push`: batches of ≤50, one transaction per command, idempotent via `sync_commands`
+  - _Authenticated by the phone (device token), not a PIN session, so queued sales upload while the screen is locked. Each command's own staff member is permission-checked (`COMMAND_CAPABILITY`). Business refusals are recorded and never retried; server errors stop the batch for a retry._
+- [x] `GET /sync/pull`: xid8 cursor, filtered by what the device may hold, never includes aggregates (_one REPEATABLE READ snapshot; no cost prices, no PIN hashes_)
+  - [ ] gzip the response
 - [ ] Command handlers: orders, cash payments, paid-via-platform, cash refunds, shifts, cash movements, stock, sold-out, customers, receipt links
-- [ ] Price check against `price_history` (flag `price_mismatch`)
-- [ ] `audit.record()` in the same transaction as the change
+  - [x] Orders: create (re-priced with `priceOrder`), edit items, status, hold/resume, cancel (refused while money is on the order); prep counts go down with each sale and sell out at zero
+  - [ ] Payments, refunds, shifts, cash movements, stock counts, sold-out, customers, receipts, offline approval codes
+- [x] Price check against `price_history` (_mismatches and unapproved discounts keep the sale but add `review_reasons` for the owner_)
+- [x] `audit.record()` in the same transaction as the change (_used for flagged orders so far; money handlers next_)
 - [ ] OpenAPI generation → typed client
 
 ---

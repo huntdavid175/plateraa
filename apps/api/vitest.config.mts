@@ -9,5 +9,7 @@ export default defineConfig({
     // Integration specs make real round trips to Neon and hash with Argon2.
     testTimeout: 30_000,
     hookTimeout: 30_000,
+    // They also share one database, so run the files one at a time.
+    fileParallelism: false,
   },
 });

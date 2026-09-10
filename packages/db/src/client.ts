@@ -1,5 +1,6 @@
 import { sql } from 'drizzle-orm';
 import { drizzle, type NodePgDatabase } from 'drizzle-orm/node-postgres';
+import type { PgTransactionConfig } from 'drizzle-orm/pg-core';
 import pg from 'pg';
 import * as schema from './schema/index.js';
 
@@ -23,6 +24,7 @@ export async function withTenant<T>(
   db: Database,
   tenantId: string,
   fn: (tx: Tx) => Promise<T>,
+  config?: PgTransactionConfig,
 ): Promise<T> {
   if (!TENANT_ID.test(tenantId)) throw new Error(`Invalid tenant id: ${tenantId}`);
   return db.transaction(async (tx) => {
@@ -31,7 +33,7 @@ export async function withTenant<T>(
       sql`select set_config('role', 'app_user', true), set_config('app.tenant_id', ${tenantId}, true)`,
     );
     return fn(tx);
-  });
+  }, config);
 }
 
 /**
