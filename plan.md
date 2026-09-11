@@ -175,6 +175,13 @@ _11 Sep: built in the new app shell (Expo Router, `apps/mobile/app/`), with test
 
 ### 2.3 Taking orders
 
+_11 Sep: built (`apps/mobile/src/counter`; the counter screen is `app/index.tsx`), with tests for the order logic. Waiting to be tried on the tablet; no new EAS build is needed._
+
+- _Payment links can already be chosen, but they don't go out until §2.5 (Moolre); until then those orders wait under "Awaiting payment"._
+- _Server change: Bolt and Chowdeck orders no longer need a customer's number (the platforms keep it); phone orders need the caller's._
+- _Test menu for a business, until the dashboard's menu setup (3.1): `pnpm --filter @plateraa/api seed:test-menu "<business name>"`._
+- _Gap: Bolt and Chowdeck prices that differ from the menu aren't on the tablet yet (the dashboard sets them in 3.1), so such an order is kept but flagged for review._
+
 - [ ] Landscape tablet layout (8" minimum): order entry and prep queue side by side
 - [ ] Counter mode: big text tiles, modifier sheet only when required, optional customer phone, then pay by cash (tendered → change) or payment link (the customer's number is needed for a link) (≤15 s for cash)
 - [ ] Phone order entry (typed in like a walk-in, caller's number required, paid only by a payment link sent to that number) and hand-typed Bolt/Chowdeck orders: source, pickup/delivery, address + zone → fee
@@ -185,7 +192,7 @@ _11 Sep: built in the new app shell (Expo Router, `apps/mobile/app/`), with test
 
 ### 2.4 Cash & stock
 
-- [ ] Open shift with float
+- [ ] Open shift with float (_11 Sep: built with 2.3, because cash needs an open drawer: the tablet asks for the float at the first cash sale_)
 - [ ] Drops and pay-ins (payouts are recorded by a manager on the dashboard)
 - [ ] Close shift: expected vs counted vs variance, own shift only
 - [ ] One-tap sold-out toggle

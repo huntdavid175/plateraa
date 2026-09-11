@@ -92,11 +92,17 @@ const orderCreate = z
         message: 'Only delivery orders take delivery details',
       });
     }
-    if (order.type !== 'WALK_IN' && !order.customer) {
+    // Phone orders are paid by a link sent to the caller, and the vendor's own riders need a
+    // number to call. Bolt Food and Chowdeck keep their customers' numbers to themselves.
+    const platform = order.source === 'BOLT_FOOD' || order.source === 'CHOWDECK';
+    if (!order.customer && (order.source === 'PHONE' || (order.type === 'DELIVERY' && !platform))) {
       ctx.addIssue({
         code: 'custom',
         path: ['customer'],
-        message: 'Pickup and delivery orders need a phone number',
+        message:
+          order.source === 'PHONE'
+            ? "Phone orders need the caller's number"
+            : 'Delivery orders need a phone number',
       });
     }
   });

@@ -24,7 +24,14 @@ The counter app. It runs on the vendor's own budget Android tablet (8–10", **l
 
 - The real app is in place (Expo Router, `app/`), built on 11 Sep for plan.md §2.2. It runs on the tablet from EAS build `406855bd` (the first with Expo Router, `expo-secure-store` and `expo-crypto`): setup, PINs and lockout, adding staff, the idle lock and the offline banner all worked.
 - The day-1 test screen (plan.md §1.2) is now `app/diagnostics.tsx`, "Tablet check", reachable from the lock screen. It passed on a real tablet: 2,000 SQLite inserts in 535 ms; right PIN accepted in 295 ms, wrong refused in 230 ms; Bluetooth lists paired devices. Printing a real receipt waits for a printer.
-- Next: §2.3, taking orders.
+- §2.3, taking orders, is built (see below) and waiting to be tried on the tablet. It needs a menu: `pnpm --filter @plateraa/api seed:test-menu "<business name>"` adds a test one.
+
+## Counter (`src/counter`, plan.md §2.3)
+
+- `actions.ts`: everything the counter does, as sync commands: `placeOrder`, `payCash`, `openDrawer`, `markPaidOnPlatform`, `advance` (one tap to the next status), `setOnHold`, `cancelOrder` and `updateItems`. Screens call these rather than `engine.record` directly.
+- How orders are paid: a walk-in pays cash or by payment link; a phone order needs the caller's number and is paid by link only; Bolt and Chowdeck orders are marked "paid on the platform". Links don't go out until §2.5.
+- `ticket.ts` is the order being typed in. `menu.ts` loads the menu (`needsChoice`: a size or a required extra opens the item sheet). `queue.ts` loads the orders list. `lanes.ts` sorts orders into lanes, honouring pay before prep, and gives the amber/red timers. `numbers.ts` gives order numbers (the tablet's letter plus a daily count: A1, A2, …). `hooks.ts` has `useCounter`, `useMenu`, `useQueue` and `usePayBeforePrep`.
+- Screens: `OrderEntry` (tiles, ticket and payment), `OrdersPanel` (the lanes), `OrderSheet` (one order and its actions), `ItemSheet`, and `CashPanel` / `DrawerPanel`. The first cash sale asks for the drawer's float.
 
 ## App (`app/`, `src/tablet`, `src/ui`)
 

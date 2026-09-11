@@ -8,7 +8,8 @@
     "start": "node --enable-source-maps dist/main.js",
     "typecheck": "tsc --noEmit",
     "test": "vitest run --passWithNoTests",
-    "openapi": "tsc -p tsconfig.build.json && node dist/scripts/generate-openapi.js"
+    "openapi": "tsc -p tsconfig.build.json && node dist/scripts/generate-openapi.js",
+    "seed:test-menu": "tsc -p tsconfig.build.json && node dist/scripts/seed-test-menu.js"
   },
   "dependencies": {
     "@nestjs/common": "11.2.3",

@@ -65,27 +65,27 @@ describe('sync commands', () => {
     }
   });
 
-  it('requires a phone for pickup and an address for delivery', () => {
-    expect(parse({ ...walkIn, payload: { ...walkIn.payload, type: 'PICKUP' } }).success).toBe(
-      false,
+  it("requires the caller's number for a phone order, and an address and number for delivery", () => {
+    const order = (changes: object) =>
+      parse({ ...walkIn, payload: { ...walkIn.payload, ...changes } }).success;
+    const address = { address: 'Osu, near the Shell', fee: 1500 };
+    expect(order({ source: 'PHONE', type: 'PICKUP' })).toBe(false);
+    expect(order({ source: 'PHONE', type: 'PICKUP', customer: { phone: '0241234567' } })).toBe(
+      true,
     );
-    expect(
-      parse({
-        ...walkIn,
-        payload: { ...walkIn.payload, type: 'DELIVERY', customer: { phone: '0241234567' } },
-      }).success,
-    ).toBe(false);
-    expect(
-      parse({
-        ...walkIn,
-        payload: {
-          ...walkIn.payload,
-          type: 'DELIVERY',
-          customer: { phone: '0241234567' },
-          delivery: { address: 'Osu, near the Shell', fee: 1500 },
-        },
-      }).success,
-    ).toBe(true);
+    expect(order({ type: 'DELIVERY', customer: { phone: '0241234567' } })).toBe(false);
+    expect(order({ type: 'DELIVERY', delivery: address })).toBe(false);
+    expect(order({ type: 'DELIVERY', customer: { phone: '0241234567' }, delivery: address })).toBe(
+      true,
+    );
+  });
+
+  it('takes Bolt Food and Chowdeck orders without a customer number', () => {
+    for (const source of ['BOLT_FOOD', 'CHOWDECK']) {
+      expect(
+        parse({ ...walkIn, payload: { ...walkIn.payload, source, type: 'PICKUP' } }).success,
+      ).toBe(true);
+    }
   });
 
   it('has no WhatsApp or Instagram order source', () => {
