@@ -55,7 +55,9 @@ Full design detail: `C:\Users\user\.claude\plans\plan-mode-prompt-you-peaceful-p
 
 ### 1.2 Day-1 spike (on a real budget Android tablet, 8–10" landscape)
 
-- [ ] Expo 57 development build via EAS (not Expo Go: op-sqlite and our native modules need it); Android package `com.plateraa.pos` (permanent once on Google Play; chosen 10 Sep)
+_11 Sep: everything for the spike is built, and the first development build finished on EAS (`e086f12`, [build](https://expo.dev/accounts/huntdavid175/projects/plateraa/builds/11796467-7d45-4fdc-9274-4ef4203a304a), internal APK): op-sqlite 18.2.1; `plateraa-crypto` (PBKDF2, same format as the server's PIN check); `escpos-bt` (paired printers, connect, write); a landscape test screen that runs all three. The other boxes get ticked once it runs on a real tablet._
+
+- [x] Expo 57 development build via EAS (not Expo Go: op-sqlite and our native modules need it); Android package `com.plateraa.pos` (permanent once on Google Play; chosen 10 Sep)
 - [ ] op-sqlite read/write working
 - [ ] Native PBKDF2 for the offline PIN check (_the Keystore HMAC parts were for approval codes, now a future feature_)
 - [ ] `escpos-bt` Kotlin module stub: `listBonded`, `connect`, `write`, `disconnect`
