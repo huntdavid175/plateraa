@@ -6,18 +6,25 @@
   "scripts": {
     "start": "expo start",
     "android": "expo start --android",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit && tsc --noEmit -p tsconfig.test.json",
+    "test": "vitest run",
+    "eas-build-post-install": "pnpm --filter \"@plateraa/mobile^...\" build"
   },
   "dependencies": {
     "@op-engineering/op-sqlite": "18.2.1",
+    "@plateraa/api-client": "workspace:*",
+    "@plateraa/shared": "workspace:*",
     "expo": "~57.0.21",
     "expo-dev-client": "~57.0.18",
     "expo-status-bar": "~57.0.1",
     "react": "19.2.3",
-    "react-native": "0.86.3"
+    "react-native": "0.86.3",
+    "ulid": "3.0.2"
   },
   "devDependencies": {
+    "@types/node": "24.13.4",
     "@types/react": "~19.2.2",
-    "typescript": "~6.0.3"
+    "typescript": "~6.0.3",
+    "vitest": "5.0.0"
   }
 }

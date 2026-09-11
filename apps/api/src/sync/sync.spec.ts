@@ -178,6 +178,29 @@ describe.skipIf(!hasDatabase())('sync (against Neon)', () => {
     expect(next.changes.categories).toEqual([]);
   });
 
+  it('still sends an old order that finishes after the first pull', async () => {
+    const threeDaysAgo = new Date(Date.now() - 3 * 86_400_000).toISOString().slice(0, 10);
+    const old = command('order.create', {
+      ...walkIn([line(menu.sobolo, 1, 1000)]).payload,
+      businessDate: threeDaysAgo,
+    });
+    await push([old]);
+    const ids = (changes: Awaited<ReturnType<typeof pull>>) =>
+      changes.changes.orders!.map((o) => o.id);
+
+    const first = await pull();
+    expect(ids(first)).toContain(old.payload.orderId); // Still open, so the tablet gets it.
+
+    await push([
+      command('order.cancel', { orderId: old.payload.orderId, reason: 'Never collected' }),
+    ]);
+    const next = await pull(first.cursor);
+    expect(next.changes.orders!.find((o) => o.id === old.payload.orderId)).toMatchObject({
+      status: 'CANCELLED',
+    });
+    expect(ids(await pull())).not.toContain(old.payload.orderId); // A new tablet doesn't need it.
+  });
+
   it('needs a registered tablet', async () => {
     await request(server)
       .post('/api/sync/push')

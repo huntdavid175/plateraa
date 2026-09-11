@@ -16,16 +16,6 @@ import type { OrderStatus } from '@plateraa/shared';
 import { ulid } from 'ulid';
 import { CommandRejected, type HandlerContext } from '../sync.types';
 
-/** The trading day a moment falls on, in the business's timezone (YYYY-MM-DD). */
-export function businessDateOf(date: Date, timezone: string): string {
-  return new Intl.DateTimeFormat('en-CA', {
-    timeZone: timezone,
-    year: 'numeric',
-    month: '2-digit',
-    day: '2-digit',
-  }).format(date);
-}
-
 export const deviceTime = (ctx: HandlerContext) => new Date(ctx.command.deviceTs);
 
 export async function loadOrder(tx: Tx, orderId: string) {

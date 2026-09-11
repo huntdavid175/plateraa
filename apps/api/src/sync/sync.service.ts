@@ -31,11 +31,15 @@ import {
   tenants,
   withTenant,
 } from '@plateraa/db';
-import { COMMAND_CAPABILITY, type SyncCommand, type SyncCommandType } from '@plateraa/shared';
+import {
+  COMMAND_CAPABILITY,
+  businessDateOf,
+  type SyncCommand,
+  type SyncCommandType,
+} from '@plateraa/shared';
 import { DATABASE, type DatabaseHandle } from '../database/database.module';
 import { Directories, type ResolvedStaff } from '../identity/directories.service';
 import type { DeviceContext } from '../identity/request-context';
-import { businessDateOf } from './handlers/common';
 import { HANDLERS } from './handlers';
 import {
   CommandRejected,
@@ -211,6 +215,11 @@ export class SyncService {
   /**
    * Everything a counter tablet needs that changed since its cursor, read from one snapshot.
    * Never includes cost prices or aggregate money figures: several people share one tablet.
+   *
+   * The first sync (no cursor) sends only what the counter works with: orders from yesterday
+   * on plus anything still open, and this tablet's recent drawer shifts. After that, every
+   * change is sent, so an old order that finishes or is refunded still reaches the tablet,
+   * which then clears it out itself.
    */
   async pull(device: DeviceContext, cursor: string | undefined) {
     return withTenant(
@@ -227,15 +236,19 @@ export class SyncService {
         const { costPrice: _variantCost, ...variantColumns } = getTableColumns(itemVariants);
         const { costPrice: _lineCost, ...orderItemColumns } = getTableColumns(orderItems);
 
-        // Orders from yesterday on, plus anything still open.
-        const orderScope = or(
-          gte(orders.businessDate, yesterday),
-          inArray(orders.status, [...ACTIVE_STATUSES]),
-        );
+        const firstSync = !cursor;
+        const orderScope = firstSync
+          ? or(gte(orders.businessDate, yesterday), inArray(orders.status, [...ACTIVE_STATUSES]))
+          : undefined;
         const scopedOrderIds = tx.select({ id: orders.id }).from(orders).where(orderScope);
         const shiftScope = and(
           eq(shifts.deviceId, device.id),
-          or(eq(shifts.status, 'OPEN'), gte(shifts.openedAt, new Date(Date.now() - 36 * HOUR_MS))),
+          firstSync
+            ? or(
+                eq(shifts.status, 'OPEN'),
+                gte(shifts.openedAt, new Date(Date.now() - 36 * HOUR_MS)),
+              )
+            : undefined,
         );
         const scopedShiftIds = tx.select({ id: shifts.id }).from(shifts).where(shiftScope);
 
@@ -289,18 +302,29 @@ export class SyncService {
               .select(orderItemColumns)
               .from(orderItems)
               .where(
-                and(changedSince(orderItems, cursor), inArray(orderItems.orderId, scopedOrderIds)),
+                and(
+                  changedSince(orderItems, cursor),
+                  firstSync ? inArray(orderItems.orderId, scopedOrderIds) : undefined,
+                ),
               ),
             payments: await tx
               .select()
               .from(payments)
               .where(
-                and(changedSince(payments, cursor), inArray(payments.orderId, scopedOrderIds)),
+                and(
+                  changedSince(payments, cursor),
+                  firstSync ? inArray(payments.orderId, scopedOrderIds) : undefined,
+                ),
               ),
             refunds: await tx
               .select()
               .from(refunds)
-              .where(and(changedSince(refunds, cursor), inArray(refunds.orderId, scopedOrderIds))),
+              .where(
+                and(
+                  changedSince(refunds, cursor),
+                  firstSync ? inArray(refunds.orderId, scopedOrderIds) : undefined,
+                ),
+              ),
             shifts: await tx
               .select()
               .from(shifts)

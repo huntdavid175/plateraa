@@ -2,5 +2,15 @@
   "extends": "expo/tsconfig.base",
   "compilerOptions": {
     "strict": true
-  }
+  },
+  // The app itself: no Node APIs. Tests and their helpers run in Node (tsconfig.test.json).
+  "exclude": [
+    "node_modules",
+    "android",
+    "ios",
+    "babel.config.js",
+    "metro.config.js",
+    "src/**/*.test.ts",
+    "src/offline/testing"
+  ]
 }

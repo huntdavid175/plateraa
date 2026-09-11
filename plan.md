@@ -146,11 +146,17 @@ _The counter device is the vendor's own budget Android tablet, 8–10" landscape
 
 ### 2.1 Offline engine
 
-- [ ] Device SQLite schema + migrations
-- [ ] `SqlDriver` interface (op-sqlite on the device, better-sqlite3 in tests)
-- [ ] Outbox + sync engine (push on change, pull every 30 s in the foreground, backoff)
-- [ ] Connectivity banner + "provisional" labels on offline totals
-- [ ] "Needs attention" list for rejected commands
+_11 Sep: the engine is in `apps/mobile/src/offline`, with tests against a fake server. It hasn't run on the tablet yet: that needs the app shell and device registration (2.2) and a new EAS build._
+
+- [x] Device SQLite schema + migrations (_mirrors what pull sends, never cost prices, plus the outbox; migrations are frozen SQL, and a test checks the columns match_)
+- [x] `SqlDriver` interface (op-sqlite on the device, Node's built-in SQLite in tests) (_Node's rather than better-sqlite3: no native build on Windows, CI or EAS_)
+- [x] Outbox + sync engine (push on change, pull every 30 s in the foreground, backoff)
+  - _A change shows on the tablet at once. The first time an unconfirmed change touches a row, the server's version of it is kept aside; when the server refuses the change, that version comes back and the changes still waiting are applied again, so nothing half-done is left behind. Batches of ≤50 in order; a "try again" stops the batch; a batch the server can't read is split so one bad command can't block the rest; backoff 2 s → 60 s._
+  - _Server change: pulls after the first now send every changed order, so an old order that finishes still reaches the tablet (before, it stayed open there for good). The trading-day rule moved to `packages/shared` (`businessDateOf`)._
+- [x] Tablet cleanup: drop outbox entries once the server has confirmed them, and delete finished orders older than yesterday (with their items and payments) once the server has them. Never delete anything still waiting to upload or in "Needs attention"
+  - _Runs after each pull. An entry goes once the server has taken it and the pull has brought its result back. An order with a change the server hasn't confirmed is never deleted. Refusals stay until dismissed, then 2 days. Closed drawer shifts older than 36 h go too (the server stops sending them then)._
+- [ ] Connectivity banner + "provisional" labels on offline totals (_engine side done: `useSyncState()` and `provisionalSql()`; the banner is drawn with the app shell in 2.2_)
+- [ ] "Needs attention" list for rejected commands (_engine side done: `needsAttention()` and `dismiss()`; the screen comes with the app shell_)
 
 ### 2.2 Devices and PINs
 
