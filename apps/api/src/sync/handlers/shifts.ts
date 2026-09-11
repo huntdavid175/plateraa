@@ -1,27 +1,16 @@
-import {
-  and,
-  cashMovements,
-  eq,
-  expenses,
-  isNull,
-  payments,
-  refunds,
-  shifts,
-  sql,
-} from '@plateraa/db';
+import { and, cashMovements, eq, isNull, payments, shifts, sql } from '@plateraa/db';
 import { add, pesewas, sub, type Pesewas } from '@plateraa/shared';
-import { ulid } from 'ulid';
 import { recordAudit } from '../../audit/audit';
 import { CommandRejected, type CommandHandler, type HandlerContext } from '../sync.types';
-import { businessDateOf, deviceTime, requireUnusedApproval } from './common';
+import { deviceTime } from './common';
 
 type Shift = typeof shifts.$inferSelect;
 
-/** An open drawer shift on this phone. */
+/** An open drawer shift on this tablet. */
 export async function loadOpenShift(ctx: HandlerContext, shiftId: string): Promise<Shift> {
   const [shift] = await ctx.tx.select().from(shifts).where(eq(shifts.id, shiftId));
   if (!shift || shift.deviceId !== ctx.device.id) {
-    throw new CommandRejected('SHIFT_NOT_FOUND', 'That drawer shift is not on this phone');
+    throw new CommandRejected('SHIFT_NOT_FOUND', 'That drawer shift is not on this tablet');
   }
   if (shift.status !== 'OPEN') {
     throw new CommandRejected('SHIFT_CLOSED', 'That drawer shift is already closed');
@@ -31,7 +20,11 @@ export async function loadOpenShift(ctx: HandlerContext, shiftId: string): Promi
 
 const toMoney = (total: string | undefined) => pesewas(Number(total ?? 0));
 
-/** Float + cash taken − cash refunded − payouts − drops + pay-ins. */
+/**
+ * Float + cash taken − payouts − drops + pay-ins. Payouts are recorded by a manager on the
+ * dashboard against this shift. Refunds are paid back from outside the drawer, so they never
+ * count here.
+ */
 async function expectedCash(ctx: HandlerContext, shift: Shift): Promise<Pesewas> {
   const [cashIn] = await ctx.tx
     .select({ total: sql<string>`coalesce(sum(${payments.amount}), 0)` })
@@ -43,12 +36,6 @@ async function expectedCash(ctx: HandlerContext, shift: Shift): Promise<Pesewas>
         eq(payments.status, 'CONFIRMED'),
         isNull(payments.deletedAt),
       ),
-    );
-  const [cashRefunded] = await ctx.tx
-    .select({ total: sql<string>`coalesce(sum(${refunds.amount}), 0)` })
-    .from(refunds)
-    .where(
-      and(eq(refunds.shiftId, shift.id), eq(refunds.method, 'CASH'), isNull(refunds.deletedAt)),
     );
   const movements = await ctx.tx
     .select({
@@ -63,7 +50,7 @@ async function expectedCash(ctx: HandlerContext, shift: Shift): Promise<Pesewas>
 
   return sub(
     add(shift.floatAmount, toMoney(cashIn?.total), moved('PAY_IN')),
-    add(toMoney(cashRefunded?.total), moved('PAYOUT'), moved('DROP')),
+    add(moved('PAYOUT'), moved('DROP')),
   );
 }
 
@@ -98,10 +85,7 @@ export const shiftOpen: CommandHandler<'shift.open'> = async (ctx) => {
   return { shiftId: p.shiftId, status: 'OPEN' };
 };
 
-/**
- * Payouts, drops and pay-ins. A payout over the owner's threshold needs an approval, and every
- * payout is booked as an expense straight away, so nothing is entered twice.
- */
+/** Drops (cash taken out to the safe or the owner) and pay-ins. Payouts are dashboard-only. */
 export const shiftCashMovement: CommandHandler<'shift.cash_movement'> = async (ctx) => {
   const p = ctx.command.payload;
   const shift = await loadOpenShift(ctx, p.shiftId);
@@ -112,45 +96,17 @@ export const shiftCashMovement: CommandHandler<'shift.cash_movement'> = async (c
     .where(eq(cashMovements.id, p.movementId));
   if (duplicate) throw new CommandRejected('DUPLICATE_MOVEMENT', 'This is already on the server');
 
-  if (p.type === 'PAYOUT' && p.amount > ctx.tenant.approvalPayoutThreshold) {
-    await requireUnusedApproval(ctx.tx, {
-      approvalId: p.approvalId,
-      actions: ['PAYOUT'],
-      amount: p.amount,
-    });
-  }
-
   await ctx.tx.insert(cashMovements).values({
     id: p.movementId,
     tenantId: ctx.tenant.id,
     shiftId: shift.id,
     type: p.type,
     amount: p.amount,
-    category: p.category ?? null,
     note: p.note ?? null,
-    approvalId: p.approvalId ?? null,
     staffId: ctx.staff.staffId,
     deviceId: ctx.device.id,
     createdAtDevice: deviceTime(ctx),
   });
-
-  let expenseId: string | null = null;
-  if (p.type === 'PAYOUT') {
-    expenseId = ulid();
-    await ctx.tx.insert(expenses).values({
-      id: expenseId,
-      tenantId: ctx.tenant.id,
-      locationId: shift.locationId,
-      amount: p.amount,
-      category: p.category!,
-      method: 'CASH_DRAWER',
-      note: p.note ?? null,
-      spentOn: businessDateOf(deviceTime(ctx), ctx.tenant.timezone),
-      cashMovementId: p.movementId,
-      createdBy: ctx.staff.staffId,
-    });
-  }
-
   await recordAudit(ctx.tx, {
     tenantId: ctx.tenant.id,
     actorStaffId: ctx.staff.staffId,
@@ -158,10 +114,10 @@ export const shiftCashMovement: CommandHandler<'shift.cash_movement'> = async (c
     action: 'shift.cash_movement',
     entityType: 'cash_movement',
     entityId: p.movementId,
-    after: { shiftId: shift.id, type: p.type, amount: p.amount, category: p.category ?? null },
+    after: { shiftId: shift.id, type: p.type, amount: p.amount },
     deviceTs: deviceTime(ctx),
   });
-  return { movementId: p.movementId, expenseId };
+  return { movementId: p.movementId };
 };
 
 /** Closes the drawer. The result is this shift's cash only, never sales totals. */

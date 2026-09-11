@@ -8,8 +8,8 @@ import { hashSecret, verifySecret } from './secrets';
 export const AUTH = Symbol('AUTH');
 
 /**
- * Email logins for owners and managers (dashboard, and registering a phone). Staff never use
- * this: they unlock a registered phone with a PIN. The bearer plugin lets the phone send the
+ * Email logins for owners and managers (dashboard, and registering a tablet). Staff never use
+ * this: they unlock a registered tablet with a PIN. The bearer plugin lets the tablet send the
  * session as an Authorization header instead of a cookie.
  */
 export function createAuth(db: Database, env: Env) {

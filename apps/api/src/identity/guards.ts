@@ -42,7 +42,7 @@ export class SessionGuard implements CanActivate {
   }
 }
 
-/** Requires a registered phone (x-device-token). Sets req.device. */
+/** Requires a registered tablet (x-device-token). Sets req.device. */
 @Injectable()
 export class DeviceGuard implements CanActivate {
   constructor(private readonly directories: Directories) {}
@@ -51,14 +51,14 @@ export class DeviceGuard implements CanActivate {
     const req = requestOf(ctx);
     const token = headerValue(req, 'x-device-token');
     const device = token ? await this.directories.deviceByToken(token) : null;
-    if (!device) throw new UnauthorizedException('This phone is not registered');
+    if (!device) throw new UnauthorizedException('This device is not registered');
     req.device = device;
     return true;
   }
 }
 
 /**
- * Works out who is acting. A phone sends its device token plus a PIN session; the dashboard
+ * Works out who is acting. A tablet sends its device token plus a PIN session; the dashboard
  * sends an email login plus the business it's working on (x-tenant-id). Either way the actor's
  * permissions are read fresh from the database.
  */
@@ -85,7 +85,7 @@ export class ActorGuard implements CanActivate {
     const claims = device && token ? await this.pinSessions.verify(token) : null;
     const valid = device && claims?.deviceId === device.id && claims.tenantId === device.tenantId;
     const staff = valid ? await this.directories.staffById(device.tenantId, claims.staffId) : null;
-    if (!device || !staff) throw new UnauthorizedException('Unlock the phone with your PIN');
+    if (!device || !staff) throw new UnauthorizedException('Unlock the tablet with your PIN');
 
     req.device = device;
     return { kind: 'device', tenantId: device.tenantId, deviceId: device.id, ...staff };
@@ -127,7 +127,7 @@ export class CapabilityGuard implements CanActivate {
   }
 }
 
-/** Requires an actor (phone PIN session or dashboard login) holding every listed capability. */
+/** Requires an actor (tablet PIN session or dashboard login) holding every listed capability. */
 export const Authorized = (...capabilities: Capability[]) =>
   applyDecorators(
     SetMetadata(REQUIRED_CAPABILITIES, capabilities),
@@ -143,7 +143,7 @@ export const CurrentActor = createParamDecorator((_: unknown, ctx: ExecutionCont
 export const CurrentDevice = createParamDecorator(
   (_: unknown, ctx: ExecutionContext): DeviceContext => {
     const device = requestOf(ctx).device;
-    if (!device) throw new UnauthorizedException('This phone is not registered');
+    if (!device) throw new UnauthorizedException('This device is not registered');
     return device;
   },
 );

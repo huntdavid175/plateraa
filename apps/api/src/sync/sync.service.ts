@@ -31,12 +31,7 @@ import {
   tenants,
   withTenant,
 } from '@plateraa/db';
-import {
-  COMMAND_CAPABILITY,
-  pesewas,
-  type SyncCommand,
-  type SyncCommandType,
-} from '@plateraa/shared';
+import { COMMAND_CAPABILITY, type SyncCommand, type SyncCommandType } from '@plateraa/shared';
 import { DATABASE, type DatabaseHandle } from '../database/database.module';
 import { Directories, type ResolvedStaff } from '../identity/directories.service';
 import type { DeviceContext } from '../identity/request-context';
@@ -70,8 +65,8 @@ export class SyncService {
   ) {}
 
   /**
-   * Applies commands in the order they happened on the phone, each in its own transaction and
-   * at most once. Stops at the first temporary failure so the phone retries from there.
+   * Applies commands in the order they happened on the tablet, each in its own transaction and
+   * at most once. Stops at the first temporary failure so the tablet retries from there.
    */
   async push(device: DeviceContext, commands: SyncCommand[]): Promise<PushResult[]> {
     const tenant = await this.tenantInfo(device.tenantId);
@@ -148,7 +143,7 @@ export class SyncService {
     return {
       id: command.id,
       status: 'RETRY',
-      error: { code: 'TRY_AGAIN', message: 'Could not save this yet; the phone will try again' },
+      error: { code: 'TRY_AGAIN', message: 'Could not save this yet; the tablet will try again' },
     };
   }
 
@@ -201,23 +196,21 @@ export class SyncService {
       const [row] = await tx
         .select({
           timezone: tenants.timezone,
-          payoutThreshold: tenantSettings.approvalPayoutThreshold,
-          discountThresholdBps: tenantSettings.approvalDiscountThresholdBps,
+          requirePaymentBeforePrep: tenantSettings.requirePaymentBeforePrep,
         })
         .from(tenants)
         .leftJoin(tenantSettings, eq(tenantSettings.tenantId, tenants.id));
       return {
         id: tenantId,
         timezone: row?.timezone ?? 'Africa/Accra',
-        approvalPayoutThreshold: row?.payoutThreshold ?? pesewas(5000),
-        approvalDiscountThresholdBps: row?.discountThresholdBps ?? 1000,
+        requirePaymentBeforePrep: row?.requirePaymentBeforePrep ?? true,
       };
     });
   }
 
   /**
-   * Everything a counter phone needs that changed since its cursor, read from one snapshot.
-   * Never includes cost prices or aggregate money figures: several people share one phone.
+   * Everything a counter tablet needs that changed since its cursor, read from one snapshot.
+   * Never includes cost prices or aggregate money figures: several people share one tablet.
    */
   async pull(device: DeviceContext, cursor: string | undefined) {
     return withTenant(
@@ -251,8 +244,7 @@ export class SyncService {
           changes: {
             tenantSettings: await tx
               .select({
-                approvalPayoutThreshold: tenantSettings.approvalPayoutThreshold,
-                approvalDiscountThresholdBps: tenantSettings.approvalDiscountThresholdBps,
+                requirePaymentBeforePrep: tenantSettings.requirePaymentBeforePrep,
                 idleLockSeconds: tenantSettings.idleLockSeconds,
               })
               .from(tenantSettings)

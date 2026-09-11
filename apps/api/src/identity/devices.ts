@@ -30,7 +30,7 @@ class RegisterDeviceDto extends createZodDto(registerDeviceSchema) {}
 
 class RegisteredDeviceDto extends createZodDto(
   z.object({
-    /** Returned exactly once; the phone keeps it in secure storage. */
+    /** Returned exactly once; the tablet keeps it in secure storage. */
     deviceToken: z.string(),
     device: z.object({
       id: z.string(),
@@ -56,7 +56,7 @@ export class DevicesService {
   constructor(@Inject(DATABASE) private readonly database: DatabaseHandle) {}
 
   /**
-   * An owner or manager, signed in with email, registers this phone to their business once.
+   * An owner or manager, signed in with email, registers this tablet to their business once.
    * The device token is returned exactly once; only its hash is stored.
    */
   async register(user: AuthUser, input: z.infer<typeof registerDeviceSchema>) {
@@ -72,7 +72,7 @@ export class DevicesService {
           ),
         );
       if (!staff || (staff.role !== 'OWNER' && staff.role !== 'MANAGER')) {
-        throw new ForbiddenException('Only an owner or manager can register a phone');
+        throw new ForbiddenException('Only an owner or manager can register a tablet');
       }
 
       const [location] = await tx
@@ -118,7 +118,7 @@ export class DevicesService {
     });
   }
 
-  /** Staff who can unlock this phone, with the offline PIN checks it needs. */
+  /** Staff who can unlock this tablet, with the offline PIN checks it needs. */
   async roster(device: DeviceContext) {
     return withTenant(this.database.db, device.tenantId, (tx) =>
       tx

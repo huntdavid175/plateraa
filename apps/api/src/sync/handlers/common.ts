@@ -1,7 +1,5 @@
 import {
   and,
-  approvalRequests,
-  cashMovements,
   customers,
   eq,
   inArray,
@@ -9,13 +7,12 @@ import {
   items,
   orderEvents,
   orders,
-  refunds,
   sql,
   stockItems,
   stockMovements,
   type Tx,
 } from '@plateraa/db';
-import type { ApprovalAction, OrderStatus } from '@plateraa/shared';
+import type { OrderStatus } from '@plateraa/shared';
 import { ulid } from 'ulid';
 import { CommandRejected, type HandlerContext } from '../sync.types';
 
@@ -56,57 +53,6 @@ export async function recordOrderEvent(
     deviceId: ctx.device.id,
     deviceTs: deviceTime(ctx),
   });
-}
-
-interface ApprovalCheck {
-  approvalId: string | undefined;
-  actions: ApprovalAction[];
-  orderId?: string;
-  amount?: number;
-}
-
-/** True if a Manager/Owner approved this action, for this order and at least this amount. */
-export async function isApproved(tx: Tx, check: ApprovalCheck): Promise<boolean> {
-  if (!check.approvalId) return false;
-  const [approval] = await tx
-    .select()
-    .from(approvalRequests)
-    .where(
-      and(
-        eq(approvalRequests.id, check.approvalId),
-        eq(approvalRequests.status, 'APPROVED'),
-        inArray(approvalRequests.action, check.actions),
-      ),
-    );
-  if (!approval) return false;
-  if (check.orderId && approval.orderId && approval.orderId !== check.orderId) return false;
-  if (check.amount !== undefined && approval.amount !== null && approval.amount < check.amount) {
-    return false;
-  }
-  return true;
-}
-
-/**
- * For money leaving the drawer (refunds, big payouts). Refused outright if unapproved, or if the
- * approval has already been spent: the cash then shows as missing at close, attributed to whoever
- * took it.
- */
-export async function requireUnusedApproval(tx: Tx, check: ApprovalCheck): Promise<void> {
-  if (!(await isApproved(tx, check))) {
-    throw new CommandRejected('APPROVAL_REQUIRED', 'A manager or owner has to approve this');
-  }
-  const approvalId = check.approvalId!;
-  const [usedByRefund] = await tx
-    .select({ id: refunds.id })
-    .from(refunds)
-    .where(eq(refunds.approvalId, approvalId));
-  const [usedByMovement] = await tx
-    .select({ id: cashMovements.id })
-    .from(cashMovements)
-    .where(eq(cashMovements.approvalId, approvalId));
-  if (usedByRefund || usedByMovement) {
-    throw new CommandRejected('APPROVAL_ALREADY_USED', 'That approval has already been used');
-  }
 }
 
 /** Finds a customer by phone, or creates them. Returns the customer id. */

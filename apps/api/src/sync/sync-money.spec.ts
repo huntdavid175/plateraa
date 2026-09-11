@@ -1,17 +1,16 @@
 import type { NestExpressApplication } from '@nestjs/platform-express';
 import {
-  approvalRequests,
   channelCommissions,
   customers,
   eq,
-  expenses,
   items,
+  orders,
   platformReceivables,
   stockItems,
+  tenantSettings,
   withTenant,
   type Database,
 } from '@plateraa/db';
-import { pesewas, type ApprovalAction } from '@plateraa/shared';
 import request from 'supertest';
 import { ulid } from 'ulid';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
@@ -22,8 +21,10 @@ import { syncClient } from '../test/sync-client';
 import { createTestApp, hasDatabase } from '../test/test-app';
 
 /**
- * Money, the cash drawer and stock, pushed the way a phone would, in one story. The drawer:
- * GH₵50 float, +GH₵90 cash, −GH₵90 refunded, −GH₵20 payout, so GH₵30 expected at close.
+ * Money, the cash drawer and stock, pushed the way a tablet would, in one story, with pay before
+ * prep on (the default). The drawer: GH₵50 float, +GH₵90 and +GH₵10 cash, −GH₵20 drop, +GH₵5
+ * pay-in, so GH₵135 expected at close. The cancelled order's GH₵10 stays in the drawer: refunds
+ * are paid back from outside it.
  */
 describe.skipIf(!hasDatabase())('sync: money, drawer and stock (against Neon)', () => {
   let app: NestExpressApplication;
@@ -55,26 +56,6 @@ describe.skipIf(!hasDatabase())('sync: money, drawer and stock (against Neon)', 
   const inTenant = <T>(fn: Parameters<typeof withTenant<T>>[2]) =>
     withTenant(db, vendor.tenantId, fn);
 
-  async function approve(action: ApprovalAction, amount: number, orderId?: string) {
-    const id = ulid();
-    await inTenant((tx) =>
-      tx.insert(approvalRequests).values({
-        id,
-        tenantId: vendor.tenantId,
-        action,
-        amount: pesewas(amount),
-        orderId: orderId ?? null,
-        requestedBy: vendor.ownerStaffId,
-        status: 'APPROVED',
-        method: 'ON_SITE_PIN',
-        decidedBy: vendor.ownerStaffId,
-        decidedAt: new Date(),
-        expiresAt: new Date(Date.now() + 120_000),
-      }),
-    );
-    return id;
-  }
-
   beforeAll(async () => {
     app = await createTestApp(loadEnv());
     db = app.get<DatabaseHandle>(DATABASE).db;
@@ -89,23 +70,24 @@ describe.skipIf(!hasDatabase())('sync: money, drawer and stock (against Neon)', 
   });
 
   let paidOrder: ReturnType<typeof order>;
-  const refund = (approvalId: string, amount: number) =>
-    sync.command('refund.create_cash', {
-      refundId: ulid(),
-      orderId: paidOrder.payload.orderId,
-      shiftId,
-      amount,
-      reason: 'Food was cold',
-      approvalId,
-    });
 
-  it('opens a drawer and takes cash, showing the change', async () => {
+  it('keeps an unpaid order away from the kitchen', async () => {
     expect(await sync.pushOne(sync.command('shift.open', { shiftId, float: 5000 }))).toMatchObject({
       status: 'APPLIED',
     });
     paidOrder = order([line(menu.jollof, 2, 4500)]);
-    const [created, paid] = await sync.push(
-      paidOrder,
+    expect(await sync.pushOne(paidOrder)).toMatchObject({
+      status: 'APPLIED',
+      result: { status: 'CONFIRMED' },
+    });
+    const tooEarly = await sync.pushOne(
+      sync.command('order.set_status', { orderId: paidOrder.payload.orderId, status: 'PREPARING' }),
+    );
+    expect(tooEarly).toMatchObject({ status: 'REJECTED', error: { code: 'AWAITING_PAYMENT' } });
+  });
+
+  it('takes cash, shows the change and sends the order to the kitchen', async () => {
+    const paid = await sync.pushOne(
       sync.command('payment.record_cash', {
         paymentId: ulid(),
         orderId: paidOrder.payload.orderId,
@@ -114,14 +96,13 @@ describe.skipIf(!hasDatabase())('sync: money, drawer and stock (against Neon)', 
         tendered: 10_000,
       }),
     );
-    expect(created).toMatchObject({ status: 'APPLIED' });
     expect(paid).toMatchObject({
       status: 'APPLIED',
-      result: { amountPaid: 9000, outstanding: 0, change: 1000 },
+      result: { amountPaid: 9000, outstanding: 0, change: 1000, status: 'PREPARING' },
     });
   });
 
-  it('allows only one open drawer per phone', async () => {
+  it('allows only one open drawer per tablet', async () => {
     const second = await sync.pushOne(sync.command('shift.open', { shiftId: ulid(), float: 0 }));
     expect(second).toMatchObject({ status: 'REJECTED', error: { code: 'SHIFT_ALREADY_OPEN' } });
   });
@@ -138,74 +119,54 @@ describe.skipIf(!hasDatabase())('sync: money, drawer and stock (against Neon)', 
     expect(extra).toMatchObject({ status: 'REJECTED', error: { code: 'OVERPAYMENT' } });
   });
 
-  it('refunds only with an approval, and each approval works once', async () => {
-    expect(await sync.pushOne(refund(ulid(), 4500))).toMatchObject({
-      status: 'REJECTED',
-      error: { code: 'APPROVAL_REQUIRED' },
-    });
-    const approvalId = await approve('REFUND', 4500, paidOrder.payload.orderId);
-    expect(await sync.pushOne(refund(approvalId, 4500))).toMatchObject({
-      status: 'APPLIED',
-      result: { amountPaid: 4500 },
-    });
-    expect(await sync.pushOne(refund(approvalId, 4500))).toMatchObject({
-      status: 'REJECTED',
-      error: { code: 'APPROVAL_ALREADY_USED' },
-    });
-  });
-
-  it('cancels a paid order only once all of it is refunded', async () => {
-    const cancel = () =>
-      sync.command('order.cancel', { orderId: paidOrder.payload.orderId, reason: 'Changed mind' });
-    expect(await sync.pushOne(cancel())).toMatchObject({
-      status: 'REJECTED',
-      error: { code: 'REFUND_FIRST' },
-    });
-    const approvalId = await approve('REFUND', 4500, paidOrder.payload.orderId);
-    expect(await sync.pushOne(refund(approvalId, 4500))).toMatchObject({ status: 'APPLIED' });
-    expect(await sync.pushOne(cancel())).toMatchObject({ status: 'APPLIED' });
-  });
-
-  it('needs an approval for a big payout, and books every payout as an expense', async () => {
-    const payout = (amount: number) =>
-      sync.command('shift.cash_movement', {
-        movementId: ulid(),
+  it('cancels a paid order and leaves the money as a refund owed', async () => {
+    const sobolo = order([line(menu.sobolo, 1, 1000)]);
+    await sync.push(
+      sobolo,
+      sync.command('payment.record_cash', {
+        paymentId: ulid(),
+        orderId: sobolo.payload.orderId,
         shiftId,
-        type: 'PAYOUT',
-        amount,
-        category: 'GAS',
-        note: 'Gas refill',
-      });
-    expect(await sync.pushOne(payout(6000))).toMatchObject({
-      status: 'REJECTED',
-      error: { code: 'APPROVAL_REQUIRED' },
-    });
-
-    const small = await sync.pushOne(payout(2000));
-    expect(small).toMatchObject({ status: 'APPLIED' });
-    const [expense] = await inTenant((tx) =>
-      tx
-        .select()
-        .from(expenses)
-        .where(eq(expenses.id, small.result!.expenseId as string)),
+        amount: 1000,
+      }),
     );
-    expect(expense).toMatchObject({
-      amount: 2000,
-      category: 'GAS',
-      method: 'CASH_DRAWER',
-      spentOn: today,
+    const cancelled = await sync.pushOne(
+      sync.command('order.cancel', { orderId: sobolo.payload.orderId, reason: 'Changed mind' }),
+    );
+    expect(cancelled).toMatchObject({
+      status: 'APPLIED',
+      result: { status: 'CANCELLED', refundOwed: 1000 },
     });
+    const [saved] = await inTenant((tx) =>
+      tx.select().from(orders).where(eq(orders.id, sobolo.payload.orderId)),
+    );
+    expect(saved).toMatchObject({ status: 'CANCELLED', amountPaid: 1000 });
+  });
+
+  it('takes drops and pay-ins, but refuses payouts from the tablet', async () => {
+    const movement = (type: 'DROP' | 'PAY_IN', amount: number) =>
+      sync.command('shift.cash_movement', { movementId: ulid(), shiftId, type, amount });
+    expect(await sync.pushOne(movement('DROP', 2000))).toMatchObject({ status: 'APPLIED' });
+    expect(await sync.pushOne(movement('PAY_IN', 500))).toMatchObject({ status: 'APPLIED' });
+
+    const drop = movement('DROP', 2000);
+    const payout = { ...drop, payload: { ...drop.payload, type: 'PAYOUT' } };
+    await request(app.getHttpServer())
+      .post('/api/sync/push')
+      .set('x-device-token', vendor.deviceToken)
+      .send({ commands: [payout] })
+      .expect(400);
   });
 
   it('closes the drawer with expected, counted and the difference', async () => {
-    const closed = await sync.pushOne(sync.command('shift.close', { shiftId, counted: 2500 }));
+    const closed = await sync.pushOne(sync.command('shift.close', { shiftId, counted: 13_000 }));
     expect(closed).toMatchObject({
       status: 'APPLIED',
-      result: { expected: 3000, counted: 2500, variance: -500 },
+      result: { expected: 13_500, counted: 13_000, variance: -500 },
     });
   });
 
-  it('records a platform payment as money the platform owes, less commission', async () => {
+  it('records a platform payment as money the platform owes, and starts the order', async () => {
     await inTenant((tx) =>
       tx
         .insert(channelCommissions)
@@ -224,7 +185,10 @@ describe.skipIf(!hasDatabase())('sync: money, drawer and stock (against Neon)', 
         amount: 3000,
       }),
     );
-    expect(paid).toMatchObject({ status: 'APPLIED', result: { commissionEstimate: 600 } });
+    expect(paid).toMatchObject({
+      status: 'APPLIED',
+      result: { commissionEstimate: 600, status: 'PREPARING' },
+    });
     const [receivable] = await inTenant((tx) =>
       tx
         .select()
@@ -234,8 +198,18 @@ describe.skipIf(!hasDatabase())('sync: money, drawer and stock (against Neon)', 
     expect(receivable).toMatchObject({ source: 'BOLT_FOOD', gross: 3000, commissionEstimate: 600 });
   });
 
+  it('lets the kitchen start unpaid orders when pay-first is switched off', async () => {
+    await inTenant((tx) => tx.update(tenantSettings).set({ requirePaymentBeforePrep: false }));
+    const unpaid = order([line(menu.sobolo, 1, 1000)]);
+    await sync.pushOne(unpaid);
+    const started = await sync.pushOne(
+      sync.command('order.set_status', { orderId: unpaid.payload.orderId, status: 'PREPARING' }),
+    );
+    expect(started).toMatchObject({ status: 'APPLIED', result: { status: 'PREPARING' } });
+  });
+
   it('adds prep to today and records the difference on a raw count', async () => {
-    // 3 prepped; 2 sold, then put back when that order was cancelled.
+    // 3 prepped, 2 sold: 1 left before this count.
     const prep = await sync.pushOne(
       sync.command('stock.prep_count', {
         movementId: ulid(),
@@ -244,7 +218,7 @@ describe.skipIf(!hasDatabase())('sync: money, drawer and stock (against Neon)', 
         businessDate: today,
       }),
     );
-    expect(prep).toMatchObject({ status: 'APPLIED', result: { onHand: 13 } });
+    expect(prep).toMatchObject({ status: 'APPLIED', result: { onHand: 11 } });
 
     const riceBags = ulid();
     await inTenant((tx) =>
@@ -309,17 +283,6 @@ describe.skipIf(!hasDatabase())('sync: money, drawer and stock (against Neon)', 
         .where(eq(customers.id, first.result!.customerId as string)),
     );
     expect(customer).toMatchObject({ phone: '+233245551234', name: 'Akosua M.' });
-  });
-
-  it('creates a receipt link to share', async () => {
-    const receipt = await sync.pushOne(
-      sync.command('receipt.create_link', {
-        receiptId: ulid(),
-        orderId: paidOrder.payload.orderId,
-      }),
-    );
-    expect(receipt).toMatchObject({ status: 'APPLIED' });
-    expect(String(receipt.result!.token).length).toBeGreaterThanOrEqual(40);
   });
 
   it('gzips pull responses', async () => {

@@ -1,13 +1,13 @@
 import type { Tx } from '@plateraa/db';
-import type { Pesewas, SyncCommandOf, SyncCommandType } from '@plateraa/shared';
+import type { SyncCommandOf, SyncCommandType } from '@plateraa/shared';
 import type { ResolvedStaff } from '../identity/directories.service';
 import type { DeviceContext } from '../identity/request-context';
 
 export interface TenantInfo {
   id: string;
   timezone: string;
-  approvalPayoutThreshold: Pesewas;
-  approvalDiscountThresholdBps: number;
+  /** Pay before prep: an order can't go to the kitchen until it's fully paid (on by default). */
+  requirePaymentBeforePrep: boolean;
 }
 
 /** What shared helpers need from any command's context. */
@@ -36,8 +36,8 @@ export type CommandHandlers = { [T in SyncCommandType]: CommandHandler<T> };
 
 /**
  * The server refuses the command for a business reason. The refusal is recorded, shown on the
- * phone under "Needs attention", and never retried. Anything else that goes wrong is treated as
- * temporary: nothing is recorded and the phone tries again.
+ * tablet under "Needs attention", and never retried. Anything else that goes wrong is treated as
+ * temporary: nothing is recorded and the tablet tries again.
  */
 export class CommandRejected extends Error {
   override name = 'CommandRejected';

@@ -14,7 +14,7 @@ describe('OpenAPI document', () => {
     await app.close();
   });
 
-  it('describes every endpoint the phone depends on, with request and response shapes', () => {
+  it('describes every endpoint the tablet depends on, with request and response shapes', () => {
     const document = buildOpenApiDocument(app);
     expect(Object.keys(document.paths)).toEqual(
       expect.arrayContaining([

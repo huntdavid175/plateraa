@@ -32,7 +32,7 @@ class PushResponseDto extends createZodDto(
   }),
 ) {}
 
-/** Rows are typed loosely here; the phone's local tables (Phase 2) give them their shape. */
+/** Rows are typed loosely here; the tablet's local tables (Phase 2) give them their shape. */
 class PullResponseDto extends createZodDto(
   z.object({
     cursor: z.string(),
@@ -41,7 +41,7 @@ class PullResponseDto extends createZodDto(
 ) {}
 
 /**
- * Authenticated by the phone itself, not a PIN session, so queued sales still upload while the
+ * Authenticated by the tablet itself, not a PIN session, so queued sales still upload while the
  * screen is locked. Each command says who did it and is checked against their permissions.
  */
 @Controller('sync')

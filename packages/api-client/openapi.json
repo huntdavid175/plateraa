@@ -622,13 +622,13 @@
                 "orders.take",
                 "orders.cancel",
                 "payments.record",
-                "refunds.request",
-                "discounts.apply",
                 "shift.operate",
                 "shift.own_cash.view",
                 "stock.count",
                 "deliveries.update",
-                "approvals.grant",
+                "refunds.record",
+                "payouts.record",
+                "discounts.apply",
                 "catalog.manage",
                 "staff.manage",
                 "expenses.manage",
@@ -770,8 +770,6 @@
                           "enum": [
                             "POS",
                             "PHONE",
-                            "WHATSAPP",
-                            "INSTAGRAM",
                             "STOREFRONT",
                             "BOLT_FOOD",
                             "CHOWDECK",
@@ -842,56 +840,6 @@
                           "type": "string",
                           "minLength": 1,
                           "maxLength": 300
-                        },
-                        "discount": {
-                          "oneOf": [
-                            {
-                              "type": "object",
-                              "properties": {
-                                "kind": {
-                                  "type": "string",
-                                  "enum": [
-                                    "percent"
-                                  ]
-                                },
-                                "bps": {
-                                  "type": "integer",
-                                  "minimum": 1,
-                                  "maximum": 10000
-                                }
-                              },
-                              "required": [
-                                "kind",
-                                "bps"
-                              ]
-                            },
-                            {
-                              "type": "object",
-                              "properties": {
-                                "kind": {
-                                  "type": "string",
-                                  "enum": [
-                                    "amount"
-                                  ]
-                                },
-                                "amount": {
-                                  "type": "integer",
-                                  "exclusiveMinimum": true,
-                                  "maximum": 9007199254740991,
-                                  "minimum": 0
-                                }
-                              },
-                              "required": [
-                                "kind",
-                                "amount"
-                              ]
-                            }
-                          ]
-                        },
-                        "approvalId": {
-                          "type": "string",
-                          "format": "ulid",
-                          "pattern": "^[0-7][0-9A-HJKMNP-TV-Za-hjkmnp-tv-z]{25}$"
                         },
                         "lines": {
                           "minItems": 1,
@@ -976,7 +924,8 @@
                         "source",
                         "type",
                         "lines"
-                      ]
+                      ],
+                      "additionalProperties": false
                     }
                   },
                   "required": [
@@ -1099,63 +1048,13 @@
                               "unitPrice"
                             ]
                           }
-                        },
-                        "discount": {
-                          "oneOf": [
-                            {
-                              "type": "object",
-                              "properties": {
-                                "kind": {
-                                  "type": "string",
-                                  "enum": [
-                                    "percent"
-                                  ]
-                                },
-                                "bps": {
-                                  "type": "integer",
-                                  "minimum": 1,
-                                  "maximum": 10000
-                                }
-                              },
-                              "required": [
-                                "kind",
-                                "bps"
-                              ]
-                            },
-                            {
-                              "type": "object",
-                              "properties": {
-                                "kind": {
-                                  "type": "string",
-                                  "enum": [
-                                    "amount"
-                                  ]
-                                },
-                                "amount": {
-                                  "type": "integer",
-                                  "exclusiveMinimum": true,
-                                  "maximum": 9007199254740991,
-                                  "minimum": 0
-                                }
-                              },
-                              "required": [
-                                "kind",
-                                "amount"
-                              ]
-                            }
-                          ],
-                          "nullable": true
-                        },
-                        "approvalId": {
-                          "type": "string",
-                          "format": "ulid",
-                          "pattern": "^[0-7][0-9A-HJKMNP-TV-Za-hjkmnp-tv-z]{25}$"
                         }
                       },
                       "required": [
                         "orderId",
                         "lines"
-                      ]
+                      ],
+                      "additionalProperties": false
                     }
                   },
                   "required": [
@@ -1375,11 +1274,6 @@
                           "type": "string",
                           "minLength": 1,
                           "maxLength": 200
-                        },
-                        "approvalId": {
-                          "type": "string",
-                          "format": "ulid",
-                          "pattern": "^[0-7][0-9A-HJKMNP-TV-Za-hjkmnp-tv-z]{25}$"
                         }
                       },
                       "required": [
@@ -1564,94 +1458,6 @@
                     "type": {
                       "type": "string",
                       "enum": [
-                        "refund.create_cash"
-                      ]
-                    },
-                    "payload": {
-                      "type": "object",
-                      "properties": {
-                        "refundId": {
-                          "type": "string",
-                          "format": "ulid",
-                          "pattern": "^[0-7][0-9A-HJKMNP-TV-Za-hjkmnp-tv-z]{25}$"
-                        },
-                        "orderId": {
-                          "type": "string",
-                          "format": "ulid",
-                          "pattern": "^[0-7][0-9A-HJKMNP-TV-Za-hjkmnp-tv-z]{25}$"
-                        },
-                        "paymentId": {
-                          "type": "string",
-                          "format": "ulid",
-                          "pattern": "^[0-7][0-9A-HJKMNP-TV-Za-hjkmnp-tv-z]{25}$"
-                        },
-                        "shiftId": {
-                          "type": "string",
-                          "format": "ulid",
-                          "pattern": "^[0-7][0-9A-HJKMNP-TV-Za-hjkmnp-tv-z]{25}$"
-                        },
-                        "amount": {
-                          "type": "integer",
-                          "exclusiveMinimum": true,
-                          "maximum": 9007199254740991,
-                          "minimum": 0
-                        },
-                        "reason": {
-                          "type": "string",
-                          "minLength": 1,
-                          "maxLength": 200
-                        },
-                        "approvalId": {
-                          "type": "string",
-                          "format": "ulid",
-                          "pattern": "^[0-7][0-9A-HJKMNP-TV-Za-hjkmnp-tv-z]{25}$"
-                        }
-                      },
-                      "required": [
-                        "refundId",
-                        "orderId",
-                        "shiftId",
-                        "amount",
-                        "reason",
-                        "approvalId"
-                      ]
-                    }
-                  },
-                  "required": [
-                    "id",
-                    "deviceSeq",
-                    "deviceTs",
-                    "staffId",
-                    "type",
-                    "payload"
-                  ]
-                },
-                {
-                  "type": "object",
-                  "properties": {
-                    "id": {
-                      "type": "string",
-                      "format": "ulid",
-                      "pattern": "^[0-7][0-9A-HJKMNP-TV-Za-hjkmnp-tv-z]{25}$"
-                    },
-                    "deviceSeq": {
-                      "type": "integer",
-                      "minimum": 0,
-                      "maximum": 9007199254740991
-                    },
-                    "deviceTs": {
-                      "type": "string",
-                      "format": "date-time",
-                      "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$"
-                    },
-                    "staffId": {
-                      "type": "string",
-                      "format": "ulid",
-                      "pattern": "^[0-7][0-9A-HJKMNP-TV-Za-hjkmnp-tv-z]{25}$"
-                    },
-                    "type": {
-                      "type": "string",
-                      "enum": [
                         "shift.open"
                       ]
                     },
@@ -1729,7 +1535,6 @@
                         "type": {
                           "type": "string",
                           "enum": [
-                            "PAYOUT",
                             "DROP",
                             "PAY_IN"
                           ]
@@ -1740,32 +1545,10 @@
                           "maximum": 9007199254740991,
                           "minimum": 0
                         },
-                        "category": {
-                          "type": "string",
-                          "enum": [
-                            "INGREDIENTS",
-                            "GAS",
-                            "PACKAGING",
-                            "TRANSPORT",
-                            "RENT",
-                            "ELECTRICITY",
-                            "WATER",
-                            "SALARIES",
-                            "AIRTIME_DATA",
-                            "RIDER_PAYMENTS",
-                            "MARKETING",
-                            "OTHER"
-                          ]
-                        },
                         "note": {
                           "type": "string",
                           "minLength": 1,
                           "maxLength": 200
-                        },
-                        "approvalId": {
-                          "type": "string",
-                          "format": "ulid",
-                          "pattern": "^[0-7][0-9A-HJKMNP-TV-Za-hjkmnp-tv-z]{25}$"
                         }
                       },
                       "required": [
@@ -2099,159 +1882,6 @@
                       "required": [
                         "customerId",
                         "phone"
-                      ]
-                    }
-                  },
-                  "required": [
-                    "id",
-                    "deviceSeq",
-                    "deviceTs",
-                    "staffId",
-                    "type",
-                    "payload"
-                  ]
-                },
-                {
-                  "type": "object",
-                  "properties": {
-                    "id": {
-                      "type": "string",
-                      "format": "ulid",
-                      "pattern": "^[0-7][0-9A-HJKMNP-TV-Za-hjkmnp-tv-z]{25}$"
-                    },
-                    "deviceSeq": {
-                      "type": "integer",
-                      "minimum": 0,
-                      "maximum": 9007199254740991
-                    },
-                    "deviceTs": {
-                      "type": "string",
-                      "format": "date-time",
-                      "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$"
-                    },
-                    "staffId": {
-                      "type": "string",
-                      "format": "ulid",
-                      "pattern": "^[0-7][0-9A-HJKMNP-TV-Za-hjkmnp-tv-z]{25}$"
-                    },
-                    "type": {
-                      "type": "string",
-                      "enum": [
-                        "receipt.create_link"
-                      ]
-                    },
-                    "payload": {
-                      "type": "object",
-                      "properties": {
-                        "receiptId": {
-                          "type": "string",
-                          "format": "ulid",
-                          "pattern": "^[0-7][0-9A-HJKMNP-TV-Za-hjkmnp-tv-z]{25}$"
-                        },
-                        "orderId": {
-                          "type": "string",
-                          "format": "ulid",
-                          "pattern": "^[0-7][0-9A-HJKMNP-TV-Za-hjkmnp-tv-z]{25}$"
-                        }
-                      },
-                      "required": [
-                        "receiptId",
-                        "orderId"
-                      ]
-                    }
-                  },
-                  "required": [
-                    "id",
-                    "deviceSeq",
-                    "deviceTs",
-                    "staffId",
-                    "type",
-                    "payload"
-                  ]
-                },
-                {
-                  "type": "object",
-                  "properties": {
-                    "id": {
-                      "type": "string",
-                      "format": "ulid",
-                      "pattern": "^[0-7][0-9A-HJKMNP-TV-Za-hjkmnp-tv-z]{25}$"
-                    },
-                    "deviceSeq": {
-                      "type": "integer",
-                      "minimum": 0,
-                      "maximum": 9007199254740991
-                    },
-                    "deviceTs": {
-                      "type": "string",
-                      "format": "date-time",
-                      "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$"
-                    },
-                    "staffId": {
-                      "type": "string",
-                      "format": "ulid",
-                      "pattern": "^[0-7][0-9A-HJKMNP-TV-Za-hjkmnp-tv-z]{25}$"
-                    },
-                    "type": {
-                      "type": "string",
-                      "enum": [
-                        "approval.record_offline_code"
-                      ]
-                    },
-                    "payload": {
-                      "type": "object",
-                      "properties": {
-                        "approvalId": {
-                          "type": "string",
-                          "format": "ulid",
-                          "pattern": "^[0-7][0-9A-HJKMNP-TV-Za-hjkmnp-tv-z]{25}$"
-                        },
-                        "action": {
-                          "type": "string",
-                          "enum": [
-                            "REFUND",
-                            "PAYOUT",
-                            "DISCOUNT",
-                            "PRICE_OVERRIDE"
-                          ]
-                        },
-                        "approverId": {
-                          "type": "string",
-                          "format": "ulid",
-                          "pattern": "^[0-7][0-9A-HJKMNP-TV-Za-hjkmnp-tv-z]{25}$"
-                        },
-                        "code": {
-                          "type": "string",
-                          "pattern": "^\\d{6}$"
-                        },
-                        "codeWindow": {
-                          "type": "integer",
-                          "minimum": 0,
-                          "maximum": 9007199254740991
-                        },
-                        "amount": {
-                          "type": "integer",
-                          "exclusiveMinimum": true,
-                          "maximum": 9007199254740991,
-                          "minimum": 0
-                        },
-                        "discountBps": {
-                          "type": "integer",
-                          "minimum": 1,
-                          "maximum": 10000
-                        },
-                        "orderId": {
-                          "type": "string",
-                          "format": "ulid",
-                          "pattern": "^[0-7][0-9A-HJKMNP-TV-Za-hjkmnp-tv-z]{25}$"
-                        }
-                      },
-                      "required": [
-                        "approvalId",
-                        "action",
-                        "approverId",
-                        "code",
-                        "codeWindow"
                       ]
                     }
                   },

@@ -14,12 +14,13 @@ export const VENDOR_TYPES = [
 ] as const;
 export type VendorType = (typeof VENDOR_TYPES)[number];
 
-/** Where an order came from. POS = typed in at the counter. */
+/**
+ * Where an order came from. POS = typed in at the counter. No WhatsApp or Instagram: vendors put
+ * their storefront link there, so those customers order on the storefront.
+ */
 export const ORDER_SOURCES = [
   'POS',
   'PHONE',
-  'WHATSAPP',
-  'INSTAGRAM',
   'STOREFRONT',
   'BOLT_FOOD',
   'CHOWDECK',

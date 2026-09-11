@@ -12,7 +12,7 @@ const envSchema = z.object({
   DATABASE_URL_DIRECT: z.url(),
   BETTER_AUTH_SECRET: z.string().min(32),
   BETTER_AUTH_URL: z.url(),
-  /** Signs the 15-minute PIN session tokens the phone app uses. */
+  /** Signs the 15-minute PIN session tokens the tablet app uses. */
   SESSION_SIGNING_SECRET: z.string().min(32),
   /** Comma-separated browser origins allowed to call the auth endpoints (the dashboard). */
   TRUSTED_ORIGINS: z

@@ -178,7 +178,7 @@ describe.skipIf(!hasDatabase())('sync (against Neon)', () => {
     expect(next.changes.categories).toEqual([]);
   });
 
-  it('needs a registered phone', async () => {
+  it('needs a registered tablet', async () => {
     await request(server)
       .post('/api/sync/push')
       .send({ commands: [walkIn([line(menu.sobolo, 1, 1000)])] })

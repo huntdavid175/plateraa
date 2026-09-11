@@ -40,6 +40,8 @@ export const tenantSettings = pgTable('tenant_settings', {
     .default(sql`5000`),
   approvalDiscountThresholdBps: integer().notNull().default(1000),
   idleLockSeconds: integer().notNull().default(180),
+  /** Pay before prep: an order doesn't go to the kitchen until it's fully paid. */
+  requirePaymentBeforePrep: boolean().notNull().default(true),
   updatedAt: timestamp({ withTimezone: true })
     .notNull()
     .defaultNow()

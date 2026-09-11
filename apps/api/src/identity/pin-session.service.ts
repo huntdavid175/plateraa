@@ -13,7 +13,7 @@ const AUDIENCE = 'plateraa:device';
 export const PIN_SESSION_MINUTES = 15;
 
 /**
- * Short-lived tokens for a staff member unlocked on a specific phone. Signed with HS256: only
+ * Short-lived tokens for a staff member unlocked on a specific tablet. Signed with HS256: only
  * this API issues and verifies them. Permissions aren't baked in; they're re-read on every
  * request, so a role change applies immediately.
  */

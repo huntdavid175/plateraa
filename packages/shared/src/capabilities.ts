@@ -3,15 +3,15 @@ export type Role = (typeof ROLES)[number];
 
 export const CAPABILITIES = [
   'orders.take', // create, edit before prep, advance, hold/resume
-  'orders.cancel', // cancelling a paid order is a refund and needs approval
+  'orders.cancel', // a cancelled paid order leaves a refund owed for a manager to record
   'payments.record',
-  'refunds.request',
-  'discounts.apply', // above the owner's threshold, needs approval
-  'shift.operate', // open/close own drawer, drops, payout requests
+  'shift.operate', // open/close own drawer, drops, pay-ins
   'shift.own_cash.view', // cash figures for the user's own shift only
   'stock.count', // prep counts, raw counts, sold-out toggle
   'deliveries.update',
-  'approvals.grant',
+  'refunds.record', // dashboard: record money given back by hand
+  'payouts.record', // dashboard: record cash paid out of a drawer
+  'discounts.apply', // dashboard: discount an unpaid order
   'catalog.manage',
   'staff.manage',
   'expenses.manage',
@@ -21,12 +21,11 @@ export const CAPABILITIES = [
 ] as const;
 export type Capability = (typeof CAPABILITIES)[number];
 
+/** What a cashier or cook can do on the tablet. Money never leaves the drawer through them. */
 const STAFF_CAPABILITIES: readonly Capability[] = [
   'orders.take',
   'orders.cancel',
   'payments.record',
-  'refunds.request',
-  'discounts.apply',
   'shift.operate',
   'shift.own_cash.view',
   'stock.count',
@@ -36,7 +35,9 @@ const ROLE_CAPABILITIES: Record<Role, readonly Capability[]> = {
   OWNER: CAPABILITIES,
   MANAGER: [
     ...STAFF_CAPABILITIES,
-    'approvals.grant',
+    'refunds.record',
+    'payouts.record',
+    'discounts.apply',
     'catalog.manage',
     'staff.manage',
     'expenses.manage',

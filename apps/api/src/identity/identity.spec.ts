@@ -8,7 +8,7 @@ import { createTestApp, hasDatabase } from '../test/test-app';
 
 /**
  * The whole identity journey against Neon: owner signs up, creates a business, registers a
- * phone, adds a cashier, and PINs unlock (and lock) as they should. Skipped without a database.
+ * tablet, adds a cashier, and PINs unlock (and lock) as they should. Skipped without a database.
  */
 describe.skipIf(!hasDatabase())('identity (against Neon)', () => {
   let app: NestExpressApplication;
@@ -86,7 +86,7 @@ describe.skipIf(!hasDatabase())('identity (against Neon)', () => {
       .expect(400);
   });
 
-  it('sets the owner PIN and registers a phone', async () => {
+  it('sets the owner PIN and registers a tablet', async () => {
     await dashboard(request(server).put(`/api/staff/${owner.staffId}/pin`))
       .send({ pin: '482913' })
       .expect(204);
@@ -94,7 +94,7 @@ describe.skipIf(!hasDatabase())('identity (against Neon)', () => {
     const res = await request(server)
       .post('/api/devices/register')
       .set('Authorization', `Bearer ${owner.session}`)
-      .send({ tenantId: owner.tenantId, name: 'Counter phone' })
+      .send({ tenantId: owner.tenantId, name: 'Counter tablet' })
       .expect(201);
     deviceToken = res.body.deviceToken;
     expect(res.body.device.code).toBe('A');
@@ -107,7 +107,7 @@ describe.skipIf(!hasDatabase())('identity (against Neon)', () => {
     expect(ownerRow.pinVerifier).toMatch(/^pbkdf2-sha256\$/);
   });
 
-  it('adds a cashier who can unlock the phone but not manage staff', async () => {
+  it('adds a cashier who can unlock the tablet but not manage staff', async () => {
     const created = await dashboard(request(server).post('/api/staff'))
       .send({ displayName: 'Kofi', role: 'STAFF', pin: '305871' })
       .expect(201);
@@ -150,7 +150,7 @@ describe.skipIf(!hasDatabase())('identity (against Neon)', () => {
       .expect(403);
   });
 
-  it('rejects phones that are not registered', async () => {
+  it('rejects tablets that are not registered', async () => {
     await request(server)
       .post('/api/sessions/pin')
       .set('x-device-token', 'not-a-real-device-token')

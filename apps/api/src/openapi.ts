@@ -3,7 +3,7 @@ import { DocumentBuilder, SwaggerModule, type OpenAPIObject } from '@nestjs/swag
 import { cleanupOpenApiDoc } from 'nestjs-zod';
 
 /**
- * The API contract. The typed clients for the phone, dashboard and storefront are generated from
+ * The API contract. The typed clients for the tablet, dashboard and storefront are generated from
  * it (`pnpm --filter @plateraa/api openapi`, then `pnpm --filter @plateraa/api-client generate`).
  * Better Auth's /api/auth/* routes aren't included; clients use Better Auth's own client for those.
  */

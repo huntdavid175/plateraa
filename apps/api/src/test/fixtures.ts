@@ -20,7 +20,7 @@ export interface Vendor {
 
 export const OWNER_PIN = '482913';
 
-/** Signs up an owner, creates their business, sets their PIN and registers a phone. */
+/** Signs up an owner, creates their business, sets their PIN and registers a tablet. */
 export async function setUpVendor(server: Server, name = 'Ama'): Promise<Vendor> {
   const signUp = await request(server)
     .post('/api/auth/sign-up/email')
@@ -50,7 +50,7 @@ export async function setUpVendor(server: Server, name = 'Ama'): Promise<Vendor>
   const device = await request(server)
     .post('/api/devices/register')
     .set('Authorization', `Bearer ${session}`)
-    .send({ tenantId, name: 'Counter phone' })
+    .send({ tenantId, name: 'Counter tablet' })
     .expect(201);
 
   return {

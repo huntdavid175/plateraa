@@ -123,7 +123,7 @@ export class StaffService {
   }
 }
 
-/** Works from the dashboard (email login + x-tenant-id) or a phone (device token + PIN session). */
+/** Works from the dashboard (email login + x-tenant-id) or a tablet (device token + PIN session). */
 @Controller('staff')
 @ApiBearerAuth()
 @ApiSecurity('device')

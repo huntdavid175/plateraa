@@ -13,7 +13,7 @@ export interface PushResultBody {
   error?: { code: string; message: string };
 }
 
-/** Builds commands the way a phone does (ULID ids, rising device sequence) and pushes them. */
+/** Builds commands the way a tablet does (ULID ids, rising device sequence) and pushes them. */
 export function syncClient(server: Server, vendor: Vendor) {
   let seq = 0;
 

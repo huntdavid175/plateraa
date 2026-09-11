@@ -15,7 +15,6 @@ const ID = {
   item: '01JZ0000000000000000000005',
   shift: '01JZ0000000000000000000006',
   payment: '01JZ0000000000000000000007',
-  approval: '01JZ0000000000000000000008',
 };
 
 function envelope<T extends SyncCommandInput['type']>(type: T) {
@@ -89,6 +88,12 @@ describe('sync commands', () => {
     ).toBe(true);
   });
 
+  it('has no WhatsApp or Instagram order source', () => {
+    for (const source of ['WHATSAPP', 'INSTAGRAM']) {
+      expect(parse({ ...walkIn, payload: { ...walkIn.payload, source } }).success).toBe(false);
+    }
+  });
+
   it('rejects fractional or negative money', () => {
     const line = walkIn.payload.lines[0];
     for (const unitPrice of [45.5, -100]) {
@@ -112,33 +117,33 @@ describe('sync commands', () => {
     );
   });
 
-  it('requires an approval on every refund', () => {
+  it('refuses refunds, payouts and discounts from the tablet', () => {
     const refund = {
-      ...envelope('refund.create_cash'),
-      payload: {
-        refundId: ID.payment,
-        orderId: ID.order,
-        shiftId: ID.shift,
-        amount: 4500,
-        reason: 'Wrong order',
-      },
+      ...walkIn,
+      type: 'refund.create_cash',
+      payload: { orderId: ID.order, amount: 4500, reason: 'Wrong order' },
     };
     expect(parse(refund).success).toBe(false);
-    expect(
-      parse({ ...refund, payload: { ...refund.payload, approvalId: ID.approval } }).success,
-    ).toBe(true);
+
+    const discounted = {
+      ...walkIn,
+      payload: { ...walkIn.payload, discount: { kind: 'percent', bps: 1000 } },
+    };
+    expect(parse(discounted).success).toBe(false);
+
+    const movement = (type: string) => ({
+      ...envelope('shift.cash_movement'),
+      payload: { movementId: ID.payment, shiftId: ID.shift, type, amount: 2000 },
+    });
+    expect(parse(movement('PAYOUT')).success).toBe(false);
+    expect(parse(movement('DROP')).success).toBe(true);
+    expect(parse(movement('PAY_IN')).success).toBe(true);
   });
 
-  it('requires an expense category on a drawer payout', () => {
-    const payout = {
-      ...envelope('shift.cash_movement'),
-      payload: { movementId: ID.payment, shiftId: ID.shift, type: 'PAYOUT', amount: 20_000 },
-    };
-    expect(parse(payout).success).toBe(false);
-    expect(parse({ ...payout, payload: { ...payout.payload, category: 'GAS' } }).success).toBe(
-      true,
-    );
-    expect(parse({ ...payout, payload: { ...payout.payload, type: 'DROP' } }).success).toBe(true);
+  it('has no receipt-link or approval commands', () => {
+    for (const type of ['receipt.create_link', 'approval.record_offline_code']) {
+      expect(parse({ ...walkIn, type }).success).toBe(false);
+    }
   });
 
   it("won't set NEW, CANCELLED or REFUNDED through set_status", () => {

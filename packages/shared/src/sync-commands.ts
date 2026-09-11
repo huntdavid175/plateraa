@@ -1,20 +1,17 @@
 import { z } from 'zod';
 import type { Capability } from './capabilities.js';
-import {
-  APPROVAL_ACTIONS,
-  CASH_MOVEMENT_TYPES,
-  DELIVERY_FEE_COLLECTORS,
-  EXPENSE_CATEGORIES,
-  ORDER_SOURCES,
-} from './enums.js';
+import { DELIVERY_FEE_COLLECTORS, ORDER_SOURCES } from './enums.js';
 import type { Pesewas } from './money.js';
 import { ORDER_STATUSES, ORDER_TYPES } from './order-state.js';
 import { normalizeGhanaPhone } from './phone.js';
 
 /**
- * Commands a device pushes to POST /sync/push. The device applies them to its own SQLite
+ * Commands a tablet pushes to POST /sync/push. The tablet applies them to its own SQLite
  * straight away; the server validates them with these schemas, applies each one idempotently
  * (keyed by the command id) and returns the authoritative result.
+ *
+ * Money never leaves the drawer through the tablet: refunds, payouts and discounts are recorded
+ * by a manager on the dashboard, so there are no commands for them here.
  */
 
 const ulid = z.ulid();
@@ -39,17 +36,12 @@ export const phoneSchema = z.string().transform((value, ctx) => {
   return phone;
 });
 
-const discountSchema = z.discriminatedUnion('kind', [
-  z.object({ kind: z.literal('percent'), bps: z.int().min(1).max(10_000) }),
-  z.object({ kind: z.literal('amount'), amount: positiveMoney }),
-]);
-
 const orderLineSchema = z.object({
   lineId: ulid,
   itemId: ulid,
   variantId: ulid.optional(),
   quantity: z.int().min(1).max(999),
-  /** Price snapshot from the device's catalog; the server checks it against price history. */
+  /** Price snapshot from the tablet's catalog; the server checks it against price history. */
   unitPrice: nonNegativeMoney,
   modifiers: z
     .array(
@@ -64,8 +56,9 @@ const orderLineSchema = z.object({
   note: text(200).optional(),
 });
 
+/** Strict: anything extra (a discount, say) is refused rather than quietly dropped. */
 const orderCreate = z
-  .object({
+  .strictObject({
     orderId: ulid,
     displayNumber: z.string().regex(/^[A-Z]?\d{1,4}$/),
     businessDate,
@@ -82,9 +75,6 @@ const orderCreate = z
       })
       .optional(),
     note: text(300).optional(),
-    discount: discountSchema.optional(),
-    /** Needed when the discount is above the owner's threshold or a price was overridden. */
-    approvalId: ulid.optional(),
     lines: z.array(orderLineSchema).min(1).max(100),
   })
   .superRefine((order, ctx) => {
@@ -111,12 +101,10 @@ const orderCreate = z
     }
   });
 
-/** Edit before prep: replaces the lines and discount wholesale. */
-const orderUpdateItems = z.object({
+/** Edit before prep: replaces the lines wholesale. Any discount a manager applied is kept. */
+const orderUpdateItems = z.strictObject({
   orderId: ulid,
   lines: z.array(orderLineSchema).min(1).max(100),
-  discount: discountSchema.nullable().optional(),
-  approvalId: ulid.optional(),
 });
 
 const orderSetStatus = z.object({
@@ -126,11 +114,10 @@ const orderSetStatus = z.object({
 
 const orderRef = z.object({ orderId: ulid });
 
-/** Cancelling a paid order is a refund, so the server requires an approval if money was taken. */
+/** A cancelled paid order leaves a refund owed; a manager records it on the dashboard. */
 const orderCancel = z.object({
   orderId: ulid,
   reason: text(200),
-  approvalId: ulid.optional(),
 });
 
 const paymentRecordCash = z
@@ -152,34 +139,16 @@ const paymentRecordPlatform = z.object({
   amount: positiveMoney,
 });
 
-/** Refunds always need a Manager/Owner approval. */
-const refundCreateCash = z.object({
-  refundId: ulid,
-  orderId: ulid,
-  paymentId: ulid.optional(),
-  shiftId: ulid,
-  amount: positiveMoney,
-  reason: text(200),
-  approvalId: ulid,
-});
-
 const shiftOpen = z.object({ shiftId: ulid, float: nonNegativeMoney });
 
-const shiftCashMovement = z
-  .object({
-    movementId: ulid,
-    shiftId: ulid,
-    type: z.enum(CASH_MOVEMENT_TYPES),
-    amount: positiveMoney,
-    /** Payouts become expenses, so they need a category. */
-    category: z.enum(EXPENSE_CATEGORIES).optional(),
-    note: text(200).optional(),
-    approvalId: ulid.optional(),
-  })
-  .refine((m) => m.type !== 'PAYOUT' || m.category !== undefined, {
-    path: ['category'],
-    message: 'A payout needs an expense category',
-  });
+/** Drops (cash taken out to the safe or the owner) and pay-ins. Payouts are dashboard-only. */
+const shiftCashMovement = z.object({
+  movementId: ulid,
+  shiftId: ulid,
+  type: z.enum(['DROP', 'PAY_IN']),
+  amount: positiveMoney,
+  note: text(200).optional(),
+});
 
 const shiftClose = z.object({ shiftId: ulid, counted: nonNegativeMoney });
 
@@ -208,24 +177,10 @@ const customerUpsert = z.object({
   notes: text(500).optional(),
 });
 
-const receiptCreateLink = z.object({ receiptId: ulid, orderId: ulid });
-
-/** An owner's offline approval code, checked on the device and again by the server on sync. */
-const approvalRecordOfflineCode = z.object({
-  approvalId: ulid,
-  action: z.enum(APPROVAL_ACTIONS),
-  approverId: ulid,
-  code: z.string().regex(/^\d{6}$/),
-  codeWindow: z.int().nonnegative(),
-  amount: positiveMoney.optional(),
-  discountBps: z.int().min(1).max(10_000).optional(),
-  orderId: ulid.optional(),
-});
-
 const envelope = {
   /** The command's own ULID: the idempotency key. */
   id: ulid,
-  /** Per-device counter, so the server can apply commands in the order they happened. */
+  /** Per-tablet counter, so the server can apply commands in the order they happened. */
   deviceSeq: z.int().nonnegative(),
   deviceTs: z.iso.datetime({ offset: true }),
   staffId: ulid,
@@ -244,7 +199,6 @@ export const syncCommandSchema = z.discriminatedUnion('type', [
   command('order.cancel', orderCancel),
   command('payment.record_cash', paymentRecordCash),
   command('payment.record_platform', paymentRecordPlatform),
-  command('refund.create_cash', refundCreateCash),
   command('shift.open', shiftOpen),
   command('shift.cash_movement', shiftCashMovement),
   command('shift.close', shiftClose),
@@ -252,8 +206,6 @@ export const syncCommandSchema = z.discriminatedUnion('type', [
   command('stock.prep_count', stockPrepCount),
   command('stock.raw_count', stockRawCount),
   command('customer.upsert', customerUpsert),
-  command('receipt.create_link', receiptCreateLink),
-  command('approval.record_offline_code', approvalRecordOfflineCode),
 ]);
 
 export const MAX_COMMANDS_PER_PUSH = 50;
@@ -264,14 +216,14 @@ export const syncPushRequestSchema = z.object({
 
 /** What the server works with, after validation (phones normalised, money branded). */
 export type SyncCommand = z.output<typeof syncCommandSchema>;
-/** What a device sends. */
+/** What a tablet sends. */
 export type SyncCommandInput = z.input<typeof syncCommandSchema>;
 export type SyncCommandType = SyncCommand['type'];
 export type SyncCommandOf<T extends SyncCommandType> = Extract<SyncCommand, { type: T }>;
 
 /**
  * The permission the staff member who did a command needs. The server checks it per command,
- * against whoever did the action, not whoever happens to be logged in when the phone syncs.
+ * against whoever did the action, not whoever happens to be logged in when the tablet syncs.
  */
 export const COMMAND_CAPABILITY: Record<SyncCommandType, Capability> = {
   'order.create': 'orders.take',
@@ -282,7 +234,6 @@ export const COMMAND_CAPABILITY: Record<SyncCommandType, Capability> = {
   'order.cancel': 'orders.cancel',
   'payment.record_cash': 'payments.record',
   'payment.record_platform': 'payments.record',
-  'refund.create_cash': 'refunds.request',
   'shift.open': 'shift.operate',
   'shift.cash_movement': 'shift.operate',
   'shift.close': 'shift.operate',
@@ -290,6 +241,4 @@ export const COMMAND_CAPABILITY: Record<SyncCommandType, Capability> = {
   'stock.prep_count': 'stock.count',
   'stock.raw_count': 'stock.count',
   'customer.upsert': 'orders.take',
-  'receipt.create_link': 'orders.take',
-  'approval.record_offline_code': 'orders.take',
 };

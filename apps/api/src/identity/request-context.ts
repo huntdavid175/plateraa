@@ -1,7 +1,7 @@
 import type { IncomingMessage } from 'node:http';
 import type { Capability, Role } from '@plateraa/shared';
 
-/** A registered phone, identified by its device token. */
+/** A registered tablet, identified by its device token. */
 export interface DeviceContext {
   id: string;
   tenantId: string;
@@ -18,7 +18,7 @@ export interface AuthUser {
 
 /** Who is acting, in which business, with what permissions. Set by ActorGuard. */
 export interface Actor {
-  /** 'device': a PIN session on a registered phone. 'dashboard': an owner/manager login. */
+  /** 'device': a PIN session on a registered tablet. 'dashboard': an owner/manager login. */
   kind: 'device' | 'dashboard';
   tenantId: string;
   staffId: string;

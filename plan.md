@@ -7,7 +7,7 @@ Full design detail: `C:\Users\user\.claude\plans\plan-mode-prompt-you-peaceful-p
 
 - [ ] **R1a Pilot-1 live**: Thu 8 Oct 2026 (1–2 friendly, mostly-cash vendors; we set them up)
 - [ ] **R1b Pilot-2 live**: Thu 22 Oct 2026 (5–10 vendors who set themselves up)
-- [ ] **R1.5 Moolre payments**: weeks 6–8 (only once Moolre + the lawyer clear it)
+- [ ] **R1.5 More Moolre payments**: weeks 6–8 (MoMo prompt, instant confirmations; vendor's own Moolre account only). Payment links ship earlier, in the pilot (§2.5)
 - [ ] **R2 Storefront + paid plan**
 - [ ] **R3 Marketing**
 - [ ] **R4 Bolt Food API**
@@ -18,19 +18,23 @@ Full design detail: `C:\Users\user\.claude\plans\plan-mode-prompt-you-peaceful-p
 
 - [ ] Open a Moolre business account
 - [ ] Get Moolre's answers **in writing**:
-  - [ ] Per-vendor wallets under our platform profile, and who legally holds the funds
-  - [ ] KYC requirements per wallet
-  - [ ] Internal-transfer fees and limits
+  - [ ] **Needed by Thu 24 Sep for pilot payment links (§2.5):** can our API access create payment links on a vendor's own merchant account? Does Moolre text the link to the customer? How long does a link stay valid?
+  - [ ] What a vendor needs to open a merchant account (Ghana Card only, or business registration too?) and how long approval takes. Every vendor needs one to join
   - [ ] Refunds and reversals
   - [ ] Webhook signing / IP allowlist
-  - [ ] How we'd collect our 2% in DIRECT mode (vendor's own merchant account)
+  - _For the split (later): per-vendor wallets and who legally holds the funds, KYC per wallet, internal-transfer fees, how we'd collect our 2% on a vendor's own account_
+- [ ] Moolre API access (sandbox + live keys) by Thu 24 Sep
+- [ ] Each R1a vendor opens their own Moolre merchant account (their KYC, their money)
 - [ ] Engage a Ghanaian fintech + data-protection lawyer (Act 987, AML, Act 843, marketing consent basis)
 - [ ] Register with the Data Protection Commission (after the lawyer's advice)
 - [ ] Apply as a Bolt Food POS integrator
 - [ ] Create a Play Console **organisation** account (needs a D-U-N-S number)
 - [ ] Buy 1–2 local 58mm Bluetooth thermal printers
-- [ ] Survey pilot vendors: phone models, Android versions, printers
+- [ ] Survey pilot vendors: tablet (or whether they need one), Android version, printer, internet (Wi-Fi / hotspot / SIM)
+- [ ] Pick 2–3 recommended budget tablets (8–10", sold in Accra, Android 10+ ideally) and buy one for testing
 - [ ] Pick the 1–2 mostly-cash vendors for R1a
+- [ ] Buy `plateraa.com` (for the API, dashboard and storefront addresses, and login emails)
+- [x] Expo account connected to EAS (10 Sep)
 
 ---
 
@@ -49,11 +53,11 @@ Full design detail: `C:\Users\user\.claude\plans\plan-mode-prompt-you-peaceful-p
 - [ ] Render services: API + worker (Frankfurt)
 - [ ] Sentry set up for api, mobile, dashboard and storefront
 
-### 1.2 Day-1 spike (on a real cheap Android, API 24–28)
+### 1.2 Day-1 spike (on a real budget Android tablet, 8–10" landscape)
 
-- [ ] Expo 57 dev build via EAS
+- [ ] Expo 57 development build via EAS (not Expo Go: op-sqlite and our native modules need it); Android package `com.plateraa.pos` (permanent once on Google Play; chosen 10 Sep)
 - [ ] op-sqlite read/write working
-- [ ] `secure-hmac` Kotlin module: `importKey`, `hmac`, `deleteKey`, `securityLevel`, `pbkdf2`
+- [ ] Native PBKDF2 for the offline PIN check (_the Keystore HMAC parts were for approval codes, now a future feature_)
 - [ ] `escpos-bt` Kotlin module stub: `listBonded`, `connect`, `write`, `disconnect`
 - [ ] Write down the results; adjust the plan if anything fails
 
@@ -84,26 +88,26 @@ Full design detail: `C:\Users\user\.claude\plans\plan-mode-prompt-you-peaceful-p
 ### 1.5 Auth & identity (`apps/api`)
 
 - [x] Better Auth mounted in NestJS, password hash switched to Argon2id
-  - _Better Auth 1.7.4 at `/api/auth/*`, bearer plugin for the phone. Argon2id at OWASP's minimum (19 MiB, 2 passes)._
+  - _Better Auth 1.7.4 at `/api/auth/*`, bearer plugin for the tablet. Argon2id at OWASP's minimum (19 MiB, 2 passes)._
 - [x] Signup → creates tenant + default location + OWNER staff member (`POST /api/onboarding/business`, `GET /api/me/businesses`)
 - [x] `POST /devices/register` (device token stored hashed); `GET /api/devices/current/staff` roster with offline PIN checks
 - [x] Staff with 6-digit PINs; obvious PINs refused (`POST /api/staff`, `PUT /api/staff/:id/pin`)
 - [x] `POST /sessions/pin`: server-side Argon2id check, attempt counter, lockout → 15-minute access token
-  - _Lockout rule shared with the phone (`pinLockout`): 30 s from the 5th wrong PIN, doubling; disabled at the 10th._
-- [x] `@RequireCap()` guard (_as `@Authorized(...caps)`: works for phone PIN sessions and dashboard logins; permissions re-read every request_)
+  - _Lockout rule shared with the tablet (`pinLockout`): 30 s from the 5th wrong PIN, doubling; disabled at the 10th._
+- [x] `@RequireCap()` guard (_as `@Authorized(...caps)`: works for tablet PIN sessions and dashboard logins; permissions re-read every request_)
   - _8 API tests pass against Neon, covering the whole journey. The built API runs as plain Node._
 - [ ] Follow-up: every request does 2–3 short transactions to Frankfurt. Measure from Ghana, then cache device lookups or merge the queries if it feels slow.
 
 ### 1.6 Sync & core API
 
 - [x] `POST /sync/push`: batches of ≤50, one transaction per command, idempotent via `sync_commands`
-  - _Authenticated by the phone (device token), not a PIN session, so queued sales upload while the screen is locked. Each command's own staff member is permission-checked (`COMMAND_CAPABILITY`). Business refusals are recorded and never retried; server errors stop the batch for a retry._
+  - _Authenticated by the tablet (device token), not a PIN session, so queued sales upload while the screen is locked. Each command's own staff member is permission-checked (`COMMAND_CAPABILITY`). Business refusals are recorded and never retried; server errors stop the batch for a retry._
 - [x] `GET /sync/pull`: xid8 cursor, filtered by what the device may hold, never includes aggregates (_one REPEATABLE READ snapshot; no cost prices, no PIN hashes_)
   - [x] gzip the response (_`compression` on every response_)
 - [x] Command handlers: orders, cash payments, paid-via-platform, cash refunds, shifts, cash movements, stock, sold-out, customers, receipt links
-  - [x] Orders: create (re-priced with `priceOrder`), edit items, status, hold/resume, cancel (refused while money is on the order); prep counts go down with each sale and sell out at zero
-  - [x] Payments (cash with change, no overpaying; platform with commission as a receivable), refunds (approval required, each approval used once), drawer open/payout/drop/close with expected vs counted, payouts booked as expenses, prep and raw counts, sold-out, customers by phone, receipt links
-  - [ ] Offline approval codes (_Phase 2.2: needs the approvers' secrets_)
+  - [x] Orders: create (re-priced with `priceOrder`), edit items, status, hold/resume, cancel (a paid order is left as a refund owed); prep counts go down with each sale and sell out at zero
+  - [x] Payments (cash with change, no overpaying; platform with commission as a receivable), drawer open/drop/pay-in/close with expected vs counted, prep and raw counts, sold-out, customers by phone (_tablet refunds, payouts, discounts and receipt links removed on 11 Sep, §2.0_)
+  - [ ] ~~Offline approval codes~~ (_approvals removed from the pilot on 10 Sep; see Later releases_)
 - [x] Price check against `price_history` (_mismatches and unapproved discounts keep the sale but add `review_reasons` for the owner_)
 - [x] `audit.record()` in the same transaction as the change (_payments, refunds, drawer movements and close, raw counts, sold-out, flagged orders_)
 - [x] OpenAPI generation → typed client
@@ -112,7 +116,29 @@ Full design detail: `C:\Users\user\.claude\plans\plan-mode-prompt-you-peaceful-p
 
 ---
 
-## Phase 2: Mobile core (Week 2: Thu 17 – Wed 23 Sep)
+## Phase 2: Tablet app core (Week 2: Thu 17 – Wed 23 Sep)
+
+_The counter device is the vendor's own budget Android tablet, 8–10" landscape, often Wi-Fi or hotspot only (decided 10 Sep)._
+
+### 2.0 Changes from the 10 Sep tablet decisions (code not updated yet; do these first when coding resumes)
+
+- [x] The tablet can't refund, pay out or discount: remove `refund.create_cash`, `PAYOUT` cash movements and order `discount` from the tablet's sync commands (the server refuses them)
+- [x] Anyone on the tablet can cancel a paid order (drop the "refund first" rule in `order.cancel`); the order shows "refund owed" until a manager records the refund on the dashboard
+- [x] Refunds are recorded only by a manager on the dashboard: money always paid back from outside the drawer (`shift_id` null, drawer untouched), full or partial up to what was paid, reason required
+  - _Tablet side done: no refund command, and the drawer's expected cash no longer counts refunds. The dashboard's "record refund" is in 3.1._
+- [x] Payouts are recorded only by a manager on the dashboard, against the tablet's open drawer (Phase 3); drops and pay-ins stay on the tablet (_tablet side done; the dashboard part is in 3.1_)
+- [x] Discounts are applied only by a manager on the dashboard (Phase 3) (_tablet orders refuse a discount; editing items keeps one a manager applied; the dashboard part is in 3.1_)
+- [x] Digital receipts are out of the pilot: remove `receipt.create_link`; printed receipts only
+- [x] Remove the approval-code handler and the approval checks in refund/payout/discount code
+- [x] Say "tablet" / "device", not "phone", in API messages
+- [x] Expo `app.json`: landscape orientation, Android package `com.plateraa.pos` (_the tablet layout itself is 2.3_)
+
+### 2.0b Changes from the 10 Sep order-channel decisions (code not updated yet)
+
+- [x] Remove `WHATSAPP` and `INSTAGRAM` from `ORDER_SOURCES` (shared enum, DB enum migration, regenerated API client). Vendors put the storefront link on their WhatsApp and Instagram, so those customers order on the storefront. Sources left: `POS`, `PHONE`, `STOREFRONT`, `BOLT_FOOD`, `CHOWDECK`, `OTHER`
+- [x] Pay before prep (_server done: setting, migration 0005, `AWAITING_PAYMENT` refusal, shared helpers for the tablet; the dashboard switch is in 3.1 and the tablet's awaiting-payment list in 2.3_): per-vendor setting `require_payment_before_prep`, **on by default**. While it's on, an order can't go to Preparing until fully paid (cash, paid via platform or payment link); an unpaid order waits as "awaiting payment" and stays off the prep queue. Pay on delivery only works with the setting off
+- [x] The payment that clears an awaiting-payment order moves it to Preparing automatically (no extra tap). Walk-ins pay as they order, so they go straight through
+- _Phone orders in the pilot are paid by payment link (§2.5, decided 10 Sep)._
 
 ### 2.1 Offline engine
 
@@ -122,34 +148,45 @@ Full design detail: `C:\Users\user\.claude\plans\plan-mode-prompt-you-peaceful-p
 - [ ] Connectivity banner + "provisional" labels on offline totals
 - [ ] "Needs attention" list for rejected commands
 
-### 2.2 Devices, PINs, approvals
+### 2.2 Devices and PINs
 
 - [ ] Device registration (Owner/Manager signs in with email once)
 - [ ] 6-digit PIN switcher: local PBKDF2 check, lockout (5 → 30 s doubling, 10 → disabled), auto-lock after 3 idle minutes
 - [ ] Add staff at the counter (≤60 s)
-- [ ] `approval_requests` API
-- [ ] On-site manager PIN approval
-- [ ] FCM push to the owner's phone + Approve/Deny screen (owner device logs in online-only)
-- [ ] Offline approval code: the owner app shows a 2-minute code, the counter phone checks it with a Keystore key, each code works once
-- [ ] Server re-checks approval codes on sync; reused/expired codes rejected
 
 ### 2.3 Taking orders
 
-- [ ] Counter mode: big text tiles, modifier sheet only when required, optional phone ("Send receipt on WhatsApp?"), cash tendered → change (≤15 s)
-- [ ] Remote order entry: source, pickup/delivery, address + zone → fee
-- [ ] Inbox sorted by urgency, unpaid orders flagged hard
+- [ ] Landscape tablet layout (8" minimum): order entry and prep queue side by side
+- [ ] Counter mode: big text tiles, modifier sheet only when required, optional customer phone, cash tendered → change (≤15 s)
+- [ ] Phone order entry (typed in like a walk-in, caller's number required) and hand-typed Bolt/Chowdeck orders: source, pickup/delivery, address + zone → fee
+- [ ] Inbox sorted by urgency; unpaid orders sit in an "awaiting payment" list and don't reach the prep queue while pay-before-prep is on
 - [ ] Prep queue: readable from 2 m, amber/red timers, tap to advance, optional Kitchen/Drinks split
-- [ ] Hold / resume / edit before prep / cancel with reason (cancelling a paid order = refund = needs approval)
-- [ ] Payments: cash, paid via platform
+- [ ] Hold / resume / edit before prep / cancel with a reason (anyone can cancel a paid order; it then shows "refund owed" until a manager records the refund)
+- [ ] Payments: cash, paid via platform, payment link (§2.5)
 
 ### 2.4 Cash & stock
 
 - [ ] Open shift with float
-- [ ] Drops; payouts (auto-creates the expense; approval above GH₵50)
+- [ ] Drops and pay-ins (payouts are recorded by a manager on the dashboard)
 - [ ] Close shift: expected vs counted vs variance, own shift only
 - [ ] One-tap sold-out toggle
 - [ ] Morning prep counts that count down on each sale → auto sold-out at 0
 - [ ] Owner summaries held in memory only, cleared when the PIN session ends
+
+### 2.5 Payment links (pilot; added 10 Sep)
+
+_Money goes straight into each vendor's own Moolre merchant account and never passes through us (decided 10 Sep: vendors without their own Moolre account aren't onboarded). No wallets and no split, so the wallet and legal gates don't block this; still worth a quick confirmation from the lawyer. How we take our 2% is decided later (Later releases: the split)._
+
+- [ ] Moolre sandbox spike: create a link, pay it, receive the webhook, confirm via Payment Status, check the `TP14` first-payer OTP step (_moved up from Phase 5_)
+- [ ] `PaymentProvider` interface + Moolre adapter (create link, check status); each vendor's Moolre account details stored per tenant, secrets encrypted
+- [ ] New payment method for link payments, PENDING → CONFIRMED; only confirmed money counts as money in
+- [ ] Tablet (online only): "Send payment link" on an unpaid order → server creates a link for what's still owed → sent to the customer's number
+  - _How the link reaches the caller is settled in the spike: Moolre's own SMS if it has one, otherwise an SMS provider. WhatsApp from the tablet only works if the tablet has WhatsApp, and many have no SIM._
+- [ ] Webhook receiver → store the raw payload → confirm with Moolre's status check (webhooks aren't signed) → record the payment → order moves to Preparing (§2.0b). A job re-checks pending links every few minutes in case a webhook is missed
+- [ ] The tablet sees the payment on its next pull (≤30 s); push (SSE/FCM) stays in R1.5
+- [ ] If the caller doesn't pay or the link expires, the order stays in "awaiting payment" and staff can send a new link
+- [ ] Money that arrives on a cancelled order shows as "refund owed"; a manager records the refund on the dashboard and the vendor sends the MoMo back by hand (Moolre has no refund endpoint)
+- _Deadline: Moolre API access by Thu 24 Sep. If it isn't there, R1a goes live without links (call orders wait for cash) and links follow in R1b._
 
 ---
 
@@ -158,12 +195,13 @@ Full design detail: `C:\Users\user\.claude\plans\plan-mode-prompt-you-peaceful-p
 ### 3.1 Dashboard
 
 - [ ] App shell (Vite, TanStack Query/Table, shadcn themed hard)
-- [ ] Onboarding that works in a phone browser: business → vendor type → starter template → price grid → staff & PINs → install-app QR (≤20 min)
+- [ ] Onboarding that works in a phone browser: business → vendor type → starter template → price grid → staff & PINs → connect their own Moolre account (required; we check it works) → install-app QR (≤20 min)
 - [ ] Menu CRUD: categories, items, variants, modifier groups, add-ons, prep time, station, cost price
 - [ ] Delivery zones + fees
 - [ ] Channel commissions (rate or flat; blank = shown as "Gross")
 - [ ] Staff management + revenue visibility settings (per role, per person)
-- [ ] Approval thresholds (defaults: refunds always, payouts > GH₵50, discounts > 10%)
+- [ ] Order setting: pay before prep (on by default; the owner can switch it off)
+- [ ] Manager tools: record drawer payouts against the tablet's open shift (booked as expenses); apply discounts to unpaid orders; a "refunds owed" list and recording refunds given back by hand (outside the drawer, full or partial, reason required)
 - [ ] Expenses + purchases entry (purchase = expense + stock item + qty)
 - [ ] Stock items: low-stock thresholds, raw-item counts
 
@@ -178,9 +216,8 @@ Full design detail: `C:\Users\user\.claude\plans\plan-mode-prompt-you-peaceful-p
 
 ### 3.3 Receipts & printing
 
-- [ ] `GET /public/receipts/:token` + storefront `/r/[token]` page
-- [ ] WhatsApp share (`wa.me` link) from the phone
-- [ ] ESC/POS receipt printing end to end (58mm, 32 columns)
+- [ ] ESC/POS receipt printing end to end (58mm, 32 columns): the only receipt in the pilot, so it has to be solid
+- [ ] ~~Digital receipt page and WhatsApp share~~ (_moved to Later releases on 10 Sep_)
 
 ---
 
@@ -188,7 +225,7 @@ Full design detail: `C:\Users\user\.claude\plans\plan-mode-prompt-you-peaceful-p
 
 - [ ] Offline torture script: airplane mode mid-order, kill the app mid-sync, replay a batch twice, 200 queued commands
 - [ ] Measure sync payloads (idle ≤5 KB, first full sync ≤500 KB) and APK size
-- [ ] Performance check on a 2 GB device
+- [ ] Performance check on a 2–3 GB budget tablet
 - [ ] Device heartbeat + alerts (outbox age, sync failures, 5xx, job failures)
 - [ ] Admin CLI v0: list/suspend tenants, revoke a device, reset a PIN, export the audit log
 - [ ] All items in the **R1a definition of done** below are green
@@ -203,31 +240,19 @@ Full design detail: `C:\Users\user\.claude\plans\plan-mode-prompt-you-peaceful-p
 - [ ] Polish self-serve onboarding + measure time to first order
 - [ ] Play closed-testing track set up
 - [ ] Onboard 5–10 vendors
-- [ ] (If Moolre has replied) `PaymentProvider` sandbox spike: wallet creation, MoMo prompt + `TP14` OTP step, payment link, webhook → status check, internal transfer
+- [ ] Moolre spike for R1.5: MoMo prompt on a vendor's own account (_links moved to the pilot, §2.5; wallets and transfers wait for the split_)
 
 ---
 
-## Phase 6: R1.5 Moolre payments (Weeks 6–8, gated)
+## Phase 6: R1.5 More Moolre payments (Weeks 6–8)
 
-**Gate (both required):**
+_Vendor's own Moolre account only (decided 10 Sep): customer money never passes through us, so this no longer waits on the wallet and legal gates. Those now gate only the split (Later releases)._
 
-- [ ] Moolre's written confirmation that per-vendor wallets are allowed
-- [ ] Legal opinion received
-
-**Build:**
-
-- [ ] `settlement_accounts` with effective dates (WALLET / DIRECT / POOLED)
-- [ ] Double-entry ledger + fast-check invariants
-- [ ] Fee snapshots per payment (provider / platform / net, rates in bps)
-- [ ] Fee-bearer setting (vendor absorbs, or a visible customer service fee)
-- [ ] MoMo prompt + payment links from the phone
-- [ ] Webhook receiver → store raw payload → confirm via Payment Status
+- [ ] MoMo prompt from the tablet (including the `TP14` first-payer OTP step)
 - [ ] SSE + FCM for payment confirmations
-- [ ] Commission sweep job (internal transfer, idempotent)
-- [ ] Payout jobs
-- [ ] Refunds via Transfer (vendor bears the 1% + 2%)
-- [ ] Daily reconciliation → `recon_exceptions`
-- [ ] KYC: Ghana Card + name check on the payout MoMo number
+- [ ] Fee snapshots per payment (Moolre's fee / net, rates in bps)
+- [ ] Fee-bearer setting (vendor absorbs Moolre's fee, or a visible customer service fee)
+- [ ] Daily reconciliation against Moolre → `recon_exceptions`
 - [ ] Super-admin console v1
 - [ ] Photo-menu import
 
@@ -235,34 +260,39 @@ Full design detail: `C:\Users\user\.claude\plans\plan-mode-prompt-you-peaceful-p
 
 ## Later releases (plan in detail when we get there)
 
-- [ ] **R2**: Storefront PWA + paid plan (prepaid 30-day MoMo passes)
+- [ ] **R2**: Storefront PWA + paid plan (prepaid 30-day MoMo passes). The storefront is the one link vendors put on WhatsApp and Instagram; customers pay online before the order goes to the kitchen
 - [ ] **R3**: Marketing: segments, composer, templates, promo codes, attribution, opt-outs, spend caps
 - [ ] **R4**: Bolt Food API adapter (after integrator approval)
+- [ ] **Future: the split.** How Plateraa takes its 2% on Moolre payments. Until it's decided, customer money goes only into each vendor's own Moolre account (10 Sep). Gated on Moolre's written answers + the legal opinion. Work parked here from the old R1.5: settlement accounts (WALLET / DIRECT / POOLED, effective-dated), double-entry ledger, commission sweep, payout jobs, refunds via Transfer (vendor bears the 1% + 2%), KYC on payout MoMo numbers
+- [ ] **Future: approvals.** Owner/manager approves refunds, payouts and big discounts requested at the counter (push to the owner's phone, offline codes). Removed from the pilot on 10 Sep 2026; the `approval_requests` table stays.
+- [ ] **Future: digital receipts.** Receipt page, QR code on the tablet screen, WhatsApp share. Removed from the pilot on 10 Sep 2026; printed receipts only until then.
 
 ---
 
 ## R1a definition of done
 
-- [ ] Simulated full day on a 2–3 GB Android: ≥100 orders, ≥1 hour in airplane mode
+- [ ] Simulated full day on a 2–3 GB budget tablet: ≥100 orders, ≥1 hour in airplane mode
 - [ ] Zero lost or duplicated orders after sync
 - [ ] Median walk-in cash order ≤15 s (timed)
+- [ ] A phone order paid by link (a real small payment on live Moolre) reaches Preparing without a tap
 - [ ] Shift variance matches the physical cash count
 - [ ] Day summary matches a hand tally
 - [ ] Device SQLite contains no aggregate revenue data
 - [ ] RLS isolation tests green (tenant B can't read tenant A)
 - [ ] Staff token gets 403 on every `/reports/*` route
 - [ ] Replaying a sync batch gives the same state
-- [ ] Approval rules enforced, including expired and reused codes
+- [ ] Refunds, payouts and discounts can't be done from the tablet (the server refuses them)
 - [ ] Sentry + heartbeat alerts fire
 
 ---
 
 ## Key rules (don't break these)
 
-- Server is the source of truth for money; the phone never settles money.
+- Server is the source of truth for money; the tablet never settles money.
 - Money is integer pesewas (`BIGINT` / `Pesewas`). No floats, ever.
 - Every tenant query goes through `withTenant()`; RLS on everything.
 - Staff never receive aggregate revenue unless granted, enforced server-side and absent from device storage.
 - Money, price, stock and access changes are audited in the same transaction.
 - Non-cash payments go through Moolre only; direct MoMo isn't recorded.
+- Customer money goes into the vendor's own Moolre account and never passes through us (until the split is decided).
 - If a change makes order entry slower, it's the wrong change.

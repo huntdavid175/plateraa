@@ -229,7 +229,7 @@ export interface components {
                 /** @enum {string} */
                 role: "OWNER" | "MANAGER" | "STAFF" | "RIDER";
             };
-            capabilities: ("orders.take" | "orders.cancel" | "payments.record" | "refunds.request" | "discounts.apply" | "shift.operate" | "shift.own_cash.view" | "stock.count" | "deliveries.update" | "approvals.grant" | "catalog.manage" | "staff.manage" | "expenses.manage" | "devices.manage" | "settings.manage" | "reports.revenue.view")[];
+            capabilities: ("orders.take" | "orders.cancel" | "payments.record" | "shift.operate" | "shift.own_cash.view" | "stock.count" | "deliveries.update" | "refunds.record" | "payouts.record" | "discounts.apply" | "catalog.manage" | "staff.manage" | "expenses.manage" | "devices.manage" | "settings.manage" | "reports.revenue.view")[];
         };
         CreateStaffDto: {
             displayName: string;
@@ -264,7 +264,7 @@ export interface components {
                     /** Format: date */
                     businessDate: string;
                     /** @enum {string} */
-                    source: "POS" | "PHONE" | "WHATSAPP" | "INSTAGRAM" | "STOREFRONT" | "BOLT_FOOD" | "CHOWDECK" | "OTHER";
+                    source: "POS" | "PHONE" | "STOREFRONT" | "BOLT_FOOD" | "CHOWDECK" | "OTHER";
                     /** @enum {string} */
                     type: "WALK_IN" | "PICKUP" | "DELIVERY";
                     externalReference?: string;
@@ -281,17 +281,6 @@ export interface components {
                         feeCollectedBy?: "VENDOR" | "RIDER";
                     };
                     note?: string;
-                    discount?: {
-                        /** @enum {string} */
-                        kind: "percent";
-                        bps: number;
-                    } | {
-                        /** @enum {string} */
-                        kind: "amount";
-                        amount: number;
-                    };
-                    /** Format: ulid */
-                    approvalId?: string;
                     lines: {
                         /** Format: ulid */
                         lineId: string;
@@ -340,17 +329,6 @@ export interface components {
                         }[];
                         note?: string;
                     }[];
-                    discount?: ({
-                        /** @enum {string} */
-                        kind: "percent";
-                        bps: number;
-                    } | {
-                        /** @enum {string} */
-                        kind: "amount";
-                        amount: number;
-                    }) | null;
-                    /** Format: ulid */
-                    approvalId?: string;
                 };
             } | {
                 /** Format: ulid */
@@ -410,8 +388,6 @@ export interface components {
                     /** Format: ulid */
                     orderId: string;
                     reason: string;
-                    /** Format: ulid */
-                    approvalId?: string;
                 };
             } | {
                 /** Format: ulid */
@@ -459,30 +435,6 @@ export interface components {
                 /** Format: ulid */
                 staffId: string;
                 /** @enum {string} */
-                type: "refund.create_cash";
-                payload: {
-                    /** Format: ulid */
-                    refundId: string;
-                    /** Format: ulid */
-                    orderId: string;
-                    /** Format: ulid */
-                    paymentId?: string;
-                    /** Format: ulid */
-                    shiftId: string;
-                    amount: number;
-                    reason: string;
-                    /** Format: ulid */
-                    approvalId: string;
-                };
-            } | {
-                /** Format: ulid */
-                id: string;
-                deviceSeq: number;
-                /** Format: date-time */
-                deviceTs: string;
-                /** Format: ulid */
-                staffId: string;
-                /** @enum {string} */
                 type: "shift.open";
                 payload: {
                     /** Format: ulid */
@@ -505,13 +457,9 @@ export interface components {
                     /** Format: ulid */
                     shiftId: string;
                     /** @enum {string} */
-                    type: "PAYOUT" | "DROP" | "PAY_IN";
+                    type: "DROP" | "PAY_IN";
                     amount: number;
-                    /** @enum {string} */
-                    category?: "INGREDIENTS" | "GAS" | "PACKAGING" | "TRANSPORT" | "RENT" | "ELECTRICITY" | "WATER" | "SALARIES" | "AIRTIME_DATA" | "RIDER_PAYMENTS" | "MARKETING" | "OTHER";
                     note?: string;
-                    /** Format: ulid */
-                    approvalId?: string;
                 };
             } | {
                 /** Format: ulid */
@@ -599,46 +547,6 @@ export interface components {
                     phone: string;
                     name?: string;
                     notes?: string;
-                };
-            } | {
-                /** Format: ulid */
-                id: string;
-                deviceSeq: number;
-                /** Format: date-time */
-                deviceTs: string;
-                /** Format: ulid */
-                staffId: string;
-                /** @enum {string} */
-                type: "receipt.create_link";
-                payload: {
-                    /** Format: ulid */
-                    receiptId: string;
-                    /** Format: ulid */
-                    orderId: string;
-                };
-            } | {
-                /** Format: ulid */
-                id: string;
-                deviceSeq: number;
-                /** Format: date-time */
-                deviceTs: string;
-                /** Format: ulid */
-                staffId: string;
-                /** @enum {string} */
-                type: "approval.record_offline_code";
-                payload: {
-                    /** Format: ulid */
-                    approvalId: string;
-                    /** @enum {string} */
-                    action: "REFUND" | "PAYOUT" | "DISCOUNT" | "PRICE_OVERRIDE";
-                    /** Format: ulid */
-                    approverId: string;
-                    code: string;
-                    codeWindow: number;
-                    amount?: number;
-                    discountBps?: number;
-                    /** Format: ulid */
-                    orderId?: string;
                 };
             })[];
         };

@@ -7,7 +7,7 @@ import { PinLoginController, PinLoginService } from './pin-login';
 import { PinSessionService } from './pin-session.service';
 import { StaffController, StaffService } from './staff';
 
-/** Logins, businesses, phones, PINs and permissions. The guards are exported for every module. */
+/** Logins, businesses, tablets, PINs and permissions. The guards are exported for every module. */
 @Global()
 @Module({
   controllers: [OnboardingController, DevicesController, PinLoginController, StaffController],

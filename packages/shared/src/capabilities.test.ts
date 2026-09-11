@@ -27,17 +27,22 @@ describe('resolveCapabilities', () => {
     ).toBe(true);
   });
 
-  it('lets staff take orders and cash but not approve or manage', () => {
+  it('lets staff take orders and cash, but never refund, pay out or discount', () => {
     const staff = resolveCapabilities('STAFF');
     expect(staff.has('orders.take')).toBe(true);
+    expect(staff.has('orders.cancel')).toBe(true);
     expect(staff.has('shift.own_cash.view')).toBe(true);
-    expect(staff.has('approvals.grant')).toBe(false);
+    for (const capability of ['refunds.record', 'payouts.record', 'discounts.apply'] as const) {
+      expect(staff.has(capability)).toBe(false);
+    }
     expect(staff.has('catalog.manage')).toBe(false);
   });
 
-  it('lets managers approve but keeps settings with the owner', () => {
+  it('lets managers record refunds, payouts and discounts but keeps settings with the owner', () => {
     const manager = resolveCapabilities('MANAGER');
-    expect(manager.has('approvals.grant')).toBe(true);
+    expect(manager.has('refunds.record')).toBe(true);
+    expect(manager.has('payouts.record')).toBe(true);
+    expect(manager.has('discounts.apply')).toBe(true);
     expect(manager.has('settings.manage')).toBe(false);
   });
 });

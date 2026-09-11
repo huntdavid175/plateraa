@@ -22,6 +22,7 @@ import {
   canTransition,
   initialStatus,
   isActive,
+  isAwaitingPayment,
   priceOrder,
   type Discount,
   type OrderSource,
@@ -33,7 +34,6 @@ import { CommandRejected, type CommandHandler, type HandlerContext } from '../sy
 import {
   adjustSellableStock,
   deviceTime,
-  isApproved,
   loadOrder,
   quantitiesByItem,
   recordOrderEvent,
@@ -75,8 +75,9 @@ interface PricedLines {
 
 /**
  * Re-prices the order with the shared pricing function and snapshots each line. A price that
- * doesn't match the menu, or a big discount without approval, doesn't lose the sale: the order
- * is kept and flagged for the owner to review.
+ * doesn't match the menu doesn't lose the sale: the order is kept and flagged for the owner.
+ * Discounts only come from a manager on the dashboard, so `discount` is whatever the order
+ * already carries.
  */
 async function priceLines(
   ctx: HandlerContext,
@@ -86,7 +87,6 @@ async function priceLines(
     lines: Line[];
     discount: Discount | undefined;
     deliveryFee: number | undefined;
-    approvalId: string | undefined;
   },
 ): Promise<PricedLines> {
   const { tx } = ctx;
@@ -134,18 +134,14 @@ async function priceLines(
     );
 
   const reviewReasons = new Set<string>();
-  const overrideApproved = await isApproved(tx, {
-    approvalId: input.approvalId,
-    actions: ['PRICE_OVERRIDE'],
-    orderId: input.orderId,
-  });
   const soldAt = deviceTime(ctx);
 
   const rows: OrderItemRow[] = [];
   for (const [position, line] of input.lines.entries()) {
     const item = itemById.get(line.itemId);
-    if (!item)
+    if (!item) {
       throw new CommandRejected('UNKNOWN_ITEM', 'An item on this order is not on the menu');
+    }
     const variant = line.variantId ? variantById.get(line.variantId) : undefined;
     if (line.variantId && variant?.itemId !== item.id) {
       throw new CommandRejected(
@@ -158,11 +154,7 @@ async function priceLines(
       (p) => p.itemId === item.id && (p.variantId ?? undefined) === line.variantId,
     )?.price;
     const menuPrice = channelPrice ?? variant?.price ?? item.price;
-    if (
-      line.unitPrice !== menuPrice &&
-      !overrideApproved &&
-      !(await wasRecentPrice(tx, line, soldAt))
-    ) {
+    if (line.unitPrice !== menuPrice && !(await wasRecentPrice(tx, line, soldAt))) {
       reviewReasons.add('PRICE_MISMATCH');
     }
 
@@ -171,9 +163,7 @@ async function priceLines(
       if (!modifier) {
         throw new CommandRejected('UNKNOWN_MODIFIER', `${item.name}: an extra on it doesn't exist`);
       }
-      if (modifier.priceDelta !== m.unitPriceDelta && !overrideApproved) {
-        reviewReasons.add('PRICE_MISMATCH');
-      }
+      if (modifier.priceDelta !== m.unitPriceDelta) reviewReasons.add('PRICE_MISMATCH');
       return {
         modifierId: modifier.id,
         name: modifier.name,
@@ -203,21 +193,6 @@ async function priceLines(
     });
   }
 
-  if (input.discount && priced.discount > 0) {
-    const bps =
-      input.discount.kind === 'percent'
-        ? input.discount.bps
-        : Math.ceil((priced.discount * 10_000) / Math.max(priced.subtotal, 1));
-    const approved = await isApproved(tx, {
-      approvalId: input.approvalId,
-      actions: ['DISCOUNT'],
-      orderId: input.orderId,
-    });
-    if (bps > ctx.tenant.approvalDiscountThresholdBps && !approved) {
-      reviewReasons.add('UNAPPROVED_DISCOUNT');
-    }
-  }
-
   return { rows, priced, reviewReasons };
 }
 
@@ -235,13 +210,6 @@ async function flagForReview(ctx: HandlerContext, orderId: string, reasons: Set<
   });
 }
 
-function discountFields(discount: Discount | undefined) {
-  return {
-    discountBps: discount?.kind === 'percent' ? discount.bps : null,
-    discountAmountInput: discount?.kind === 'amount' ? discount.amount : null,
-  };
-}
-
 export const orderCreate: CommandHandler<'order.create'> = async (ctx) => {
   const { tx } = ctx;
   const p = ctx.command.payload;
@@ -250,8 +218,9 @@ export const orderCreate: CommandHandler<'order.create'> = async (ctx) => {
     .select({ id: orders.id })
     .from(orders)
     .where(eq(orders.id, p.orderId));
-  if (duplicate)
+  if (duplicate) {
     throw new CommandRejected('DUPLICATE_ORDER', 'This order is already on the server');
+  }
 
   if (p.delivery?.zoneId) {
     const [zone] = await tx
@@ -273,9 +242,8 @@ export const orderCreate: CommandHandler<'order.create'> = async (ctx) => {
     orderId: p.orderId,
     source: p.source,
     lines: p.lines,
-    discount: p.discount,
+    discount: undefined,
     deliveryFee: p.delivery?.fee,
-    approvalId: p.approvalId,
   });
 
   const status = initialStatus('MANUAL');
@@ -297,7 +265,6 @@ export const orderCreate: CommandHandler<'order.create'> = async (ctx) => {
     deliveryFee: priced.deliveryFee,
     deliveryFeeCollectedBy: p.delivery?.feeCollectedBy ?? null,
     note: p.note ?? null,
-    ...discountFields(p.discount),
     subtotal: priced.subtotal,
     discount: priced.discount,
     total: priced.total,
@@ -328,13 +295,13 @@ export const orderUpdateItems: CommandHandler<'order.update_items'> = async (ctx
     throw new CommandRejected('TOO_LATE_TO_EDIT', 'The kitchen has already started this order');
   }
 
-  const existingDiscount: Discount | undefined =
+  // Keep any discount a manager applied on the dashboard.
+  const discount: Discount | undefined =
     order.discountBps !== null
       ? { kind: 'percent', bps: order.discountBps }
       : order.discountAmountInput !== null
         ? { kind: 'amount', amount: order.discountAmountInput }
         : undefined;
-  const discount = p.discount === undefined ? existingDiscount : (p.discount ?? undefined);
 
   const { rows, priced, reviewReasons } = await priceLines(ctx, {
     orderId: order.id,
@@ -342,7 +309,6 @@ export const orderUpdateItems: CommandHandler<'order.update_items'> = async (ctx
     lines: p.lines,
     discount,
     deliveryFee: order.deliveryFee,
-    approvalId: p.approvalId,
   });
 
   const previous = await tx
@@ -350,7 +316,7 @@ export const orderUpdateItems: CommandHandler<'order.update_items'> = async (ctx
     .from(orderItems)
     .where(and(eq(orderItems.orderId, order.id), isNull(orderItems.deletedAt)));
 
-  // Lines the phone kept are replaced in place; lines it dropped are soft-deleted so the removal syncs.
+  // Lines the tablet kept are replaced in place; lines it dropped are soft-deleted so the removal syncs.
   const keptIds = rows.map((r) => r.id);
   await tx.delete(orderItems).where(inArray(orderItems.id, keptIds));
   const droppedIds = previous.map((l) => l.id).filter((id) => !keptIds.includes(id));
@@ -363,15 +329,15 @@ export const orderUpdateItems: CommandHandler<'order.update_items'> = async (ctx
   await tx.insert(orderItems).values(rows);
 
   const change = quantitiesByItem(p.lines);
-  for (const [itemId, qty] of quantitiesByItem(previous))
+  for (const [itemId, qty] of quantitiesByItem(previous)) {
     change.set(itemId, (change.get(itemId) ?? 0) - qty);
+  }
   await adjustSellableStock(ctx, order.businessDate, change, order.id);
 
   const allReasons = new Set([...order.reviewReasons, ...reviewReasons]);
   await tx
     .update(orders)
     .set({
-      ...discountFields(discount),
       subtotal: priced.subtotal,
       discount: priced.discount,
       total: priced.total,
@@ -398,6 +364,12 @@ export const orderSetStatus: CommandHandler<'order.set_status'> = async (ctx) =>
       `A ${order.status.toLowerCase()} order can't be marked ${p.status.toLowerCase()}`,
     );
   }
+  if (p.status === 'PREPARING' && isAwaitingPayment(order, ctx.tenant.requirePaymentBeforePrep)) {
+    throw new CommandRejected(
+      'AWAITING_PAYMENT',
+      "This order isn't paid yet. It goes to the kitchen once it's paid",
+    );
+  }
   await ctx.tx.update(orders).set({ status: p.status }).where(eq(orders.id, order.id));
   await recordOrderEvent(ctx, order.id, order.status, p.status);
   return { orderId: order.id, status: p.status };
@@ -418,18 +390,16 @@ export const orderHold: CommandHandler<'order.hold'> = (ctx) =>
 export const orderResume: CommandHandler<'order.resume'> = (ctx) =>
   setHold(ctx, ctx.command.payload.orderId, false);
 
+/**
+ * Anyone can cancel an order, paid or not, so the kitchen stops. Money already taken stays on the
+ * order as a refund owed; a manager gives it back by hand and records it on the dashboard.
+ */
 export const orderCancel: CommandHandler<'order.cancel'> = async (ctx) => {
   const { tx } = ctx;
   const p = ctx.command.payload;
   const order = await loadOrder(tx, p.orderId);
   if (!isActive(order.status)) {
     throw new CommandRejected('ORDER_CLOSED', 'This order is already finished');
-  }
-  if (order.amountPaid > 0) {
-    throw new CommandRejected(
-      'REFUND_FIRST',
-      'Refund the money on this order before cancelling it',
-    );
   }
 
   await tx
@@ -445,5 +415,5 @@ export const orderCancel: CommandHandler<'order.cancel'> = async (ctx) => {
   const returned = new Map([...quantitiesByItem(lines)].map(([id, qty]) => [id, -qty]));
   await adjustSellableStock(ctx, order.businessDate, returned, order.id);
 
-  return { orderId: order.id, status: 'CANCELLED' };
+  return { orderId: order.id, status: 'CANCELLED', refundOwed: order.amountPaid };
 };
