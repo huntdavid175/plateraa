@@ -51,8 +51,10 @@ export function MenuPane({
       ? menu.flatMap((c) => c.items)
       : (menu.find((c) => keyOf(c) === category)?.items ?? []);
   const columns = width >= 720 ? 4 : 3;
-  // Rows of equal, stretching tiles: they always fill the pane, and never wrap early the way
-  // pixel-exact widths can on a tablet's screen.
+  // Every tile the same width, whatever its name. Tiles sit in explicit rows, so a width that
+  // rounds up on the tablet's screen can't push a tile onto the next line.
+  const tileWidth =
+    width > 0 ? Math.floor((width - GUTTER * 2 - GAP * (columns - 1)) / columns) : undefined;
   const rows: MenuItem[][] = [];
   for (let start = 0; start < items.length; start += columns) {
     rows.push(items.slice(start, start + columns));
@@ -89,10 +91,12 @@ export function MenuPane({
           rows.map((row) => (
             <View key={row[0]!.id} style={styles.row}>
               {row.map((item) => (
-                <MenuTile key={item.id} item={item} onPress={() => onPick(item)} />
-              ))}
-              {Array.from({ length: columns - row.length }, (_, index) => (
-                <View key={`space-${index}`} style={styles.space} />
+                <MenuTile
+                  key={item.id}
+                  item={item}
+                  width={tileWidth}
+                  onPress={() => onPick(item)}
+                />
               ))}
             </View>
           ))
@@ -104,7 +108,16 @@ export function MenuPane({
   );
 }
 
-function MenuTile({ item, onPress }: { item: MenuItem; onPress: () => void }) {
+function MenuTile({
+  item,
+  width,
+  onPress,
+}: {
+  item: MenuItem;
+  /** Unknown until the pane is measured (the first frame). */
+  width: number | undefined;
+  onPress: () => void;
+}) {
   const low = !item.soldOut && item.left !== null && item.left <= LOW_STOCK;
   return (
     <Pressable
@@ -114,6 +127,7 @@ function MenuTile({ item, onPress }: { item: MenuItem; onPress: () => void }) {
       onPress={onPress}
       style={({ pressed }) => [
         styles.tile,
+        width ? { width } : styles.tileFallback,
         pressed && styles.tilePressed,
         item.soldOut && styles.tileSoldOut,
       ]}
@@ -222,11 +236,10 @@ const styles = StyleSheet.create({
   },
   grid: { gap: GAP, paddingHorizontal: GUTTER, paddingBottom: space.md },
   row: { flexDirection: 'row', gap: GAP },
-  space: { flex: 1 },
   empty: { fontFamily: font.regular, fontSize: text.body, color: colors.muted, maxWidth: 480 },
   tile: {
-    flex: 1,
     minHeight: 88,
+    overflow: 'hidden',
     borderRadius: radii.lg,
     backgroundColor: colors.tile,
     paddingHorizontal: 14,
@@ -234,6 +247,7 @@ const styles = StyleSheet.create({
     paddingBottom: 12,
     gap: 4,
   },
+  tileFallback: { flex: 1 },
   tilePressed: { backgroundColor: colors.tilePressed },
   tileSoldOut: { backgroundColor: '#EDECEA', opacity: 0.55 },
   tileTop: { flexDirection: 'row', justifyContent: 'space-between', gap: space.xs },
