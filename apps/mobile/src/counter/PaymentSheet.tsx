@@ -10,7 +10,7 @@ import { cedis, colors, font, radii, space, text } from '../ui/theme';
 import { openDrawer, openShiftOf, type Counter } from './actions';
 import { amountOf, plainAmount } from './amounts';
 import { AmountDisplay, Keypad } from './Keypad';
-import { LINKS_NOT_ON } from './words';
+import { LINK_NOTE } from './words';
 
 export interface PaymentSummary {
   number: string;
@@ -210,8 +210,7 @@ export function PaymentSheet({
             {mode === 'link' && (
               <>
                 <Text style={styles.body}>
-                  The customer gets a link on their phone and pays by MoMo. The order waits under
-                  "Awaiting payment" and goes to the kitchen as soon as the payment arrives.
+                  The customer gets a text with a link, and pays by MoMo.
                 </Text>
                 <PhoneField
                   label="Customer phone"
@@ -219,7 +218,7 @@ export function PaymentSheet({
                   value={linkPhone}
                   onChangeText={setLinkPhone}
                 />
-                <Text style={styles.note}>{LINKS_NOT_ON}</Text>
+                <Text style={styles.note}>{LINK_NOTE}</Text>
               </>
             )}
             {problem && <Text style={styles.problem}>{problem}</Text>}

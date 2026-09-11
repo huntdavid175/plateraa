@@ -9,7 +9,7 @@ import { cedis, colors, font, space, text } from '../ui/theme';
 import { PLATFORM_NAMES, isPlatform, type Checkout, type CheckoutSource } from './checkout';
 import { priceTicket, type TicketLine } from './ticket';
 import { TicketLines } from './TicketLines';
-import { LINKS_NOT_ON } from './words';
+import { LINK_NOTE } from './words';
 
 const SOURCES: readonly { value: Exclude<CheckoutSource, 'POS'>; label: string }[] = [
   { value: 'PHONE', label: 'Phone' },
@@ -220,7 +220,7 @@ export function RemoteOrderPanel({
           <Text style={styles.totalLabel}>Total</Text>
           <Text style={styles.total}>{cedis(total)}</Text>
         </View>
-        {source === 'PHONE' && <Text style={styles.note}>{LINKS_NOT_ON}</Text>}
+        {source === 'PHONE' && <Text style={styles.note}>{LINK_NOTE}</Text>}
         <Button label={action} onPress={submit} busy={busy} disabled={!source || !lines.length} />
       </View>
     </View>

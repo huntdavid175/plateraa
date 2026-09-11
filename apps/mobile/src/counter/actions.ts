@@ -113,6 +113,18 @@ export async function openDrawer(counter: Counter, float: Pesewas): Promise<stri
   return shiftId;
 }
 
+/**
+ * Texts the customer a payment link for what's still owed. Saved at once, even offline; the
+ * server makes and sends the link once this reaches it.
+ */
+export function requestLink(counter: Counter, orderId: string, phone: string) {
+  return counter.engine.record(
+    'payment.request_link',
+    { linkId: counter.engine.newId(), orderId, phone },
+    counter.staffId,
+  );
+}
+
 /** Marks an item sold out for the rest of today, or back on sale. */
 export function setSoldOut(counter: Counter, itemId: string, soldOut: boolean) {
   return counter.engine.record(

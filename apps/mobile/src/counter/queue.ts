@@ -1,4 +1,4 @@
-import type { OrderSource, OrderType, Pesewas, Station } from '@plateraa/shared';
+import type { OrderSource, OrderType, PaymentLinkStatus, Pesewas, Station } from '@plateraa/shared';
 import type { Sql } from '../offline/sql';
 import { provisionalSql } from '../offline/store';
 import type { LaneOrder } from './lanes';
@@ -17,6 +17,17 @@ export interface QueueLine {
   modifiers: string;
   note: string | null;
   station: Station;
+}
+
+/** A payment link texted for an order (plan.md §2.5). */
+export interface QueueLink {
+  id: string;
+  status: PaymentLinkStatus;
+  phone: string;
+  failure: string | null;
+  sent_at: string | null;
+  expires_at: string | null;
+  created_at_device: string;
 }
 
 export interface QueueOrder extends LaneOrder {
@@ -42,13 +53,15 @@ export interface QueueOrder extends LaneOrder {
   lines: QueueLine[];
   /** The longest prep time among its items (10 minutes when none is set). */
   prepMinutes: number;
+  /** The latest payment link texted for it, if any. */
+  link: QueueLink | null;
 }
 
 const DEFAULT_PREP_MINUTES = 10;
 
 /** Today's orders and anything older that's still open, oldest first. */
 export async function loadQueue(db: Sql, businessDate: string): Promise<QueueOrder[]> {
-  const orders = await db.all<Omit<QueueOrder, 'lines' | 'prepMinutes'>>(
+  const orders = await db.all<Omit<QueueOrder, 'lines' | 'prepMinutes' | 'link'>>(
     `SELECT o.id, o.display_number, o.source, o.type, o.status, o.on_hold, o.total, o.subtotal,
             o.discount, o.delivery_fee, o.delivery_fee_collected_by, o.amount_paid,
             o.business_date, o.delivery_address, o.external_reference, o.note, o.cancel_reason,
@@ -70,6 +83,13 @@ export async function loadQueue(db: Sql, businessDate: string): Promise<QueueOrd
        FROM order_items li LEFT JOIN items i ON i.id = li.item_id
       ORDER BY li.order_id, li.position`,
   );
+  // Oldest first, so the latest link for each order is the one kept.
+  const links = await db.all<QueueLink & { order_id: string }>(
+    `SELECT id, order_id, status, phone, failure, sent_at, expires_at, created_at_device
+       FROM payment_links ORDER BY created_at_device`,
+  );
+  const linkOf = new Map(links.map(({ order_id: orderId, ...link }) => [orderId, link]));
+
   const byOrder = new Map<string, typeof lines>();
   for (const line of lines) {
     const list = byOrder.get(line.order_id) ?? [];
@@ -86,6 +106,7 @@ export async function loadQueue(db: Sql, businessDate: string): Promise<QueueOrd
         DEFAULT_PREP_MINUTES,
         ...orderLines.map((line) => line.prep_minutes ?? DEFAULT_PREP_MINUTES),
       ),
+      link: linkOf.get(order.id) ?? null,
     };
   });
 }

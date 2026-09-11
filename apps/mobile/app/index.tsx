@@ -8,6 +8,7 @@ import {
   openDrawer,
   payCash,
   placeOrder,
+  requestLink,
   setOnHold,
   updateItems,
 } from '../src/counter/actions';
@@ -32,7 +33,7 @@ import { SaleDone, type Done } from '../src/counter/SaleDone';
 import { StockScreen } from '../src/counter/StockScreen';
 import { addToTicket, priceTicket, replaceLine, type TicketLine } from '../src/counter/ticket';
 import { TopBar, type CounterTab } from '../src/counter/TopBar';
-import { LINKS_NOT_ON, SOURCE_LABELS } from '../src/counter/words';
+import { SOURCE_LABELS, phoneWords } from '../src/counter/words';
 import { problemText } from '../src/tablet/api';
 import { newId } from '../src/tablet/ids';
 import { useLocalQuery, useTablet } from '../src/tablet/TabletProvider';
@@ -177,30 +178,35 @@ export default function CounterScreen() {
     });
   };
 
-  const sentLink = async (phone: string) => {
-    const placed = await placeOrder(counter, toDraft({ ...charging!, phone }, lines, true));
+  /** Saves the order and its payment link together; the link is texted once the tablet is online. */
+  const withLink = async (checkout: Checkout) => {
+    const draft = toDraft(checkout, lines, true);
+    const placed = await placeOrder(counter, draft);
+    const phone = draft.customer!.phone;
+    if (placed.due > 0) await requestLink(counter, placed.orderId, phone);
     clear();
     setDone({
       number: placed.displayNumber,
       change: null,
-      message: `Waiting for ${cedis(placed.due)} by payment link. ${LINKS_NOT_ON}`,
+      message: `Payment link for ${cedis(placed.due)} going to ${phoneWords(phone)}. The order goes to the kitchen once it’s paid.`,
     });
   };
 
+  const sentLink = (phone: string) => withLink({ ...charging!, phone });
+
   const submitRemote = (checkout: Checkout) =>
     run(async () => {
-      const platform = isPlatform(checkout.source);
-      const placed = await placeOrder(counter, toDraft(checkout, lines, !platform));
-      if (platform) {
-        await markPaidOnPlatform(counter, { orderId: placed.orderId, amount: placed.due });
+      if (!isPlatform(checkout.source)) {
+        await withLink(checkout);
+        return;
       }
+      const placed = await placeOrder(counter, toDraft(checkout, lines, false));
+      await markPaidOnPlatform(counter, { orderId: placed.orderId, amount: placed.due });
       clear();
       setDone({
         number: placed.displayNumber,
         change: null,
-        message: platform
-          ? `Paid on ${SOURCE_LABELS[checkout.source]}. It’s with the kitchen.`
-          : `Waiting for ${cedis(placed.due)} by payment link. ${LINKS_NOT_ON}`,
+        message: `Paid on ${SOURCE_LABELS[checkout.source]}. It’s with the kitchen.`,
       });
     });
 

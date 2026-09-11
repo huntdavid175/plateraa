@@ -11,6 +11,7 @@ import {
   openShiftOf,
   payCash,
   placeOrder,
+  requestLink,
   setOnHold,
   type Counter,
 } from './actions';
@@ -19,6 +20,7 @@ import { loadMenu, needsChoice } from './menu';
 import { nextDisplayNumber } from './numbers';
 import { loadQueue } from './queue';
 import { addToTicket, changeQuantity, priceTicket, type TicketLine } from './ticket';
+import { linkWords, phoneWords } from './words';
 
 const jollof = (quantity = 1, extra: Partial<TicketLine> = {}): TicketLine => ({
   lineId: ulid(),
@@ -120,6 +122,32 @@ describe('taking orders at the counter', () => {
     expect(order).toMatchObject({ customer_phone: '+233241234567', customer_name: 'Kofi' });
     expect(laneOf(order!, settingOn)).toBe('awaiting-payment');
     expect(laneOf(order!, false)).toBe('kitchen');
+  });
+
+  it('queues one payment link per order, and says where it stands', async () => {
+    const { db, counter: at } = await counter();
+    const placed = await placeOrder(at, {
+      source: 'PHONE',
+      type: 'PICKUP',
+      lines: [jollof()],
+      customer: { phone: '024 123 4567' },
+    });
+    await requestLink(at, placed.orderId, '+233241234567');
+
+    const [order] = await loadQueue(db, TODAY);
+    expect(order!.link).toMatchObject({ status: 'QUEUED', phone: '+233241234567' });
+    expect(linkWords(order!.link!)).toEqual({
+      text: 'Payment link to 024 123 4567 goes out as soon as the tablet is online.',
+      tone: 'info',
+    });
+    // A second link while one is open would let the customer pay twice.
+    await expect(requestLink(at, placed.orderId, '+233241234567')).rejects.toMatchObject({
+      code: 'LINK_ALREADY_OPEN',
+    });
+    expect(
+      linkWords({ status: 'FAILED', phone: '+233241234567', failure: 'Moolre said: no.' }),
+    ).toEqual({ text: "The payment link didn't go. Moolre said: no.", tone: 'red' });
+    expect(phoneWords('+233501234567')).toBe('050 123 4567');
   });
 
   it('takes a Bolt order without a number, paid on the platform', async () => {

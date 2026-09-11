@@ -11,6 +11,7 @@ import {
   cancelOrder,
   markPaidOnPlatform,
   payCash,
+  requestLink,
   setOnHold,
   type Counter,
 } from './actions';
@@ -26,7 +27,15 @@ import {
   stillToPay,
   type OrderFilter,
 } from './views';
-import { CANCEL_REASONS, LINKS_NOT_ON, SOURCE_LABELS, STATUS_LABELS, nextStepLabel } from './words';
+import { CANCEL_REASONS, SOURCE_LABELS, STATUS_LABELS, linkWords, nextStepLabel } from './words';
+
+/** A payment link's state is always a sentence; the colour only backs it up. */
+const LINK_COLOURS = {
+  info: colors.infoInk,
+  good: colors.goodInk,
+  amber: colors.amberInk,
+  red: colors.redInk,
+} as const;
 
 const TYPE_LABELS: Record<OrderType, string> = {
   WALK_IN: 'Walk-in',
@@ -260,6 +269,10 @@ function OrderDetail({
     order.source === 'BOLT_FOOD' ? 'Bolt' : order.source === 'CHOWDECK' ? 'Chowdeck' : null;
   const steps = stepsOf(order.type);
   const reached = steps.indexOf(order.status === 'NEW' ? 'CONFIRMED' : order.status);
+  // One open link at a time: a new one once the last has failed or expired.
+  const linkOpen = order.link?.status === 'QUEUED' || order.link?.status === 'SENT';
+  const canSendLink = open && toPay > 0 && !platform && !!order.customer_phone && !linkOpen;
+  const link = order.link ? linkWords(order.link) : null;
 
   const run = async (task: () => Promise<unknown>) => {
     setBusy(true);
@@ -331,6 +344,10 @@ function OrderDetail({
               </View>
             ))}
           </View>
+        )}
+
+        {link && (
+          <Text style={[styles.linkLine, { color: LINK_COLOURS[link.tone] }]}>{link.text}</Text>
         )}
 
         <View style={styles.section}>
@@ -447,8 +464,16 @@ function OrderDetail({
                 busy={busy}
               />
             )}
-            {open && toPay > 0 && order.source === 'PHONE' && (
-              <Text style={styles.note}>Waiting for the caller to pay by link. {LINKS_NOT_ON}</Text>
+            {canSendLink && (
+              <Button
+                label={
+                  order.link ? 'Send a new payment link' : `Send a payment link for ${cedis(toPay)}`
+                }
+                kind={order.source === 'PHONE' ? 'primary' : 'secondary'}
+                size={order.source === 'PHONE' ? 'lg' : 'md'}
+                onPress={() => run(() => requestLink(counter, order.id, order.customer_phone!))}
+                busy={busy}
+              />
             )}
             {step && (
               <Button label={step} onPress={() => run(() => advance(counter, order))} busy={busy} />
@@ -517,6 +542,7 @@ function OrderDetail({
 
 const styles = StyleSheet.create({
   screen: { flex: 1, flexDirection: 'row', backgroundColor: colors.ground },
+  linkLine: { fontFamily: font.medium, fontSize: text.body, lineHeight: 22 },
   grow: { flex: 1 },
   list: { flex: 58, borderRightWidth: 1, borderRightColor: colors.line },
   filters: {
