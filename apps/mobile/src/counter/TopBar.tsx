@@ -6,13 +6,14 @@ import { useEngineState, useTablet } from '../tablet/TabletProvider';
 import { Badge } from '../ui/controls';
 import { colors, font, plural, radii, space, text } from '../ui/theme';
 
-export type CounterTab = 'counter' | 'orders' | 'kitchen' | 'drawer';
+export type CounterTab = 'counter' | 'orders' | 'kitchen' | 'drawer' | 'stock';
 
 const TABS: readonly { value: CounterTab; label: string }[] = [
   { value: 'counter', label: 'Counter' },
   { value: 'orders', label: 'Orders' },
   { value: 'kitchen', label: 'Kitchen' },
   { value: 'drawer', label: 'Drawer' },
+  { value: 'stock', label: 'Stock' },
 ];
 
 /** Online, offline (grey-blue) or signed out, always as a word. */
@@ -45,7 +46,10 @@ export function TopBar({ tab, onTab }: { tab: CounterTab; onTab: (tab: CounterTa
   const connection = connectionOf(state);
   const canAddStaff = staff?.capabilities.has('staff.manage') ?? false;
   const runsDrawer = staff?.capabilities.has('shift.operate') ?? false;
-  const tabs = TABS.filter((option) => option.value !== 'drawer' || runsDrawer);
+  const countsStock = staff?.capabilities.has('stock.count') ?? false;
+  const tabs = TABS.filter((option) =>
+    option.value === 'drawer' ? runsDrawer : option.value === 'stock' ? countsStock : true,
+  );
 
   const go = (path: '/add-staff' | '/attention' | '/diagnostics') => {
     setMenuOpen(false);

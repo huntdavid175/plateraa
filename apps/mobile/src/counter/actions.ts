@@ -113,6 +113,15 @@ export async function openDrawer(counter: Counter, float: Pesewas): Promise<stri
   return shiftId;
 }
 
+/** Marks an item sold out for the rest of today, or back on sale. */
+export function setSoldOut(counter: Counter, itemId: string, soldOut: boolean) {
+  return counter.engine.record(
+    'item.set_sold_out',
+    { itemId, soldOut, businessDate: businessDate(counter) },
+    counter.staffId,
+  );
+}
+
 /** Cash taken out of the drawer (to the safe or the owner) or put into it. */
 export function moveCash(
   counter: Counter,

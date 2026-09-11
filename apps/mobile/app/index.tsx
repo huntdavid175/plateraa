@@ -29,6 +29,7 @@ import { ticketLinesOf, type QueueOrder } from '../src/counter/queue';
 import { QuickOrderSheet } from '../src/counter/QuickOrderSheet';
 import { RemoteOrderPanel } from '../src/counter/RemoteOrderPanel';
 import { SaleDone, type Done } from '../src/counter/SaleDone';
+import { StockScreen } from '../src/counter/StockScreen';
 import { addToTicket, priceTicket, replaceLine, type TicketLine } from '../src/counter/ticket';
 import { TopBar, type CounterTab } from '../src/counter/TopBar';
 import { LINKS_NOT_ON, SOURCE_LABELS } from '../src/counter/words';
@@ -302,6 +303,7 @@ export default function CounterScreen() {
         <KitchenScreen orders={orders} counter={counter} payBeforePrep={payBeforePrep} />
       )}
       {tab === 'drawer' && <DrawerScreen counter={counter} />}
+      {tab === 'stock' && <StockScreen counter={counter} />}
 
       <OptionsSheet
         item={picking?.item ?? null}
