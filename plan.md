@@ -50,7 +50,11 @@ Full design detail: `C:\Users\user\.claude\plans\plan-mode-prompt-you-peaceful-p
 - [ ] Neon project (AWS eu-central-1) + DB roles `app_owner` / `app_user`; a Neon branch per PR in CI
   - _Project created (Postgres 18.6, eu-central-1); pooled and direct strings verified. `app_user` role created (NOLOGIN; `withTenant()` switches to it). `neondb_owner` acts as `app_owner` for now._
   - [ ] _Before production: a dedicated LOGIN role for the API runtime, and Neon branch per PR in CI (needs a Neon API key in GitHub secrets)._
+  - [ ] _Before R1a: a separate database branch for development and tests. Today the laptop, its tests and Render all use the same one._
 - [ ] Render services: API + worker (Frankfurt)
+  - [x] API (_11 Sep: https://plateraa-api.onrender.com, Frankfurt, deploys itself from `main`. Checked: health answers, the database is reachable, the API docs page is off._)
+  - [ ] _Before R1a: move to the Starter plan. Free sleeps after 15 minutes without traffic and takes about a minute to wake, and has no pre-deploy step, so migrations are run from the laptop for now. On Starter, set the pre-deploy command to `pnpm --filter @plateraa/db db:migrate`._
+  - [ ] Worker (_when background jobs arrive: daily rollups, re-checking payment links_)
 - [ ] Sentry set up for api, mobile, dashboard and storefront
 
 ### 1.2 Day-1 spike (on a real budget Android tablet, 8–10" landscape)

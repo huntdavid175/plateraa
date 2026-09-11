@@ -19,7 +19,7 @@ A solo founder (GitHub `huntdavid175`) builds it with an AI agent. Work started 
   - Phase 1: monorepo, CI, schema with RLS, shared rules, auth, sync push/pull with 15 commands, OpenAPI client.
   - The §2.0/§2.0b decision changes.
   - The day-1 tablet test.
-- **Phase 1 leftovers:** Render, Sentry, and a Neon branch per PR.
+- **Phase 1 leftovers:** Sentry, the Render worker, and a Neon branch per PR.
 - **Done (11 Sep, Phase 2):** §2.1 offline engine in `apps/mobile/src/offline` (tested in Node; the banner and "Needs attention" screens come with the app shell).
 - **Next:** Phase 2 §2.2: the real app shell, tablet registration and PIN switcher, wiring the engine in. See `apps/mobile/AGENTS.md`.
 - Founder tasks (Moolre, lawyer, printers, domain, Play Console) are Phase 0 in `plan.md`.
@@ -88,6 +88,7 @@ On this Windows machine, `pnpm` works in PowerShell. **In Git Bash the global `p
   - Line endings are LF everywhere (`.gitattributes`).
 - **Database tests are local-only.** Tests that need the database run against Neon using the root `.env`, and **skip themselves when there's no database, including in CI**. So run `pnpm test` locally before pushing any change to the API or the database.
 - **Migrations:** `pnpm --filter @plateraa/db db:generate`, then `db:migrate`.
+- **Deployed API:** `https://plateraa-api.onrender.com` (Render, Frankfurt, free plan), deployed automatically from `main`. The free plan has no pre-deploy step, so **run `db:migrate` from the laptop before pushing code that needs a new migration**. Render and the laptop use the same Neon database for now.
 - **API client**, regenerated after API changes: `pnpm --filter @plateraa/api openapi`, then `pnpm --filter @plateraa/api-client generate`.
 - **Tablet:** `pnpm --filter @plateraa/mobile start`. Native changes need a new EAS build (see `apps/mobile/AGENTS.md`). EAS CLI: `npx eas-cli@latest …` (the package is `eas-cli`, not `eas`).
 - **Running the API:** `pnpm --filter @plateraa/api dev`. Swagger is at `http://localhost:3000/api/docs`.
