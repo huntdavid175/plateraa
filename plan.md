@@ -58,10 +58,11 @@ Full design detail: `C:\Users\user\.claude\plans\plan-mode-prompt-you-peaceful-p
 _11 Sep: everything for the spike is built, and the first development build finished on EAS (`e086f12`, [build](https://expo.dev/accounts/huntdavid175/projects/plateraa/builds/11796467-7d45-4fdc-9274-4ef4203a304a), internal APK): op-sqlite 18.2.1; `plateraa-crypto` (PBKDF2, same format as the server's PIN check); `escpos-bt` (paired printers, connect, write); a landscape test screen that runs all three. The other boxes get ticked once it runs on a real tablet._
 
 - [x] Expo 57 development build via EAS (not Expo Go: op-sqlite and our native modules need it); Android package `com.plateraa.pos` (permanent once on Google Play; chosen 10 Sep)
-- [ ] op-sqlite read/write working
-- [ ] Native PBKDF2 for the offline PIN check (_the Keystore HMAC parts were for approval codes, now a future feature_)
-- [ ] `escpos-bt` Kotlin module stub: `listBonded`, `connect`, `write`, `disconnect`
-- [ ] Write down the results; adjust the plan if anything fails
+- [x] op-sqlite read/write working (_11 Sep, on the tablet: 2,000 inserts in one transaction in 535 ms, all 2,000 read back with the right total_)
+- [x] Native PBKDF2 for the offline PIN check (_the Keystore HMAC parts were for approval codes, now a future feature_) (_11 Sep: the right PIN is accepted in 295 ms against a verifier in the server's format; the wrong-PIN half of that log line is still to be confirmed_)
+- [x] `escpos-bt` Kotlin module stub: `listBonded`, `connect`, `write`, `disconnect` (_built and loads on the tablet; "Find printers" failed because there's no printer yet, most likely Bluetooth switched off or the permission not granted_)
+  - [ ] Print the test receipt on a real 58mm printer (_waiting for a printer_)
+- [x] Write down the results; adjust the plan if anything fails (_nothing failed; no plan change_)
 
 ### 1.3 Database (`packages/db`)
 
