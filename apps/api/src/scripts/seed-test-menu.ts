@@ -1,6 +1,7 @@
 import {
   categories,
   createDatabase,
+  devices,
   eq,
   itemModifierGroups,
   itemVariants,
@@ -120,15 +121,30 @@ async function main() {
   try {
     const matches = await withPlatform(db, (tx) =>
       tx
-        .select({ id: tenants.id, name: tenants.name, timezone: tenants.timezone })
+        .select({
+          id: tenants.id,
+          name: tenants.name,
+          slug: tenants.slug,
+          timezone: tenants.timezone,
+          createdAt: tenants.createdAt,
+        })
         .from(tenants)
         .where(or(eq(tenants.slug, wanted), eq(tenants.name, wanted))),
     );
-    if (matches.length !== 1) {
+    if (!matches.length) throw new Error(`No business is called "${wanted}"`);
+    if (matches.length > 1) {
+      // Say which is which, so the right one can be picked by its slug.
+      const choices: string[] = [];
+      for (const match of matches) {
+        const tablets = await withTenant(db, match.id, (tx) => tx.$count(devices));
+        const menuItems = await withTenant(db, match.id, (tx) => tx.$count(items));
+        const setUp = match.createdAt.toISOString().slice(0, 16).replace('T', ' ');
+        choices.push(
+          `  ${match.slug}  (set up ${setUp} UTC, ${tablets} tablet(s) registered, ${menuItems ? 'has a menu' : 'no menu yet'})`,
+        );
+      }
       throw new Error(
-        matches.length
-          ? `${matches.length} businesses are called "${wanted}"; use the slug instead`
-          : `No business is called "${wanted}"`,
+        `${matches.length} businesses are called "${wanted}". Run it again with one of these slugs:\n${choices.join('\n')}`,
       );
     }
     const tenant = matches[0]!;
