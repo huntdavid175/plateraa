@@ -425,7 +425,7 @@ export class SyncEngine {
     const oldOrders = `SELECT id FROM orders
       WHERE business_date < ? AND status IN ('COMPLETED', 'CANCELLED', 'REFUNDED')
         AND id NOT IN (SELECT row_id FROM row_locks WHERE tbl = 'orders')`;
-    for (const table of ['order_items', 'payments', 'refunds']) {
+    for (const table of ['order_items', 'payments', 'refunds', 'payment_links']) {
       await tx.run(`DELETE FROM ${table} WHERE order_id IN (${oldOrders})`, [yesterday]);
     }
     await tx.run(`DELETE FROM orders WHERE id IN (${oldOrders})`, [yesterday]);

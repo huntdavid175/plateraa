@@ -14,6 +14,27 @@ const envSchema = z.object({
   BETTER_AUTH_URL: z.url(),
   /** Signs the 15-minute PIN session tokens the tablet app uses. */
   SESSION_SIGNING_SECRET: z.string().min(32),
+  /** Moolre's API: https://sandbox.moolre.com while testing, https://api.moolre.com live. */
+  MOOLRE_BASE_URL: z.url().default('https://api.moolre.com'),
+  /**
+   * Encrypts each vendor's Moolre key at rest: 32 random bytes, base64url. Losing it means
+   * entering every vendor's key again. Payment links can't go out without it.
+   */
+  SECRETS_KEY: z
+    .string()
+    .regex(/^[A-Za-z0-9_-]{43}$/, 'must be 32 random bytes, base64url')
+    .optional(),
+  /** Our Moolre SMS account, which texts payment links to customers. */
+  MOOLRE_SMS_VASKEY: z.string().min(1).optional(),
+  /** The approved sender name customers see on the text (at most 11 characters). */
+  MOOLRE_SMS_SENDER_ID: z.string().min(1).max(11).optional(),
+  /** How long a payment link stays open, in minutes. */
+  PAYMENT_LINK_MINUTES: z.coerce.number().int().min(5).max(1440).default(60),
+  /**
+   * Whether this process makes, texts and checks payment links. On for the deployed API only:
+   * a laptop sharing the database must never pick up real customers' links.
+   */
+  RUN_PAYMENT_LINKS: z.stringbool().default(false),
   /** Comma-separated browser origins allowed to call the auth endpoints (the dashboard). */
   TRUSTED_ORIGINS: z
     .string()

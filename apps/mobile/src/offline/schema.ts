@@ -156,6 +156,23 @@ export const SYNCED_TABLES = [
     fields: ['id', 'orderId', 'method', 'amount', 'reason', 'createdAtDevice'],
   },
   {
+    name: 'payment_links',
+    pullKey: 'paymentLinks',
+    fields: [
+      'id',
+      'orderId',
+      'status',
+      'amount',
+      'phone',
+      'url',
+      'failure',
+      'sentAt',
+      'expiresAt',
+      'paidAt',
+      'createdAtDevice',
+    ],
+  },
+  {
     name: 'shifts',
     pullKey: 'shifts',
     fields: [
@@ -303,6 +320,14 @@ export const MIGRATIONS: readonly (readonly string[])[] = [
     // The owner's switch for morning portion counts (plan.md §2.4). Null until the server sends
     // it, which reads as off.
     `ALTER TABLE settings ADD COLUMN count_portions INTEGER`,
+  ],
+  [
+    // Payment links texted to customers (plan.md §2.5): the counter shows sent, paid, or why not.
+    `CREATE TABLE payment_links (
+      id TEXT PRIMARY KEY, order_id TEXT, status TEXT, amount INTEGER, phone TEXT, url TEXT,
+      failure TEXT, sent_at TEXT, expires_at TEXT, paid_at TEXT, created_at_device TEXT
+    )`,
+    `CREATE INDEX payment_links_order ON payment_links (order_id)`,
   ],
 ];
 

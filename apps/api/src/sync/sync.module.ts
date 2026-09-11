@@ -5,6 +5,7 @@ import { createZodDto } from 'nestjs-zod';
 import { z } from 'zod';
 import { CurrentDevice, DeviceGuard } from '../identity/guards';
 import type { DeviceContext } from '../identity/request-context';
+import { PaymentsModule } from '../payments/payments.module';
 import { SyncService } from './sync.service';
 
 class PushDto extends createZodDto(syncPushRequestSchema) {}
@@ -65,6 +66,7 @@ export class SyncController {
 }
 
 @Module({
+  imports: [PaymentsModule],
   controllers: [SyncController],
   providers: [SyncService],
 })

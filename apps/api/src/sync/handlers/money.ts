@@ -41,7 +41,7 @@ async function assertNewPayment(ctx: HandlerContext, paymentId: string) {
   }
 }
 
-async function addToAmountPaid(ctx: HandlerContext, orderId: string, amount: number) {
+export async function addToAmountPaid(ctx: HandlerContext, orderId: string, amount: number) {
   const [updated] = await ctx.tx
     .update(orders)
     .set({ amountPaid: sql`${orders.amountPaid} + ${amount}` })
@@ -51,7 +51,7 @@ async function addToAmountPaid(ctx: HandlerContext, orderId: string, amount: num
 }
 
 /** Pay before prep: the payment that clears an order sends it to the kitchen, with no extra tap. */
-async function startPrepIfPaid(
+export async function startPrepIfPaid(
   ctx: HandlerContext,
   order: Order,
   amountPaid: Pesewas,

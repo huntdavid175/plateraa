@@ -31,9 +31,20 @@ export type OrderSource = (typeof ORDER_SOURCES)[number];
 export const STATIONS = ['KITCHEN', 'DRINKS'] as const;
 export type Station = (typeof STATIONS)[number];
 
-/** Manually recorded methods only. Moolre methods arrive with R1.5. */
-export const PAYMENT_METHODS = ['CASH', 'PLATFORM'] as const;
+/**
+ * CASH and PLATFORM are recorded by hand at the counter. LINK is a Moolre payment link paid into
+ * the vendor's own Moolre account, recorded by the server once Moolre confirms it (plan.md §2.5).
+ */
+export const PAYMENT_METHODS = ['CASH', 'PLATFORM', 'LINK'] as const;
 export type PaymentMethod = (typeof PAYMENT_METHODS)[number];
+
+/**
+ * A payment link's life: QUEUED (saved, not sent yet: offline, or waiting for the sender),
+ * SENT (texted to the customer), PAID (confirmed with Moolre), FAILED (couldn't be sent),
+ * EXPIRED (not paid in time). A new link can be sent for an order whose link failed or expired.
+ */
+export const PAYMENT_LINK_STATUSES = ['QUEUED', 'SENT', 'PAID', 'FAILED', 'EXPIRED'] as const;
+export type PaymentLinkStatus = (typeof PAYMENT_LINK_STATUSES)[number];
 
 export const PAYMENT_STATUSES = ['PENDING', 'CONFIRMED', 'FAILED'] as const;
 export type PaymentStatus = (typeof PAYMENT_STATUSES)[number];

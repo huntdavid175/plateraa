@@ -12,6 +12,8 @@ export function configureApp(app: NestExpressApplication): void {
   const auth = app.get<Auth>(AUTH);
 
   app.enableCors({ origin: env.TRUSTED_ORIGINS, credentials: true });
+  // Render sits one proxy in front: the caller's own address (Moolre's callbacks) is the next hop.
+  app.set('trust proxy', 1);
   // Vendors pay for data by the megabyte: gzip every response big enough to benefit.
   app.use(compression());
 

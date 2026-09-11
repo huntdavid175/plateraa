@@ -1,5 +1,6 @@
 import type { CommandHandlers } from '../sync.types';
 import { customerUpsert } from './customers';
+import { paymentRequestLink } from './links';
 import { paymentRecordCash, paymentRecordPlatform } from './money';
 import {
   orderCancel,
@@ -22,6 +23,7 @@ export const HANDLERS: CommandHandlers = {
   'order.cancel': orderCancel,
   'payment.record_cash': paymentRecordCash,
   'payment.record_platform': paymentRecordPlatform,
+  'payment.request_link': paymentRequestLink,
   'shift.open': shiftOpen,
   'shift.cash_movement': shiftCashMovement,
   'shift.close': shiftClose,

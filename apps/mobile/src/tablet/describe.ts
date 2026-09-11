@@ -41,6 +41,8 @@ export function describeCommand(command: { type: SyncCommandType; payload: unkno
       return `Cash payment of ${cedis(payloadOf(type, payload).amount)}`;
     case 'payment.record_platform':
       return `${cedis(payloadOf(type, payload).amount)} marked as paid via the platform`;
+    case 'payment.request_link':
+      return `Payment link to ${payloadOf(type, payload).phone}`;
     case 'shift.open':
       return `Drawer opened with ${cedis(payloadOf(type, payload).float)}`;
     case 'shift.cash_movement': {

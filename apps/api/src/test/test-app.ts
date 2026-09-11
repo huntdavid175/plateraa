@@ -3,6 +3,7 @@ import type { NestExpressApplication } from '@nestjs/platform-express';
 import { configureApp } from '../app.setup';
 import { AppModule } from '../app.module';
 import { ENV, loadEnv, type Env } from '../config/env';
+import { MOOLRE, type MoolreApi } from '../payments/moolre';
 
 /** Config for tests that never touch the database (the pool connects lazily, so none is opened). */
 export const OFFLINE_TEST_ENV: Env = {
@@ -13,6 +14,9 @@ export const OFFLINE_TEST_ENV: Env = {
   BETTER_AUTH_SECRET: 'test-better-auth-secret-at-least-32-chars',
   BETTER_AUTH_URL: 'http://localhost:3000',
   SESSION_SIGNING_SECRET: 'test-session-signing-secret-at-least-32-chars',
+  MOOLRE_BASE_URL: 'https://sandbox.moolre.com',
+  PAYMENT_LINK_MINUTES: 60,
+  RUN_PAYMENT_LINKS: false,
   TRUSTED_ORIGINS: [],
 };
 
@@ -26,11 +30,16 @@ export function hasDatabase(): boolean {
   }
 }
 
-export async function createTestApp(env: Env = OFFLINE_TEST_ENV): Promise<NestExpressApplication> {
-  const moduleRef = await Test.createTestingModule({ imports: [AppModule] })
+/** The real app, with a pretend Moolre when a test gives one. */
+export async function createTestApp(
+  env: Env = OFFLINE_TEST_ENV,
+  overrides: { moolre?: MoolreApi } = {},
+): Promise<NestExpressApplication> {
+  let builder = Test.createTestingModule({ imports: [AppModule] })
     .overrideProvider(ENV)
-    .useValue(env)
-    .compile();
+    .useValue(env);
+  if (overrides.moolre) builder = builder.overrideProvider(MOOLRE).useValue(overrides.moolre);
+  const moduleRef = await builder.compile();
   const app = moduleRef.createNestApplication<NestExpressApplication>({ bodyParser: false });
   configureApp(app);
   await app.init();

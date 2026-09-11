@@ -11,6 +11,12 @@ NestJS 11 (not 12: nestjs-zod 5.5 needs `@nestjs/common` ^11), CommonJS, built w
   - Guards in `identity/guards.ts`: `@Authorized(...capabilities)` (works for tablet PIN sessions and dashboard logins; permissions re-read every request), `@CurrentActor()`, `@CurrentDevice()`, `@CurrentUser()`.
 - `sync/`: `POST /sync/push` and `GET /sync/pull`, authenticated by the **device token** (not a PIN session), so queued sales upload while the screen is locked.
 - `audit/audit.ts`: `audit.record(tx, …)`. Call it inside the same transaction as every money, price, stock and access change.
+- `payments/` (plan.md §2.5): payment links into each vendor's own Moolre account.
+  - `moolre.ts`: `MoolreApi` (create a link, check a payment's status, send an SMS) and `MoolreHttpClient`, behind the `MOOLRE` token so tests can use a pretend Moolre.
+  - `payment-links.service.ts`: `PaymentLinks` makes each QUEUED link (our link id is Moolre's `externalref`), texts it and marks it SENT. It claims a link before working on it, so two servers never text it twice. `verify()` asks Moolre for the status; `confirm()` records the LINK payment once and starts prep. It only runs where `RUN_PAYMENT_LINKS=true` (Render), because the laptop shares the database.
+  - `payments.module.ts`: `POST /api/payments/moolre/callback`, public and left out of the OpenAPI document. It stores the callback raw in `provider_events`, answers at once, then checks with Moolre before any money counts.
+  - `secrets.ts`: `sealSecret` / `openSecret` (AES-256-GCM under `SECRETS_KEY`) for the vendor's Moolre key in `moolre_accounts`.
+- `scripts/`: `seed:test-menu`, `settings:portion-counts` and `settings:moolre-account` stand in for dashboard setup until 3.1.
 
 ## Database access
 
@@ -28,7 +34,7 @@ To add one:
 
 Pull runs in one REPEATABLE READ snapshot with an xid8 cursor (`changedSince`, `nextSyncCursor` from `@plateraa/db`). It never returns aggregates, cost prices or PIN hashes.
 
-Current commands (15): `order.create` (no discount), `order.update_items`, `order.set_status` (refuses `AWAITING_PAYMENT` moves), `order.hold`, `order.resume`, `order.cancel` (a paid order becomes "refund owed"), `payment.record_cash`, `payment.record_platform` (a payment that clears an awaiting-payment order moves it to PREPARING), `shift.open`, `shift.cash_movement` (DROP / PAY_IN only), `shift.close` (expected = float + cash − payouts − drops + pay-ins; refunds are outside the drawer), `item.set_sold_out`, `stock.prep_count`, `stock.raw_count`, `customer.upsert`.
+Current commands (16): `order.create` (no discount), `order.update_items`, `order.set_status` (refuses `AWAITING_PAYMENT` moves), `order.hold`, `order.resume`, `order.cancel` (a paid order becomes "refund owed"), `payment.record_cash`, `payment.record_platform` (a payment that clears an awaiting-payment order moves it to PREPARING), `payment.request_link` (queues a link for what's owed; one open link per order; refused until the business has a Moolre account), `shift.open`, `shift.cash_movement` (DROP / PAY_IN only), `shift.close` (expected = float + cash − payouts − drops + pay-ins; refunds are outside the drawer), `item.set_sold_out`, `stock.prep_count`, `stock.raw_count`, `customer.upsert`.
 
 ## After changing routes or DTOs
 
@@ -36,4 +42,4 @@ Current commands (15): `order.create` (no discount), `order.update_items`, `orde
 
 ## Tests
 
-Vitest with SWC (esbuild can't emit the decorator metadata Nest needs). Files are `src/**/*.spec.ts`, run one file at a time with 30 s timeouts because integration specs make real round trips to Neon. Helpers in `src/test/` (`test-app.ts`, `fixtures.ts`, `sync-client.ts`). The Neon specs (`identity`, `sync`, `sync-money`) use `describe.skipIf(!hasDatabase())`, so they skip in CI; run them locally before pushing API changes.
+Vitest with SWC (esbuild can't emit the decorator metadata Nest needs). Files are `src/**/*.spec.ts`, run one file at a time with 30 s timeouts because integration specs make real round trips to Neon. Helpers in `src/test/` (`test-app.ts`, `fixtures.ts`, `sync-client.ts`). The Neon specs (`identity`, `sync`, `sync-money`, `payment-links`) use `describe.skipIf(!hasDatabase())`, so they skip in CI; run them locally before pushing API changes. `createTestApp(env, { moolre })` swaps in a pretend Moolre. Tests call `PaymentLinks.send()` / `verify()` for their own business only, never `work()`: the database is shared, and a real customer's link must never be picked up by a test.

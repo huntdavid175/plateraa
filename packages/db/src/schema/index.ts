@@ -7,6 +7,7 @@ export * from './customers.js';
 export * from './enums.js';
 export * from './expenses.js';
 export * from './identity.js';
+export * from './links.js';
 export * from './orders.js';
 export * from './payments.js';
 export * from './stock.js';

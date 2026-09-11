@@ -20,6 +20,7 @@ import {
   or,
   orderItems,
   orders,
+  paymentLinks,
   payments,
   refunds,
   shifts,
@@ -40,6 +41,7 @@ import {
 import { DATABASE, type DatabaseHandle } from '../database/database.module';
 import { Directories, type ResolvedStaff } from '../identity/directories.service';
 import type { DeviceContext } from '../identity/request-context';
+import { PaymentLinks } from '../payments/payment-links.service';
 import { HANDLERS } from './handlers';
 import {
   CommandRejected,
@@ -66,6 +68,7 @@ export class SyncService {
   constructor(
     @Inject(DATABASE) private readonly database: DatabaseHandle,
     private readonly directories: Directories,
+    private readonly paymentLinks: PaymentLinks,
   ) {}
 
   /**
@@ -76,6 +79,7 @@ export class SyncService {
     const tenant = await this.tenantInfo(device.tenantId);
     const staffCache = new Map<string, ResolvedStaff | null>();
     const results: PushResult[] = [];
+    let linkAsked = false;
 
     for (const command of [...commands].sort((a, b) => a.deviceSeq - b.deviceSeq)) {
       if (!staffCache.has(command.staffId)) {
@@ -91,8 +95,11 @@ export class SyncService {
         command,
       );
       results.push(result);
+      if (result.status === 'APPLIED' && command.type === 'payment.request_link') linkAsked = true;
       if (result.status === 'RETRY') break;
     }
+    // Links are made and texted outside the sync, so a slow Moolre never holds up a tablet.
+    if (linkAsked) this.paymentLinks.sendSoon();
     return results;
   }
 
@@ -324,6 +331,15 @@ export class SyncService {
                 and(
                   changedSince(refunds, cursor),
                   firstSync ? inArray(refunds.orderId, scopedOrderIds) : undefined,
+                ),
+              ),
+            paymentLinks: await tx
+              .select()
+              .from(paymentLinks)
+              .where(
+                and(
+                  changedSince(paymentLinks, cursor),
+                  firstSync ? inArray(paymentLinks.orderId, scopedOrderIds) : undefined,
                 ),
               ),
             shifts: await tx

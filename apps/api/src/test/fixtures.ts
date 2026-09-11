@@ -102,6 +102,9 @@ export async function seedMenu(
 const TENANT_TABLES = [
   'audit_events',
   'sync_commands',
+  'provider_events',
+  'payment_links',
+  'moolre_accounts',
   'stock_movements',
   'expenses',
   'refunds',

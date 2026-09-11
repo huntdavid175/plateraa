@@ -145,6 +145,13 @@ const paymentRecordPlatform = z.object({
   amount: positiveMoney,
 });
 
+/**
+ * Texts the customer a Moolre payment link for what's still owed on the order. Saved offline like
+ * anything else; the server creates and sends the link once the command reaches it. The link's
+ * id is also the reference Moolre knows the payment by, so a retry can't charge twice.
+ */
+const paymentRequestLink = z.object({ linkId: ulid, orderId: ulid, phone: phoneSchema });
+
 const shiftOpen = z.object({ shiftId: ulid, float: nonNegativeMoney });
 
 /** Drops (cash taken out to the safe or the owner) and pay-ins. Payouts are dashboard-only. */
@@ -205,6 +212,7 @@ export const syncCommandSchema = z.discriminatedUnion('type', [
   command('order.cancel', orderCancel),
   command('payment.record_cash', paymentRecordCash),
   command('payment.record_platform', paymentRecordPlatform),
+  command('payment.request_link', paymentRequestLink),
   command('shift.open', shiftOpen),
   command('shift.cash_movement', shiftCashMovement),
   command('shift.close', shiftClose),
@@ -240,6 +248,7 @@ export const COMMAND_CAPABILITY: Record<SyncCommandType, Capability> = {
   'order.cancel': 'orders.cancel',
   'payment.record_cash': 'payments.record',
   'payment.record_platform': 'payments.record',
+  'payment.request_link': 'payments.record',
   'shift.open': 'shift.operate',
   'shift.cash_movement': 'shift.operate',
   'shift.close': 'shift.operate',

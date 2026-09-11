@@ -24,7 +24,9 @@ A solo founder (GitHub `huntdavid175`) builds it with an AI agent. Work started 
   - §2.1: the offline engine in `apps/mobile/src/offline`, tested in Node.
   - §2.2: the app shell, tablet registration, the PIN switcher, adding staff, the sync banner and the "Needs attention" screen. Tried on the tablet and working.
   - §2.3: taking orders (the counter screen, the orders list, cash, hold, edit and cancel). Tried on the tablet and working.
-- **Next:** Phase 2 §2.4, cash and stock. See `apps/mobile/AGENTS.md`.
+  - §2.4: the Drawer tab (drops, pay-ins, a blind count at close) and the Stock tab (one-tap sold out, optional portion counts). Not tried on the tablet yet. Owner summaries moved to 3.2.
+  - §2.5, server side: payment links through each vendor's own Moolre account, texted by Moolre SMS, and counted only once Moolre's status check confirms them. See `apps/api/AGENTS.md`.
+- **Next:** §2.5 on the tablet ("Send payment link", and each link's status on the order), then the Moolre sandbox test once the keys arrive. See `apps/mobile/AGENTS.md`.
 - Founder tasks (Moolre, lawyer, printers, domain, Play Console) are Phase 0 in `plan.md`.
 
 ## Working with the user
@@ -94,6 +96,7 @@ On this Windows machine, `pnpm` works in PowerShell. **In Git Bash the global `p
 - **Database tests are local-only.** Tests that need the database run against Neon using the root `.env`, and **skip themselves when there's no database, including in CI**. So run `pnpm test` locally before pushing any change to the API or the database.
 - **Migrations:** `pnpm --filter @plateraa/db db:generate`, then `db:migrate`.
 - **Deployed API:** `https://plateraa-api.onrender.com` (Render, Frankfurt, free plan), deployed automatically from `main`. The free plan has no pre-deploy step, so **run `db:migrate` from the laptop before pushing code that needs a new migration**. Render and the laptop use the same Neon database for now.
+- **Payment links** only run where `RUN_PAYMENT_LINKS=true`: on Render, never on the laptop, which shares the database. They also need `SECRETS_KEY`, `MOOLRE_BASE_URL`, `MOOLRE_SMS_VASKEY` and `MOOLRE_SMS_SENDER_ID` (see `.env.example`). A vendor's own Moolre account is saved with `pnpm --filter @plateraa/api settings:moolre-account "<business>"`.
 - **API client**, regenerated after API changes: `pnpm --filter @plateraa/api openapi`, then `pnpm --filter @plateraa/api-client generate`.
 - **Tablet:** `pnpm --filter @plateraa/mobile start`. Native changes need a new EAS build (see `apps/mobile/AGENTS.md`). EAS CLI: `npx eas-cli@latest …` (the package is `eas-cli`, not `eas`).
 - **Running the API:** `pnpm --filter @plateraa/api dev`. Swagger is at `http://localhost:3000/api/docs`.

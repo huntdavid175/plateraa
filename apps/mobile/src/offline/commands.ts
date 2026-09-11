@@ -434,6 +434,41 @@ const HANDLERS: LocalHandlers = {
   'payment.record_platform': (ctx) =>
     recordPayment(ctx, ctx.command.payload, { method: 'PLATFORM', tendered: null, shift_id: null }),
 
+  /** Saved at once, even offline; the server makes the link and texts it once this reaches it. */
+  'payment.request_link': async ({ writer, command }) => {
+    const p = command.payload;
+    const order = await loadOrder(writer.tx, p.orderId);
+    if (order.status === 'CANCELLED' || order.status === 'REFUNDED') {
+      throw new LocalRejection('ORDER_CLOSED', 'This order was cancelled or refunded');
+    }
+    const owed = sub(amountDue(payable(order)), order.amount_paid);
+    if (owed <= 0) throw new LocalRejection('ALREADY_PAID', 'This order is already paid');
+    const open = await writer.tx.get(
+      `SELECT 1 AS found FROM payment_links WHERE order_id = ?
+         AND (status = 'QUEUED' OR (status = 'SENT' AND (expires_at IS NULL OR expires_at > ?)))`,
+      [order.id, command.deviceTs],
+    );
+    if (open) {
+      throw new LocalRejection(
+        'LINK_ALREADY_OPEN',
+        "A payment link for this order is still open. A new one can be sent once it's paid, expires or fails.",
+      );
+    }
+    await writer.put('payment_links', {
+      id: p.linkId,
+      order_id: order.id,
+      status: 'QUEUED',
+      amount: owed,
+      phone: p.phone,
+      url: null,
+      failure: null,
+      sent_at: null,
+      expires_at: null,
+      paid_at: null,
+      created_at_device: command.deviceTs,
+    });
+  },
+
   'shift.open': async ({ writer, command, deviceId }) => {
     const p = command.payload;
     if (

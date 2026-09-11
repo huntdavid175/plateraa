@@ -6,10 +6,11 @@ import { ConfigModule } from './config/config.module';
 import { DatabaseModule } from './database/database.module';
 import { HealthController } from './health/health.controller';
 import { IdentityModule } from './identity/identity.module';
+import { PaymentsModule } from './payments/payments.module';
 import { SyncModule } from './sync/sync.module';
 
 @Module({
-  imports: [ConfigModule, DatabaseModule, AuthModule, IdentityModule, SyncModule],
+  imports: [ConfigModule, DatabaseModule, AuthModule, IdentityModule, PaymentsModule, SyncModule],
   controllers: [HealthController],
   providers: [{ provide: APP_PIPE, useClass: ZodValidationPipe }],
 })

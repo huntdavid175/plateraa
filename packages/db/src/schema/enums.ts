@@ -10,6 +10,7 @@ import {
   ORDER_SOURCES,
   ORDER_STATUSES,
   ORDER_TYPES,
+  PAYMENT_LINK_STATUSES,
   PAYMENT_METHODS,
   PAYMENT_STATUSES,
   ROLES,
@@ -32,6 +33,7 @@ export const orderType = pgEnum('order_type', ORDER_TYPES);
 export const orderStatus = pgEnum('order_status', ORDER_STATUSES);
 export const paymentMethod = pgEnum('payment_method', PAYMENT_METHODS);
 export const paymentStatus = pgEnum('payment_status', PAYMENT_STATUSES);
+export const paymentLinkStatus = pgEnum('payment_link_status', PAYMENT_LINK_STATUSES);
 export const deliveryFeeCollector = pgEnum('delivery_fee_collector', DELIVERY_FEE_COLLECTORS);
 export const shiftStatus = pgEnum('shift_status', SHIFT_STATUSES);
 export const cashMovementType = pgEnum('cash_movement_type', CASH_MOVEMENT_TYPES);
