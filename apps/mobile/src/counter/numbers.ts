@@ -13,11 +13,24 @@ export async function nextDisplayNumber(
     const row = await tx.get<{ value: string }>(
       `SELECT value FROM meta WHERE key = 'order_number'`,
     );
-    const last = row ? (JSON.parse(row.value) as { date: string; n: number }) : null;
-    const n = last?.date === businessDate ? last.n + 1 : 1;
+    const n = countAfter(row?.value, businessDate);
     await tx.run(`INSERT OR REPLACE INTO meta (key, value) VALUES ('order_number', ?)`, [
       JSON.stringify({ date: businessDate, n }),
     ]);
     return `${deviceCode}${n}`;
   });
+}
+
+/** The number the next order will get, without using it up: for the order column's header. */
+export function upcomingNumber(
+  stored: string | undefined,
+  deviceCode: string,
+  businessDate: string,
+): string {
+  return `${deviceCode}${countAfter(stored, businessDate)}`;
+}
+
+function countAfter(stored: string | undefined, businessDate: string): number {
+  const last = stored ? (JSON.parse(stored) as { date: string; n: number }) : null;
+  return last?.date === businessDate ? last.n + 1 : 1;
 }

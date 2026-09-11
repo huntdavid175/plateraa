@@ -10,7 +10,15 @@ type Tone = 'warning' | 'danger' | 'info';
  * Whether the tablet is reaching the server, and what's waiting. Sales are always saved on the
  * tablet first, so being offline is a notice, not an error.
  */
-export function SyncBanner() {
+export function SyncBanner({
+  offline = true,
+  refused = true,
+}: {
+  /** Show the offline notice (the counter's top bar shows it instead). */
+  offline?: boolean;
+  /** Show the "refused" notice (the counter's top bar shows it instead). */
+  refused?: boolean;
+} = {}) {
   const { engine, forget } = useTablet();
   const state = useEngineState(engine);
   const router = useRouter();
@@ -40,7 +48,7 @@ export function SyncBanner() {
         'This tablet has been signed out, so nothing can upload. An owner or manager needs to register it again.',
       action: { label: 'Register again', onPress: registerAgain },
     });
-  } else if (state.connection === 'offline') {
+  } else if (state.connection === 'offline' && offline) {
     const waiting = state.pending
       ? ` ${plural(state.pending, 'change')} will upload when the connection is back.`
       : '';
@@ -49,10 +57,10 @@ export function SyncBanner() {
       tone: 'warning',
       message: `No connection. Everything is saved on this tablet.${waiting}${updated}`,
     });
-  } else if (state.pending > 0) {
+  } else if (state.pending > 0 && offline) {
     notices.push({ tone: 'info', message: `Uploading ${plural(state.pending, 'change')}…` });
   }
-  if (state.needsAttention > 0) {
+  if (state.needsAttention > 0 && refused) {
     notices.push({
       tone: 'danger',
       message: `The server refused ${plural(state.needsAttention, 'change')}.`,

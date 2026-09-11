@@ -32,7 +32,14 @@ The counter app. It runs on the vendor's own budget Android tablet (8–10", **l
 - `actions.ts`: everything the counter does, as sync commands: `placeOrder`, `payCash`, `openDrawer`, `markPaidOnPlatform`, `advance` (one tap to the next status), `setOnHold`, `cancelOrder` and `updateItems`. Screens call these rather than `engine.record` directly.
 - How orders are paid: a walk-in pays cash or by payment link; a phone order needs the caller's number and is paid by link only; Bolt and Chowdeck orders are marked "paid on the platform". Links don't go out until §2.5.
 - `ticket.ts` is the order being typed in. `menu.ts` loads the menu (`needsChoice`: a size or a required extra opens the item sheet). `queue.ts` loads the orders list. `lanes.ts` sorts orders into lanes, honouring pay before prep, and gives the amber/red timers. `numbers.ts` gives order numbers (the tablet's letter plus a daily count: A1, A2, …). `hooks.ts` has `useCounter`, `useMenu`, `useQueue` and `usePayBeforePrep`.
-- Screens: `OrderEntry` (tiles, ticket and payment), `OrdersPanel` (the lanes), `OrderSheet` (one order and its actions), `ItemSheet`, and `CashPanel` / `DrawerPanel`. The first cash sale asks for the drawer's float.
+- Screens (11 Sep redesign, following the user's Figma Make file in `assets/design/`): `app/index.tsx` holds the tabs (`TopBar`: Counter, Orders, Kitchen) and the order being typed in. Counter is `MenuPane` (chips, tiles, "Now cooking" strip) beside `OrderPane` (walk-in or delivery) or `RemoteOrderPanel` (phone, Bolt, Chowdeck). `OptionsSheet` slides in for sizes and extras; `PaymentSheet` takes cash (keypad, change) or a payment link, and opens the drawer on the first cash sale. `OrdersScreen` is the list and detail; `KitchenScreen` is sized to read from 2 m.
+- `checkout.ts` checks an order before it's saved (who must give a number, delivery details); `views.ts` sorts the Orders screen by urgency.
+
+## Look (`src/ui`)
+
+- Follow the user's design, not a new one: calm and spacious, white and warm grey (`#F6F5F3`, `#ECEAE7`), one brand colour (`#E8701A`) only for the main action and the selected tab, status colours only with a word. DM Sans for words and DM Mono for money (`font` in `theme.ts`, loaded in `app/_layout.tsx`). Money shows as `cedis()`: "GH₵ 35.00".
+- Building blocks: `Button` (56 dp, or 44 for secondary rows), `Field` / `PhoneField` (+233), and in `controls.tsx` `Segmented`, `Chip`, `OptionTile`, `Badge` and `Stepper`; `Overlay` / `CloseButton` in `Sheet.tsx`. Touch targets stay at least 44 dp; secondary text uses `muted` (`faint` fails contrast, so it's for placeholders only).
+- The Figma design's WhatsApp/Instagram sources, "Save as unpaid" and receipts are left out on purpose: see the settled decisions in the root AGENTS.md.
 
 ## App (`app/`, `src/tablet`, `src/ui`)
 

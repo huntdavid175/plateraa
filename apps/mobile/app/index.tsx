@@ -1,80 +1,307 @@
-import { useRouter } from 'expo-router';
-import { useState } from 'react';
+import { amountDue, type Pesewas } from '@plateraa/shared';
+import { useEffect, useMemo, useState } from 'react';
 import { StyleSheet, Text, View } from 'react-native';
-import { useCounter, usePayBeforePrep, useQueue } from '../src/counter/hooks';
-import { OrderEntry } from '../src/counter/OrderEntry';
-import { OrderSheet } from '../src/counter/OrderSheet';
-import { OrdersPanel } from '../src/counter/OrdersPanel';
-import type { QueueOrder } from '../src/counter/queue';
-import { useEngineState, useTablet } from '../src/tablet/TabletProvider';
-import { Button } from '../src/ui/Button';
+import {
+  markPaidOnPlatform,
+  payCash,
+  placeOrder,
+  setOnHold,
+  updateItems,
+} from '../src/counter/actions';
+import { isPlatform, toDraft, type Checkout } from '../src/counter/checkout';
+import { today, useCounter, useMenu, usePayBeforePrep, useQueue } from '../src/counter/hooks';
+import { KitchenScreen } from '../src/counter/KitchenScreen';
+import { laneOf } from '../src/counter/lanes';
+import { needsChoice, type MenuItem } from '../src/counter/menu';
+import { MenuPane } from '../src/counter/MenuPane';
+import { upcomingNumber } from '../src/counter/numbers';
+import { OptionsSheet } from '../src/counter/OptionsSheet';
+import { OrderPane } from '../src/counter/OrderPane';
+import { OrdersScreen } from '../src/counter/OrdersScreen';
+import { PaymentSheet } from '../src/counter/PaymentSheet';
+import { ticketLinesOf, type QueueOrder } from '../src/counter/queue';
+import { RemoteOrderPanel } from '../src/counter/RemoteOrderPanel';
+import { addToTicket, priceTicket, replaceLine, type TicketLine } from '../src/counter/ticket';
+import { TopBar, type CounterTab } from '../src/counter/TopBar';
+import { LINKS_NOT_ON } from '../src/counter/words';
+import { problemText } from '../src/tablet/api';
+import { newId } from '../src/tablet/ids';
+import { useLocalQuery, useTablet } from '../src/tablet/TabletProvider';
 import { SyncBanner } from '../src/ui/SyncBanner';
-import { colors, space, text } from '../src/ui/theme';
+import { cedis, colors, font, radii, space } from '../src/ui/theme';
 
-/** The counter: take orders on the left, follow them through the kitchen on the right. */
+/**
+ * The counter: tabs for taking orders, following them (Orders) and cooking them (Kitchen).
+ * Taking an order is two panes: the menu, and the order being typed in.
+ */
 export default function CounterScreen() {
-  const { staff, device, engine, lock } = useTablet();
-  const state = useEngineState(engine);
+  const { device } = useTablet();
   const counter = useCounter();
+  const menu = useMenu();
   const orders = useQueue();
   const payBeforePrep = usePayBeforePrep();
-  const router = useRouter();
-  const [openId, setOpenId] = useState<string | null>(null);
+  const stored = useLocalQuery<{ value: string }>(
+    `SELECT value FROM meta WHERE key = 'order_number'`,
+  );
+  const [tab, setTab] = useState<CounterTab>('counter');
+  const [lines, setLines] = useState<TicketLine[]>([]);
+  const [remote, setRemote] = useState(false);
   const [editing, setEditing] = useState<QueueOrder | null>(null);
+  const [picking, setPicking] = useState<{ item: MenuItem; line?: TicketLine } | null>(null);
+  const [charging, setCharging] = useState<Checkout | null>(null);
+  const [busy, setBusy] = useState(false);
+  const [notice, setNotice] = useState<{ text: string; problem: boolean } | null>(null);
+  const [resetKey, setResetKey] = useState(0);
 
-  if (!counter) return null;
-  const opened = orders?.find((order) => order.id === openId) ?? null;
-  const canAddStaff = staff?.capabilities.has('staff.manage') ?? false;
+  useEffect(() => {
+    if (!notice) return;
+    const timer = setTimeout(() => setNotice(null), 6000);
+    return () => clearTimeout(timer);
+  }, [notice]);
+
+  const itemsById = useMemo(
+    () => new Map((menu ?? []).flatMap((category) => category.items).map((i) => [i.id, i])),
+    [menu],
+  );
+  const cooking = useMemo(
+    () => (orders ?? []).filter((order) => laneOf(order, payBeforePrep) === 'kitchen'),
+    [orders, payBeforePrep],
+  );
+
+  if (!counter || !device) return null;
+
+  const number = upcomingNumber(stored?.[0]?.value, device.deviceCode, today());
+
+  const say = (text: string) => setNotice({ text, problem: false });
+  const fail = (error: unknown) => setNotice({ text: problemText(error), problem: true });
+  const run = async (task: () => Promise<void>) => {
+    setBusy(true);
+    try {
+      await task();
+    } catch (error) {
+      fail(error);
+    } finally {
+      setBusy(false);
+    }
+  };
+  const clear = () => {
+    setLines([]);
+    setRemote(false);
+    setCharging(null);
+    setResetKey((key) => key + 1);
+  };
+
+  const canChange = (line: TicketLine) => {
+    const item = itemsById.get(line.itemId);
+    return Boolean(item && (item.variants.length || item.groups.length));
+  };
+  const changeLine = (line: TicketLine) => {
+    const item = itemsById.get(line.itemId);
+    if (item) setPicking({ item, line });
+  };
+  const pick = (item: MenuItem) => {
+    if (needsChoice(item)) {
+      setPicking({ item });
+      return;
+    }
+    setLines((current) =>
+      addToTicket(current, {
+        lineId: newId(),
+        itemId: item.id,
+        name: item.name,
+        unitPrice: item.price,
+        modifiers: [],
+        quantity: 1,
+      }),
+    );
+  };
+
+  const charge = (checkout: Checkout) => {
+    try {
+      toDraft(checkout, lines, false);
+      setCharging(checkout);
+    } catch (error) {
+      fail(error);
+    }
+  };
+
+  const hold = (checkout: Checkout) =>
+    run(async () => {
+      const placed = await placeOrder(counter, toDraft(checkout, lines, false));
+      await setOnHold(counter, placed.orderId, true);
+      clear();
+      say(`${placed.displayNumber} is on hold. Find it under Orders, Held.`);
+    });
+
+  const paidCash = async (tendered: Pesewas, shiftId: string) => {
+    const placed = await placeOrder(counter, toDraft(charging!, lines, false));
+    await payCash(counter, { orderId: placed.orderId, shiftId, amount: placed.due, tendered });
+    clear();
+    say(`${placed.displayNumber} is with the kitchen. Change: ${cedis(tendered - placed.due)}`);
+  };
+
+  const sentLink = async (phone: string) => {
+    const placed = await placeOrder(counter, toDraft({ ...charging!, phone }, lines, true));
+    clear();
+    say(`${placed.displayNumber} is waiting for ${cedis(placed.due)}. ${LINKS_NOT_ON}`);
+  };
+
+  const submitRemote = (checkout: Checkout) =>
+    run(async () => {
+      const platform = isPlatform(checkout.source);
+      const placed = await placeOrder(counter, toDraft(checkout, lines, !platform));
+      if (platform) {
+        await markPaidOnPlatform(counter, { orderId: placed.orderId, amount: placed.due });
+        say(`${placed.displayNumber} is with the kitchen.`);
+      } else {
+        say(`${placed.displayNumber} is waiting for its payment link. ${LINKS_NOT_ON}`);
+      }
+      clear();
+    });
+
+  const startEdit = (order: QueueOrder) => {
+    setEditing(order);
+    setRemote(false);
+    setLines(ticketLinesOf(order));
+    setTab('counter');
+  };
+  const stopEdit = () => {
+    setEditing(null);
+    clear();
+  };
+  const saveEdit = () =>
+    run(async () => {
+      if (!editing) return;
+      if (!lines.length) {
+        throw new Error('An order needs at least one item. To drop it, cancel the order.');
+      }
+      await updateItems(counter, editing.id, lines);
+      say(`Saved the changes to ${editing.display_number}.`);
+      setEditing(null);
+      clear();
+    });
+
+  const charged = charging
+    ? priceTicket(lines, charging.delivery && charging.fee ? charging.fee : undefined)
+    : null;
 
   return (
     <View style={styles.screen}>
-      <View style={styles.topBar}>
-        <Text style={styles.business} numberOfLines={1}>
-          {device?.businessName} <Text style={styles.meta}>· tablet {device?.deviceCode}</Text>
-        </Text>
-        {state && state.needsAttention > 0 && (
-          <Button
-            label={`Needs attention (${state.needsAttention})`}
-            kind="danger"
-            onPress={() => router.push('/attention')}
+      <TopBar tab={tab} onTab={setTab} />
+      <SyncBanner offline={false} refused={false} />
+
+      {tab === 'counter' && (
+        <View style={styles.body}>
+          <MenuPane
+            menu={menu}
+            onPick={pick}
+            cooking={cooking}
+            onOpenKitchen={() => setTab('kitchen')}
           />
-        )}
-        {canAddStaff && (
-          <Button label="Add staff" kind="secondary" onPress={() => router.push('/add-staff')} />
-        )}
-        <Button label="Check" kind="secondary" onPress={() => router.push('/diagnostics')} />
-        <Text style={styles.staff}>{staff?.displayName}</Text>
-        <Button label="Lock" kind="secondary" onPress={lock} />
-      </View>
-
-      <SyncBanner />
-
-      <View style={styles.body}>
-        <OrderEntry counter={counter} editing={editing} onEditDone={() => setEditing(null)} />
-        <OrdersPanel
+          {remote && !editing ? (
+            <RemoteOrderPanel
+              number={number}
+              lines={lines}
+              onLines={setLines}
+              canChange={canChange}
+              onChangeLine={changeLine}
+              onCancel={() => setRemote(false)}
+              onSubmit={submitRemote}
+              busy={busy}
+            />
+          ) : (
+            <OrderPane
+              number={number}
+              lines={lines}
+              onLines={setLines}
+              canChange={canChange}
+              onChangeLine={changeLine}
+              editing={editing}
+              onStopEditing={stopEdit}
+              onSaveEdit={saveEdit}
+              onRemote={() => setRemote(true)}
+              onCharge={charge}
+              onHold={hold}
+              busy={busy}
+              resetKey={resetKey}
+            />
+          )}
+        </View>
+      )}
+      {tab === 'orders' && (
+        <OrdersScreen
           orders={orders}
-          payBeforePrep={payBeforePrep}
           counter={counter}
-          onOpen={(order) => setOpenId(order.id)}
+          payBeforePrep={payBeforePrep}
+          onEdit={startEdit}
         />
-      </View>
+      )}
+      {tab === 'kitchen' && (
+        <KitchenScreen orders={orders} counter={counter} payBeforePrep={payBeforePrep} />
+      )}
 
-      <OrderSheet
-        order={opened}
-        counter={counter}
-        payBeforePrep={payBeforePrep}
-        onClose={() => setOpenId(null)}
-        onEdit={setEditing}
+      <OptionsSheet
+        item={picking?.item ?? null}
+        line={picking?.line}
+        onClose={() => setPicking(null)}
+        onAdd={(line) => {
+          setLines((current) =>
+            picking?.line ? replaceLine(current, line) : addToTicket(current, line),
+          );
+          setPicking(null);
+        }}
       />
+
+      {charging && charged && (
+        <PaymentSheet
+          visible
+          onClose={() => setCharging(null)}
+          counter={counter}
+          summary={{
+            number,
+            lines: lines.map((line, index) => ({
+              key: line.lineId,
+              name: line.variantName ? `${line.name} (${line.variantName})` : line.name,
+              detail: line.modifiers.map((m) => `+ ${m.name}`).join(', ') || undefined,
+              quantity: line.quantity,
+              total: charged.lines[index]!.lineTotal,
+            })),
+            total: charged.total,
+          }}
+          due={amountDue({
+            total: charged.total,
+            deliveryFee: charged.deliveryFee,
+            deliveryFeeCollectedBy: charging.riderKeepsFee ? 'RIDER' : null,
+          })}
+          allowLink
+          phone={charging.phone}
+          onCash={paidCash}
+          onLink={sentLink}
+        />
+      )}
+
+      {notice && (
+        <View style={[styles.toast, notice.problem && styles.toastProblem]} pointerEvents="none">
+          <Text style={styles.toastText}>{notice.text}</Text>
+        </View>
+      )}
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-  screen: { flex: 1, gap: space.sm, padding: space.md, backgroundColor: colors.ground },
-  topBar: { flexDirection: 'row', alignItems: 'center', gap: space.sm },
-  business: { flex: 1, fontSize: text.heading, fontWeight: '700', color: colors.ink },
-  meta: { fontSize: text.small, fontWeight: '400', color: colors.muted },
-  staff: { fontSize: text.body, fontWeight: '600', color: colors.ink },
-  body: { flex: 1, flexDirection: 'row', gap: space.md },
+  screen: { flex: 1, backgroundColor: colors.canvas },
+  body: { flex: 1, flexDirection: 'row' },
+  toast: {
+    position: 'absolute',
+    left: space.lg,
+    bottom: 72,
+    maxWidth: 560,
+    backgroundColor: colors.ink,
+    borderRadius: radii.lg,
+    paddingHorizontal: space.md,
+    paddingVertical: 12,
+  },
+  toastProblem: { backgroundColor: colors.redInk },
+  toastText: { fontFamily: font.medium, fontSize: 15, color: colors.onBrand },
 });

@@ -36,7 +36,8 @@
         {
           "configureAndroidBackup": true
         }
-      ]
+      ],
+      "expo-font"
     ]
   }
 }

@@ -183,6 +183,7 @@ _11 Sep: built (`apps/mobile/src/counter`; the counter screen is `app/index.tsx`
 - _Gap: Bolt and Chowdeck prices that differ from the menu aren't on the tablet yet (the dashboard sets them in 3.1), so such an order is kept but flagged for review._
 
 - [x] Landscape tablet layout (8" minimum): order entry and prep queue side by side (_menu tiles, the order being typed in, and the orders list_)
+  - _11 Sep, user decision: the counter follows the user's own Figma Make design (`apps/mobile/assets/design`): calm and spacious, two panes, one brand colour (#E8701A), DM Sans with DM Mono for money. Tabs across the top (Counter, Orders, Kitchen) replace the third column; a "Now cooking" strip under the menu shows the kitchen at a glance. Walk-ins: Charge opens a payment sheet (cash with keypad and change, or payment link); remote orders (phone, Bolt, Chowdeck) have their own panel. Drawer and Stock tabs come with 2.4._
 - [x] Counter mode: big text tiles, modifier sheet only when required, optional customer phone, then pay by cash (tendered → change) or payment link (the customer's number is needed for a link) (≤15 s for cash) (_not timed yet_)
 - [x] Phone order entry (typed in like a walk-in, caller's number required, paid only by a payment link sent to that number) and hand-typed Bolt/Chowdeck orders: source, pickup/delivery, address + zone → fee (_delivery with zones not tried yet: the test business has no zones_)
 - [x] Inbox sorted by urgency; unpaid orders sit in an "awaiting payment" list and don't reach the prep queue while pay-before-prep is on
