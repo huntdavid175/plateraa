@@ -184,6 +184,7 @@ _11 Sep: built (`apps/mobile/src/counter`; the counter screen is `app/index.tsx`
 
 - [x] Landscape tablet layout (8" minimum): order entry and prep queue side by side (_menu tiles, the order being typed in, and the orders list_)
   - _11 Sep, user decision: the counter follows the user's own Figma Make design (`apps/mobile/assets/design`): calm and spacious, two panes, one brand colour (#E8701A), DM Sans with DM Mono for money. Tabs across the top (Counter, Orders, Kitchen) replace the third column; a "Now cooking" strip under the menu shows the kitchen at a glance. Walk-ins: Charge opens a payment sheet (cash with keypad and change, or payment link); remote orders (phone, Bolt, Chowdeck) have their own panel. Drawer and Stock tabs come with 2.4._
+  - _11 Sep, after a UX review: the strip under the menu shows Cooking and Ready orders; tapping one shows it with its next step (Ready, Handed over, Out for delivery, Delivered), so a one-tablet counter needn't leave the till. After a sale, a big card shows the order number and the change to give until the next tap (the small toast is left for holds, edits and problems). Not tried on the tablet yet._
 - [x] Counter mode: big text tiles, modifier sheet only when required, optional customer phone, then pay by cash (tendered → change) or payment link (the customer's number is needed for a link) (≤15 s for cash) (_not timed yet_)
 - [x] Phone order entry (typed in like a walk-in, caller's number required, paid only by a payment link sent to that number) and hand-typed Bolt/Chowdeck orders: source, pickup/delivery, address + zone → fee (_delivery with zones not tried yet: the test business has no zones_)
 - [x] Inbox sorted by urgency; unpaid orders sit in an "awaiting payment" list and don't reach the prep queue while pay-before-prep is on
@@ -193,7 +194,7 @@ _11 Sep: built (`apps/mobile/src/counter`; the counter screen is `app/index.tsx`
 
 ### 2.4 Cash & stock
 
-- [x] Open shift with float (_11 Sep: built with 2.3, because cash needs an open drawer: the tablet asks for the float at the first cash sale. Worked on the tablet._)
+- [x] Open shift with float (_11 Sep: built with 2.3, because cash needs an open drawer, and worked on the tablet. Later that day it moved to the start of the day: once someone who runs the drawer unlocks and none is open, the counter asks for the float. "Not now" holds for the trading day, and the first cash sale then asks instead. The move isn't tried on the tablet yet._)
 - [ ] Drops and pay-ins (payouts are recorded by a manager on the dashboard)
 - [ ] Close shift: expected vs counted vs variance, own shift only
 - [ ] One-tap sold-out toggle

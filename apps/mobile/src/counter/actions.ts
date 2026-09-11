@@ -97,12 +97,12 @@ export function updateItems(counter: Counter, orderId: string, lines: TicketLine
   );
 }
 
+/** This tablet's open cash drawer, given the tablet's id. */
+export const OPEN_SHIFT_SQL = `SELECT id FROM shifts WHERE device_id = ? AND status = 'OPEN' LIMIT 1`;
+
 /** This tablet's open cash drawer, if any. */
 export async function openShiftOf(db: Sql, deviceId: string): Promise<string | null> {
-  const shift = await db.get<{ id: string }>(
-    `SELECT id FROM shifts WHERE device_id = ? AND status = 'OPEN' LIMIT 1`,
-    [deviceId],
-  );
+  const shift = await db.get<{ id: string }>(OPEN_SHIFT_SQL, [deviceId]);
   return shift?.id ?? null;
 }
 

@@ -1,13 +1,15 @@
-import { formatCedis, parseCedis, pesewas, sub, type Pesewas } from '@plateraa/shared';
+import { pesewas, sub, type Pesewas } from '@plateraa/shared';
 import { useEffect, useState } from 'react';
-import { Pressable, ScrollView, StyleSheet, Text, View, useWindowDimensions } from 'react-native';
+import { ScrollView, StyleSheet, Text, View, useWindowDimensions } from 'react-native';
 import { problemText } from '../tablet/api';
 import { Button } from '../ui/Button';
 import { Segmented } from '../ui/controls';
 import { Label, PhoneField } from '../ui/Field';
 import { CloseButton, Overlay } from '../ui/Sheet';
 import { cedis, colors, font, radii, space, text } from '../ui/theme';
-import { openShiftOf, type Counter } from './actions';
+import { openDrawer, openShiftOf, type Counter } from './actions';
+import { amountOf, plainAmount } from './amounts';
+import { AmountDisplay, Keypad } from './Keypad';
 import { LINKS_NOT_ON } from './words';
 
 export interface PaymentSummary {
@@ -18,29 +20,12 @@ export interface PaymentSummary {
 
 type Mode = 'cash' | 'link' | 'drawer';
 
-const KEYS = ['1', '2', '3', '4', '5', '6', '7', '8', '9', '.', '0', 'back'] as const;
 const NOTES = [2000, 5000, 10000, 20000].map(pesewas);
-
-/** "105.00" for a keypad display, without floating-point maths. */
-const plainAmount = (amount: Pesewas) => formatCedis(amount).replace(/[^\d.]/g, '');
-
-const amountOf = (typed: string) => {
-  const trimmed = typed.endsWith('.') ? typed.slice(0, -1) : typed;
-  return trimmed ? parseCedis(trimmed) : null;
-};
-
-function pressKey(typed: string, key: (typeof KEYS)[number]): string {
-  if (key === 'back') return typed.slice(0, -1);
-  if (key === '.') return typed.includes('.') ? typed : `${typed || '0'}.`;
-  if (typed.includes('.') && typed.split('.')[1]!.length >= 2) return typed;
-  if (typed.replace('.', '').length >= 8) return typed;
-  if (typed === '0') return key;
-  return typed + key;
-}
 
 /**
  * Taking the money: the order on the left; on the right, cash (what they handed over, and the
- * change to give) or a payment link. The first cash sale of the day opens the drawer first.
+ * change to give) or a payment link. The drawer is normally opened at unlock (`DrawerSheet`);
+ * if that was skipped, the first cash sale opens it first.
  */
 export function PaymentSheet({
   visible,
@@ -101,33 +86,11 @@ export function PaymentSheet({
     }
   };
 
-  const openDrawer = () =>
+  const openTheDrawer = () =>
     run(async () => {
-      const id = counter.engine.newId();
-      await counter.engine.record(
-        'shift.open',
-        { shiftId: id, float: floatAmount },
-        counter.staffId,
-      );
-      setShiftId(id);
+      setShiftId(await openDrawer(counter, floatAmount));
       setMode('cash');
     });
-
-  const keypad = (value: string, onChange: (value: string) => void) => (
-    <View style={styles.keypad}>
-      {KEYS.map((key) => (
-        <Pressable
-          key={key}
-          accessibilityRole="button"
-          accessibilityLabel={key === 'back' ? 'Delete' : key}
-          onPress={() => onChange(pressKey(value, key))}
-          style={({ pressed }) => [styles.key, pressed && styles.keyPressed]}
-        >
-          <Text style={styles.keyLabel}>{key === 'back' ? '⌫' : key}</Text>
-        </Pressable>
-      ))}
-    </View>
-  );
 
   return (
     <Overlay
@@ -190,12 +153,9 @@ export function PaymentSheet({
                 </Text>
                 <View style={styles.cashRow}>
                   <View style={styles.cashSide}>
-                    <Label text="Cash in the drawer now" />
-                    <Text style={[styles.display, floatTyped ? styles.displayOn : null]}>
-                      GH₵ {floatTyped || '0.00'}
-                    </Text>
+                    <AmountDisplay label="Cash in the drawer now" typed={floatTyped} />
                   </View>
-                  {keypad(floatTyped, setFloatTyped)}
+                  <Keypad value={floatTyped} onChange={setFloatTyped} />
                 </View>
               </>
             )}
@@ -242,7 +202,7 @@ export function PaymentSheet({
                       <Text style={styles.short}>That's less than {cedis(due)}.</Text>
                     )}
                   </View>
-                  {keypad(typed, setTyped)}
+                  <Keypad value={typed} onChange={setTyped} />
                 </View>
               </>
             )}
@@ -269,7 +229,7 @@ export function PaymentSheet({
             {mode === 'drawer' && (
               <Button
                 label={`Open the drawer with ${cedis(floatAmount)}`}
-                onPress={openDrawer}
+                onPress={openTheDrawer}
                 busy={busy}
               />
             )}
@@ -366,19 +326,6 @@ const styles = StyleSheet.create({
   change: { fontFamily: font.monoMedium, fontSize: 36, color: colors.disabled },
   changeOn: { color: colors.good },
   short: { fontFamily: font.medium, fontSize: 14, color: colors.redInk },
-  keypad: { width: 216, flexDirection: 'row', flexWrap: 'wrap', gap: space.sm },
-  key: {
-    width: 66,
-    height: 56,
-    borderRadius: radii.md,
-    borderWidth: 1.5,
-    borderColor: colors.line,
-    backgroundColor: colors.field,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  keyPressed: { backgroundColor: colors.tile },
-  keyLabel: { fontFamily: font.monoMedium, fontSize: 20, color: colors.ink },
   problem: { fontFamily: font.medium, fontSize: 15, color: colors.redInk },
   payFoot: {
     paddingHorizontal: 28,

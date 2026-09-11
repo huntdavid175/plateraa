@@ -1,14 +1,19 @@
-import { amountDue, type Pesewas } from '@plateraa/shared';
+import { amountDue, sub, type Pesewas } from '@plateraa/shared';
 import { useEffect, useMemo, useState } from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 import {
+  OPEN_SHIFT_SQL,
+  advance,
   markPaidOnPlatform,
+  openDrawer,
   payCash,
   placeOrder,
   setOnHold,
   updateItems,
 } from '../src/counter/actions';
 import { isPlatform, toDraft, type Checkout } from '../src/counter/checkout';
+import { asksForDrawer } from '../src/counter/drawer';
+import { DrawerSheet } from '../src/counter/DrawerSheet';
 import { today, useCounter, useMenu, usePayBeforePrep, useQueue } from '../src/counter/hooks';
 import { KitchenScreen } from '../src/counter/KitchenScreen';
 import { laneOf } from '../src/counter/lanes';
@@ -20,22 +25,27 @@ import { OrderPane } from '../src/counter/OrderPane';
 import { OrdersScreen } from '../src/counter/OrdersScreen';
 import { PaymentSheet } from '../src/counter/PaymentSheet';
 import { ticketLinesOf, type QueueOrder } from '../src/counter/queue';
+import { QuickOrderSheet } from '../src/counter/QuickOrderSheet';
 import { RemoteOrderPanel } from '../src/counter/RemoteOrderPanel';
+import { SaleDone, type Done } from '../src/counter/SaleDone';
 import { addToTicket, priceTicket, replaceLine, type TicketLine } from '../src/counter/ticket';
 import { TopBar, type CounterTab } from '../src/counter/TopBar';
-import { LINKS_NOT_ON } from '../src/counter/words';
+import { LINKS_NOT_ON, SOURCE_LABELS } from '../src/counter/words';
 import { problemText } from '../src/tablet/api';
 import { newId } from '../src/tablet/ids';
 import { useLocalQuery, useTablet } from '../src/tablet/TabletProvider';
 import { SyncBanner } from '../src/ui/SyncBanner';
 import { cedis, colors, font, radii, space } from '../src/ui/theme';
 
+/** "Not now" on the drawer prompt lasts the trading day, across lock and unlock. */
+let drawerSkippedOn: string | null = null;
+
 /**
  * The counter: tabs for taking orders, following them (Orders) and cooking them (Kitchen).
  * Taking an order is two panes: the menu, and the order being typed in.
  */
 export default function CounterScreen() {
-  const { device } = useTablet();
+  const { device, staff } = useTablet();
   const counter = useCounter();
   const menu = useMenu();
   const orders = useQueue();
@@ -43,6 +53,7 @@ export default function CounterScreen() {
   const stored = useLocalQuery<{ value: string }>(
     `SELECT value FROM meta WHERE key = 'order_number'`,
   );
+  const openShift = useLocalQuery<{ id: string }>(OPEN_SHIFT_SQL, [device?.deviceId ?? '']);
   const [tab, setTab] = useState<CounterTab>('counter');
   const [lines, setLines] = useState<TicketLine[]>([]);
   const [remote, setRemote] = useState(false);
@@ -51,6 +62,10 @@ export default function CounterScreen() {
   const [charging, setCharging] = useState<Checkout | null>(null);
   const [busy, setBusy] = useState(false);
   const [notice, setNotice] = useState<{ text: string; problem: boolean } | null>(null);
+  const [done, setDone] = useState<Done | null>(null);
+  const [quickId, setQuickId] = useState<string | null>(null);
+  const [stepping, setStepping] = useState(false);
+  const [skippedOn, setSkippedOn] = useState(drawerSkippedOn);
   const [resetKey, setResetKey] = useState(0);
 
   useEffect(() => {
@@ -67,10 +82,26 @@ export default function CounterScreen() {
     () => (orders ?? []).filter((order) => laneOf(order, payBeforePrep) === 'kitchen'),
     [orders, payBeforePrep],
   );
+  const ready = useMemo(
+    () => (orders ?? []).filter((order) => laneOf(order, payBeforePrep) === 'ready'),
+    [orders, payBeforePrep],
+  );
 
   if (!counter || !device) return null;
 
   const number = upcomingNumber(stored?.[0]?.value, device.deviceCode, today());
+  const quickOrder = quickId
+    ? ((orders ?? []).find((order) => order.id === quickId) ?? null)
+    : null;
+  const drawerPrompt =
+    tab === 'counter' &&
+    !charging &&
+    asksForDrawer({
+      runsDrawer: staff?.capabilities.has('shift.operate') ?? false,
+      drawerOpen: openShift === null ? null : openShift.length > 0,
+      skippedOn,
+      today: today(),
+    });
 
   const say = (text: string) => setNotice({ text, problem: false });
   const fail = (error: unknown) => setNotice({ text: problemText(error), problem: true });
@@ -137,13 +168,21 @@ export default function CounterScreen() {
     const placed = await placeOrder(counter, toDraft(charging!, lines, false));
     await payCash(counter, { orderId: placed.orderId, shiftId, amount: placed.due, tendered });
     clear();
-    say(`${placed.displayNumber} is with the kitchen. Change: ${cedis(tendered - placed.due)}`);
+    setDone({
+      number: placed.displayNumber,
+      change: sub(tendered, placed.due),
+      message: 'Paid in cash. It’s with the kitchen.',
+    });
   };
 
   const sentLink = async (phone: string) => {
     const placed = await placeOrder(counter, toDraft({ ...charging!, phone }, lines, true));
     clear();
-    say(`${placed.displayNumber} is waiting for ${cedis(placed.due)}. ${LINKS_NOT_ON}`);
+    setDone({
+      number: placed.displayNumber,
+      change: null,
+      message: `Waiting for ${cedis(placed.due)} by payment link. ${LINKS_NOT_ON}`,
+    });
   };
 
   const submitRemote = (checkout: Checkout) =>
@@ -152,12 +191,33 @@ export default function CounterScreen() {
       const placed = await placeOrder(counter, toDraft(checkout, lines, !platform));
       if (platform) {
         await markPaidOnPlatform(counter, { orderId: placed.orderId, amount: placed.due });
-        say(`${placed.displayNumber} is with the kitchen.`);
-      } else {
-        say(`${placed.displayNumber} is waiting for its payment link. ${LINKS_NOT_ON}`);
       }
       clear();
+      setDone({
+        number: placed.displayNumber,
+        change: null,
+        message: platform
+          ? `Paid on ${SOURCE_LABELS[checkout.source]}. It’s with the kitchen.`
+          : `Waiting for ${cedis(placed.due)} by payment link. ${LINKS_NOT_ON}`,
+      });
     });
+
+  const stepQuick = async (order: QueueOrder) => {
+    setStepping(true);
+    try {
+      await advance(counter, order);
+    } catch (error) {
+      fail(error);
+    } finally {
+      setStepping(false);
+      setQuickId(null);
+    }
+  };
+
+  const skipDrawer = () => {
+    drawerSkippedOn = today();
+    setSkippedOn(drawerSkippedOn);
+  };
 
   const startEdit = (order: QueueOrder) => {
     setEditing(order);
@@ -196,7 +256,8 @@ export default function CounterScreen() {
             menu={menu}
             onPick={pick}
             cooking={cooking}
-            onOpenKitchen={() => setTab('kitchen')}
+            ready={ready}
+            onOrder={(order) => setQuickId(order.id)}
           />
           {remote && !editing ? (
             <RemoteOrderPanel
@@ -279,6 +340,27 @@ export default function CounterScreen() {
           onLink={sentLink}
         />
       )}
+
+      <QuickOrderSheet
+        order={quickOrder}
+        busy={stepping}
+        onStep={(order) => void stepQuick(order)}
+        onOpenKitchen={() => {
+          setQuickId(null);
+          setTab('kitchen');
+        }}
+        onClose={() => setQuickId(null)}
+      />
+
+      <DrawerSheet
+        visible={drawerPrompt}
+        onOpen={async (float) => {
+          await openDrawer(counter, float);
+        }}
+        onSkip={skipDrawer}
+      />
+
+      <SaleDone done={done} onDismiss={() => setDone(null)} />
 
       {notice && (
         <View style={[styles.toast, notice.problem && styles.toastProblem]} pointerEvents="none">
