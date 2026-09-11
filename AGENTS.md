@@ -32,6 +32,8 @@ A solo founder (GitHub `huntdavid175`) builds it with an AI agent. Work started 
 - **Settled decisions.** Don't re-argue them. Build them as decided:
   - Non-cash money goes only through Moolre, into **each vendor's own Moolre account**. It never passes through us. Direct MoMo can't be recorded; only cash and "paid via platform" are entered by hand. How we take our 2% ("the split") is decided later.
   - **Payment links are in the pilot** (§2.5), if Moolre API access arrives by Thu 24 Sep.
+    - **Phone orders** are typed in exactly like walk-ins. The caller's number is required, and a link sent to that number is the only way they're paid.
+    - **Walk-ins** pay cash or by payment link. The customer's number is needed for a link.
   - 6-digit PINs for everyone. The offline PIN check is not tied to the Android Keystore.
   - **The tablet can't refund, pay out or discount.** Managers do those on the dashboard:
     - anyone on the tablet can cancel a paid order, which then shows "refund owed";

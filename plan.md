@@ -146,7 +146,7 @@ _The counter device is the vendor's own budget Android tablet, 8–10" landscape
 - [x] Remove `WHATSAPP` and `INSTAGRAM` from `ORDER_SOURCES` (shared enum, DB enum migration, regenerated API client). Vendors put the storefront link on their WhatsApp and Instagram, so those customers order on the storefront. Sources left: `POS`, `PHONE`, `STOREFRONT`, `BOLT_FOOD`, `CHOWDECK`, `OTHER`
 - [x] Pay before prep (_server done: setting, migration 0005, `AWAITING_PAYMENT` refusal, shared helpers for the tablet; the dashboard switch is in 3.1 and the tablet's awaiting-payment list in 2.3_): per-vendor setting `require_payment_before_prep`, **on by default**. While it's on, an order can't go to Preparing until fully paid (cash, paid via platform or payment link); an unpaid order waits as "awaiting payment" and stays off the prep queue. Pay on delivery only works with the setting off
 - [x] The payment that clears an awaiting-payment order moves it to Preparing automatically (no extra tap). Walk-ins pay as they order, so they go straight through
-- _Phone orders in the pilot are paid by payment link (§2.5, decided 10 Sep)._
+- _Phone orders in the pilot are paid by payment link (§2.5, decided 10 Sep). Clarified 11 Sep: a phone order is typed in exactly like a walk-in, the caller's number is required, and a link sent to that number is the only way it's paid. Walk-ins can pay cash or by link (§2.3)._
 
 ### 2.1 Offline engine
 
@@ -176,12 +176,12 @@ _11 Sep: built in the new app shell (Expo Router, `apps/mobile/app/`), with test
 ### 2.3 Taking orders
 
 - [ ] Landscape tablet layout (8" minimum): order entry and prep queue side by side
-- [ ] Counter mode: big text tiles, modifier sheet only when required, optional customer phone, cash tendered → change (≤15 s)
-- [ ] Phone order entry (typed in like a walk-in, caller's number required) and hand-typed Bolt/Chowdeck orders: source, pickup/delivery, address + zone → fee
+- [ ] Counter mode: big text tiles, modifier sheet only when required, optional customer phone, then pay by cash (tendered → change) or payment link (the customer's number is needed for a link) (≤15 s for cash)
+- [ ] Phone order entry (typed in like a walk-in, caller's number required, paid only by a payment link sent to that number) and hand-typed Bolt/Chowdeck orders: source, pickup/delivery, address + zone → fee
 - [ ] Inbox sorted by urgency; unpaid orders sit in an "awaiting payment" list and don't reach the prep queue while pay-before-prep is on
 - [ ] Prep queue: readable from 2 m, amber/red timers, tap to advance, optional Kitchen/Drinks split
 - [ ] Hold / resume / edit before prep / cancel with a reason (anyone can cancel a paid order; it then shows "refund owed" until a manager records the refund)
-- [ ] Payments: cash, paid via platform, payment link (§2.5)
+- [ ] Payments: walk-ins by cash or payment link; phone orders by payment link only; Bolt/Chowdeck as paid via platform (links: §2.5)
 
 ### 2.4 Cash & stock
 
@@ -199,7 +199,8 @@ _Money goes straight into each vendor's own Moolre merchant account and never pa
 - [ ] Moolre sandbox spike: create a link, pay it, receive the webhook, confirm via Payment Status, check the `TP14` first-payer OTP step (_moved up from Phase 5_)
 - [ ] `PaymentProvider` interface + Moolre adapter (create link, check status); each vendor's Moolre account details stored per tenant, secrets encrypted
 - [ ] New payment method for link payments, PENDING → CONFIRMED; only confirmed money counts as money in
-- [ ] Tablet (online only): "Send payment link" on an unpaid order → server creates a link for what's still owed → sent to the customer's number
+- [ ] Tablet: "Send payment link" on an unpaid order → server creates a link for what's still owed → sent to the customer's number. It's the only way a phone order is paid, and the alternative to cash for a walk-in
+  - _Sending needs the internet. An order taken offline is still saved, and its link goes out once the tablet reconnects (11 Sep)._
   - _How the link reaches the caller is settled in the spike: Moolre's own SMS if it has one, otherwise an SMS provider. WhatsApp from the tablet only works if the tablet has WhatsApp, and many have no SIM._
 - [ ] Webhook receiver → store the raw payload → confirm with Moolre's status check (webhooks aren't signed) → record the payment → order moves to Preparing (§2.0b). A job re-checks pending links every few minutes in case a webhook is missed
 - [ ] The tablet sees the payment on its next pull (≤30 s); push (SSE/FCM) stays in R1.5
