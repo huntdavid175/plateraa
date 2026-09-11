@@ -98,7 +98,14 @@ const serverColumns = () => ({
 export function menuChanges(): PullChanges {
   const item = { description: null, prepMinutes: 10, station: 'KITCHEN', photoKey: null };
   return {
-    tenantSettings: [{ requirePaymentBeforePrep: true, idleLockSeconds: 180, deletedAt: null }],
+    tenantSettings: [
+      {
+        requirePaymentBeforePrep: true,
+        idleLockSeconds: 180,
+        countPortions: false,
+        deletedAt: null,
+      },
+    ],
     staff: [
       {
         id: STAFF_ID,

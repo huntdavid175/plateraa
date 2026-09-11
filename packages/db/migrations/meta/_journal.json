@@ -43,6 +43,13 @@
       "when": 1789112379976,
       "tag": "0005_tablet_decisions",
       "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1789149441601,
+      "tag": "0006_portion_counts_setting",
+      "breakpoints": true
     }
   ]
 }

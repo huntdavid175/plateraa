@@ -198,9 +198,11 @@ _11 Sep: built (`apps/mobile/src/counter`; the counter screen is `app/index.tsx`
 - [x] Drops and pay-ins (payouts are recorded by a manager on the dashboard) (_11 Sep: the Drawer tab's "Take cash out" and "Put cash in", with an optional reason; payouts from the dashboard show in the same list. Not tried on the tablet yet._)
 - [x] Close shift: expected vs counted vs variance, own shift only (_11 Sep: a blind count. Staff enter the cash counted, and only then see what the tablet expected and the difference ("Short by GH₵ 5.00"). The figures show only to the person who closed, or to someone allowed to see revenue, because expected cash includes the shift's cash sales. Anyone who runs the drawer can close it, so a drawer left open can still be closed. Not tried on the tablet yet._)
 - [x] One-tap sold-out toggle (_11 Sep: the Stock tab lists the menu, each item with one button showing "On sale" or "Sold out"; a tap flips it, and it lasts the trading day. Not tried on the tablet yet._)
-- [ ] Morning prep counts that count down on each sale → auto sold-out at 0
+- [x] Morning prep counts that count down on each sale → auto sold-out at 0
   - _11 Sep, user decision: optional. For cooked food it's hard to know how many portions were made, so the owner switches counts on or off in the dashboard's settings (off by default). When off, items sell until someone taps "sold out"._
+  - _11 Sep: built. `tenant_settings.count_portions` (migration 0006) syncs to the tablet. When it's on, the Stock tab's "Add portions" adds to today's count for items that have a count record, sales count down, and the item sells out by itself at 0. Only the seed script makes count records so far; the dashboard makes them in 3.1. Until then, `pnpm --filter @plateraa/api settings:portion-counts "<business>" on` switches counts on. Not tried on the tablet yet._
 - [ ] Owner summaries held in memory only, cleared when the PIN session ends
+  - _11 Sep: moved to go with the day summary in 3.2. The design says the owner's summary needs a connection, so the tablet will fetch it from the same reporting the dashboard uses rather than add up sales itself._
 
 ### 2.5 Payment links (pilot; added 10 Sep)
 
@@ -216,7 +218,7 @@ _Money goes straight into each vendor's own Moolre merchant account and never pa
 - [ ] The tablet sees the payment on its next pull (≤30 s); push (SSE/FCM) stays in R1.5
 - [ ] If the caller doesn't pay or the link expires, the order stays in "awaiting payment" and staff can send a new link
 - [ ] Money that arrives on a cancelled order shows as "refund owed"; a manager records the refund on the dashboard and the vendor sends the MoMo back by hand (Moolre has no refund endpoint)
-- _Deadline: Moolre API access by Thu 24 Sep. If it isn't there, R1a goes live without links (call orders wait for cash) and links follow in R1b._
+- _Deadline: Moolre API access by Thu 24 Sep. 11 Sep, user decision: phone orders are in the pilot regardless, and the API keys are on their way, so the old fallback (R1a without links, call orders waiting for cash) is dropped._
 
 ---
 
@@ -230,7 +232,7 @@ _Money goes straight into each vendor's own Moolre merchant account and never pa
 - [ ] Delivery zones + fees
 - [ ] Channel commissions (rate or flat; blank = shown as "Gross")
 - [ ] Staff management + revenue visibility settings (per role, per person)
-- [ ] Setting: count portions each morning (prep counts), off by default (_11 Sep user decision; the tablet side is §2.4_)
+- [ ] Setting: count portions each morning (prep counts), off by default (_11 Sep user decision; the tablet side is done, §2.4_). Switching it on gives every menu item a daily count record, and new items get one too.
 - [ ] Order setting: pay before prep (on by default; the owner can switch it off)
 - [ ] Manager tools: record drawer payouts against the tablet's open shift (booked as expenses); apply discounts to unpaid orders; a "refunds owed" list and recording refunds given back by hand (outside the drawer, full or partial, reason required)
 - [ ] Expenses + purchases entry (purchase = expense + stock item + qty)

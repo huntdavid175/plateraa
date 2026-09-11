@@ -3,21 +3,33 @@ import { Label } from '../ui/Field';
 import { colors, font, radii, space } from '../ui/theme';
 import { KEYS, pressKey } from './amounts';
 
-/** A big number pad for cash amounts. */
-export function Keypad({ value, onChange }: { value: string; onChange: (value: string) => void }) {
+/** A big number pad for cash amounts, or whole numbers (portions) without the decimal point. */
+export function Keypad({
+  value,
+  onChange,
+  whole = false,
+}: {
+  value: string;
+  onChange: (value: string) => void;
+  whole?: boolean;
+}) {
   return (
     <View style={styles.keypad}>
-      {KEYS.map((key) => (
-        <Pressable
-          key={key}
-          accessibilityRole="button"
-          accessibilityLabel={key === 'back' ? 'Delete' : key}
-          onPress={() => onChange(pressKey(value, key))}
-          style={({ pressed }) => [styles.key, pressed && styles.keyPressed]}
-        >
-          <Text style={styles.keyLabel}>{key === 'back' ? '⌫' : key}</Text>
-        </Pressable>
-      ))}
+      {KEYS.map((key) =>
+        whole && key === '.' ? (
+          <View key={key} style={styles.blank} />
+        ) : (
+          <Pressable
+            key={key}
+            accessibilityRole="button"
+            accessibilityLabel={key === 'back' ? 'Delete' : key}
+            onPress={() => onChange(pressKey(value, key))}
+            style={({ pressed }) => [styles.key, pressed && styles.keyPressed]}
+          >
+            <Text style={styles.keyLabel}>{key === 'back' ? '⌫' : key}</Text>
+          </Pressable>
+        ),
+      )}
     </View>
   );
 }
@@ -45,6 +57,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   keyPressed: { backgroundColor: colors.tile },
+  blank: { width: 66, height: 56 },
   keyLabel: { fontFamily: font.monoMedium, fontSize: 20, color: colors.ink },
   block: { gap: 8 },
   display: {

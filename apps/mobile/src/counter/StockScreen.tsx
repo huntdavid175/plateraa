@@ -11,18 +11,21 @@ import {
 import { problemText } from '../tablet/api';
 import { Label } from '../ui/Field';
 import { cedis, colors, font, plural, radii, space, text } from '../ui/theme';
-import { setSoldOut, type Counter } from './actions';
-import { useMenu } from './hooks';
+import { addPortions, setSoldOut, type Counter } from './actions';
+import { useCountPortions, useMenu } from './hooks';
 import type { MenuItem } from './menu';
+import { PortionsSheet } from './PortionsSheet';
 
 /**
  * What's on sale today. One tap marks an item sold out, and the counter shows it at once; another
- * tap puts it back. Sold out lasts the trading day. Morning portion counts join this tab when the
- * owner switches them on (plan.md §2.4).
+ * tap puts it back. Sold out lasts the trading day. When the owner switches portion counts on,
+ * items with a count record also take the portions made, and sell out by themselves at 0.
  */
 export function StockScreen({ counter }: { counter: Counter }) {
   const menu = useMenu();
+  const countPortions = useCountPortions();
   const [busyId, setBusyId] = useState<string | null>(null);
+  const [counting, setCounting] = useState<MenuItem | null>(null);
 
   const toggle = async (item: MenuItem) => {
     setBusyId(item.id);
@@ -56,6 +59,9 @@ export function StockScreen({ counter }: { counter: Counter }) {
         </Text>
         <Text style={styles.hint}>
           Tap an item's button to mark it sold out for today, or to put it back on sale.
+          {countPortions
+            ? ' Portion counts are on: add what was made, and each sale counts down.'
+            : ''}
         </Text>
       </View>
       {menu.map((category) => (
@@ -71,6 +77,17 @@ export function StockScreen({ counter }: { counter: Counter }) {
                     {item.left !== null ? ` · ${item.left} left` : ''}
                   </Text>
                 </View>
+                {countPortions && item.stockItemId && (
+                  <Pressable
+                    accessibilityRole="button"
+                    accessibilityLabel={`Add portions of ${item.name}`}
+                    hitSlop={4}
+                    onPress={() => setCounting(item)}
+                    style={({ pressed }) => [styles.add, pressed && styles.pressed]}
+                  >
+                    <Text style={styles.addLabel}>Add portions</Text>
+                  </Pressable>
+                )}
                 <SoldOutSwitch
                   name={item.name}
                   soldOut={item.soldOut}
@@ -82,6 +99,14 @@ export function StockScreen({ counter }: { counter: Counter }) {
           </View>
         </View>
       ))}
+      <PortionsSheet
+        item={counting}
+        onAdd={async (quantity) => {
+          await addPortions(counter, counting!.stockItemId!, quantity);
+          setCounting(null);
+        }}
+        onClose={() => setCounting(null)}
+      />
     </ScrollView>
   );
 }
@@ -155,6 +180,14 @@ const styles = StyleSheet.create({
     backgroundColor: colors.canvas,
   },
   switchOut: { backgroundColor: colors.redBg, borderColor: colors.redLine },
+  add: {
+    minHeight: 44,
+    justifyContent: 'center',
+    paddingHorizontal: 14,
+    borderRadius: radii.md,
+    backgroundColor: colors.track,
+  },
+  addLabel: { fontFamily: font.medium, fontSize: 15, color: colors.ink },
   pressed: { opacity: 0.6 },
   dot: { width: 8, height: 8, borderRadius: 4 },
   switchLabel: { fontFamily: font.semibold, fontSize: 15, color: colors.text2 },

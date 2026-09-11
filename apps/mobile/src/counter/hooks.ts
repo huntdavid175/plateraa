@@ -69,6 +69,14 @@ export function usePayBeforePrep(): boolean {
   return on === null || on === undefined ? true : on === 1;
 }
 
+/** Whether the owner switched on morning portion counts (off unless they did). */
+export function useCountPortions(): boolean {
+  const rows = useLocalQuery<{ on: number | null }>(
+    'SELECT count_portions AS "on" FROM settings LIMIT 1',
+  );
+  return rows?.[0]?.on === 1;
+}
+
 /** The time now, ticking over every `everyMs`, for the queue's timers. */
 export function useNow(everyMs = 15_000): Date {
   const [now, setNow] = useState(() => new Date());

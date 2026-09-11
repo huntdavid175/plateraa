@@ -30,6 +30,8 @@ export interface MenuItem {
   soldOut: boolean;
   /** Today's prep count still left, for items someone counted this morning. */
   left: number | null;
+  /** The item's daily portion count record, if it has one (the dashboard sets these up). */
+  stockItemId: string | null;
   variants: MenuVariant[];
   groups: MenuGroup[];
 }
@@ -82,13 +84,22 @@ export async function loadMenu(db: Sql, businessDate: string): Promise<MenuCateg
   }>(
     'SELECT id, group_id, name, price_delta FROM modifiers WHERE active = 1 ORDER BY position, name',
   );
-  const stock = await db.all<{ item_id: string; on_hand: number }>(
-    `SELECT item_id, on_hand FROM stock_items
-      WHERE kind = 'SELLABLE' AND on_hand_date = ? AND item_id IS NOT NULL`,
-    [businessDate],
+  const stock = await db.all<{
+    id: string;
+    item_id: string;
+    on_hand: number;
+    on_hand_date: string | null;
+  }>(
+    `SELECT id, item_id, on_hand, on_hand_date FROM stock_items
+      WHERE kind = 'SELLABLE' AND item_id IS NOT NULL`,
   );
 
-  const left = new Map(stock.map((s) => [s.item_id, s.on_hand]));
+  // A count belongs to its trading day; yesterday's leftovers aren't today's count.
+  const stockOf = new Map(stock.map((s) => [s.item_id, s]));
+  const leftToday = (itemId: string) => {
+    const count = stockOf.get(itemId);
+    return count && count.on_hand_date === businessDate ? count.on_hand : null;
+  };
   const menuItems: MenuItem[] = items.map((item) => ({
     id: item.id,
     categoryId: item.category_id,
@@ -96,7 +107,8 @@ export async function loadMenu(db: Sql, businessDate: string): Promise<MenuCateg
     price: item.price,
     station: item.station ?? 'KITCHEN',
     soldOut: item.sold_out_on === businessDate,
-    left: left.get(item.id) ?? null,
+    left: leftToday(item.id),
+    stockItemId: stockOf.get(item.id)?.id ?? null,
     variants: variants
       .filter((variant) => variant.item_id === item.id)
       .map(({ id, name, price }) => ({ id, name, price })),

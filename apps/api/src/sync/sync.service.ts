@@ -259,6 +259,7 @@ export class SyncService {
               .select({
                 requirePaymentBeforePrep: tenantSettings.requirePaymentBeforePrep,
                 idleLockSeconds: tenantSettings.idleLockSeconds,
+                countPortions: tenantSettings.countPortions,
               })
               .from(tenantSettings)
               .where(changedSince(tenantSettings, cursor)),

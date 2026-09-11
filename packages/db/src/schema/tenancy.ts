@@ -42,6 +42,8 @@ export const tenantSettings = pgTable('tenant_settings', {
   idleLockSeconds: integer().notNull().default(180),
   /** Pay before prep: an order doesn't go to the kitchen until it's fully paid. */
   requirePaymentBeforePrep: boolean().notNull().default(true),
+  /** Morning portion counts that count down with each sale. Optional: off unless the owner turns it on. */
+  countPortions: boolean().notNull().default(false),
   updatedAt: timestamp({ withTimezone: true })
     .notNull()
     .defaultNow()

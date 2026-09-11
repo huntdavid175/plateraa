@@ -24,7 +24,7 @@ export const SYNCED_TABLES = [
     name: 'settings',
     pullKey: 'tenantSettings',
     singletonId: 'tenant',
-    fields: ['requirePaymentBeforePrep', 'idleLockSeconds'],
+    fields: ['requirePaymentBeforePrep', 'idleLockSeconds', 'countPortions'],
   },
   {
     name: 'staff',
@@ -298,6 +298,11 @@ export const MIGRATIONS: readonly (readonly string[])[] = [
       failures INTEGER NOT NULL,
       locked_until TEXT
     )`,
+  ],
+  [
+    // The owner's switch for morning portion counts (plan.md §2.4). Null until the server sends
+    // it, which reads as off.
+    `ALTER TABLE settings ADD COLUMN count_portions INTEGER`,
   ],
 ];
 

@@ -122,6 +122,20 @@ export function setSoldOut(counter: Counter, itemId: string, soldOut: boolean) {
   );
 }
 
+/** "Made 20 more": adds to today's portion count, and takes the item off sold out. */
+export function addPortions(counter: Counter, stockItemId: string, quantity: number) {
+  return counter.engine.record(
+    'stock.prep_count',
+    {
+      movementId: counter.engine.newId(),
+      stockItemId,
+      quantity,
+      businessDate: businessDate(counter),
+    },
+    counter.staffId,
+  );
+}
+
 /** Cash taken out of the drawer (to the safe or the owner) or put into it. */
 export function moveCash(
   counter: Counter,

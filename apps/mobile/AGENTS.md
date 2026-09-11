@@ -36,7 +36,7 @@ The counter app. It runs on the vendor's own budget Android tablet (8–10", **l
 - The drawer opens at the start of the day: `DrawerSheet` asks for the float once someone who runs the drawer unlocks and none is open (`drawer.ts`). "Not now" holds for the trading day, and then `PaymentSheet` asks at the first cash sale. `amounts.ts` and `Keypad.tsx` are the cash keypad; `AmountSheet` is the one sheet for every cash amount.
 - `DrawerScreen` (the Drawer tab, for anyone with `shift.operate`): open the drawer, take cash out or put it in (`moveCash`), and close it with a blind count (`closeDrawer`). `loadDrawer` reads the open drawer and the last close. A close's figures show only to whoever closed, or to someone who can see revenue (`seesDrawerResult`).
 - `StockScreen` (the Stock tab, for anyone with `stock.count`): one tap per item marks it sold out for today or back on sale (`setSoldOut`).
-- Prep counts are optional (user decision, 11 Sep): the owner switches them on in the dashboard's settings, off by default. When on, they'll join the Stock tab.
+- Prep counts are optional (user decision, 11 Sep): the owner switches them on in the dashboard's settings (`count_portions`, off by default; `useCountPortions`). When on, the Stock tab's "Add portions" (`PortionsSheet`, `addPortions`) adds to today's count for items with a count record (`MenuItem.stockItemId`).
 - `checkout.ts` checks an order before it's saved (who must give a number, delivery details); `views.ts` sorts the Orders screen by urgency.
 
 ## Look (`src/ui`)

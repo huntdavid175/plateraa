@@ -77,6 +77,7 @@ describe('sync engine', () => {
     expect(await db.get('SELECT * FROM settings')).toEqual({
       id: 'tenant',
       require_payment_before_prep: 1,
+      count_portions: 0,
       idle_lock_seconds: 180,
     });
 
