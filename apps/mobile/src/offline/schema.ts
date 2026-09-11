@@ -289,6 +289,16 @@ export const MIGRATIONS: readonly (readonly string[])[] = [
     )`,
     `CREATE INDEX cash_movements_shift ON cash_movements (shift_id)`,
   ],
+  [
+    // Wrong PINs per person, for the offline lockout (src/tablet/pin-guard.ts). Tied to the
+    // verifier, so a new PIN from a manager starts the count again.
+    `CREATE TABLE pin_attempts (
+      staff_id TEXT PRIMARY KEY,
+      verifier TEXT NOT NULL,
+      failures INTEGER NOT NULL,
+      locked_until TEXT
+    )`,
+  ],
 ];
 
 /** Brings the database up to the latest version, one migration per transaction. */
@@ -300,6 +310,16 @@ export async function migrate(db: Database): Promise<void> {
       await tx.run(`PRAGMA user_version = ${version + 1}`);
     });
   }
+}
+
+/** Empties every table, for a fresh registration: nothing from another business or tablet stays. */
+export async function resetLocalData(db: Database): Promise<void> {
+  await db.transaction(async (tx) => {
+    const tables = await tx.all<{ name: string }>(
+      `SELECT name FROM sqlite_master WHERE type = 'table' AND name NOT LIKE 'sqlite_%'`,
+    );
+    for (const { name } of tables) await tx.run(`DELETE FROM ${name}`);
+  });
 }
 
 export async function openLocalDatabase(driver: SqlDriver): Promise<Database> {

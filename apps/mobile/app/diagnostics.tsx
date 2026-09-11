@@ -1,23 +1,26 @@
 import { open } from '@op-engineering/op-sqlite';
-import { StatusBar } from 'expo-status-bar';
 import { useState } from 'react';
 import {
   PermissionsAndroid,
   Platform,
-  Pressable,
   ScrollView,
   StyleSheet,
   Text,
   View,
   useWindowDimensions,
 } from 'react-native';
-import EscPosBluetooth, { type PairedPrinter } from './modules/escpos-bt/src/EscPosBluetoothModule';
-import PlateraaCrypto from './modules/plateraa-crypto/src/PlateraaCryptoModule';
-import { Receipt } from './src/printing/escpos';
+import EscPosBluetooth, {
+  type PairedPrinter,
+} from '../modules/escpos-bt/src/EscPosBluetoothModule';
+import PlateraaCrypto from '../modules/plateraa-crypto/src/PlateraaCryptoModule';
+import { Receipt } from '../src/printing/escpos';
+import { Button } from '../src/ui/Button';
+import { Header } from '../src/ui/Header';
+import { colors, radius, space, text } from '../src/ui/theme';
 
 /**
- * Day-1 test (plan.md §1.2): does the local database, the offline PIN check and Bluetooth
- * printing work on a real budget tablet? Replaced by the real app in Phase 2.
+ * Tablet check: the day-1 test (plan.md §1.2), kept for trying a new tablet or printer. Does
+ * the local database, the offline PIN check and Bluetooth printing work on this device?
  */
 
 /** Made with the server's createPinVerifier() algorithm, for PIN 482913. */
@@ -39,6 +42,7 @@ async function testDatabase(log: Log) {
   const took = Date.now() - started;
   const { rows } = await db.execute('SELECT count(*) AS n, sum(total) AS total FROM spike_orders');
   log(`Wrote 2,000 orders in ${took} ms; read back ${rows[0]?.n} rows totalling ${rows[0]?.total}`);
+  await db.execute('DROP TABLE spike_orders');
   db.close();
 }
 
@@ -68,7 +72,7 @@ function testReceipt(): string {
     .bold(true)
     .text('PLATERAA')
     .bold(false)
-    .text('Day-1 printer test')
+    .text('Printer test')
     .align('left')
     .divider()
     .row('Jollof rice x2', 'GHS 90.00')
@@ -84,7 +88,7 @@ function testReceipt(): string {
     .toBase64();
 }
 
-export default function App() {
+export default function TabletCheck() {
   const { width, height } = useWindowDimensions();
   const [log, setLog] = useState<string[]>([]);
   const [printers, setPrinters] = useState<PairedPrinter[]>([]);
@@ -125,27 +129,27 @@ export default function App() {
 
   return (
     <View style={styles.screen}>
-      <StatusBar style="dark" />
       <View style={styles.actions}>
-        <Text style={styles.title}>Plateraa day-1 test</Text>
+        <Header title="Tablet check" />
         <Text style={styles.meta}>
           Android {String(Platform.Version)} · {Math.round(width)} × {Math.round(height)} dp
         </Text>
-        <Action
+        <Button
           label="1. Local database"
           disabled={busy}
           onPress={run('Local database', () => testDatabase(append))}
         />
-        <Action
+        <Button
           label="2. PIN check"
           disabled={busy}
           onPress={run('PIN check', () => testPin(append))}
         />
-        <Action label="3. Find printers" disabled={busy} onPress={findPrinters} />
+        <Button label="3. Find printers" disabled={busy} onPress={findPrinters} />
         {printers.map((printer) => (
-          <Action
+          <Button
             key={printer.address}
-            label={`Print test on ${printer.name}`}
+            label={`Print a test on ${printer.name}`}
+            kind="secondary"
             disabled={busy}
             onPress={printOn(printer)}
           />
@@ -153,7 +157,7 @@ export default function App() {
       </View>
       <ScrollView style={styles.log} contentContainerStyle={styles.logContent}>
         {log.length === 0 ? (
-          <Text style={styles.hint}>Run the three tests on the left. Results appear here.</Text>
+          <Text style={styles.hint}>Run the checks on the left. Results appear here.</Text>
         ) : (
           log.map((line, index) => (
             <Text key={index} style={styles.logLine}>
@@ -166,42 +170,18 @@ export default function App() {
   );
 }
 
-function Action({
-  label,
-  onPress,
-  disabled,
-}: {
-  label: string;
-  onPress: () => void;
-  disabled: boolean;
-}) {
-  return (
-    <Pressable
-      onPress={onPress}
-      disabled={disabled}
-      style={({ pressed }) => [styles.action, (pressed || disabled) && styles.actionDimmed]}
-    >
-      <Text style={styles.actionLabel}>{label}</Text>
-    </Pressable>
-  );
-}
-
 const styles = StyleSheet.create({
-  screen: { flex: 1, flexDirection: 'row', backgroundColor: '#f5f3ee', padding: 24, gap: 24 },
-  actions: { width: '38%', gap: 12 },
-  title: { fontSize: 24, fontWeight: '700', color: '#1d1b16' },
-  meta: { fontSize: 14, color: '#6b665c', marginBottom: 8 },
-  action: {
-    minHeight: 56,
-    borderRadius: 12,
-    backgroundColor: '#1d1b16',
-    justifyContent: 'center',
-    paddingHorizontal: 20,
+  screen: {
+    flex: 1,
+    flexDirection: 'row',
+    backgroundColor: colors.ground,
+    padding: space.lg,
+    gap: space.lg,
   },
-  actionDimmed: { opacity: 0.5 },
-  actionLabel: { fontSize: 18, fontWeight: '600', color: '#ffffff' },
-  log: { flex: 1, backgroundColor: '#ffffff', borderRadius: 12 },
-  logContent: { padding: 16, gap: 8 },
-  hint: { fontSize: 16, color: '#6b665c' },
-  logLine: { fontSize: 15, color: '#1d1b16', fontFamily: 'monospace' },
+  actions: { width: '38%', gap: space.md },
+  meta: { fontSize: text.small, color: colors.muted },
+  log: { flex: 1, backgroundColor: colors.surface, borderRadius: radius },
+  logContent: { padding: space.md, gap: space.sm },
+  hint: { fontSize: text.body, color: colors.muted },
+  logLine: { fontSize: text.small, color: colors.ink, fontFamily: 'monospace' },
 });

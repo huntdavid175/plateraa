@@ -20,8 +20,10 @@ A solo founder (GitHub `huntdavid175`) builds it with an AI agent. Work started 
   - The §2.0/§2.0b decision changes.
   - The day-1 tablet test.
 - **Phase 1 leftovers:** Sentry, the Render worker, and a Neon branch per PR.
-- **Done (11 Sep, Phase 2):** §2.1 offline engine in `apps/mobile/src/offline` (tested in Node; the banner and "Needs attention" screens come with the app shell).
-- **Next:** Phase 2 §2.2: the real app shell, tablet registration and PIN switcher, wiring the engine in. See `apps/mobile/AGENTS.md`.
+- **Done (11 Sep, Phase 2):**
+  - §2.1: the offline engine in `apps/mobile/src/offline`, tested in Node.
+  - §2.2: the app shell, tablet registration, the PIN switcher, adding staff, the sync banner and the "Needs attention" screen. Built, but not yet tried on the tablet; that needs the next EAS build.
+- **Next:** try §2.2 on the tablet, then §2.3, taking orders. See `apps/mobile/AGENTS.md`.
 - Founder tasks (Moolre, lawyer, printers, domain, Play Console) are Phase 0 in `plan.md`.
 
 ## Working with the user

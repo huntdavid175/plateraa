@@ -2,6 +2,7 @@
   "expo": {
     "name": "Plateraa",
     "slug": "plateraa",
+    "scheme": "plateraa",
     "version": "1.0.0",
     "orientation": "landscape",
     "icon": "./assets/icon.png",
@@ -27,6 +28,15 @@
         "projectId": "4b2baaed-9797-4ce3-ab0a-c07e8ec390a8"
       }
     },
-    "owner": "huntdavid175"
+    "owner": "huntdavid175",
+    "plugins": [
+      "expo-router",
+      [
+        "expo-secure-store",
+        {
+          "configureAndroidBackup": true
+        }
+      ]
+    ]
   }
 }

@@ -159,14 +159,19 @@ _11 Sep: the engine is in `apps/mobile/src/offline`, with tests against a fake s
   - _Server change: pulls after the first now send every changed order, so an old order that finishes still reaches the tablet (before, it stayed open there for good). The trading-day rule moved to `packages/shared` (`businessDateOf`)._
 - [x] Tablet cleanup: drop outbox entries once the server has confirmed them, and delete finished orders older than yesterday (with their items and payments) once the server has them. Never delete anything still waiting to upload or in "Needs attention"
   - _Runs after each pull. An entry goes once the server has taken it and the pull has brought its result back. An order with a change the server hasn't confirmed is never deleted. Refusals stay until dismissed, then 2 days. Closed drawer shifts older than 36 h go too (the server stops sending them then)._
-- [ ] Connectivity banner + "provisional" labels on offline totals (_engine side done: `useSyncState()` and `provisionalSql()`; the banner is drawn with the app shell in 2.2_)
-- [ ] "Needs attention" list for rejected commands (_engine side done: `needsAttention()` and `dismiss()`; the screen comes with the app shell_)
+- [ ] Connectivity banner + "provisional" labels on offline totals (_11 Sep: the banner is built (`src/ui/SyncBanner.tsx`: offline, signed out, uploading, refused), waiting to be tried on the tablet. The provisional labels come with the order screens in 2.3, using `provisionalSql()`._)
+- [ ] "Needs attention" list for rejected commands (_11 Sep: built (`app/attention.tsx`: what was refused, why, who, when; "Seen" clears it), waiting to be tried on the tablet_)
 
 ### 2.2 Devices and PINs
 
+_11 Sep: built in the new app shell (Expo Router, `apps/mobile/app/`), with tests for the PIN lockout. Tick these once they've run on the tablet, which needs the new EAS build (Expo Router, secure storage, crypto)._
+
 - [ ] Device registration (Owner/Manager signs in with email once)
+  - _Sign in → pick the business → name the tablet → the menu and staff list download → the owner sets their own PIN if they have none. The tablet keeps only its device token (encrypted in secure storage) and signs the email login out. Registering again wipes the tablet's data first._
 - [ ] 6-digit PIN switcher: local PBKDF2 check, lockout (5 → 30 s doubling, 10 → disabled), auto-lock after 3 idle minutes
+  - _Tap your name, type your PIN. The wrong-PIN count is kept in the tablet's database, so restarting the app doesn't reset it, and it starts again when a manager sets a new PIN. The idle lock uses the business's own setting (3 minutes by default). Someone switched off on the dashboard is locked out at the next sync._
 - [ ] Add staff at the counter (≤60 s)
+  - _Owners and managers, online only. Name, role and PIN, confirmed with their own PIN; only the owner can add managers. The new person appears on the lock screen straight after._
 
 ### 2.3 Taking orders
 
