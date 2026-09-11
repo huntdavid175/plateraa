@@ -24,7 +24,8 @@ The counter app. It runs on the vendor's own budget Android tablet (8–10", **l
 
 - The real app is in place (Expo Router, `app/`), built on 11 Sep for plan.md §2.2. It runs on the tablet from EAS build `406855bd` (the first with Expo Router, `expo-secure-store` and `expo-crypto`): setup, PINs and lockout, adding staff, the idle lock and the offline banner all worked.
 - The day-1 test screen (plan.md §1.2) is now `app/diagnostics.tsx`, "Tablet check", reachable from the lock screen. It passed on a real tablet: 2,000 SQLite inserts in 535 ms; right PIN accepted in 295 ms, wrong refused in 230 ms; Bluetooth lists paired devices. Printing a real receipt waits for a printer.
-- §2.3, taking orders, is built (see below) and waiting to be tried on the tablet. It needs a menu: `pnpm --filter @plateraa/api seed:test-menu "<business name>"` adds a test one.
+- §2.3, taking orders, is built (see below) and worked on the tablet on 11 Sep. It needs a menu: `pnpm --filter @plateraa/api seed:test-menu "<business name or slug>"` adds a test one.
+- Next: §2.4, cash and stock (drops and pay-ins, closing the drawer, sold-out, prep counts).
 
 ## Counter (`src/counter`, plan.md §2.3)
 

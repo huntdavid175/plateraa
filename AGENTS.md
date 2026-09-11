@@ -23,8 +23,8 @@ A solo founder (GitHub `huntdavid175`) builds it with an AI agent. Work started 
 - **Done (11 Sep, Phase 2):**
   - §2.1: the offline engine in `apps/mobile/src/offline`, tested in Node.
   - §2.2: the app shell, tablet registration, the PIN switcher, adding staff, the sync banner and the "Needs attention" screen. Tried on the tablet and working.
-  - §2.3: taking orders (the counter screen, the orders list, cash, hold, edit and cancel). Built, but not yet tried on the tablet.
-- **Next:** try §2.3 on the tablet, then §2.4, cash and stock. See `apps/mobile/AGENTS.md`.
+  - §2.3: taking orders (the counter screen, the orders list, cash, hold, edit and cancel). Tried on the tablet and working.
+- **Next:** Phase 2 §2.4, cash and stock. See `apps/mobile/AGENTS.md`.
 - Founder tasks (Moolre, lawyer, printers, domain, Play Console) are Phase 0 in `plan.md`.
 
 ## Working with the user

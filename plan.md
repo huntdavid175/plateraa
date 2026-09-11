@@ -175,24 +175,24 @@ _11 Sep: built in the new app shell (Expo Router, `apps/mobile/app/`), with test
 
 ### 2.3 Taking orders
 
-_11 Sep: built (`apps/mobile/src/counter`; the counter screen is `app/index.tsx`), with tests for the order logic. Waiting to be tried on the tablet; no new EAS build is needed._
+_11 Sep: built (`apps/mobile/src/counter`; the counter screen is `app/index.tsx`), with tests for the order logic, and tried on the tablet with the test menu. Walk-in cash with change, the kitchen lanes and timers, a required choice (Fufu's soup), a phone order waiting for its link, a Bolt order, hold, edit, cancel with refund owed, and a sale taken offline all worked._
 
 - _Payment links can already be chosen, but they don't go out until §2.5 (Moolre); until then those orders wait under "Awaiting payment"._
 - _Server change: Bolt and Chowdeck orders no longer need a customer's number (the platforms keep it); phone orders need the caller's._
 - _Test menu for a business, until the dashboard's menu setup (3.1): `pnpm --filter @plateraa/api seed:test-menu "<business name>"`._
 - _Gap: Bolt and Chowdeck prices that differ from the menu aren't on the tablet yet (the dashboard sets them in 3.1), so such an order is kept but flagged for review._
 
-- [ ] Landscape tablet layout (8" minimum): order entry and prep queue side by side
-- [ ] Counter mode: big text tiles, modifier sheet only when required, optional customer phone, then pay by cash (tendered → change) or payment link (the customer's number is needed for a link) (≤15 s for cash)
-- [ ] Phone order entry (typed in like a walk-in, caller's number required, paid only by a payment link sent to that number) and hand-typed Bolt/Chowdeck orders: source, pickup/delivery, address + zone → fee
-- [ ] Inbox sorted by urgency; unpaid orders sit in an "awaiting payment" list and don't reach the prep queue while pay-before-prep is on
-- [ ] Prep queue: readable from 2 m, amber/red timers, tap to advance, optional Kitchen/Drinks split
-- [ ] Hold / resume / edit before prep / cancel with a reason (anyone can cancel a paid order; it then shows "refund owed" until a manager records the refund)
-- [ ] Payments: walk-ins by cash or payment link; phone orders by payment link only; Bolt/Chowdeck as paid via platform (links: §2.5)
+- [x] Landscape tablet layout (8" minimum): order entry and prep queue side by side (_menu tiles, the order being typed in, and the orders list_)
+- [x] Counter mode: big text tiles, modifier sheet only when required, optional customer phone, then pay by cash (tendered → change) or payment link (the customer's number is needed for a link) (≤15 s for cash) (_not timed yet_)
+- [x] Phone order entry (typed in like a walk-in, caller's number required, paid only by a payment link sent to that number) and hand-typed Bolt/Chowdeck orders: source, pickup/delivery, address + zone → fee (_delivery with zones not tried yet: the test business has no zones_)
+- [x] Inbox sorted by urgency; unpaid orders sit in an "awaiting payment" list and don't reach the prep queue while pay-before-prep is on
+- [x] Prep queue: readable from 2 m, amber/red timers, tap to advance, optional Kitchen/Drinks split (_amber at the prep time, red at half as long again; "from 2 m" not measured yet_)
+- [x] Hold / resume / edit before prep / cancel with a reason (anyone can cancel a paid order; it then shows "refund owed" until a manager records the refund)
+- [x] Payments: walk-ins by cash or payment link; phone orders by payment link only; Bolt/Chowdeck as paid via platform (links: §2.5) (_cash and "paid on Bolt/Chowdeck" work; links can be chosen, and go out once §2.5 is done_)
 
 ### 2.4 Cash & stock
 
-- [ ] Open shift with float (_11 Sep: built with 2.3, because cash needs an open drawer: the tablet asks for the float at the first cash sale_)
+- [x] Open shift with float (_11 Sep: built with 2.3, because cash needs an open drawer: the tablet asks for the float at the first cash sale. Worked on the tablet._)
 - [ ] Drops and pay-ins (payouts are recorded by a manager on the dashboard)
 - [ ] Close shift: expected vs counted vs variance, own shift only
 - [ ] One-tap sold-out toggle
