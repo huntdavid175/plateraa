@@ -1,0 +1,7 @@
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+  <!-- Android 11 and older: classic Bluetooth permissions. -->
+  <uses-permission android:name="android.permission.BLUETOOTH" android:maxSdkVersion="30" />
+  <uses-permission android:name="android.permission.BLUETOOTH_ADMIN" android:maxSdkVersion="30" />
+  <!-- Android 12+: talk to paired devices (asked for at runtime). -->
+  <uses-permission android:name="android.permission.BLUETOOTH_CONNECT" />
+</manifest>

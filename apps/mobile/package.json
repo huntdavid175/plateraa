@@ -9,7 +9,9 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
+    "@op-engineering/op-sqlite": "18.2.1",
     "expo": "~57.0.21",
+    "expo-dev-client": "~57.0.18",
     "expo-status-bar": "~57.0.1",
     "react": "19.2.3",
     "react-native": "0.86.3"

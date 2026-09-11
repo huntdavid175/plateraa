@@ -21,6 +21,12 @@
     },
     "web": {
       "favicon": "./assets/favicon.png"
-    }
+    },
+    "extra": {
+      "eas": {
+        "projectId": "4b2baaed-9797-4ce3-ab0a-c07e8ec390a8"
+      }
+    },
+    "owner": "huntdavid175"
   }
 }
