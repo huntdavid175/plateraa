@@ -51,8 +51,12 @@ export function MenuPane({
       ? menu.flatMap((c) => c.items)
       : (menu.find((c) => keyOf(c) === category)?.items ?? []);
   const columns = width >= 720 ? 4 : 3;
-  const tileWidth =
-    width > 0 ? Math.floor((width - GUTTER * 2 - GAP * (columns - 1)) / columns) : undefined;
+  // Rows of equal, stretching tiles: they always fill the pane, and never wrap early the way
+  // pixel-exact widths can on a tablet's screen.
+  const rows: MenuItem[][] = [];
+  for (let start = 0; start < items.length; start += columns) {
+    rows.push(items.slice(start, start + columns));
+  }
 
   return (
     <View style={styles.pane} onLayout={(event) => setWidth(event.nativeEvent.layout.width)}>
@@ -82,8 +86,15 @@ export function MenuPane({
             own.
           </Text>
         ) : (
-          items.map((item) => (
-            <MenuTile key={item.id} item={item} width={tileWidth} onPress={() => onPick(item)} />
+          rows.map((row) => (
+            <View key={row[0]!.id} style={styles.row}>
+              {row.map((item) => (
+                <MenuTile key={item.id} item={item} onPress={() => onPick(item)} />
+              ))}
+              {Array.from({ length: columns - row.length }, (_, index) => (
+                <View key={`space-${index}`} style={styles.space} />
+              ))}
+            </View>
           ))
         )}
       </ScrollView>
@@ -93,15 +104,7 @@ export function MenuPane({
   );
 }
 
-function MenuTile({
-  item,
-  width,
-  onPress,
-}: {
-  item: MenuItem;
-  width: number | undefined;
-  onPress: () => void;
-}) {
+function MenuTile({ item, onPress }: { item: MenuItem; onPress: () => void }) {
   const low = !item.soldOut && item.left !== null && item.left <= LOW_STOCK;
   return (
     <Pressable
@@ -111,7 +114,6 @@ function MenuTile({
       onPress={onPress}
       style={({ pressed }) => [
         styles.tile,
-        width ? { width } : styles.tileFallback,
         pressed && styles.tilePressed,
         item.soldOut && styles.tileSoldOut,
       ]}
@@ -218,15 +220,12 @@ const styles = StyleSheet.create({
     paddingTop: space.md,
     paddingBottom: 12,
   },
-  grid: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: GAP,
-    paddingHorizontal: GUTTER,
-    paddingBottom: space.md,
-  },
+  grid: { gap: GAP, paddingHorizontal: GUTTER, paddingBottom: space.md },
+  row: { flexDirection: 'row', gap: GAP },
+  space: { flex: 1 },
   empty: { fontFamily: font.regular, fontSize: text.body, color: colors.muted, maxWidth: 480 },
   tile: {
+    flex: 1,
     minHeight: 88,
     borderRadius: radii.lg,
     backgroundColor: colors.tile,
@@ -235,7 +234,6 @@ const styles = StyleSheet.create({
     paddingBottom: 12,
     gap: 4,
   },
-  tileFallback: { width: '23%' },
   tilePressed: { backgroundColor: colors.tilePressed },
   tileSoldOut: { backgroundColor: '#EDECEA', opacity: 0.55 },
   tileTop: { flexDirection: 'row', justifyContent: 'space-between', gap: space.xs },
