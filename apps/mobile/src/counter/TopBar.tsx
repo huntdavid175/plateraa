@@ -6,12 +6,13 @@ import { useEngineState, useTablet } from '../tablet/TabletProvider';
 import { Badge } from '../ui/controls';
 import { colors, font, plural, radii, space, text } from '../ui/theme';
 
-export type CounterTab = 'counter' | 'orders' | 'kitchen';
+export type CounterTab = 'counter' | 'orders' | 'kitchen' | 'drawer';
 
 const TABS: readonly { value: CounterTab; label: string }[] = [
   { value: 'counter', label: 'Counter' },
   { value: 'orders', label: 'Orders' },
   { value: 'kitchen', label: 'Kitchen' },
+  { value: 'drawer', label: 'Drawer' },
 ];
 
 /** Online, offline (grey-blue) or signed out, always as a word. */
@@ -43,6 +44,8 @@ export function TopBar({ tab, onTab }: { tab: CounterTab; onTab: (tab: CounterTa
   const [menuOpen, setMenuOpen] = useState(false);
   const connection = connectionOf(state);
   const canAddStaff = staff?.capabilities.has('staff.manage') ?? false;
+  const runsDrawer = staff?.capabilities.has('shift.operate') ?? false;
+  const tabs = TABS.filter((option) => option.value !== 'drawer' || runsDrawer);
 
   const go = (path: '/add-staff' | '/attention' | '/diagnostics') => {
     setMenuOpen(false);
@@ -58,7 +61,7 @@ export function TopBar({ tab, onTab }: { tab: CounterTab; onTab: (tab: CounterTa
       </View>
 
       <View style={styles.tabs} accessibilityRole="tablist">
-        {TABS.map((option) => {
+        {tabs.map((option) => {
           const on = option.value === tab;
           return (
             <Pressable

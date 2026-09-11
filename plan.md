@@ -195,10 +195,11 @@ _11 Sep: built (`apps/mobile/src/counter`; the counter screen is `app/index.tsx`
 ### 2.4 Cash & stock
 
 - [x] Open shift with float (_11 Sep: built with 2.3, because cash needs an open drawer, and worked on the tablet. Later that day it moved to the start of the day: once someone who runs the drawer unlocks and none is open, the counter asks for the float. "Not now" holds for the trading day, and the first cash sale then asks instead. The move isn't tried on the tablet yet._)
-- [ ] Drops and pay-ins (payouts are recorded by a manager on the dashboard)
-- [ ] Close shift: expected vs counted vs variance, own shift only
+- [x] Drops and pay-ins (payouts are recorded by a manager on the dashboard) (_11 Sep: the Drawer tab's "Take cash out" and "Put cash in", with an optional reason; payouts from the dashboard show in the same list. Not tried on the tablet yet._)
+- [x] Close shift: expected vs counted vs variance, own shift only (_11 Sep: a blind count. Staff enter the cash counted, and only then see what the tablet expected and the difference ("Short by GH₵ 5.00"). The figures show only to the person who closed, or to someone allowed to see revenue, because expected cash includes the shift's cash sales. Anyone who runs the drawer can close it, so a drawer left open can still be closed. Not tried on the tablet yet._)
 - [ ] One-tap sold-out toggle
 - [ ] Morning prep counts that count down on each sale → auto sold-out at 0
+  - _11 Sep, user decision: optional. For cooked food it's hard to know how many portions were made, so the owner switches counts on or off in the dashboard's settings (off by default). When off, items sell until someone taps "sold out"._
 - [ ] Owner summaries held in memory only, cleared when the PIN session ends
 
 ### 2.5 Payment links (pilot; added 10 Sep)
@@ -229,6 +230,7 @@ _Money goes straight into each vendor's own Moolre merchant account and never pa
 - [ ] Delivery zones + fees
 - [ ] Channel commissions (rate or flat; blank = shown as "Gross")
 - [ ] Staff management + revenue visibility settings (per role, per person)
+- [ ] Setting: count portions each morning (prep counts), off by default (_11 Sep user decision; the tablet side is §2.4_)
 - [ ] Order setting: pay before prep (on by default; the owner can switch it off)
 - [ ] Manager tools: record drawer payouts against the tablet's open shift (booked as expenses); apply discounts to unpaid orders; a "refunds owed" list and recording refunds given back by hand (outside the drawer, full or partial, reason required)
 - [ ] Expenses + purchases entry (purchase = expense + stock item + qty)

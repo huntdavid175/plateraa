@@ -3,6 +3,7 @@ import { useEffect, useMemo, useState } from 'react';
 import type { Database } from '../offline/sql';
 import { useEngineState, useLocalQuery, useTablet } from '../tablet/TabletProvider';
 import type { Counter } from './actions';
+import { loadDrawer, type DrawerState } from './drawer';
 import { loadMenu, type MenuCategory } from './menu';
 import { loadQueue, type QueueOrder } from './queue';
 
@@ -51,6 +52,13 @@ function useLoaded<T>(load: (db: Database, date: string) => Promise<T>): T | nul
 export const useMenu = (): MenuCategory[] | null => useLoaded(loadMenu);
 
 export const useQueue = (): QueueOrder[] | null => useLoaded(loadQueue);
+
+/** This tablet's drawer: open (with what went in and out) and the last close. */
+export function useDrawer(): DrawerState | null {
+  const { device } = useTablet();
+  const deviceId = device?.deviceId ?? '';
+  return useLoaded((db) => loadDrawer(db, deviceId));
+}
 
 /** The business's pay-before-prep setting: on unless the owner turned it off. */
 export function usePayBeforePrep(): boolean {

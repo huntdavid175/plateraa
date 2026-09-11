@@ -113,6 +113,24 @@ export async function openDrawer(counter: Counter, float: Pesewas): Promise<stri
   return shiftId;
 }
 
+/** Cash taken out of the drawer (to the safe or the owner) or put into it. */
+export function moveCash(
+  counter: Counter,
+  input: { shiftId: string; type: 'DROP' | 'PAY_IN'; amount: Pesewas; note?: string },
+) {
+  const { note, ...rest } = input;
+  return counter.engine.record(
+    'shift.cash_movement',
+    { movementId: counter.engine.newId(), ...rest, ...(note ? { note } : {}) },
+    counter.staffId,
+  );
+}
+
+/** Closes the drawer with the cash counted; the tablet works out what it expected. */
+export function closeDrawer(counter: Counter, shiftId: string, counted: Pesewas) {
+  return counter.engine.record('shift.close', { shiftId, counted }, counter.staffId);
+}
+
 export function payCash(
   counter: Counter,
   input: { orderId: string; shiftId: string; amount: Pesewas; tendered?: Pesewas },

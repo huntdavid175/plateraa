@@ -13,6 +13,7 @@ import {
 } from '../src/counter/actions';
 import { isPlatform, toDraft, type Checkout } from '../src/counter/checkout';
 import { asksForDrawer } from '../src/counter/drawer';
+import { DrawerScreen } from '../src/counter/DrawerScreen';
 import { DrawerSheet } from '../src/counter/DrawerSheet';
 import { today, useCounter, useMenu, usePayBeforePrep, useQueue } from '../src/counter/hooks';
 import { KitchenScreen } from '../src/counter/KitchenScreen';
@@ -300,6 +301,7 @@ export default function CounterScreen() {
       {tab === 'kitchen' && (
         <KitchenScreen orders={orders} counter={counter} payBeforePrep={payBeforePrep} />
       )}
+      {tab === 'drawer' && <DrawerScreen counter={counter} />}
 
       <OptionsSheet
         item={picking?.item ?? null}
