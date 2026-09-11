@@ -22,9 +22,9 @@ The counter app. It runs on the vendor's own budget Android tablet (8–10", **l
 
 ## Current state (11 Sep 2026)
 
-- The real app is in place (Expo Router, `app/`), built on 11 Sep for plan.md §2.2, but **not yet tried on the tablet**. That needs the next EAS development build, for the new native code: Expo Router, `expo-secure-store` and `expo-crypto`.
+- The real app is in place (Expo Router, `app/`), built on 11 Sep for plan.md §2.2. It runs on the tablet from EAS build `406855bd` (the first with Expo Router, `expo-secure-store` and `expo-crypto`): setup, PINs and lockout, adding staff, the idle lock and the offline banner all worked.
 - The day-1 test screen (plan.md §1.2) is now `app/diagnostics.tsx`, "Tablet check", reachable from the lock screen. It passed on a real tablet: 2,000 SQLite inserts in 535 ms; right PIN accepted in 295 ms, wrong refused in 230 ms; Bluetooth lists paired devices. Printing a real receipt waits for a printer.
-- Next: try §2.2 on the tablet, then §2.3, taking orders.
+- Next: §2.3, taking orders.
 
 ## App (`app/`, `src/tablet`, `src/ui`)
 
@@ -46,7 +46,7 @@ The counter app. It runs on the vendor's own budget Android tablet (8–10", **l
 - `engine.ts`: `SyncEngine`: `record(type, payload, staffId)`, `syncNow()`, `start()` / `stop()` / `setForeground()`, `needsAttention()` / `dismiss()`, and `subscribe()` (screens use `useEngineState()` from `src/tablet/TabletProvider.tsx`). Each cycle pushes (≤50 at a time, in order) and then pulls; cycles never overlap.
 - `transport.ts`: `httpTransport(createApiClient(…))`. Failures are offline, server, unauthorized (the tablet was signed out) or invalid.
 - Tests: `pnpm --filter @plateraa/mobile test` (Vitest in Node, against a fake server). App code must not use Node APIs: `tsconfig.json` leaves tests out, and `tsconfig.test.json` typechecks them with Node's types.
-- Metro loads `@plateraa/shared` and `@plateraa/api-client` from their `dist`: after changing them, run `pnpm --filter "@plateraa/mobile^..." build` before `start`. EAS does the same through the `eas-build-post-install` script (not yet tried on a build).
+- Metro loads `@plateraa/shared` and `@plateraa/api-client` from their `dist`: after changing them, run `pnpm --filter "@plateraa/mobile^..." build` before `start`. EAS does the same through the `eas-build-post-install` script, which ran without error on build `406855bd`.
 
 ## Rules for the tablet
 
