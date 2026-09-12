@@ -25,6 +25,7 @@ import {
   type Tx,
 } from '@plateraa/db';
 import { amountDue, sub, type Pesewas } from '@plateraa/shared';
+import * as Sentry from '@sentry/nestjs';
 import { ulid } from 'ulid';
 import { recordAudit } from '../audit/audit';
 import { ENV, type Env } from '../config/env';
@@ -135,7 +136,7 @@ export class PaymentLinks implements OnApplicationBootstrap, OnApplicationShutdo
       return;
     }
     this.running = this.work()
-      .catch((error: unknown) => this.logger.error('Payment link work failed', error as Error))
+      .catch((error: unknown) => this.report('Payment link work failed', error))
       .finally(() => {
         this.running = null;
         if (this.again) {
@@ -155,6 +156,12 @@ export class PaymentLinks implements OnApplicationBootstrap, OnApplicationShutdo
   async work(): Promise<void> {
     await this.sendQueued();
     await this.checkOpen();
+  }
+
+  /** An unexpected failure: logged, and reported to Sentry. */
+  private report(message: string, error: unknown) {
+    this.logger.error(message, error as Error);
+    Sentry.captureException(error);
   }
 
   private get db() {
@@ -289,7 +296,7 @@ export class PaymentLinks implements OnApplicationBootstrap, OnApplicationShutdo
           `Payment link ${link.id}: ${stage} failed, ${error.code} ${error.message}`,
         );
       } else {
-        this.logger.error(`Payment link ${link.id} failed`, error as Error);
+        this.report(`Payment link ${link.id} failed`, error);
       }
       await fail(failureWords(error, stage));
     }
@@ -463,9 +470,7 @@ export class PaymentLinks implements OnApplicationBootstrap, OnApplicationShutdo
           .set({ processedAt: new Date(), outcome: event.link ? outcome : 'UNKNOWN_REFERENCE' })
           .where(eq(providerEvents.id, event.eventId)),
       );
-    })().catch((error: unknown) =>
-      this.logger.error(`Moolre callback ${event.eventId} failed`, error as Error),
-    );
+    })().catch((error: unknown) => this.report(`Moolre callback ${event.eventId} failed`, error));
     this.pending.add(work);
     void work.finally(() => this.pending.delete(work));
   }

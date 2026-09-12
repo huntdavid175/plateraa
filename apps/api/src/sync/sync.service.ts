@@ -38,6 +38,7 @@ import {
   type SyncCommand,
   type SyncCommandType,
 } from '@plateraa/shared';
+import * as Sentry from '@sentry/nestjs';
 import { DATABASE, type DatabaseHandle } from '../database/database.module';
 import { Directories, type ResolvedStaff } from '../identity/directories.service';
 import type { DeviceContext } from '../identity/request-context';
@@ -146,6 +147,7 @@ export class SyncService {
         );
       }
       this.logger.error(`Sync command ${command.type} ${command.id} failed`, error as Error);
+      Sentry.captureException(error);
       return this.retry(command);
     }
   }

@@ -4,7 +4,8 @@ NestJS 11 (not 12: nestjs-zod 5.5 needs `@nestjs/common` ^11), CommonJS, built w
 
 ## Layout
 
-- `config/env.ts`: Zod-validated env, loaded from the repo-root `.env` locally. Never print `.env`.
+- `config/env.ts`: Zod-validated env, loaded from the repo-root `.env` locally. Never print `.env`. An empty `KEY=` counts as unset.
+- `instrument.ts`: Sentry, imported first in `main.ts`. It reports unexpected errors from requests (`SentryGlobalFilter` in `app.module.ts`) and from background work (`captureException` in `PaymentLinks` and the sync). Only where `SENTRY_DSN` is set (Render), and with no personal data.
 - `app.setup.ts`: CORS, compression (gzip on every response), Better Auth mounted at `/api/auth/*splat`, global `/api` prefix, Swagger UI at `/api/docs` in development.
 - `auth/`: Better Auth 1.7 for owner/manager email + password (Argon2id via `@node-rs/argon2`, bearer plugin).
 - `identity/`: business signup (creates tenant, location and an OWNER staff member), device registration (opaque token, stored hashed), staff, 6-digit PIN login → 15-minute PIN session (jose HS256, `SESSION_SIGNING_SECRET`), lockout via `pinLockout` from `@plateraa/shared`.
@@ -16,7 +17,7 @@ NestJS 11 (not 12: nestjs-zod 5.5 needs `@nestjs/common` ^11), CommonJS, built w
   - `payment-links.service.ts`: `PaymentLinks` makes each QUEUED link (our link id is Moolre's `externalref`), texts it and marks it SENT. It claims a link before working on it, so two servers never text it twice. `verify()` asks Moolre for the status; `confirm()` records the LINK payment once and starts prep. It only runs where `RUN_PAYMENT_LINKS=true` (Render), because the laptop shares the database.
   - `payments.module.ts`: `POST /api/payments/moolre/callback`, public and left out of the OpenAPI document. It stores the callback raw in `provider_events`, answers at once, then checks with Moolre before any money counts.
   - `secrets.ts`: `sealSecret` / `openSecret` (AES-256-GCM under `SECRETS_KEY`) for the vendor's Moolre key in `moolre_accounts`.
-- `scripts/`: `seed:test-menu`, `settings:portion-counts` and `settings:moolre-account` stand in for dashboard setup until 3.1.
+- `scripts/`: `seed:test-menu`, `settings:portion-counts` and `settings:moolre-account` stand in for dashboard setup until 3.1. They work on the laptop's development database; add `--production` for the live one (`scripts/target.ts`).
 
 ## Database access
 

@@ -8,6 +8,7 @@ import {
   withTenant,
 } from '@plateraa/db';
 import { loadEnv } from '../config/env';
+import { scriptTarget } from './target';
 
 /**
  * Switches morning portion counts on or off for a business, until the dashboard's settings page
@@ -16,16 +17,18 @@ import { loadEnv } from '../config/env';
  *   pnpm --filter @plateraa/api settings:portion-counts "<business name or slug>" on
  */
 async function main() {
-  const wanted = process.argv[2]?.trim();
-  const choice = process.argv[3]?.trim().toLowerCase();
+  const env = loadEnv();
+  const target = scriptTarget(env);
+  const wanted = target.args[0]?.trim();
+  const choice = target.args[1]?.trim().toLowerCase();
   if (!wanted || (choice !== 'on' && choice !== 'off')) {
     throw new Error(
-      'Say which business, then on or off: settings:portion-counts "<business name or slug>" on',
+      'Say which business, then on or off: settings:portion-counts "<business name or slug>" on [--production]',
     );
   }
 
-  const env = loadEnv();
-  const { db, pool } = createDatabase(env.DATABASE_URL, { max: 1 });
+  console.log(`Working on ${target.label}.`);
+  const { db, pool } = createDatabase(target.url, { max: 1 });
   try {
     const matches = await withPlatform(db, (tx) =>
       tx

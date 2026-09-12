@@ -18,6 +18,7 @@ import {
 import { businessDateOf, pesewas, type Station } from '@plateraa/shared';
 import { ulid } from 'ulid';
 import { loadEnv } from '../config/env';
+import { scriptTarget } from './target';
 
 /**
  * Fills a test business with a small chop-bar menu, prices included, so there's something to sell
@@ -113,11 +114,15 @@ const MENU: { category: string; items: SeedItem[] }[] = [
 ];
 
 async function main() {
-  const wanted = process.argv[2]?.trim();
-  if (!wanted) throw new Error('Say which business: seed:test-menu "<business name or slug>"');
-
   const env = loadEnv();
-  const { db, pool } = createDatabase(env.DATABASE_URL, { max: 1 });
+  const target = scriptTarget(env);
+  const wanted = target.args[0]?.trim();
+  if (!wanted) {
+    throw new Error('Say which business: seed:test-menu "<business name or slug>" [--production]');
+  }
+
+  console.log(`Working on ${target.label}.`);
+  const { db, pool } = createDatabase(target.url, { max: 1 });
   try {
     const matches = await withPlatform(db, (tx) =>
       tx

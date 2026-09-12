@@ -21,6 +21,7 @@
     "@node-rs/argon2": "2.2.1",
     "@plateraa/db": "workspace:*",
     "@plateraa/shared": "workspace:*",
+    "@sentry/nestjs": "10.74.0",
     "better-auth": "1.7.4",
     "compression": "1.8.1",
     "jose": "6.2.12",

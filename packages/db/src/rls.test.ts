@@ -6,6 +6,12 @@ import { createDatabase, withTenant, type Database } from './client.js';
 import { auditEvents, categories, tenants } from './schema/index.js';
 
 const url = process.env.DATABASE_URL_DIRECT;
+// These tests create and delete businesses: never against the live database.
+if (url && url === process.env.PRODUCTION_DATABASE_URL_DIRECT) {
+  throw new Error(
+    'DATABASE_URL_DIRECT is the live database. Point it at the development branch first.',
+  );
+}
 
 /** Tables that are deliberately not tenant-scoped: Better Auth logins sit above any one business. */
 const NOT_TENANT_SCOPED = new Set(['user', 'session', 'account', 'verification']);

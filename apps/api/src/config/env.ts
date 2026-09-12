@@ -10,6 +10,13 @@ const envSchema = z.object({
   DATABASE_URL: z.url(),
   /** Direct Neon connection: migrations and the pg-boss worker. */
   DATABASE_URL_DIRECT: z.url(),
+  /**
+   * The live database, on the laptop only: setup scripts run with `--production` use it. On
+   * Render, DATABASE_URL itself is the live one; on the laptop it's the development branch.
+   */
+  PRODUCTION_DATABASE_URL: z.url().optional(),
+  /** Where this API reports its errors (Sentry). Set on Render only; unset, nothing is sent. */
+  SENTRY_DSN: z.url().optional(),
   BETTER_AUTH_SECRET: z.string().min(32),
   BETTER_AUTH_URL: z.url(),
   /** Signs the 15-minute PIN session tokens the tablet app uses. */

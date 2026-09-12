@@ -9,6 +9,7 @@ import {
 } from '@plateraa/db';
 import { loadEnv } from '../config/env';
 import { sealSecret } from '../payments/secrets';
+import { scriptTarget } from './target';
 
 /**
  * Saves a vendor's own Moolre account, so their payment links can go out, until the dashboard's
@@ -21,12 +22,14 @@ import { sealSecret } from '../payments/secrets';
  *   pnpm --filter @plateraa/api settings:moolre-account "<business name or slug>"
  */
 async function main() {
-  const wanted = process.argv[2]?.trim();
-  if (!wanted) {
-    throw new Error('Say which business: settings:moolre-account "<business name or slug>"');
-  }
-
   const env = loadEnv();
+  const target = scriptTarget(env);
+  const wanted = target.args[0]?.trim();
+  if (!wanted) {
+    throw new Error(
+      'Say which business: settings:moolre-account "<business name or slug>" [--production]',
+    );
+  }
   if (!env.SECRETS_KEY) {
     throw new Error(
       "SECRETS_KEY isn't set. Generate one (see .env.example) and add it to .env and to Render.",
@@ -47,7 +50,8 @@ async function main() {
     );
   }
 
-  const { db, pool } = createDatabase(env.DATABASE_URL, { max: 1 });
+  console.log(`Working on ${target.label}.`);
+  const { db, pool } = createDatabase(target.url, { max: 1 });
   try {
     const matches = await withPlatform(db, (tx) =>
       tx

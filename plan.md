@@ -51,11 +51,13 @@ Full design detail: `C:\Users\user\.claude\plans\plan-mode-prompt-you-peaceful-p
   - _Project created (Postgres 18.6, eu-central-1); pooled and direct strings verified. `app_user` role created (NOLOGIN; `withTenant()` switches to it). `neondb_owner` acts as `app_owner` for now._
   - [ ] _Before production: a dedicated LOGIN role for the API runtime, and Neon branch per PR in CI (needs a Neon API key in GitHub secrets)._
   - [ ] _Before R1a: a separate database branch for development and tests. Today the laptop, its tests and Render all use the same one._
+    - _12 Sep: the code is ready. On the laptop, `DATABASE_URL` / `DATABASE_URL_DIRECT` become the Neon `dev` branch. The live database moved to `PRODUCTION_DATABASE_URL` / `PRODUCTION_DATABASE_URL_DIRECT`, used only by `db:migrate:production` (which prints the host it migrates) and by setup scripts run with `--production`. Tests refuse to run against the live database. To tick once `.env` points at the dev branch._
 - [ ] Render services: API + worker (Frankfurt)
   - [x] API (_11 Sep: https://plateraa-api.onrender.com, Frankfurt, deploys itself from `main`. Checked: health answers, the database is reachable, the API docs page is off._)
   - [ ] _Before R1a: move to the Starter plan. Free sleeps after 15 minutes without traffic and takes about a minute to wake, and has no pre-deploy step, so migrations are run from the laptop for now. On Starter, set the pre-deploy command to `pnpm --filter @plateraa/db db:migrate`._
   - [ ] Worker (_when background jobs arrive: daily rollups, re-checking payment links_)
 - [ ] Sentry set up for api, mobile, dashboard and storefront
+  - _12 Sep: the API is wired up (`instrument.ts`, `SentryGlobalFilter`, and `captureException` for payment-link and sync failures). It reports errors only, with no personal data, to Sentry's EU region, and goes live once `SENTRY_DSN` is set on Render. The tablet needs `@sentry/react-native` and a new EAS build. The dashboard and storefront get it when they're built._
 
 ### 1.2 Day-1 spike (on a real budget Android tablet, 8–10" landscape)
 

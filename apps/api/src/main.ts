@@ -1,4 +1,6 @@
 import 'reflect-metadata';
+// Error reporting starts before anything else loads.
+import './instrument';
 import { NestFactory } from '@nestjs/core';
 import type { NestExpressApplication } from '@nestjs/platform-express';
 import { configureApp } from './app.setup';

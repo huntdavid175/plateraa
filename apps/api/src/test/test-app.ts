@@ -20,14 +20,23 @@ export const OFFLINE_TEST_ENV: Env = {
   TRUSTED_ORIGINS: [],
 };
 
-/** True when a real database is configured (locally via .env); integration tests skip otherwise. */
+/**
+ * True when a real database is configured (locally via .env); integration tests skip otherwise.
+ * Tests create and delete businesses, so they refuse to run against the live database.
+ */
 export function hasDatabase(): boolean {
+  let env: Env;
   try {
-    loadEnv();
-    return true;
+    env = loadEnv();
   } catch {
     return false;
   }
+  if (env.PRODUCTION_DATABASE_URL && env.PRODUCTION_DATABASE_URL === env.DATABASE_URL) {
+    throw new Error(
+      'DATABASE_URL is the live database. Point it at the development branch before running tests.',
+    );
+  }
+  return true;
 }
 
 /** The real app, with a pretend Moolre when a test gives one. */

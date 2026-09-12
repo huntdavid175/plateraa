@@ -1,6 +1,6 @@
 # Database (`@plateraa/db`)
 
-Neon Postgres 18.6 (AWS eu-central-1), drizzle-orm 0.45.2 with `casing: 'snake_case'`. One Neon database for now, no branch per PR yet.
+Neon Postgres 18.6 (AWS eu-central-1), drizzle-orm 0.45.2 with `casing: 'snake_case'`. Two databases: the live one (Render's, which the tablet uses) and a `dev` branch for the laptop and its tests. No branch per PR yet.
 
 ## Layout
 
@@ -8,7 +8,7 @@ Neon Postgres 18.6 (AWS eu-central-1), drizzle-orm 0.45.2 with `casing: 'snake_c
 - `src/client.ts`: `createDatabase`, `withTenant(db, tenantId, fn)`, `withPlatform(db, fn)`.
 - `src/sync.ts`: `changedSince`, `nextSyncCursor` for the xid8 sync cursor.
 - `src/index.ts` also re-exports the drizzle operators, so apps never import `drizzle-orm` directly.
-- `migrations/`: `0000`–`0005`, all applied to Neon.
+- `migrations/`: `0000`–`0007`, all applied to both databases.
 
 ## Tenant isolation (don't break it)
 
@@ -19,10 +19,11 @@ Neon Postgres 18.6 (AWS eu-central-1), drizzle-orm 0.45.2 with `casing: 'snake_c
 
 ## Migrations
 
-- `pnpm --filter @plateraa/db db:generate`, review the SQL, then `pnpm --filter @plateraa/db db:migrate`. Both read `DATABASE_URL_DIRECT` (unpooled) from the repo-root `.env`.
+- `pnpm --filter @plateraa/db db:generate`, review the SQL, then `pnpm --filter @plateraa/db db:migrate`. Both read `DATABASE_URL_DIRECT` (unpooled) from the repo-root `.env`, which on the laptop is the `dev` branch.
+- Before pushing code that needs the migration: `pnpm --filter @plateraa/db db:migrate:production` migrates the live database (`PRODUCTION_DATABASE_URL_DIRECT`, via `scripts/migrate-production.mjs`), and prints which host it's migrating.
 - drizzle-kit asks interactively when it suspects a rename, and an agent shell can't answer. Split it into two generates (drop, then add) or write the SQL by hand.
 - Changing a Postgres enum means recreating it in SQL (see `0005_tablet_decisions.sql`).
 
 ## Tests
 
-`src/rls.test.ts` (7 tests) runs against Neon and skips itself when `DATABASE_URL_DIRECT` isn't set, as in CI. Run it locally after any schema change.
+`src/rls.test.ts` (7 tests) runs against Neon and skips itself when `DATABASE_URL_DIRECT` isn't set, as in CI. It refuses to run if `DATABASE_URL_DIRECT` is the live database. Run it locally after any schema change.
