@@ -16,7 +16,7 @@ import PlateraaCrypto from '../modules/plateraa-crypto/src/PlateraaCryptoModule'
 import { Receipt } from '../src/printing/escpos';
 import { Button } from '../src/ui/Button';
 import { Header } from '../src/ui/Header';
-import { colors, radius, space, text } from '../src/ui/theme';
+import { colors, font, radii, space, text } from '../src/ui/theme';
 
 /**
  * Tablet check: the day-1 test (plan.md §1.2), kept for trying a new tablet or printer. Does
@@ -179,9 +179,9 @@ const styles = StyleSheet.create({
     gap: space.lg,
   },
   actions: { width: '38%', gap: space.md },
-  meta: { fontSize: text.small, color: colors.muted },
-  log: { flex: 1, backgroundColor: colors.surface, borderRadius: radius },
-  logContent: { padding: space.md, gap: space.sm },
-  hint: { fontSize: text.body, color: colors.muted },
-  logLine: { fontSize: text.small, color: colors.ink, fontFamily: 'monospace' },
+  meta: { fontFamily: font.regular, fontSize: text.small, color: colors.muted },
+  log: { flex: 1, backgroundColor: colors.canvas, borderRadius: radii.xl },
+  logContent: { padding: space.lg, gap: space.sm },
+  hint: { fontFamily: font.regular, fontSize: text.body, color: colors.muted },
+  logLine: { fontFamily: font.mono, fontSize: text.small, color: colors.ink },
 });

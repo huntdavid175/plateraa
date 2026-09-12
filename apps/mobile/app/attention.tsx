@@ -5,7 +5,7 @@ import { describeCommand } from '../src/tablet/describe';
 import { useEngineState, useLocalQuery, useTablet } from '../src/tablet/TabletProvider';
 import { Button } from '../src/ui/Button';
 import { Header } from '../src/ui/Header';
-import { colors, radius, space, text, timeOf } from '../src/ui/theme';
+import { colors, font, radii, space, text, timeOf } from '../src/ui/theme';
 
 /** Changes the server refused. They were undone on the tablet and are never sent again. */
 export default function NeedsAttention() {
@@ -38,7 +38,7 @@ export default function NeedsAttention() {
         right if needed, then mark each one as seen.
       </Text>
       {refused === null ? (
-        <ActivityIndicator color={colors.ink} />
+        <ActivityIndicator color={colors.brand} />
       ) : refused.length === 0 ? (
         <Text style={styles.intro}>Nothing needs attention.</Text>
       ) : (
@@ -55,7 +55,12 @@ export default function NeedsAttention() {
                   {nameOf(item.staffId)} · {timeOf(item.at)}
                 </Text>
               </View>
-              <Button label="Seen" kind="secondary" onPress={() => void engine?.dismiss(item.id)} />
+              <Button
+                label="Seen"
+                kind="secondary"
+                size="md"
+                onPress={() => void engine?.dismiss(item.id)}
+              />
             </View>
           )}
         />
@@ -66,18 +71,25 @@ export default function NeedsAttention() {
 
 const styles = StyleSheet.create({
   screen: { flex: 1, gap: space.md, padding: space.lg, backgroundColor: colors.ground },
-  intro: { fontSize: text.body, color: colors.muted },
-  list: { gap: space.md },
+  intro: {
+    fontFamily: font.regular,
+    fontSize: text.body,
+    lineHeight: 23,
+    color: colors.muted,
+    maxWidth: 720,
+  },
+  list: { gap: 12, paddingBottom: space.lg },
   row: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: space.md,
-    backgroundColor: colors.surface,
-    borderRadius: radius,
-    padding: space.md,
+    backgroundColor: colors.canvas,
+    borderRadius: radii.xl,
+    paddingHorizontal: space.lg,
+    paddingVertical: space.md,
   },
   rowText: { flex: 1, gap: space.xs },
-  what: { fontSize: text.body, fontWeight: '700', color: colors.ink },
-  why: { fontSize: text.body, color: colors.dangerInk },
-  meta: { fontSize: text.small, color: colors.muted },
+  what: { fontFamily: font.semibold, fontSize: text.body, color: colors.ink },
+  why: { fontFamily: font.medium, fontSize: text.body, color: colors.redInk },
+  meta: { fontFamily: font.regular, fontSize: text.small, color: colors.muted },
 });

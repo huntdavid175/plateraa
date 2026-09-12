@@ -44,6 +44,7 @@ The counter app. It runs on the vendor's own budget Android tablet (8–10", **l
 
 - Follow the user's design, not a new one: calm and spacious, white and warm grey (`#F6F5F3`, `#ECEAE7`), one brand colour (`#E8701A`) only for the main action and the selected tab, status colours only with a word. DM Sans for words and DM Mono for money (`font` in `theme.ts`, loaded in `app/_layout.tsx`). Money shows as `cedis()`: "GH₵ 35.00".
 - Building blocks: `Button` (56 dp, or 44 for secondary rows), `Field` / `PhoneField` (+233), and in `controls.tsx` `Segmented`, `Chip`, `OptionTile`, `Badge` and `Stepper`; `Overlay` / `CloseButton` in `Sheet.tsx`. Touch targets stay at least 44 dp; secondary text uses `muted` (`faint` fails contrast, so it's for placeholders only).
+- Every screen uses this look. The lock screen (and `PinPad`), setup, add staff, "Needs attention", the sync banner and Tablet check were brought in line on 12 Sep, and the old colour names and `radius` are gone from `theme.ts`.
 - The Figma design's WhatsApp/Instagram sources, "Save as unpaid" and receipts are left out on purpose: see the settled decisions in the root AGENTS.md.
 - The design file is `assets/design/Design Plateraa POS Screen.make`. The UI guideline skill used for the redesign is `.claude/skills/airbnb-ui` (installed as-is, so Prettier skips it).
 

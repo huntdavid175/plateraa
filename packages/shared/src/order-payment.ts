@@ -40,7 +40,13 @@ export function paymentStartsPrep(order: PayableOrder, requirePaymentBeforePrep:
   return requirePaymentBeforePrep && order.status === 'CONFIRMED' && isFullyPaid(order);
 }
 
-/** Money taken on a cancelled order that a manager still has to give back and record. */
-export function refundOwed(order: Pick<PayableOrder, 'status' | 'amountPaid'>): Pesewas {
-  return order.status === 'CANCELLED' ? order.amountPaid : ZERO;
+/**
+ * Money a manager still has to give back and record: everything paid on a cancelled order, or
+ * whatever was paid over what's due (cash taken, then an old payment link paid as well).
+ * Refunds already recorded aren't taken off here.
+ */
+export function refundOwed(order: PayableOrder): Pesewas {
+  if (order.status === 'CANCELLED') return order.amountPaid;
+  const over = sub(order.amountPaid, amountDue(order));
+  return over > 0 ? over : ZERO;
 }

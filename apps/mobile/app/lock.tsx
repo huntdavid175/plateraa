@@ -7,7 +7,7 @@ import { checkPin, pinMessage } from '../src/tablet/pin-guard';
 import { useLocalQuery, useTablet } from '../src/tablet/TabletProvider';
 import { PinPad } from '../src/ui/PinPad';
 import { SyncBanner } from '../src/ui/SyncBanner';
-import { colors, radius, space, text } from '../src/ui/theme';
+import { colors, font, radii, space, text } from '../src/ui/theme';
 
 interface Person {
   id: string;
@@ -68,11 +68,11 @@ export default function LockScreen() {
         <Text style={styles.business}>{device?.businessName}</Text>
         <Text style={styles.title}>Who's at the counter?</Text>
         {people === null ? (
-          <ActivityIndicator color={colors.ink} />
+          <ActivityIndicator color={colors.brand} />
         ) : people.length === 0 ? (
           <Text style={styles.hint}>The staff list appears once the tablet has synced.</Text>
         ) : (
-          <ScrollView contentContainerStyle={styles.tiles}>
+          <ScrollView style={styles.grow} contentContainerStyle={styles.tiles}>
             {people.map((person) => {
               const selected = chosen?.id === person.id;
               const hasPin = Boolean(person.pin_verifier);
@@ -80,18 +80,23 @@ export default function LockScreen() {
                 <Pressable
                   key={person.id}
                   accessibilityRole="button"
+                  accessibilityState={{ selected, disabled: !hasPin }}
                   onPress={() => choose(person)}
                   disabled={!hasPin}
                   style={({ pressed }) => [
                     styles.tile,
                     selected && styles.tileSelected,
-                    (pressed || !hasPin) && styles.tileDimmed,
+                    pressed && !selected && styles.tilePressed,
+                    !hasPin && styles.tileNoPin,
                   ]}
                 >
-                  <Text style={[styles.tileName, selected && styles.selectedText]}>
+                  <Text
+                    style={[styles.tileName, selected && styles.tileNameSelected]}
+                    numberOfLines={1}
+                  >
                     {person.display_name}
                   </Text>
-                  <Text style={[styles.tileRole, selected && styles.selectedText]}>
+                  <Text style={styles.tileRole}>
                     {hasPin ? ROLE_NAMES[person.role] : 'No PIN yet'}
                   </Text>
                 </Pressable>
@@ -105,14 +110,14 @@ export default function LockScreen() {
         </Link>
       </View>
 
-      <View style={styles.pinSide}>
+      <View style={styles.pinCard}>
         {chosen ? (
           <>
             <Text style={styles.pinTitle}>{chosen.display_name}, enter your PIN</Text>
             <PinPad onComplete={tryPin} disabled={checking} resetKey={attempt} />
             <View style={styles.messageRow}>
               {checking ? (
-                <ActivityIndicator color={colors.ink} />
+                <ActivityIndicator color={colors.brand} />
               ) : (
                 message && <Text style={styles.message}>{message}</Text>
               )}
@@ -130,38 +135,59 @@ const styles = StyleSheet.create({
   screen: {
     flex: 1,
     flexDirection: 'row',
-    gap: space.xl,
-    padding: space.xl,
+    gap: space.lg,
+    padding: space.lg,
     backgroundColor: colors.ground,
   },
-  people: { flex: 1, gap: space.md },
-  business: { fontSize: text.body, color: colors.muted, fontWeight: '600' },
-  title: { fontSize: text.title, fontWeight: '700', color: colors.ink },
-  tiles: { flexDirection: 'row', flexWrap: 'wrap', gap: space.md },
+  people: { flex: 1, gap: space.md, paddingTop: space.sm },
+  grow: { flex: 1 },
+  business: { fontFamily: font.medium, fontSize: text.small, color: colors.muted },
+  title: { fontFamily: font.semibold, fontSize: text.title, color: colors.ink },
+  tiles: { flexDirection: 'row', flexWrap: 'wrap', gap: 12 },
   tile: {
-    width: '47%',
-    minHeight: 80,
+    width: '48%',
+    minHeight: 88,
     justifyContent: 'center',
-    borderRadius: radius,
-    backgroundColor: colors.surface,
-    borderWidth: 2,
-    borderColor: colors.line,
+    gap: 2,
+    borderRadius: radii.lg,
+    borderWidth: 1.5,
+    borderColor: 'transparent',
+    backgroundColor: colors.tile,
     paddingHorizontal: space.md,
   },
-  tileSelected: { backgroundColor: colors.ink, borderColor: colors.ink },
-  tileDimmed: { opacity: 0.55 },
-  tileName: { fontSize: text.heading, fontWeight: '700', color: colors.ink },
-  tileRole: { fontSize: text.small, color: colors.muted },
-  selectedText: { color: colors.onInk },
-  link: { fontSize: text.small, color: colors.muted, textDecorationLine: 'underline' },
-  pinSide: { flex: 1, alignItems: 'center', justifyContent: 'center', gap: space.lg },
-  pinTitle: { fontSize: text.heading, fontWeight: '700', color: colors.ink },
-  messageRow: { minHeight: 48, justifyContent: 'center' },
-  message: {
-    fontSize: text.body,
-    color: colors.dangerInk,
-    fontWeight: '600',
+  tileSelected: { backgroundColor: colors.brandTint, borderColor: colors.brand },
+  tilePressed: { backgroundColor: colors.tilePressed },
+  tileNoPin: { opacity: 0.5 },
+  tileName: { fontFamily: font.semibold, fontSize: 18, color: colors.ink },
+  tileNameSelected: { color: colors.brandInk },
+  tileRole: { fontFamily: font.regular, fontSize: text.small, color: colors.muted },
+  link: {
+    fontFamily: font.medium,
+    fontSize: text.small,
+    color: colors.muted,
+    textDecorationLine: 'underline',
+  },
+  pinCard: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: space.lg,
+    padding: space.lg,
+    borderRadius: radii.xl,
+    backgroundColor: colors.canvas,
+  },
+  pinTitle: {
+    fontFamily: font.semibold,
+    fontSize: text.heading,
+    color: colors.ink,
     textAlign: 'center',
   },
-  hint: { fontSize: text.body, color: colors.muted },
+  messageRow: { minHeight: 48, justifyContent: 'center' },
+  message: {
+    fontFamily: font.medium,
+    fontSize: text.body,
+    color: colors.redInk,
+    textAlign: 'center',
+  },
+  hint: { fontFamily: font.regular, fontSize: text.body, color: colors.muted },
 });

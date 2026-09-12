@@ -48,7 +48,7 @@ function Screens() {
   if (phase === 'loading') {
     return (
       <View style={styles.centre}>
-        <ActivityIndicator size="large" color={colors.ink} />
+        <ActivityIndicator size="large" color={colors.brand} />
       </View>
     );
   }
@@ -86,5 +86,5 @@ const styles = StyleSheet.create({
     backgroundColor: colors.ground,
     padding: space.xl,
   },
-  problem: { fontSize: text.body, color: colors.dangerInk, textAlign: 'center' },
+  problem: { fontSize: text.body, color: colors.redInk, textAlign: 'center' },
 });

@@ -1,4 +1,4 @@
-import { canEditItems, type OrderStatus, type OrderType } from '@plateraa/shared';
+import { canEditItems, refundOwed, type OrderStatus, type OrderType } from '@plateraa/shared';
 import { useMemo, useState } from 'react';
 import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { problemText } from '../tablet/api';
@@ -58,8 +58,18 @@ const stepsOf = (type: OrderType): OrderStatus[] =>
     ? ['CONFIRMED', 'PREPARING', 'READY', 'OUT_FOR_DELIVERY', 'COMPLETED']
     : ['CONFIRMED', 'PREPARING', 'READY', 'COMPLETED'];
 
+/** Paid on a cancelled order, or paid over what's due, less refunds already recorded. */
 const refundOwedOf = (order: QueueOrder) =>
-  order.status === 'CANCELLED' ? order.amount_paid - order.refunded : 0;
+  Math.max(
+    0,
+    refundOwed({
+      status: order.status,
+      total: order.total,
+      deliveryFee: order.delivery_fee,
+      deliveryFeeCollectedBy: order.delivery_fee_collected_by,
+      amountPaid: order.amount_paid,
+    }) - order.refunded,
+  );
 
 /**
  * Every order today, most urgent first: late and unpaid, then unpaid, then the rest. The list on
@@ -230,7 +240,10 @@ function OrderRow({
             label={order.on_hold && open ? 'On hold' : STATUS_LABELS[order.status]}
             tone={order.on_hold && open ? 'amber' : statusTone(order.status)}
           />
-          <Text style={styles.rowTotal}>{cedis(order.total)}</Text>
+          <View style={styles.rowTotalBox}>
+            {order.provisional ? <Badge label="Not synced yet" tone="offline" /> : null}
+            <Text style={styles.rowTotal}>{cedis(order.total)}</Text>
+          </View>
         </View>
       </View>
     </Pressable>
@@ -384,6 +397,11 @@ function OrderDetail({
             <Text style={styles.totalLabel}>Total</Text>
             <Text style={styles.total}>{cedis(order.total)}</Text>
           </View>
+          {order.provisional ? (
+            <Text style={styles.provisional}>
+              Worked out on this tablet. The server checks it once it's uploaded.
+            </Text>
+          ) : null}
           {open && toPay > 0 && order.amount_paid > 0 && (
             <View style={styles.sumRow}>
               <Text style={styles.sumLabel}>Still to pay</Text>
@@ -392,7 +410,10 @@ function OrderDetail({
           )}
           {refundOwed > 0 && (
             <Text style={styles.warn}>
-              {cedis(refundOwed)} was paid. A manager gives it back and records it on the dashboard.
+              {order.status === 'CANCELLED'
+                ? `${cedis(refundOwed)} was paid.`
+                : `${cedis(refundOwed)} more than the order came to was paid.`}{' '}
+              A manager gives it back and records it on the dashboard.
             </Text>
           )}
           {order.cancel_reason && (
@@ -452,6 +473,12 @@ function OrderDetail({
           </View>
         ) : (
           <>
+            {open && toPay > 0 && order.source === 'POS' && linkOpen && (
+              <Text style={styles.note}>
+                A payment link is still open. If they pay it as well, the extra shows as a refund
+                owed.
+              </Text>
+            )}
             {open && toPay > 0 && order.source === 'POS' && (
               <Button label={`Take ${cedis(toPay)} cash`} onPress={() => setPaying(true)} />
             )}
@@ -543,6 +570,13 @@ function OrderDetail({
 const styles = StyleSheet.create({
   screen: { flex: 1, flexDirection: 'row', backgroundColor: colors.ground },
   linkLine: { fontFamily: font.medium, fontSize: text.body, lineHeight: 22 },
+  rowTotalBox: { flexDirection: 'row', alignItems: 'center', gap: space.sm },
+  provisional: {
+    fontFamily: font.regular,
+    fontSize: text.small,
+    color: colors.offlineInk,
+    marginTop: 4,
+  },
   grow: { flex: 1 },
   list: { flex: 58, borderRightWidth: 1, borderRightColor: colors.line },
   filters: {

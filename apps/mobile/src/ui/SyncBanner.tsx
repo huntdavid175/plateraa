@@ -2,7 +2,7 @@ import { useRouter } from 'expo-router';
 import { Alert, StyleSheet, Text, View } from 'react-native';
 import { useEngineState, useTablet } from '../tablet/TabletProvider';
 import { Button } from './Button';
-import { colors, plural, radius, space, text, timeOf } from './theme';
+import { colors, font, plural, radii, space, text, timeOf } from './theme';
 
 type Tone = 'warning' | 'danger' | 'info';
 
@@ -74,7 +74,12 @@ export function SyncBanner({
         <View key={notice.message} style={[styles.banner, styles[notice.tone]]}>
           <Text style={[styles.message, { color: INK[notice.tone] }]}>{notice.message}</Text>
           {notice.action && (
-            <Button label={notice.action.label} kind="secondary" onPress={notice.action.onPress} />
+            <Button
+              label={notice.action.label}
+              kind="secondary"
+              size="md"
+              onPress={notice.action.onPress}
+            />
           )}
         </View>
       ))}
@@ -83,8 +88,8 @@ export function SyncBanner({
 }
 
 const INK: Record<Tone, string> = {
-  warning: colors.warningInk,
-  danger: colors.dangerInk,
+  warning: colors.amberInk,
+  danger: colors.redInk,
   info: colors.infoInk,
 };
 
@@ -94,12 +99,12 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: space.md,
-    borderRadius: radius,
+    borderRadius: radii.md,
     paddingHorizontal: space.md,
     paddingVertical: space.sm,
   },
-  warning: { backgroundColor: colors.warningBg },
-  danger: { backgroundColor: colors.dangerBg },
+  warning: { backgroundColor: colors.amberBg },
+  danger: { backgroundColor: colors.redBg },
   info: { backgroundColor: colors.infoBg },
-  message: { flex: 1, fontSize: text.small, fontWeight: '600' },
+  message: { flex: 1, fontFamily: font.medium, fontSize: text.small, lineHeight: 20 },
 });

@@ -1,14 +1,15 @@
 import { pinProblem } from '@plateraa/shared';
 import { useState } from 'react';
-import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { ScrollView, StyleSheet, Text, View } from 'react-native';
 import type { SyncEngine } from '../src/offline/engine';
 import { resetLocalData } from '../src/offline/schema';
 import { ownerApi, problemText, signIn, type Business } from '../src/tablet/api';
 import type { DeviceCredentials } from '../src/tablet/credentials';
 import { createEngine, localDatabase, useTablet } from '../src/tablet/TabletProvider';
 import { Button } from '../src/ui/Button';
+import { OptionTile } from '../src/ui/controls';
 import { Field, digitsOnly } from '../src/ui/Field';
-import { colors, radius, space, text } from '../src/ui/theme';
+import { colors, font, radii, space, text } from '../src/ui/theme';
 
 interface Registered {
   session: string;
@@ -174,13 +175,11 @@ export default function RegisterScreen() {
           <>
             <Text style={styles.heading}>Which business is this tablet for?</Text>
             {step.businesses.map((business) => (
-              <Pressable
+              <OptionTile
                 key={business.tenantId}
-                style={({ pressed }) => [styles.choice, pressed && styles.pressed]}
+                label={business.name}
                 onPress={() => setStep({ name: 'tablet', session: step.session, business })}
-              >
-                <Text style={styles.choiceLabel}>{business.name}</Text>
-              </Pressable>
+              />
             ))}
           </>
         )}
@@ -251,31 +250,21 @@ const styles = StyleSheet.create({
     flexGrow: 1,
     flexDirection: 'row',
     gap: space.xl,
-    padding: space.xl,
+    padding: space.lg,
     backgroundColor: colors.ground,
   },
   intro: { flex: 1, gap: space.md, paddingTop: space.lg },
-  title: { fontSize: text.title, fontWeight: '700', color: colors.ink },
-  body: { fontSize: text.body, color: colors.muted, lineHeight: 26 },
+  title: { fontFamily: font.semibold, fontSize: text.title, color: colors.ink },
+  body: { fontFamily: font.regular, fontSize: text.body, lineHeight: 26, color: colors.muted },
   card: {
     flex: 1.2,
     gap: space.md,
-    backgroundColor: colors.surface,
-    borderRadius: radius,
-    padding: space.lg,
     alignSelf: 'flex-start',
+    padding: 28,
+    borderRadius: radii.xl,
+    backgroundColor: colors.canvas,
   },
-  heading: { fontSize: text.heading, fontWeight: '700', color: colors.ink },
-  hint: { fontSize: text.small, color: colors.muted },
-  choice: {
-    minHeight: 64,
-    justifyContent: 'center',
-    borderRadius: radius,
-    borderWidth: 2,
-    borderColor: colors.line,
-    paddingHorizontal: space.md,
-  },
-  pressed: { backgroundColor: colors.line },
-  choiceLabel: { fontSize: text.body, fontWeight: '600', color: colors.ink },
-  problem: { fontSize: text.body, color: colors.dangerInk, fontWeight: '600' },
+  heading: { fontFamily: font.semibold, fontSize: text.heading, color: colors.ink },
+  hint: { fontFamily: font.regular, fontSize: text.small, lineHeight: 20, color: colors.muted },
+  problem: { fontFamily: font.medium, fontSize: text.body, color: colors.redInk },
 });

@@ -1,7 +1,7 @@
 import { PIN_LENGTH } from '@plateraa/shared';
 import { useEffect, useState } from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
-import { colors, radius, space, text } from './theme';
+import { colors, font, radii, space } from './theme';
 
 const KEYS = ['1', '2', '3', '4', '5', '6', '7', '8', '9', 'clear', '0', 'back'] as const;
 type Key = (typeof KEYS)[number];
@@ -65,20 +65,20 @@ export function PinPad({
   );
 }
 
-const KEY_WIDTH = 104;
-const GAP = space.md;
+const KEY_WIDTH = 96;
+const GAP = 12;
 
 const styles = StyleSheet.create({
   pad: { alignItems: 'center', gap: space.lg },
-  dots: { flexDirection: 'row', gap: space.md },
+  dots: { flexDirection: 'row', gap: 14 },
   dot: {
-    width: 22,
-    height: 22,
-    borderRadius: 11,
+    width: 16,
+    height: 16,
+    borderRadius: 8,
     borderWidth: 2,
-    borderColor: colors.ink,
+    borderColor: colors.line,
   },
-  dotFilled: { backgroundColor: colors.ink },
+  dotFilled: { backgroundColor: colors.brand, borderColor: colors.brand },
   grid: {
     width: KEY_WIDTH * 3 + GAP * 2,
     flexDirection: 'row',
@@ -87,16 +87,16 @@ const styles = StyleSheet.create({
   },
   key: {
     width: KEY_WIDTH,
-    height: 76,
-    borderRadius: radius,
-    backgroundColor: colors.surface,
-    borderWidth: 2,
+    height: 68,
+    borderRadius: radii.lg,
+    backgroundColor: colors.field,
+    borderWidth: 1.5,
     borderColor: colors.line,
     justifyContent: 'center',
     alignItems: 'center',
   },
-  keyPressed: { backgroundColor: colors.line },
+  keyPressed: { backgroundColor: colors.tile },
   keyDisabled: { opacity: 0.5 },
-  keyLabel: { fontSize: text.key, fontWeight: '600', color: colors.ink },
-  keyWord: { fontSize: text.body },
+  keyLabel: { fontFamily: font.monoMedium, fontSize: 24, color: colors.ink },
+  keyWord: { fontFamily: font.medium, fontSize: 15, color: colors.muted },
 });

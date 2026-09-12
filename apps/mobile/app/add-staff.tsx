@@ -4,9 +4,9 @@ import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { addStaffAtCounter, problemText } from '../src/tablet/api';
 import { useEngineState, useTablet } from '../src/tablet/TabletProvider';
 import { Button } from '../src/ui/Button';
-import { Field, digitsOnly } from '../src/ui/Field';
+import { Field, Label, digitsOnly } from '../src/ui/Field';
 import { Header } from '../src/ui/Header';
-import { colors, radius, space, text } from '../src/ui/theme';
+import { colors, font, radii, space, text } from '../src/ui/theme';
 
 type NewRole = 'STAFF' | 'RIDER' | 'MANAGER';
 
@@ -83,26 +83,25 @@ export default function AddStaff() {
           Adding staff needs the internet. Try again when it's back.
         </Text>
       )}
-      <View style={styles.columns}>
+      <View style={styles.card}>
         <View style={styles.column}>
           <Field label="Their name" value={name} onChangeText={setName} maxLength={60} />
-          <Text style={styles.label}>What they do</Text>
-          {choices.map((choice) => (
-            <Pressable
-              key={choice.role}
-              accessibilityRole="radio"
-              accessibilityState={{ selected: role === choice.role }}
-              onPress={() => setRole(choice.role)}
-              style={[styles.choice, role === choice.role && styles.choiceSelected]}
-            >
-              <Text style={[styles.choiceLabel, role === choice.role && styles.selectedText]}>
-                {choice.label}
-              </Text>
-              <Text style={[styles.choiceHint, role === choice.role && styles.selectedText]}>
-                {choice.hint}
-              </Text>
-            </Pressable>
-          ))}
+          <Label text="What they do" />
+          {choices.map((choice) => {
+            const on = role === choice.role;
+            return (
+              <Pressable
+                key={choice.role}
+                accessibilityRole="radio"
+                accessibilityState={{ selected: on }}
+                onPress={() => setRole(choice.role)}
+                style={[styles.choice, on && styles.choiceOn]}
+              >
+                <Text style={[styles.choiceLabel, on && styles.choiceLabelOn]}>{choice.label}</Text>
+                <Text style={styles.choiceHint}>{choice.hint}</Text>
+              </Pressable>
+            );
+          })}
         </View>
         <View style={styles.column}>
           <Field
@@ -112,6 +111,7 @@ export default function AddStaff() {
             keyboardType="number-pad"
             secureTextEntry
             maxLength={6}
+            mono
           />
           <Field
             label="Their PIN again"
@@ -120,6 +120,7 @@ export default function AddStaff() {
             keyboardType="number-pad"
             secureTextEntry
             maxLength={6}
+            mono
           />
           <Field
             label={`Your PIN, ${staff?.displayName ?? ''}, to confirm`}
@@ -128,6 +129,7 @@ export default function AddStaff() {
             keyboardType="number-pad"
             secureTextEntry
             maxLength={6}
+            mono
           />
           <Button label="Add them" onPress={submit} busy={busy} />
           {problem && <Text style={styles.problem}>{problem}</Text>}
@@ -143,26 +145,37 @@ export default function AddStaff() {
 const styles = StyleSheet.create({
   screen: { flexGrow: 1, gap: space.md, padding: space.lg, backgroundColor: colors.ground },
   warning: {
+    fontFamily: font.medium,
     fontSize: text.body,
-    color: colors.warningInk,
-    backgroundColor: colors.warningBg,
-    borderRadius: radius,
-    padding: space.md,
+    color: colors.amberInk,
+    backgroundColor: colors.amberBg,
+    borderRadius: radii.md,
+    paddingHorizontal: space.md,
+    paddingVertical: 12,
   },
-  columns: { flexDirection: 'row', gap: space.xl },
+  card: {
+    flexDirection: 'row',
+    gap: space.xl,
+    padding: 28,
+    borderRadius: radii.xl,
+    backgroundColor: colors.canvas,
+  },
   column: { flex: 1, gap: space.md },
-  label: { fontSize: text.small, fontWeight: '600', color: colors.muted },
   choice: {
-    borderRadius: radius,
-    borderWidth: 2,
+    minHeight: 64,
+    justifyContent: 'center',
+    gap: 2,
+    borderRadius: radii.lg,
+    borderWidth: 1.5,
     borderColor: colors.line,
-    backgroundColor: colors.surface,
-    padding: space.md,
+    backgroundColor: colors.field,
+    paddingHorizontal: space.md,
+    paddingVertical: 10,
   },
-  choiceSelected: { backgroundColor: colors.ink, borderColor: colors.ink },
-  choiceLabel: { fontSize: text.body, fontWeight: '700', color: colors.ink },
-  choiceHint: { fontSize: text.small, color: colors.muted },
-  selectedText: { color: colors.onInk },
-  problem: { fontSize: text.body, color: colors.dangerInk, fontWeight: '600' },
-  done: { fontSize: text.body, color: colors.ink, fontWeight: '600' },
+  choiceOn: { borderWidth: 2, borderColor: colors.brand, backgroundColor: colors.brandTint },
+  choiceLabel: { fontFamily: font.semibold, fontSize: text.body, color: colors.ink },
+  choiceLabelOn: { color: colors.brandInk },
+  choiceHint: { fontFamily: font.regular, fontSize: text.small, color: colors.muted },
+  problem: { fontFamily: font.medium, fontSize: text.body, color: colors.redInk },
+  done: { fontFamily: font.medium, fontSize: text.body, color: colors.goodInk },
 });

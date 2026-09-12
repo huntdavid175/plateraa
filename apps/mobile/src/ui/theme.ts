@@ -42,13 +42,6 @@ export const colors = {
   infoInk: '#1E40AF',
   stockBg: '#F5E6D3',
   stockInk: '#7A5A36',
-  // Older names, still used by the lock and setup screens.
-  surface: '#FFFFFF',
-  onInk: '#FFFFFF',
-  warningBg: '#FEF3C7',
-  warningInk: '#92400E',
-  dangerBg: '#FEF2F2',
-  dangerInk: '#B91C1C',
 };
 
 /** DM Sans for words, DM Mono for money and order numbers (loaded in app/_layout.tsx). */
@@ -62,7 +55,6 @@ export const font = {
 
 export const space = { xs: 4, sm: 8, md: 16, lg: 24, xl: 32 };
 
-export const radius = 12;
 export const radii = { sm: 8, md: 10, lg: 12, xl: 20, pill: 999 };
 
 /** Three sizes do most of the work: small labels, medium names, large totals. */

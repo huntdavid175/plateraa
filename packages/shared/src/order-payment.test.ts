@@ -42,6 +42,12 @@ describe('order payment rules', () => {
 
   it('owes back what was paid on a cancelled order', () => {
     expect(refundOwed(order({ status: 'CANCELLED', amountPaid: pesewas(9000) }))).toBe(9000);
-    expect(refundOwed(order({ status: 'COMPLETED', amountPaid: pesewas(9000) }))).toBe(0);
+    expect(
+      refundOwed(order({ status: 'COMPLETED', total: pesewas(9000), amountPaid: pesewas(9000) })),
+    ).toBe(0);
+    // Paid twice (cash, then an old payment link): the extra is owed back.
+    expect(
+      refundOwed(order({ status: 'COMPLETED', total: pesewas(4500), amountPaid: pesewas(9000) })),
+    ).toBe(4500);
   });
 });
