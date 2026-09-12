@@ -180,6 +180,54 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/orders": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["OrdersController_list"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/orders/refunds-owed": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["OrdersController_refundsOwed"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/reports/day": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["ReportsController_day"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
 }
 export type webhooks = Record<string, never>;
 export interface components {
@@ -620,6 +668,58 @@ export interface components {
                 }[];
             };
         };
+        OrderRowDto_Output: {
+            id: string;
+            displayNumber: string;
+            businessDate: string;
+            /** @enum {string} */
+            source: "POS" | "PHONE" | "STOREFRONT" | "BOLT_FOOD" | "CHOWDECK" | "OTHER";
+            /** @enum {string} */
+            type: "WALK_IN" | "PICKUP" | "DELIVERY";
+            /** @enum {string} */
+            status: "NEW" | "CONFIRMED" | "PREPARING" | "READY" | "OUT_FOR_DELIVERY" | "COMPLETED" | "CANCELLED" | "REFUNDED";
+            onHold: boolean;
+            total: number;
+            amountDue: number;
+            amountPaid: number;
+            refundOwed: number;
+            paidWith: ("CASH" | "PLATFORM" | "LINK")[];
+            items: {
+                name: string;
+                variantName: string | null;
+                quantity: number;
+            }[];
+            takenAt: string;
+        };
+        DaySummaryDto_Output: {
+            date: string;
+            orders: number;
+            sales: number;
+            moneyIn: number;
+            notYetCollected: number;
+            platformOwed: number;
+            unpaid: number;
+            commissionEstimate: number;
+            moneyOut: number;
+            expenses: number;
+            left: number;
+            profit: number;
+            byHour: {
+                hour: number;
+                moneyIn: number;
+            }[];
+            bySource: {
+                /** @enum {string} */
+                source: "POS" | "PHONE" | "STOREFRONT" | "BOLT_FOOD" | "CHOWDECK" | "OTHER";
+                orders: number;
+                sales: number;
+            }[];
+            byMethod: {
+                /** @enum {string} */
+                method: "CASH" | "PLATFORM" | "LINK";
+                amount: number;
+            }[];
+        };
     };
     responses: never;
     parameters: never;
@@ -860,6 +960,68 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["PullResponseDto_Output"];
+                };
+            };
+        };
+    };
+    OrdersController_list: {
+        parameters: {
+            query?: {
+                date?: string;
+                limit?: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["OrderRowDto_Output"][];
+                };
+            };
+        };
+    };
+    OrdersController_refundsOwed: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["OrderRowDto_Output"][];
+                };
+            };
+        };
+    };
+    ReportsController_day: {
+        parameters: {
+            query?: {
+                date?: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DaySummaryDto_Output"];
                 };
             };
         };

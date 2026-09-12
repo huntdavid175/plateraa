@@ -1,4 +1,4 @@
-import type { Role, VendorType } from '@plateraa/shared';
+import type { OrderSource, PaymentMethod, Role, VendorType } from '@plateraa/shared';
 
 export const VENDOR_TYPE_WORDS: Record<VendorType, string> = {
   CHOP_BAR: 'Chop bar',
@@ -15,4 +15,19 @@ export const ROLE_WORDS: Record<Role, string> = {
   MANAGER: 'Manager',
   STAFF: 'Staff',
   RIDER: 'Rider',
+};
+
+export const SOURCE_WORDS: Record<OrderSource, string> = {
+  POS: 'Walk-in',
+  PHONE: 'Phone',
+  STOREFRONT: 'Storefront',
+  BOLT_FOOD: 'Bolt',
+  CHOWDECK: 'Chowdeck',
+  OTHER: 'Other',
+};
+
+export const METHOD_WORDS: Record<PaymentMethod, string> = {
+  CASH: 'Cash',
+  LINK: 'Payment link',
+  PLATFORM: 'Paid via platform',
 };

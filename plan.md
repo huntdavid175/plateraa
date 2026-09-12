@@ -249,7 +249,14 @@ _11 Sep: the server side is built from Moolre's docs (docs.moolre.com; their `/a
 
 ### 3.2 Reporting
 
-- [ ] Day summary: money in / not yet collected / money out / what's left / profit
+- [x] Day summary: money in / not yet collected / money out / what's left / profit
+  - _12 Sep: `GET /api/reports/day` (needs `reports.revenue.view`; staff get a 403). It's shown on the dashboard's Today screen and worked out live; the pg-boss rollup comes later. Everything hangs off the orders' trading day, so a link paid late counts on the day its order was taken. Expenses count on the day spent. The figures:_
+    - _**money in:** cash and link payments, less refunds recorded;_
+    - _**not yet collected:** what Bolt and Chowdeck owe, plus unpaid balances on the day's orders;_
+    - _**money out:** the day's expenses, payouts included;_
+    - _**what's left:** money in − money out;_
+    - _**profit:** money in + what the platforms owe − their estimated commission − money out._
+  - _Also split by source and payment method, and money in by the hour, which drives the chart. The tablet's owner summary will use the same endpoint._
 - [ ] Sales by channel, by item, by payment method
 - [ ] Expenses report, simple P&L (money in − purchases − expenses)
 - [ ] Staff activity, shift variances

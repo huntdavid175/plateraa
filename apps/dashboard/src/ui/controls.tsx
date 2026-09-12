@@ -95,6 +95,7 @@ const BADGE_TONES = {
   amber: 'bg-amber-bg text-amber',
   red: 'bg-red-bg text-red',
   blue: 'bg-blue-bg text-blue',
+  neutral: 'bg-tile text-muted',
 } as const;
 
 /** A coloured pill for a status: Paid, Unpaid, Refund owed, … */

@@ -42,7 +42,13 @@ The web dashboard for owners and managers (plan.md §3.1). It uses:
   - `controls.tsx`: Button, Card, Toggle, Badge, Tag, FieldLabel, TextInput, Spinner, Section, ErrorNote;
   - `Page.tsx`: Page, ComingSoon, Centered;
   - `icons.tsx`.
+- `lib/orders.ts`, `lib/reports.ts`: fetchers, with row types taken from the generated client, and `paymentState()` (Paid / Unpaid / Refund owed / Cancelled).
+- `lib/money.ts`: `cedis()`, `longDate()`, `hourLabel()`. `lib/words.ts`: plain words for enums.
 - `router.tsx` holds the routes; `pages/` holds the screens.
+  - Today (`TodayPage`): the day summary, the refunds-owed banner and recent orders.
+  - Settings: business details and dark mode so far.
+  - The rest are placeholders until their slices.
+- **Keep the first screen light on mobile data.** Big libraries load lazily: the recharts chart is `pages/MoneyInChart.tsx`, loaded with `lazy()`.
 
 ## Rules
 

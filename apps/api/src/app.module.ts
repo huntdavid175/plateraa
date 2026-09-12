@@ -7,7 +7,9 @@ import { ConfigModule } from './config/config.module';
 import { DatabaseModule } from './database/database.module';
 import { HealthController } from './health/health.controller';
 import { IdentityModule } from './identity/identity.module';
+import { OrdersModule } from './orders/orders.module';
 import { PaymentsModule } from './payments/payments.module';
+import { ReportsModule } from './reports/reports.module';
 import { SyncModule } from './sync/sync.module';
 
 @Module({
@@ -19,6 +21,8 @@ import { SyncModule } from './sync/sync.module';
     IdentityModule,
     PaymentsModule,
     SyncModule,
+    OrdersModule,
+    ReportsModule,
   ],
   controllers: [HealthController],
   providers: [

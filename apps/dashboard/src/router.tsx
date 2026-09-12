@@ -2,6 +2,7 @@ import { createBrowserRouter, Navigate } from 'react-router';
 import { ChooseBusinessPage } from './auth/ChooseBusinessPage';
 import { SignInPage } from './auth/SignInPage';
 import { SettingsPage } from './pages/SettingsPage';
+import { TodayPage } from './pages/TodayPage';
 import { Shell } from './shell/Shell';
 import { Button } from './ui/controls';
 import { Centered, ComingSoon } from './ui/Page';
@@ -24,9 +25,12 @@ export const router = createBrowserRouter([
     Component: Shell,
     errorElement: <Crashed />,
     children: [
+      { index: true, Component: TodayPage },
       {
-        index: true,
-        element: <ComingSoon title="Today" what="Money in, orders and profit for the day." />,
+        path: 'orders/:orderId',
+        element: (
+          <ComingSoon title="Order" what="What was ordered, how it was paid, and its history." />
+        ),
       },
       {
         path: 'orders',
