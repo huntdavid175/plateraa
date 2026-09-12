@@ -58,7 +58,7 @@ Full design detail: `C:\Users\user\.claude\plans\plan-mode-prompt-you-peaceful-p
   - [ ] _Before R1a: move to the Starter plan. Free sleeps after 15 minutes without traffic and takes about a minute to wake, and has no pre-deploy step, so migrations are run from the laptop for now. On Starter, set the pre-deploy command to `pnpm --filter @plateraa/db db:migrate`._
   - [ ] Worker (_when background jobs arrive: daily rollups, re-checking payment links_)
 - [ ] Sentry set up for api, mobile, dashboard and storefront
-  - _12 Sep: the API is wired up (`instrument.ts`, `SentryGlobalFilter`, and `captureException` for payment-link and sync failures). It reports errors only, with no personal data, to Sentry's EU region, and goes live once `SENTRY_DSN` is set on Render. The tablet needs `@sentry/react-native` and a new EAS build. The dashboard and storefront get it when they're built._
+  - _12 Sep: the API is wired up (`instrument.ts`, `SentryGlobalFilter`, and `captureException` for payment-link and sync failures). It reports errors only, with no personal data, to Sentry's EU region (project `plateraa-api`; IP addresses not stored). A test event from the laptop arrived, and `SENTRY_DSN` is set on Render. The tablet needs `@sentry/react-native` and a new EAS build. The dashboard and storefront get it when they're built._
 
 ### 1.2 Day-1 spike (on a real budget Android tablet, 8–10" landscape)
 
