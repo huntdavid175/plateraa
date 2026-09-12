@@ -21,6 +21,7 @@ NestJS 11 (not 12: nestjs-zod 5.5 needs `@nestjs/common` ^11), CommonJS, built w
 - `orders/` (dashboard reads):
   - `GET /api/orders?date=&limit=`: a day's orders, newest first, with their items and how they were paid;
   - `GET /api/orders/refunds-owed`: orders from any day where the customer is owed money back. Needs `refunds.record`.
+  - `GET /api/orders/:orderId`: one order in full: lines with extras, payments, refunds, payment links, and the status history with who did what.
 - `reports/`: `GET /api/reports/day?date=`, the day summary (plan.md §3.2). Needs `reports.revenue.view`.
   - Figures hang off the orders' trading day; the definitions are in `reports.module.ts`.
   - `business-day.ts` has `businessToday()` (today in the business's timezone) and `dueSql`.
@@ -47,6 +48,8 @@ Current commands (16): `order.create` (no discount), `order.update_items`, `orde
 ## After changing routes or DTOs
 
 `pnpm --filter @plateraa/api openapi` (writes `packages/api-client/openapi.json`), then `pnpm --filter @plateraa/api-client generate` (writes `src/schema.ts`). Commit both; never hand-edit them.
+
+For text that may be null in a response, use `nullableText()` from `openapi.ts`, not `z.string().nullable()`. Swagger mistakes the plain form for an array, so the clients would expect a list.
 
 ## Tests
 

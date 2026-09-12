@@ -212,6 +212,22 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/orders/{orderId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["OrdersController_detail"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/reports/day": {
         parameters: {
             query?: never;
@@ -690,6 +706,92 @@ export interface components {
                 quantity: number;
             }[];
             takenAt: string;
+            takenBy: string | null;
+            customerPhone: string | null;
+        };
+        OrderDetailDto_Output: {
+            id: string;
+            displayNumber: string;
+            businessDate: string;
+            /** @enum {string} */
+            source: "POS" | "PHONE" | "STOREFRONT" | "BOLT_FOOD" | "CHOWDECK" | "OTHER";
+            /** @enum {string} */
+            type: "WALK_IN" | "PICKUP" | "DELIVERY";
+            /** @enum {string} */
+            status: "NEW" | "CONFIRMED" | "PREPARING" | "READY" | "OUT_FOR_DELIVERY" | "COMPLETED" | "CANCELLED" | "REFUNDED";
+            onHold: boolean;
+            total: number;
+            amountDue: number;
+            amountPaid: number;
+            refundOwed: number;
+            paidWith: ("CASH" | "PLATFORM" | "LINK")[];
+            items: {
+                name: string;
+                variantName: string | null;
+                quantity: number;
+                unitPrice: number;
+                unitTotal: number;
+                lineTotal: number;
+                modifiers: {
+                    name: string;
+                    quantity: number;
+                    unitPriceDelta: number;
+                }[];
+                note: string | null;
+            }[];
+            takenAt: string;
+            takenBy: string | null;
+            customerPhone: string | null;
+            subtotal: number;
+            discount: number;
+            deliveryFee: number;
+            /** @enum {string|null} */
+            deliveryFeeCollectedBy: "VENDOR" | "RIDER" | null;
+            deliveryAddress: string | null;
+            note: string | null;
+            cancelReason: string | null;
+            externalReference: string | null;
+            reviewReasons: string[];
+            customerName: string | null;
+            payments: {
+                id: string;
+                /** @enum {string} */
+                method: "CASH" | "PLATFORM" | "LINK";
+                /** @enum {string} */
+                status: "PENDING" | "CONFIRMED" | "FAILED";
+                amount: number;
+                tendered: number | null;
+                by: string | null;
+                at: string;
+            }[];
+            refunds: {
+                id: string;
+                /** @enum {string} */
+                method: "CASH" | "PLATFORM" | "LINK";
+                amount: number;
+                reason: string;
+                by: string | null;
+                at: string;
+            }[];
+            links: {
+                id: string;
+                /** @enum {string} */
+                status: "QUEUED" | "SENT" | "PAID" | "FAILED" | "EXPIRED";
+                amount: number;
+                phone: string;
+                failure: string | null;
+                sentAt: string | null;
+                paidAt: string | null;
+                at: string;
+            }[];
+            history: {
+                /** @enum {string|null} */
+                from: "NEW" | "CONFIRMED" | "PREPARING" | "READY" | "OUT_FOR_DELIVERY" | "COMPLETED" | "CANCELLED" | "REFUNDED" | null;
+                /** @enum {string} */
+                to: "NEW" | "CONFIRMED" | "PREPARING" | "READY" | "OUT_FOR_DELIVERY" | "COMPLETED" | "CANCELLED" | "REFUNDED";
+                by: string | null;
+                at: string;
+            }[];
         };
         DaySummaryDto_Output: {
             date: string;
@@ -1001,6 +1103,27 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["OrderRowDto_Output"][];
+                };
+            };
+        };
+    };
+    OrdersController_detail: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                orderId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["OrderDetailDto_Output"];
                 };
             };
         };

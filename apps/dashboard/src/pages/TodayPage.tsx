@@ -251,6 +251,7 @@ function RecentOrders({
         <Link
           key={order.id}
           to={`/orders/${order.id}`}
+          state={{ back: '/', label: 'Today' }}
           className="flex items-center gap-4 border-b border-border px-5 py-3.5 transition-colors last:border-b-0 hover:bg-tile/40"
         >
           <div className="min-w-0 flex-1">

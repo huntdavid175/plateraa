@@ -46,6 +46,8 @@ The web dashboard for owners and managers (plan.md §3.1). It uses:
 - `lib/money.ts`: `cedis()`, `longDate()`, `hourLabel()`. `lib/words.ts`: plain words for enums.
 - `router.tsx` holds the routes; `pages/` holds the screens.
   - Today (`TodayPage`): the day summary, the refunds-owed banner and recent orders.
+  - Orders (`OrdersPage`): a day's orders, filtered by source and by paid or not. The day and the filters live in the address, so a view can be shared. Totals show only with `reports.revenue.view`.
+  - Order (`OrderPage`): one order in full. Links to it pass `state: { back, label }`, so "←" returns to where the person came from.
   - Settings: business details and dark mode so far.
   - The rest are placeholders until their slices.
 - **Keep the first screen light on mobile data.** Big libraries load lazily: the recharts chart is `pages/MoneyInChart.tsx`, loaded with `lazy()`.

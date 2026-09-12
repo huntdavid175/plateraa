@@ -157,6 +157,43 @@ export function Spinner({ light }: { light?: boolean }) {
   );
 }
 
+/** A row of choices where one is on, e.g. All / Walk-in / Phone. */
+export function PillFilter<T extends string>({
+  label,
+  options,
+  value,
+  onChange,
+}: {
+  /** Read out by screen readers. */
+  label: string;
+  options: readonly { value: T; label: string }[];
+  value: T;
+  onChange: (value: T) => void;
+}) {
+  return (
+    <div
+      role="group"
+      aria-label={label}
+      className="flex h-9 max-w-full items-center gap-1 overflow-x-auto rounded-lg border border-border bg-surface p-1"
+    >
+      {options.map((option) => (
+        <button
+          key={option.value}
+          type="button"
+          aria-pressed={value === option.value}
+          onClick={() => onChange(option.value)}
+          className={cx(
+            'h-7 shrink-0 rounded-md px-3 text-sm font-medium transition-colors',
+            value === option.value ? 'bg-tile text-text' : 'text-muted hover:text-text',
+          )}
+        >
+          {option.label}
+        </button>
+      ))}
+    </div>
+  );
+}
+
 /** A small uppercase heading over a card, as on the Settings screen. */
 export function Section({ title, children }: { title: string; children: ReactNode }) {
   return (

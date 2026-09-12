@@ -23,6 +23,7 @@ describe('OpenAPI document', () => {
         '/api/me/context',
         '/api/orders',
         '/api/orders/refunds-owed',
+        '/api/orders/{orderId}',
         '/api/reports/day',
         '/api/devices/register',
         '/api/devices/current/staff',
@@ -37,5 +38,13 @@ describe('OpenAPI document', () => {
     expect(push?.requestBody).toBeDefined();
     expect(push?.responses['200']).toBeDefined();
     expect(document.paths['/api/sessions/pin']?.post?.responses['200']).toBeDefined();
+  });
+
+  it('describes text that may be null as text, not as a list', () => {
+    const document = buildOpenApiDocument(app);
+    const row = document.components?.schemas?.['OrderRowDto_Output'] as {
+      properties: Record<string, { type?: string; nullable?: boolean }>;
+    };
+    expect(row.properties['takenBy']).toMatchObject({ type: 'string', nullable: true });
   });
 });

@@ -167,10 +167,31 @@ describe.skipIf(!hasDatabase())('reports and order lists (against Neon)', () => 
       refundOwed: 0,
       paidWith: ['CASH'],
       items: [{ name: 'Jollof rice', variantName: null, quantity: 2 }],
+      takenBy: 'Adwoa',
+      customerPhone: null,
     });
 
     const limited = await dashboard('/api/orders?limit=2').expect(200);
     expect(limited.body).toHaveLength(2);
+  });
+
+  it('shows one order in full: lines, payments and its history', async () => {
+    const res = await dashboard(`/api/orders/${ids.d}`).expect(200);
+    expect(res.body).toMatchObject({
+      id: ids.d,
+      displayNumber: 'A4',
+      status: 'CANCELLED',
+      cancelReason: 'Changed mind',
+      takenBy: 'Adwoa',
+      refundOwed: 1000,
+      items: [{ name: 'Sobolo', quantity: 1, unitPrice: 1000, lineTotal: 1000, modifiers: [] }],
+      payments: [{ method: 'CASH', status: 'CONFIRMED', amount: 1000, by: 'Adwoa' }],
+      refunds: [],
+      links: [],
+    });
+    expect(res.body.history.at(-1)).toMatchObject({ to: 'CANCELLED', by: 'Adwoa' });
+
+    await dashboard(`/api/orders/${ulid()}`).expect(404);
   });
 
   it('lists the orders owed a refund', async () => {

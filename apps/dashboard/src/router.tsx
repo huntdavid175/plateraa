@@ -1,6 +1,8 @@
 import { createBrowserRouter, Navigate } from 'react-router';
 import { ChooseBusinessPage } from './auth/ChooseBusinessPage';
 import { SignInPage } from './auth/SignInPage';
+import { OrderPage } from './pages/OrderPage';
+import { OrdersPage } from './pages/OrdersPage';
 import { SettingsPage } from './pages/SettingsPage';
 import { TodayPage } from './pages/TodayPage';
 import { Shell } from './shell/Shell';
@@ -26,21 +28,8 @@ export const router = createBrowserRouter([
     errorElement: <Crashed />,
     children: [
       { index: true, Component: TodayPage },
-      {
-        path: 'orders/:orderId',
-        element: (
-          <ComingSoon title="Order" what="What was ordered, how it was paid, and its history." />
-        ),
-      },
-      {
-        path: 'orders',
-        element: (
-          <ComingSoon
-            title="Orders"
-            what="Every order, filtered by where it came from and paid or not."
-          />
-        ),
-      },
+      { path: 'orders', Component: OrdersPage },
+      { path: 'orders/:orderId', Component: OrderPage },
       {
         path: 'menu',
         element: (
