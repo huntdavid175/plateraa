@@ -3,13 +3,22 @@ import {
   Controller,
   ForbiddenException,
   Get,
+  HttpCode,
   Inject,
   Injectable,
+  NotFoundException,
+  Param,
   Post,
   UseGuards,
 } from '@nestjs/common';
-import { ApiBearerAuth, ApiCreatedResponse, ApiOkResponse, ApiSecurity } from '@nestjs/swagger';
-import { and, devices, eq, isNull, locations, staffMembers, withTenant } from '@plateraa/db';
+import {
+  ApiBearerAuth,
+  ApiCreatedResponse,
+  ApiNoContentResponse,
+  ApiOkResponse,
+  ApiSecurity,
+} from '@nestjs/swagger';
+import { and, asc, devices, eq, isNull, locations, staffMembers, withTenant } from '@plateraa/db';
 import { ROLES } from '@plateraa/shared';
 import { createZodDto } from 'nestjs-zod';
 import { ulid } from 'ulid';
@@ -17,8 +26,31 @@ import { z } from 'zod';
 import { recordAudit } from '../audit/audit';
 import { hashToken, newToken } from '../auth/secrets';
 import { DATABASE, type DatabaseHandle } from '../database/database.module';
-import { CurrentDevice, CurrentUser, DeviceGuard, SessionGuard } from './guards';
-import type { AuthUser, DeviceContext } from './request-context';
+import { nullableText } from '../openapi';
+import {
+  Authorized,
+  CurrentActor,
+  CurrentDevice,
+  CurrentUser,
+  DeviceGuard,
+  SessionGuard,
+} from './guards';
+import type { Actor, AuthUser, DeviceContext } from './request-context';
+
+class TabletDto extends createZodDto(
+  z.object({
+    id: z.string(),
+    name: z.string(),
+    /** The letter in front of its order numbers: A1, B1, … */
+    code: z.string(),
+    appVersion: nullableText(),
+    /** When it last talked to the server. */
+    lastSeenAt: nullableText(),
+    registeredAt: z.string(),
+    /** Signed out from the dashboard: it can't sync until it's set up again. */
+    signedOut: z.boolean(),
+  }),
+) {}
 
 const registerDeviceSchema = z.object({
   tenantId: z.ulid(),
@@ -118,6 +150,45 @@ export class DevicesService {
     });
   }
 
+  /** The business's tablets, for the dashboard. */
+  async list(actor: Actor) {
+    const rows = await withTenant(this.database.db, actor.tenantId, (tx) =>
+      tx.select().from(devices).orderBy(asc(devices.code)),
+    );
+    return rows.map((device) => ({
+      id: device.id,
+      name: device.name,
+      code: device.code,
+      appVersion: device.appVersion,
+      lastSeenAt: device.lastSeenAt?.toISOString() ?? null,
+      registeredAt: device.createdAt.toISOString(),
+      signedOut: device.revokedAt !== null,
+    }));
+  }
+
+  /**
+   * Signs a tablet out, e.g. a lost or stolen one. Its token stops working at once, so it can't
+   * sync; anything it hadn't uploaded stays on it. Setting it up again makes it a new tablet.
+   */
+  async signOut(actor: Actor, deviceId: string) {
+    await withTenant(this.database.db, actor.tenantId, async (tx) => {
+      const [device] = await tx
+        .update(devices)
+        .set({ revokedAt: new Date() })
+        .where(and(eq(devices.id, deviceId), isNull(devices.revokedAt)))
+        .returning({ id: devices.id, name: devices.name });
+      if (!device) throw new NotFoundException('That tablet is already signed out, or not here');
+      await recordAudit(tx, {
+        tenantId: actor.tenantId,
+        actorStaffId: actor.staffId,
+        action: 'device.signed_out',
+        entityType: 'device',
+        entityId: device.id,
+        after: { name: device.name },
+      });
+    });
+  }
+
   /** Staff who can unlock this tablet, with the offline PIN checks it needs. */
   async roster(device: DeviceContext) {
     return withTenant(this.database.db, device.tenantId, (tx) =>
@@ -144,6 +215,23 @@ export class DevicesController {
   @ApiCreatedResponse({ type: RegisteredDeviceDto.Output })
   register(@CurrentUser() user: AuthUser, @Body() body: RegisterDeviceDto) {
     return this.devicesService.register(user, body);
+  }
+
+  @Get()
+  @Authorized('devices.manage')
+  @ApiBearerAuth()
+  @ApiOkResponse({ type: TabletDto.Output, isArray: true })
+  list(@CurrentActor() actor: Actor) {
+    return this.devicesService.list(actor);
+  }
+
+  @Post(':id/sign-out')
+  @Authorized('devices.manage')
+  @ApiBearerAuth()
+  @HttpCode(204)
+  @ApiNoContentResponse()
+  async signOut(@CurrentActor() actor: Actor, @Param('id') id: string) {
+    await this.devicesService.signOut(actor, id);
   }
 
   @Get('current/staff')

@@ -9,6 +9,12 @@ NestJS 11 (not 12: nestjs-zod 5.5 needs `@nestjs/common` ^11), CommonJS, built w
 - `app.setup.ts`: CORS, compression (gzip on every response), Better Auth mounted at `/api/auth/*splat`, global `/api` prefix, Swagger UI at `/api/docs` in development.
 - `auth/`: Better Auth 1.7 for owner/manager email + password (Argon2id via `@node-rs/argon2`, bearer plugin).
 - `identity/`: business signup (creates tenant, location and an OWNER staff member), device registration (opaque token, stored hashed), staff, 6-digit PIN login → 15-minute PIN session (jose HS256, `SESSION_SIGNING_SECRET`), lockout via `pinLockout` from `@plateraa/shared`.
+  - `staff.ts` and `devices.ts` also serve the dashboard's Staff page:
+    - `GET /api/staff` returns the team, never PINs;
+    - `PUT /api/staff/:id` changes a name, role or switched on/off, and `seesRevenue` (owner only). Ranks apply;
+    - `PUT /api/staff/revenue-visibility` sets who sees sales totals by role (owner only);
+    - `GET /api/devices` lists the tablets, and `POST /api/devices/:id/sign-out` signs one out (`devices.manage`).
+    - `Directories.deviceByToken` stamps `devices.last_seen_at`, at most once a minute.
   - `me.ts`: `GET /api/me/context`, the dashboard's "who am I". It returns the person's name, role and permissions, and the business in `x-tenant-id`.
   - Guards in `identity/guards.ts`: `@Authorized(...capabilities)` (works for tablet PIN sessions and dashboard logins; permissions re-read every request), `@CurrentActor()`, `@CurrentDevice()`, `@CurrentUser()`.
 - `sync/`: `POST /sync/push` and `GET /sync/pull`, authenticated by the **device token** (not a PIN session), so queued sales upload while the screen is locked.
@@ -60,7 +66,7 @@ Current commands (16): `order.create` (no discount), `order.update_items`, `orde
 
 `pnpm --filter @plateraa/api openapi` (writes `packages/api-client/openapi.json`), then `pnpm --filter @plateraa/api-client generate` (writes `src/schema.ts`). Commit both; never hand-edit them.
 
-For text that may be null in a response, use `nullableText()` from `openapi.ts`, not `z.string().nullable()`. Swagger mistakes the plain form for an array, so the clients would expect a list.
+For a top-level field that may be null, use `nullableText()` or `nullableFlag()` from `openapi.ts`, not `z.string().nullable()` or `z.boolean().nullable()`. This applies to requests and responses alike. Swagger mistakes the plain form for an array, so the clients would expect a list.
 
 ## Tests
 

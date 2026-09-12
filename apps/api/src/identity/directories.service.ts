@@ -4,6 +4,9 @@ import {
   devices,
   eq,
   isNull,
+  lt,
+  or,
+  sql,
   staffMembers,
   tenantSettings,
   tenants,
@@ -48,7 +51,21 @@ export class Directories {
             eq(tenants.status, 'ACTIVE'),
           ),
         );
-      return device ?? null;
+      if (!device) return null;
+      // When it last talked to the server, for the dashboard's Tablets list. At most once a minute.
+      await tx
+        .update(devices)
+        .set({ lastSeenAt: sql`now()` })
+        .where(
+          and(
+            eq(devices.id, device.id),
+            or(
+              isNull(devices.lastSeenAt),
+              lt(devices.lastSeenAt, sql`now() - interval '1 minute'`),
+            ),
+          ),
+        );
+      return device;
     });
   }
 

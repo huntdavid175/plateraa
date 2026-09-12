@@ -149,6 +149,63 @@
         ]
       }
     },
+    "/api/devices": {
+      "get": {
+        "operationId": "DevicesController_list",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/TabletDto_Output"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "Devices"
+        ]
+      }
+    },
+    "/api/devices/{id}/sign-out": {
+      "post": {
+        "operationId": "DevicesController_signOut",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "Devices"
+        ]
+      }
+    },
     "/api/devices/current/staff": {
       "get": {
         "operationId": "DevicesController_roster",
@@ -215,6 +272,33 @@
       }
     },
     "/api/staff": {
+      "get": {
+        "operationId": "StaffController_team",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TeamDto_Output"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "device": []
+          },
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "Staff"
+        ]
+      },
       "post": {
         "operationId": "StaffController_create",
         "parameters": [],
@@ -238,6 +322,79 @@
                 }
               }
             }
+          }
+        },
+        "security": [
+          {
+            "device": []
+          },
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "Staff"
+        ]
+      }
+    },
+    "/api/staff/revenue-visibility": {
+      "put": {
+        "operationId": "StaffController_setRevenueVisibility",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RevenueVisibilityDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "204": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "device": []
+          },
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "Staff"
+        ]
+      }
+    },
+    "/api/staff/{id}": {
+      "put": {
+        "operationId": "StaffController_update",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateStaffDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "204": {
+            "description": ""
           }
         },
         "security": [
@@ -1189,6 +1346,44 @@
         ],
         "additionalProperties": false
       },
+      "TabletDto_Output": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "code": {
+            "type": "string"
+          },
+          "appVersion": {
+            "type": "string",
+            "nullable": true
+          },
+          "lastSeenAt": {
+            "type": "string",
+            "nullable": true
+          },
+          "registeredAt": {
+            "type": "string"
+          },
+          "signedOut": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "code",
+          "appVersion",
+          "lastSeenAt",
+          "registeredAt",
+          "signedOut"
+        ],
+        "additionalProperties": false
+      },
       "RosterEntryDto_Output": {
         "type": "object",
         "properties": {
@@ -1310,6 +1505,92 @@
         ],
         "additionalProperties": false
       },
+      "TeamDto_Output": {
+        "type": "object",
+        "properties": {
+          "staff": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "id": {
+                  "type": "string"
+                },
+                "displayName": {
+                  "type": "string"
+                },
+                "role": {
+                  "type": "string",
+                  "enum": [
+                    "OWNER",
+                    "MANAGER",
+                    "STAFF",
+                    "RIDER"
+                  ]
+                },
+                "active": {
+                  "type": "boolean"
+                },
+                "hasPin": {
+                  "type": "boolean"
+                },
+                "pinLocked": {
+                  "type": "boolean"
+                },
+                "hasLogin": {
+                  "type": "boolean"
+                },
+                "seesRevenue": {
+                  "type": [
+                    "boolean",
+                    "null"
+                  ]
+                },
+                "you": {
+                  "type": "boolean"
+                }
+              },
+              "required": [
+                "id",
+                "displayName",
+                "role",
+                "active",
+                "hasPin",
+                "pinLocked",
+                "hasLogin",
+                "seesRevenue",
+                "you"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "revenueByRole": {
+            "type": "object",
+            "properties": {
+              "MANAGER": {
+                "type": "boolean"
+              },
+              "STAFF": {
+                "type": "boolean"
+              },
+              "RIDER": {
+                "type": "boolean"
+              }
+            },
+            "required": [
+              "MANAGER",
+              "STAFF",
+              "RIDER"
+            ],
+            "additionalProperties": false
+          }
+        },
+        "required": [
+          "staff",
+          "revenueByRole"
+        ],
+        "additionalProperties": false
+      },
       "CreateStaffDto": {
         "type": "object",
         "properties": {
@@ -1361,6 +1642,58 @@
           "role"
         ],
         "additionalProperties": false
+      },
+      "RevenueVisibilityDto": {
+        "type": "object",
+        "properties": {
+          "byRole": {
+            "type": "object",
+            "properties": {
+              "MANAGER": {
+                "type": "boolean"
+              },
+              "STAFF": {
+                "type": "boolean"
+              },
+              "RIDER": {
+                "type": "boolean"
+              }
+            },
+            "required": [
+              "MANAGER",
+              "STAFF",
+              "RIDER"
+            ]
+          }
+        },
+        "required": [
+          "byRole"
+        ]
+      },
+      "UpdateStaffDto": {
+        "type": "object",
+        "properties": {
+          "displayName": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 60
+          },
+          "role": {
+            "type": "string",
+            "enum": [
+              "MANAGER",
+              "STAFF",
+              "RIDER"
+            ]
+          },
+          "active": {
+            "type": "boolean"
+          },
+          "seesRevenue": {
+            "type": "boolean",
+            "nullable": true
+          }
+        }
       },
       "SetPinDto": {
         "type": "object",

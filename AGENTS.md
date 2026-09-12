@@ -28,16 +28,17 @@ A solo founder (GitHub `huntdavid175`) builds it with an AI agent. Work started 
   - §2.5: payment links through each vendor's own Moolre account, texted by Moolre SMS, and counted only once Moolre's status check confirms them. The tablet sends them and shows each link's status. A real link was paid end to end on live Moolre on 12 Sep. See `apps/api/AGENTS.md`.
   - The rest of Phase 2 (12 Sep): "not synced yet" labels, refund owed, and the restyled screens.
 - **Now: Phase 3.1, the dashboard**, built slice by slice to the user's Figma Make design. See `apps/dashboard/AGENTS.md`.
-  - Done: the shell (sign-in, business picker, navigation, dark mode).
+  - Done (12 Sep):
+    - the shell (sign-in, business picker, navigation, dark mode);
+    - Today (the day summary);
+    - Orders and the order detail;
+    - refunds, payouts and discounts;
+    - Menu and the item editor, with Bolt Food and Chowdeck prices synced to the tablet;
+    - Staff and tablets.
   - Next, in order:
-    1. Today;
-    2. Orders;
-    3. Menu and the item editor;
-    4. refunds, payouts and discounts;
-    5. Staff and tablets;
-    6. Settings, including a live Moolre connection check;
-    7. onboarding;
-    8. expenses, stock and reports.
+    1. Settings, including a live Moolre connection check;
+    2. onboarding;
+    3. expenses, stock and reports.
 - Founder tasks (Moolre, lawyer, printers, domain, Play Console) are Phase 0 in `plan.md`.
 
 ## Working with the user

@@ -7,10 +7,11 @@ import { OrderPage } from './pages/OrderPage';
 import { OrdersPage } from './pages/OrdersPage';
 import { RefundsPage } from './pages/RefundsPage';
 import { SettingsPage } from './pages/SettingsPage';
+import { StaffPage } from './pages/StaffPage';
 import { TodayPage } from './pages/TodayPage';
 import { Shell } from './shell/Shell';
 import { Button } from './ui/controls';
-import { Centered, ComingSoon } from './ui/Page';
+import { Centered } from './ui/Page';
 
 function Crashed() {
   return (
@@ -36,12 +37,7 @@ export const router = createBrowserRouter([
       { path: 'menu', Component: MenuPage },
       { path: 'menu/items/new', Component: ItemEditorPage },
       { path: 'menu/items/:itemId', Component: ItemEditorPage },
-      {
-        path: 'staff',
-        element: (
-          <ComingSoon title="Staff" what="Add staff, set PINs and choose who sees sales figures." />
-        ),
-      },
+      { path: 'staff', Component: StaffPage },
       { path: 'refunds', Component: RefundsPage },
       { path: 'settings', Component: SettingsPage },
     ],

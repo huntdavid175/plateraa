@@ -10,6 +10,9 @@ import { z } from 'zod';
  */
 export const nullableText = () => z.nullable(z.string()).meta({ type: 'string', nullable: true });
 
+/** Yes, no or null, for the same reason as `nullableText`. */
+export const nullableFlag = () => z.nullable(z.boolean()).meta({ type: 'boolean', nullable: true });
+
 /**
  * The API contract. The typed clients for the tablet, dashboard and storefront are generated from
  * it (`pnpm --filter @plateraa/api openapi`, then `pnpm --filter @plateraa/api-client generate`).

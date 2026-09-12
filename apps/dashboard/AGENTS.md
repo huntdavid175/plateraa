@@ -57,6 +57,10 @@ The web dashboard for owners and managers (plan.md §3.1). It uses:
     - Each dialog makes its id with `ulid()` when it opens, so pressing Save again after a lost reply records it once.
     - `refreshMoney()` reloads everything that shows money.
     - The refund and discount dialogs open from the order page; payouts open from the "Open drawers" card on Today.
+  - Staff (`StaffPage`):
+    - the team, with Add and Edit dialogs (PINs typed twice and checked with `pinProblem`, never shown);
+    - the owner's "Who sees sales totals" switches;
+    - the Tablets card, with sign out.
   - Settings: business details and dark mode so far.
   - The rest are placeholders until their slices.
 - **Keep the first screen light on mobile data.** Big libraries load lazily: the recharts chart is `pages/MoneyInChart.tsx`, loaded with `lazy()`.

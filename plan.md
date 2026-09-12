@@ -248,7 +248,12 @@ _11 Sep: the server side is built from Moolre's docs (docs.moolre.com; their `/a
     - _**Platform prices on the tablet:** they sync there (migration 0008; tablet local migration v5, which also forgets the pull cursor, so an updated tablet pulls everything once). A Bolt Food or Chowdeck order is priced at the platform's price as soon as that source is chosen._
 - [ ] Delivery zones + fees
 - [ ] Channel commissions (rate or flat; blank = shown as "Gross")
-- [ ] Staff management + revenue visibility settings (per role, per person)
+- [x] Staff management + revenue visibility settings (per role, per person)
+  - _12 Sep: the dashboard's Staff page, to the design._
+    - _**The team:** add staff (name, role, PIN typed twice, never shown), edit their name, role and PIN, and switch people off. Switched off means no tablet unlock or dashboard sign-in; the tablet drops them at its next sync._
+    - _**Ranks:** managers look after staff and riders; only the owner changes managers, and nobody changes the owner._
+    - _**Sales totals:** the owner switches them on per role, or per person ("Role setting / Always / Never"). This is `PUT /api/staff/revenue-visibility` and `seesRevenue`, and it applies at once._
+    - _**Tablets:** listed with when they were last online (now kept, at most once a minute), and a manager can sign one out if it's lost._
 - [ ] Setting: count portions each morning (prep counts), off by default (_11 Sep user decision; the tablet side is done, §2.4_). Switching it on gives every menu item a daily count record, and new items get one too.
 - [ ] Order setting: pay before prep (on by default; the owner can switch it off)
 - [x] Manager tools: record drawer payouts against the tablet's open shift (booked as expenses); apply discounts to unpaid orders; a "refunds owed" list and recording refunds given back by hand (outside the drawer, full or partial, reason required)

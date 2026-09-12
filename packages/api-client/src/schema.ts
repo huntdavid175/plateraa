@@ -84,6 +84,38 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/devices": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["DevicesController_list"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/devices/{id}/sign-out": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["DevicesController_signOut"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/devices/current/staff": {
         parameters: {
             query?: never;
@@ -123,9 +155,41 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        get?: never;
+        get: operations["StaffController_team"];
         put?: never;
         post: operations["StaffController_create"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/staff/revenue-visibility": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put: operations["StaffController_setRevenueVisibility"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/staff/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put: operations["StaffController_update"];
+        post?: never;
         delete?: never;
         options?: never;
         head?: never;
@@ -442,6 +506,15 @@ export interface components {
                 code: string;
             };
         };
+        TabletDto_Output: {
+            id: string;
+            name: string;
+            code: string;
+            appVersion: string | null;
+            lastSeenAt: string | null;
+            registeredAt: string;
+            signedOut: boolean;
+        };
         RosterEntryDto_Output: {
             id: string;
             displayName: string;
@@ -466,6 +539,25 @@ export interface components {
             };
             capabilities: ("orders.take" | "orders.cancel" | "payments.record" | "shift.operate" | "shift.own_cash.view" | "stock.count" | "deliveries.update" | "refunds.record" | "payouts.record" | "discounts.apply" | "catalog.manage" | "staff.manage" | "expenses.manage" | "devices.manage" | "settings.manage" | "reports.revenue.view")[];
         };
+        TeamDto_Output: {
+            staff: {
+                id: string;
+                displayName: string;
+                /** @enum {string} */
+                role: "OWNER" | "MANAGER" | "STAFF" | "RIDER";
+                active: boolean;
+                hasPin: boolean;
+                pinLocked: boolean;
+                hasLogin: boolean;
+                seesRevenue: boolean | null;
+                you: boolean;
+            }[];
+            revenueByRole: {
+                MANAGER: boolean;
+                STAFF: boolean;
+                RIDER: boolean;
+            };
+        };
         CreateStaffDto: {
             displayName: string;
             /** @enum {string} */
@@ -477,6 +569,20 @@ export interface components {
             displayName: string;
             /** @enum {string} */
             role: "OWNER" | "MANAGER" | "STAFF" | "RIDER";
+        };
+        RevenueVisibilityDto: {
+            byRole: {
+                MANAGER: boolean;
+                STAFF: boolean;
+                RIDER: boolean;
+            };
+        };
+        UpdateStaffDto: {
+            displayName?: string;
+            /** @enum {string} */
+            role?: "MANAGER" | "STAFF" | "RIDER";
+            active?: boolean;
+            seesRevenue?: boolean | null;
         };
         SetPinDto: {
             pin: string;
@@ -1231,6 +1337,44 @@ export interface operations {
             };
         };
     };
+    DevicesController_list: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["TabletDto_Output"][];
+                };
+            };
+        };
+    };
+    DevicesController_signOut: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
     DevicesController_roster: {
         parameters: {
             query?: never;
@@ -1273,6 +1417,25 @@ export interface operations {
             };
         };
     };
+    StaffController_team: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["TeamDto_Output"];
+                };
+            };
+        };
+    };
     StaffController_create: {
         parameters: {
             query?: never;
@@ -1293,6 +1456,50 @@ export interface operations {
                 content: {
                     "application/json": components["schemas"]["StaffCreatedDto_Output"];
                 };
+            };
+        };
+    };
+    StaffController_setRevenueVisibility: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["RevenueVisibilityDto"];
+            };
+        };
+        responses: {
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    StaffController_update: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["UpdateStaffDto"];
+            };
+        };
+        responses: {
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
             };
         };
     };
