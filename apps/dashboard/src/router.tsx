@@ -3,6 +3,7 @@ import { ChooseBusinessPage } from './auth/ChooseBusinessPage';
 import { SignInPage } from './auth/SignInPage';
 import { OrderPage } from './pages/OrderPage';
 import { OrdersPage } from './pages/OrdersPage';
+import { RefundsPage } from './pages/RefundsPage';
 import { SettingsPage } from './pages/SettingsPage';
 import { TodayPage } from './pages/TodayPage';
 import { Shell } from './shell/Shell';
@@ -45,15 +46,7 @@ export const router = createBrowserRouter([
           <ComingSoon title="Staff" what="Add staff, set PINs and choose who sees sales figures." />
         ),
       },
-      {
-        path: 'refunds',
-        element: (
-          <ComingSoon
-            title="Refunds"
-            what="Orders that owe the customer money back, and recording the refunds you give."
-          />
-        ),
-      },
+      { path: 'refunds', Component: RefundsPage },
       { path: 'settings', Component: SettingsPage },
     ],
   },

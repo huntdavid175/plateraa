@@ -244,6 +244,70 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/orders/{orderId}/refunds": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["OrderMoneyController_recordRefund"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/orders/{orderId}/discount": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put: operations["OrderMoneyController_setDiscount"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/drawers": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["DrawersController_list"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/drawers/{shiftId}/payouts": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["DrawersController_recordPayout"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
 }
 export type webhooks = Record<string, never>;
 export interface components {
@@ -744,6 +808,7 @@ export interface components {
             customerPhone: string | null;
             subtotal: number;
             discount: number;
+            discountBps: number | null;
             deliveryFee: number;
             /** @enum {string|null} */
             deliveryFeeCollectedBy: "VENDOR" | "RIDER" | null;
@@ -821,6 +886,54 @@ export interface components {
                 method: "CASH" | "PLATFORM" | "LINK";
                 amount: number;
             }[];
+        };
+        RecordRefundDto: {
+            /** Format: ulid */
+            refundId: string;
+            amount: number;
+            /** @enum {string} */
+            method: "CASH" | "LINK";
+            reason: string;
+        };
+        RefundRecordedDto_Output: {
+            refundId: string;
+            amountPaid: number;
+            refundOwed: number;
+        };
+        SetDiscountDto: {
+            /** @enum {string} */
+            kind: "none" | "percent" | "amount";
+            bps?: number;
+            amount?: number;
+        };
+        DiscountSetDto_Output: {
+            subtotal: number;
+            discount: number;
+            total: number;
+            amountDue: number;
+            amountPaid: number;
+            /** @enum {string} */
+            status: "NEW" | "CONFIRMED" | "PREPARING" | "READY" | "OUT_FOR_DELIVERY" | "COMPLETED" | "CANCELLED" | "REFUNDED";
+        };
+        DrawerDto_Output: {
+            shiftId: string;
+            deviceName: string;
+            deviceCode: string;
+            openedBy: string | null;
+            openedAt: string;
+            float: number;
+            expectedCash: number | null;
+        };
+        RecordPayoutDto: {
+            /** Format: ulid */
+            payoutId: string;
+            amount: number;
+            /** @enum {string} */
+            category: "INGREDIENTS" | "GAS" | "PACKAGING" | "TRANSPORT" | "RENT" | "ELECTRICITY" | "WATER" | "SALARIES" | "AIRTIME_DATA" | "RIDER_PAYMENTS" | "MARKETING" | "OTHER";
+            note?: string;
+        };
+        PayoutRecordedDto_Output: {
+            payoutId: string;
         };
     };
     responses: never;
@@ -1145,6 +1258,100 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["DaySummaryDto_Output"];
+                };
+            };
+        };
+    };
+    OrderMoneyController_recordRefund: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                orderId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["RecordRefundDto"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["RefundRecordedDto_Output"];
+                };
+            };
+        };
+    };
+    OrderMoneyController_setDiscount: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                orderId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["SetDiscountDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DiscountSetDto_Output"];
+                };
+            };
+        };
+    };
+    DrawersController_list: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DrawerDto_Output"][];
+                };
+            };
+        };
+    };
+    DrawersController_recordPayout: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                shiftId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["RecordPayoutDto"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PayoutRecordedDto_Output"];
                 };
             };
         };

@@ -48,6 +48,11 @@ The web dashboard for owners and managers (plan.md §3.1). It uses:
   - Today (`TodayPage`): the day summary, the refunds-owed banner and recent orders.
   - Orders (`OrdersPage`): a day's orders, filtered by source and by paid or not. The day and the filters live in the address, so a view can be shared. Totals show only with `reports.revenue.view`.
   - Order (`OrderPage`): one order in full. Links to it pass `state: { back, label }`, so "←" returns to where the person came from.
+  - Refunds (`RefundsPage`): orders owed money back, each with "Record refund given".
+  - `money-dialogs.tsx`: the dialogs for recording a refund, applying a discount (previewed with `priceOrder`, as the server prices it) and recording a payout.
+    - Each dialog makes its id with `ulid()` when it opens, so pressing Save again after a lost reply records it once.
+    - `refreshMoney()` reloads everything that shows money.
+    - The refund and discount dialogs open from the order page; payouts open from the "Open drawers" card on Today.
   - Settings: business details and dark mode so far.
   - The rest are placeholders until their slices.
 - **Keep the first screen light on mobile data.** Big libraries load lazily: the recharts chart is `pages/MoneyInChart.tsx`, loaded with `lazy()`.

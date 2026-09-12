@@ -1,7 +1,8 @@
 import { useQuery } from '@tanstack/react-query';
-import { Suspense, lazy, type ReactNode } from 'react';
+import { Suspense, lazy, useState, type ReactNode } from 'react';
 import { Link } from 'react-router';
-import { cedis, longDate } from '../lib/money';
+import { fetchDrawers, type Drawer } from '../lib/manager';
+import { cedis, clock, longDate } from '../lib/money';
 import {
   fetchOrders,
   fetchRefundsOwed,
@@ -13,8 +14,9 @@ import { fetchDay, type DaySummary } from '../lib/reports';
 import { useSession } from '../lib/session';
 import { SOURCE_WORDS } from '../lib/words';
 import { useMe } from '../shell/Shell';
-import { Badge, Card, ErrorNote, Spinner, Tag, cx } from '../ui/controls';
+import { Badge, Button, Card, ErrorNote, Spinner, Tag, cx } from '../ui/controls';
 import { Page } from '../ui/Page';
+import { PayoutDialog } from './money-dialogs';
 
 const MoneyInChart = lazy(() => import('./MoneyInChart'));
 
@@ -26,6 +28,12 @@ export function TodayPage() {
   const { tenantId } = useSession();
   const seesMoney = me.capabilities.includes('reports.revenue.view');
   const recordsRefunds = me.capabilities.includes('refunds.record');
+  const recordsPayouts = me.capabilities.includes('payouts.record');
+  const drawers = useQuery({
+    queryKey: ['drawers', tenantId],
+    queryFn: fetchDrawers,
+    enabled: recordsPayouts,
+  });
 
   const day = useQuery({
     queryKey: ['day', tenantId],
@@ -71,6 +79,8 @@ export function TodayPage() {
         </Card>
       )}
 
+      {drawers.data && drawers.data.length > 0 && <OpenDrawers drawers={drawers.data} />}
+
       <RecentOrders
         orders={recent.data}
         total={day.data?.orders}
@@ -103,6 +113,42 @@ function RefundsBanner({ orders }: { orders: OrderRow[] }) {
         </p>
       </div>
     </Link>
+  );
+}
+
+/** The tablets' open drawers. Payouts are recorded here: the tablet can't record them. */
+function OpenDrawers({ drawers }: { drawers: Drawer[] }) {
+  const [paying, setPaying] = useState<Drawer | null>(null);
+  return (
+    <Card className="mb-6 overflow-hidden">
+      <div className="border-b border-border px-5 py-4">
+        <h2 className="font-semibold">Open drawers</h2>
+        <p className="mt-0.5 text-xs text-muted">
+          Cash paid out of a drawer is recorded here. The tablet can’t record it.
+        </p>
+      </div>
+      {drawers.map((drawer) => (
+        <div
+          key={drawer.shiftId}
+          className="flex items-center gap-4 border-b border-border px-5 py-3.5 last:border-b-0"
+        >
+          <div className="min-w-0 flex-1">
+            <p className="text-sm font-medium">{drawer.deviceName}</p>
+            <p className="mt-0.5 text-xs text-muted">
+              Opened {clock(drawer.openedAt)}
+              {drawer.openedBy ? ` by ${drawer.openedBy}` : ''}
+              {drawer.expectedCash !== null
+                ? ` · ${cedis(drawer.expectedCash)} expected in it`
+                : ''}
+            </p>
+          </div>
+          <Button variant="secondary" small onClick={() => setPaying(drawer)}>
+            Record payout
+          </Button>
+        </div>
+      ))}
+      {paying && <PayoutDialog drawer={paying} onClose={() => setPaying(null)} />}
+    </Card>
   );
 }
 

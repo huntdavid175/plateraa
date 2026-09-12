@@ -25,6 +25,12 @@ NestJS 11 (not 12: nestjs-zod 5.5 needs `@nestjs/common` ^11), CommonJS, built w
 - `reports/`: `GET /api/reports/day?date=`, the day summary (plan.md §3.2). Needs `reports.revenue.view`.
   - Figures hang off the orders' trading day; the definitions are in `reports.module.ts`.
   - `business-day.ts` has `businessToday()` (today in the business's timezone) and `dueSql`.
+- `manager/`: what only a manager or the owner does, on the dashboard. The tablet can't do any of it.
+  - `POST /api/orders/:orderId/refunds` (`refunds.record`): money handed back by hand, outside the drawer, full or partial up to what's owed. It lowers the order's `amountPaid`.
+  - `PUT /api/orders/:orderId/discount` (`discounts.apply`): percent, amount or none, on an order that isn't fully paid. It's re-priced with `priceOrder`, can't go below what's paid, and starts prep if it clears what's owed.
+  - `GET /api/drawers` and `POST /api/drawers/:shiftId/payouts` (`payouts.record`): the open drawers, and cash paid out of one, which is booked as a `CASH_DRAWER` expense for today.
+  - Expected cash shows only with `reports.revenue.view`. It uses `expectedCash()` from `sync/handlers/shifts.ts`.
+  - The dashboard sends the refund or payout id, so a repeat records it only once.
 - `scripts/`: `seed:test-menu`, `settings:portion-counts` and `settings:moolre-account` stand in for dashboard setup until 3.1. They work on the `dev` branch (which Render also uses for now); `--production` targets the `production` branch, for setting up the pilot's vendors (`scripts/target.ts`).
 
 ## Database access

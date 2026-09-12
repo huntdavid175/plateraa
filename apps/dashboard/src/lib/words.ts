@@ -1,4 +1,5 @@
 import type {
+  ExpenseCategory,
   OrderSource,
   OrderStatus,
   OrderType,
@@ -56,6 +57,24 @@ export const METHOD_WORDS: Record<PaymentMethod, string> = {
   CASH: 'Cash',
   LINK: 'Payment link',
   PLATFORM: 'Paid via platform',
+};
+
+/** How money went back to a customer. */
+export const REFUND_METHOD_WORDS = { CASH: 'Cash', LINK: 'Mobile money' } as const;
+
+export const EXPENSE_WORDS: Record<ExpenseCategory, string> = {
+  INGREDIENTS: 'Ingredients',
+  GAS: 'Gas',
+  PACKAGING: 'Packaging',
+  TRANSPORT: 'Transport',
+  RENT: 'Rent',
+  ELECTRICITY: 'Electricity',
+  WATER: 'Water',
+  SALARIES: 'Wages',
+  AIRTIME_DATA: 'Airtime and data',
+  RIDER_PAYMENTS: 'Rider payments',
+  MARKETING: 'Marketing',
+  OTHER: 'Other',
 };
 
 /** Why the server flagged an order for the owner to look at. */

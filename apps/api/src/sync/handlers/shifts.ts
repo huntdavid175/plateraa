@@ -1,4 +1,4 @@
-import { and, cashMovements, eq, isNull, payments, shifts, sql } from '@plateraa/db';
+import { and, cashMovements, eq, isNull, payments, shifts, sql, type Tx } from '@plateraa/db';
 import { add, pesewas, sub, type Pesewas } from '@plateraa/shared';
 import { recordAudit } from '../../audit/audit';
 import { CommandRejected, type CommandHandler, type HandlerContext } from '../sync.types';
@@ -23,10 +23,10 @@ const toMoney = (total: string | undefined) => pesewas(Number(total ?? 0));
 /**
  * Float + cash taken − payouts − drops + pay-ins. Payouts are recorded by a manager on the
  * dashboard against this shift. Refunds are paid back from outside the drawer, so they never
- * count here.
+ * count here. Also used by the dashboard, which records payouts against an open drawer.
  */
-async function expectedCash(ctx: HandlerContext, shift: Shift): Promise<Pesewas> {
-  const [cashIn] = await ctx.tx
+export async function expectedCash(tx: Tx, shift: Shift): Promise<Pesewas> {
+  const [cashIn] = await tx
     .select({ total: sql<string>`coalesce(sum(${payments.amount}), 0)` })
     .from(payments)
     .where(
@@ -37,7 +37,7 @@ async function expectedCash(ctx: HandlerContext, shift: Shift): Promise<Pesewas>
         isNull(payments.deletedAt),
       ),
     );
-  const movements = await ctx.tx
+  const movements = await tx
     .select({
       type: cashMovements.type,
       total: sql<string>`coalesce(sum(${cashMovements.amount}), 0)`,
@@ -124,7 +124,7 @@ export const shiftCashMovement: CommandHandler<'shift.cash_movement'> = async (c
 export const shiftClose: CommandHandler<'shift.close'> = async (ctx) => {
   const p = ctx.command.payload;
   const shift = await loadOpenShift(ctx, p.shiftId);
-  const expected = await expectedCash(ctx, shift);
+  const expected = await expectedCash(ctx.tx, shift);
   const variance = sub(p.counted, expected);
 
   await ctx.tx

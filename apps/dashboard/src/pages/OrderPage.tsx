@@ -1,5 +1,5 @@
 import { useQuery } from '@tanstack/react-query';
-import type { ReactNode } from 'react';
+import { useState, type ReactNode } from 'react';
 import { Link, useLocation, useParams } from 'react-router';
 import { cedis, clock, longDate } from '../lib/money';
 import { fetchOrder, paymentState, type BackTo, type OrderDetail } from '../lib/orders';
@@ -13,7 +13,9 @@ import {
   linkWords,
   phoneWords,
 } from '../lib/words';
-import { Badge, Card, ErrorNote, Spinner, Tag, cx } from '../ui/controls';
+import { useMe } from '../shell/Shell';
+import { Badge, Button, Card, ErrorNote, Spinner, Tag, cx } from '../ui/controls';
+import { DiscountDialog, RecordRefundDialog } from './money-dialogs';
 
 export function OrderPage() {
   const { orderId = '' } = useParams();
@@ -46,6 +48,8 @@ export function OrderPage() {
 }
 
 function OrderBody({ order }: { order: OrderDetail }) {
+  const me = useMe();
+  const [dialog, setDialog] = useState<'refund' | 'discount' | null>(null);
   const state = paymentState(order);
   const stillOwed = Math.max(0, order.amountDue - order.amountPaid);
   const settled = order.status === 'CANCELLED' || order.status === 'REFUNDED';
@@ -90,9 +94,13 @@ function OrderBody({ order }: { order: OrderDetail }) {
         <div className="mb-4 rounded-xl border border-red/20 bg-red-bg p-5 text-red">
           <p className="mb-1 text-sm font-semibold">Refund owed</p>
           <p className="text-xs">
-            Give {cedis(order.refundOwed)} back to the customer. Recording the refund here is coming
-            next.
+            Give {cedis(order.refundOwed)} back to the customer, then record it here.
           </p>
+          {me.capabilities.includes('refunds.record') && (
+            <Button variant="danger" full className="mt-4" onClick={() => setDialog('refund')}>
+              Record refund given
+            </Button>
+          )}
         </div>
       )}
 
@@ -140,6 +148,14 @@ function OrderBody({ order }: { order: OrderDetail }) {
           <p className="font-mono font-semibold">{cedis(order.total)}</p>
         </div>
       </Card>
+
+      {me.capabilities.includes('discounts.apply') && !settled && stillOwed > 0 && (
+        <div className="-mt-2 mb-4 flex justify-end">
+          <Button variant="secondary" small onClick={() => setDialog('discount')}>
+            {order.discount > 0 ? 'Change discount' : 'Apply discount'}
+          </Button>
+        </div>
+      )}
 
       <Card className="mb-4 overflow-hidden">
         <CardTitle>Payment</CardTitle>
@@ -244,6 +260,9 @@ function OrderBody({ order }: { order: OrderDetail }) {
           </ol>
         </Card>
       )}
+
+      {dialog === 'refund' && <RecordRefundDialog order={order} onClose={() => setDialog(null)} />}
+      {dialog === 'discount' && <DiscountDialog order={order} onClose={() => setDialog(null)} />}
     </>
   );
 }

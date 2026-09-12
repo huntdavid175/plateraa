@@ -97,6 +97,8 @@ class OrderDetailDto extends createZodDto(
   orderRowSchema.extend({
     subtotal: money,
     discount: money,
+    /** A percent discount in basis points (1000 is 10%); null for an amount off, or none. */
+    discountBps: z.number().int().nullable(),
     deliveryFee: money,
     deliveryFeeCollectedBy: z.enum(DELIVERY_FEE_COLLECTORS).nullable(),
     deliveryAddress: nullableText(),
@@ -246,6 +248,7 @@ export class OrdersService {
           ...ROW,
           subtotal: orders.subtotal,
           discount: orders.discount,
+          discountBps: orders.discountBps,
           deliveryAddress: orders.deliveryAddress,
           note: orders.note,
           cancelReason: orders.cancelReason,
@@ -340,6 +343,7 @@ export class OrdersService {
         ...this.toRow(order, [...confirmedMethods], lines),
         subtotal: order.subtotal,
         discount: order.discount,
+        discountBps: order.discountBps,
         deliveryFee: order.deliveryFee,
         deliveryFeeCollectedBy: order.deliveryFeeCollectedBy,
         deliveryAddress: order.deliveryAddress,

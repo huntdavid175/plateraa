@@ -517,6 +517,170 @@
           "Reports"
         ]
       }
+    },
+    "/api/orders/{orderId}/refunds": {
+      "post": {
+        "operationId": "OrderMoneyController_recordRefund",
+        "parameters": [
+          {
+            "name": "orderId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RecordRefundDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RefundRecordedDto_Output"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "OrderMoney"
+        ]
+      }
+    },
+    "/api/orders/{orderId}/discount": {
+      "put": {
+        "operationId": "OrderMoneyController_setDiscount",
+        "parameters": [
+          {
+            "name": "orderId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SetDiscountDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DiscountSetDto_Output"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "OrderMoney"
+        ]
+      }
+    },
+    "/api/drawers": {
+      "get": {
+        "operationId": "DrawersController_list",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/DrawerDto_Output"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "Drawers"
+        ]
+      }
+    },
+    "/api/drawers/{shiftId}/payouts": {
+      "post": {
+        "operationId": "DrawersController_recordPayout",
+        "parameters": [
+          {
+            "name": "shiftId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RecordPayoutDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PayoutRecordedDto_Output"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "Drawers"
+        ]
+      }
     }
   },
   "info": {
@@ -2626,6 +2790,12 @@
             "minimum": -9007199254740991,
             "maximum": 9007199254740991
           },
+          "discountBps": {
+            "type": "integer",
+            "minimum": -9007199254740991,
+            "maximum": 9007199254740991,
+            "nullable": true
+          },
           "deliveryFee": {
             "type": "integer",
             "minimum": -9007199254740991,
@@ -2889,6 +3059,7 @@
           "customerPhone",
           "subtotal",
           "discount",
+          "discountBps",
           "deliveryFee",
           "deliveryFeeCollectedBy",
           "deliveryAddress",
@@ -3066,6 +3237,239 @@
           "byHour",
           "bySource",
           "byMethod"
+        ],
+        "additionalProperties": false
+      },
+      "RecordRefundDto": {
+        "type": "object",
+        "properties": {
+          "refundId": {
+            "type": "string",
+            "format": "ulid",
+            "pattern": "^[0-7][0-9A-HJKMNP-TV-Za-hjkmnp-tv-z]{25}$"
+          },
+          "amount": {
+            "type": "integer",
+            "exclusiveMinimum": true,
+            "maximum": 9007199254740991,
+            "minimum": 0
+          },
+          "method": {
+            "type": "string",
+            "enum": [
+              "CASH",
+              "LINK"
+            ]
+          },
+          "reason": {
+            "type": "string",
+            "minLength": 2,
+            "maxLength": 200
+          }
+        },
+        "required": [
+          "refundId",
+          "amount",
+          "method",
+          "reason"
+        ]
+      },
+      "RefundRecordedDto_Output": {
+        "type": "object",
+        "properties": {
+          "refundId": {
+            "type": "string"
+          },
+          "amountPaid": {
+            "type": "integer",
+            "minimum": -9007199254740991,
+            "maximum": 9007199254740991
+          },
+          "refundOwed": {
+            "type": "integer",
+            "minimum": -9007199254740991,
+            "maximum": 9007199254740991
+          }
+        },
+        "required": [
+          "refundId",
+          "amountPaid",
+          "refundOwed"
+        ],
+        "additionalProperties": false
+      },
+      "SetDiscountDto": {
+        "type": "object",
+        "properties": {
+          "kind": {
+            "type": "string",
+            "enum": [
+              "none",
+              "percent",
+              "amount"
+            ]
+          },
+          "bps": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 10000
+          },
+          "amount": {
+            "type": "integer",
+            "exclusiveMinimum": true,
+            "maximum": 9007199254740991,
+            "minimum": 0
+          }
+        },
+        "required": [
+          "kind"
+        ]
+      },
+      "DiscountSetDto_Output": {
+        "type": "object",
+        "properties": {
+          "subtotal": {
+            "type": "integer",
+            "minimum": -9007199254740991,
+            "maximum": 9007199254740991
+          },
+          "discount": {
+            "type": "integer",
+            "minimum": -9007199254740991,
+            "maximum": 9007199254740991
+          },
+          "total": {
+            "type": "integer",
+            "minimum": -9007199254740991,
+            "maximum": 9007199254740991
+          },
+          "amountDue": {
+            "type": "integer",
+            "minimum": -9007199254740991,
+            "maximum": 9007199254740991
+          },
+          "amountPaid": {
+            "type": "integer",
+            "minimum": -9007199254740991,
+            "maximum": 9007199254740991
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "NEW",
+              "CONFIRMED",
+              "PREPARING",
+              "READY",
+              "OUT_FOR_DELIVERY",
+              "COMPLETED",
+              "CANCELLED",
+              "REFUNDED"
+            ]
+          }
+        },
+        "required": [
+          "subtotal",
+          "discount",
+          "total",
+          "amountDue",
+          "amountPaid",
+          "status"
+        ],
+        "additionalProperties": false
+      },
+      "DrawerDto_Output": {
+        "type": "object",
+        "properties": {
+          "shiftId": {
+            "type": "string"
+          },
+          "deviceName": {
+            "type": "string"
+          },
+          "deviceCode": {
+            "type": "string"
+          },
+          "openedBy": {
+            "type": "string",
+            "nullable": true
+          },
+          "openedAt": {
+            "type": "string"
+          },
+          "float": {
+            "type": "integer",
+            "minimum": -9007199254740991,
+            "maximum": 9007199254740991
+          },
+          "expectedCash": {
+            "type": "integer",
+            "minimum": -9007199254740991,
+            "maximum": 9007199254740991,
+            "nullable": true
+          }
+        },
+        "required": [
+          "shiftId",
+          "deviceName",
+          "deviceCode",
+          "openedBy",
+          "openedAt",
+          "float",
+          "expectedCash"
+        ],
+        "additionalProperties": false
+      },
+      "RecordPayoutDto": {
+        "type": "object",
+        "properties": {
+          "payoutId": {
+            "type": "string",
+            "format": "ulid",
+            "pattern": "^[0-7][0-9A-HJKMNP-TV-Za-hjkmnp-tv-z]{25}$"
+          },
+          "amount": {
+            "type": "integer",
+            "exclusiveMinimum": true,
+            "maximum": 9007199254740991,
+            "minimum": 0
+          },
+          "category": {
+            "type": "string",
+            "enum": [
+              "INGREDIENTS",
+              "GAS",
+              "PACKAGING",
+              "TRANSPORT",
+              "RENT",
+              "ELECTRICITY",
+              "WATER",
+              "SALARIES",
+              "AIRTIME_DATA",
+              "RIDER_PAYMENTS",
+              "MARKETING",
+              "OTHER"
+            ]
+          },
+          "note": {
+            "type": "string",
+            "maxLength": 200
+          }
+        },
+        "required": [
+          "payoutId",
+          "amount",
+          "category"
+        ]
+      },
+      "PayoutRecordedDto_Output": {
+        "type": "object",
+        "properties": {
+          "payoutId": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "payoutId"
         ],
         "additionalProperties": false
       }

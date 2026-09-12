@@ -243,7 +243,12 @@ _11 Sep: the server side is built from Moolre's docs (docs.moolre.com; their `/a
 - [ ] Staff management + revenue visibility settings (per role, per person)
 - [ ] Setting: count portions each morning (prep counts), off by default (_11 Sep user decision; the tablet side is done, §2.4_). Switching it on gives every menu item a daily count record, and new items get one too.
 - [ ] Order setting: pay before prep (on by default; the owner can switch it off)
-- [ ] Manager tools: record drawer payouts against the tablet's open shift (booked as expenses); apply discounts to unpaid orders; a "refunds owed" list and recording refunds given back by hand (outside the drawer, full or partial, reason required)
+- [x] Manager tools: record drawer payouts against the tablet's open shift (booked as expenses); apply discounts to unpaid orders; a "refunds owed" list and recording refunds given back by hand (outside the drawer, full or partial, reason required)
+  - _12 Sep: done on the dashboard, and all audited._
+    - _**Refunds** (`POST /api/orders/:id/refunds`), from the Refunds page or the order: cash or mobile money, full or partial up to what's owed, reason required. A refund lowers the order's amount paid._
+    - _**Payouts** (`POST /api/drawers/:shiftId/payouts`), from the "Open drawers" card on Today, against a tablet's open shift. A payout can't be more than the drawer should hold, and it's booked as a `CASH_DRAWER` expense for today._
+    - _**Discounts** (`PUT /api/orders/:id/discount`), by percent or amount on an order that isn't fully paid. The order is re-priced with `priceOrder` and can't go below what's paid. A discount that clears what's owed starts prep._
+    - _The dashboard sends each refund and payout id, so a retry never records one twice._
 - [ ] Expenses + purchases entry (purchase = expense + stock item + qty)
 - [ ] Stock items: low-stock thresholds, raw-item counts
 
