@@ -308,6 +308,22 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/reports/period": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["PeriodController_period"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/orders/{orderId}/refunds": {
         parameters: {
             query?: never;
@@ -1249,6 +1265,65 @@ export interface components {
                 amount: number;
             }[];
         };
+        PeriodDto_Output: {
+            from: string;
+            to: string;
+            totals: {
+                orders: number;
+                sales: number;
+                moneyIn: number;
+                platformOwed: number;
+                commissionEstimate: number;
+                moneyOut: number;
+                purchases: number;
+                otherExpenses: number;
+                left: number;
+                profit: number;
+            };
+            byDay: {
+                date: string;
+                orders: number;
+                sales: number;
+                moneyIn: number;
+                moneyOut: number;
+            }[];
+            bySource: {
+                /** @enum {string} */
+                source: "POS" | "PHONE" | "STOREFRONT" | "BOLT_FOOD" | "CHOWDECK" | "OTHER";
+                orders: number;
+                sales: number;
+            }[];
+            byMethod: {
+                /** @enum {string} */
+                method: "CASH" | "PLATFORM" | "LINK";
+                amount: number;
+            }[];
+            byItem: {
+                name: string;
+                quantity: number;
+                sales: number;
+            }[];
+            byCategory: {
+                /** @enum {string} */
+                category: "INGREDIENTS" | "GAS" | "PACKAGING" | "TRANSPORT" | "RENT" | "ELECTRICITY" | "WATER" | "SALARIES" | "AIRTIME_DATA" | "RIDER_PAYMENTS" | "MARKETING" | "OTHER";
+                amount: number;
+            }[];
+            staff: {
+                name: string;
+                orders: number;
+                sales: number;
+                cash: number;
+            }[];
+            drawerCloses: {
+                shiftId: string;
+                tablet: string;
+                closedBy: string | null;
+                closedAt: string;
+                expected: number | null;
+                counted: number | null;
+                variance: number | null;
+            }[];
+        };
         RecordRefundDto: {
             /** Format: ulid */
             refundId: string;
@@ -2004,6 +2079,28 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["DaySummaryDto_Output"];
+                };
+            };
+        };
+    };
+    PeriodController_period: {
+        parameters: {
+            query: {
+                from: string;
+                to: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PeriodDto_Output"];
                 };
             };
         };

@@ -30,6 +30,7 @@ NestJS 11 (not 12: nestjs-zod 5.5 needs `@nestjs/common` ^11), CommonJS, built w
   - `GET /api/orders/:orderId`: one order in full: lines with extras, payments, refunds, payment links, and the status history with who did what.
 - `reports/`: `GET /api/reports/day?date=`, the day summary (plan.md §3.2). Needs `reports.revenue.view`.
   - Figures hang off the orders' trading day; the definitions are in `reports.module.ts`.
+  - `period.ts`: `GET /api/reports/period?from=&to=` (up to 92 days). It returns totals and a profit-and-loss, then day by day, by source, by method, best sellers, expenses by kind, staff activity, and drawer closes with their variances.
   - `business-day.ts` has `businessToday()` (today in the business's timezone) and `dueSql`.
 - `menu/`: menu setup (`catalog.manage`).
   - `GET /api/menu` returns the whole menu. `PUT /api/menu/items/:itemId` creates or replaces an item, sent with the whole item: sizes, extras groups with their options, and Bolt Food and Chowdeck prices. Also: remove an item, sold out for today, and categories.

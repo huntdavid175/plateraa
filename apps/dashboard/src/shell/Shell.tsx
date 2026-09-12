@@ -9,6 +9,7 @@ import { ROLE_WORDS, VENDOR_TYPE_WORDS } from '../lib/words';
 import { Button, ErrorNote, Spinner, Toggle, cx } from '../ui/controls';
 import {
   BoxIcon,
+  ChartIcon,
   HomeIcon,
   MenuIcon,
   MoreIcon,
@@ -36,6 +37,7 @@ const NAV: NavItem[] = [
   { to: '/menu', label: 'Menu', Icon: MenuIcon, needs: 'catalog.manage' },
   { to: '/staff', label: 'Staff', Icon: StaffIcon, needs: 'staff.manage' },
   { to: '/refunds', label: 'Refunds', Icon: RefundIcon, needs: 'refunds.record' },
+  { to: '/reports', label: 'Reports', Icon: ChartIcon, needs: 'reports.revenue.view' },
   { to: '/expenses', label: 'Expenses', Icon: WalletIcon, needs: 'expenses.manage' },
   { to: '/stock', label: 'Stock', Icon: BoxIcon, needs: 'catalog.manage' },
   { to: '/settings', label: 'Settings', Icon: SettingsIcon },

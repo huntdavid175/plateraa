@@ -20,6 +20,7 @@ import { DATABASE, type DatabaseHandle } from '../database/database.module';
 import { Authorized, CurrentActor } from '../identity/guards';
 import type { Actor } from '../identity/request-context';
 import { businessToday, countsAsSale, dueSql, toPesewas } from './business-day';
+import { PeriodController, PeriodService } from './period';
 
 class DayQueryDto extends createZodDto(
   z.object({
@@ -185,5 +186,8 @@ export class ReportsController {
   }
 }
 
-@Module({ controllers: [ReportsController], providers: [DaySummaryService] })
+@Module({
+  controllers: [ReportsController, PeriodController],
+  providers: [DaySummaryService, PeriodService],
+})
 export class ReportsModule {}

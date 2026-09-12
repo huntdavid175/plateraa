@@ -64,6 +64,13 @@ export const SettingsIcon = (p: IconProps) => (
   </Icon>
 );
 
+export const ChartIcon = (p: IconProps) => (
+  <Icon {...p}>
+    <path d="M3 3v18h18" />
+    <path d="M7 15l4-4 3 3 5-6" />
+  </Icon>
+);
+
 export const WalletIcon = (p: IconProps) => (
   <Icon {...p}>
     <rect x="2" y="6" width="20" height="14" rx="2" />

@@ -45,6 +45,7 @@ describe('OpenAPI document', () => {
         '/api/menu/categories',
         '/api/menu/categories/{categoryId}',
         '/api/reports/day',
+        '/api/reports/period',
         '/api/devices/register',
         '/api/devices/current/staff',
         '/api/sessions/pin',

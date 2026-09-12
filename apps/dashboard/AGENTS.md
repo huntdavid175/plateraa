@@ -68,6 +68,12 @@ The web dashboard for owners and managers (plan.md §3.1). It uses:
     - the team, with Add and Edit dialogs (PINs typed twice and checked with `pinProblem`, never shown);
     - the owner's "Who sees sales totals" switches;
     - the Tablets card, with sign out.
+  - Reports (`ReportsPage`, needs `reports.revenue.view`): a range of days, showing:
+    - totals and a profit-and-loss;
+    - day by day, where each day opens its orders;
+    - by source and by payment method;
+    - best sellers and expenses by kind;
+    - staff, and drawer closes with their variances.
   - Expenses (`ExpensesPage`): spending by range, with a total, and "Add expense", which can be a stock purchase.
   - Stock (`StockPage`): key ingredients with a "running low" banner, and Count / Edit dialogs. `lib/expenses.ts` serves both pages.
   - Settings (`SettingsPage`):

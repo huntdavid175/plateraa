@@ -303,11 +303,15 @@ _11 Sep: the server side is built from Moolre's docs (docs.moolre.com; their `/a
     - _**what's left:** money in − money out;_
     - _**profit:** money in + what the platforms owe − their estimated commission − money out._
   - _Also split by source and payment method, and money in by the hour, which drives the chart. The tablet's owner summary will use the same endpoint._
-- [ ] Sales by channel, by item, by payment method
-- [ ] Expenses report, simple P&L (money in − purchases − expenses)
-- [ ] Staff activity, shift variances
+- [x] Sales by channel, by item, by payment method
+  - _12 Sep: the dashboard's Reports page (`GET /api/reports/period?from=&to=`, up to 92 days, `reports.revenue.view`). It uses the day summary's definitions and offers the last 7 days, this month or last month. It shows the totals, day by day, by source, by payment method, and the 20 best sellers._
+- [x] Expenses report, simple P&L (money in − purchases − expenses)
+  - _12 Sep: on the Reports page: expenses by kind, and a profit-and-loss card (money in, plus what Bolt and Chowdeck owe after commission, less purchases, less other expenses)._
+- [x] Staff activity, shift variances
+  - _12 Sep: on the Reports page. Staff shows each person's orders taken, their sales and the cash they took. Drawer closes shows expected, counted and the variance, with shortfalls in red._
 - [ ] pg-boss rollup job for past days
 - [ ] Every figure taps through to the rows behind it
+  - _12 Sep, partly: each day on the Reports page opens that day's orders, and Today's recent orders open each order. The rest of the figures don't tap through yet._
 
 ### 3.3 Receipts & printing
 
