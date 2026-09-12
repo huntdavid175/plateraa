@@ -12,6 +12,7 @@ import { MenuModule } from './menu/menu.module';
 import { OrdersModule } from './orders/orders.module';
 import { PaymentsModule } from './payments/payments.module';
 import { ReportsModule } from './reports/reports.module';
+import { SettingsModule } from './settings/settings.module';
 import { SyncModule } from './sync/sync.module';
 
 @Module({
@@ -27,6 +28,7 @@ import { SyncModule } from './sync/sync.module';
     ReportsModule,
     ManagerModule,
     MenuModule,
+    SettingsModule,
   ],
   controllers: [HealthController],
   providers: [

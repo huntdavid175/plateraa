@@ -38,6 +38,7 @@ export class MoolreCallbackController {
         }),
     },
   ],
-  exports: [PaymentLinks],
+  // MOOLRE too: the dashboard's settings check a vendor's account with it before saving.
+  exports: [PaymentLinks, MOOLRE],
 })
 export class PaymentsModule {}

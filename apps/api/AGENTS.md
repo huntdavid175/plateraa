@@ -36,6 +36,10 @@ NestJS 11 (not 12: nestjs-zod 5.5 needs `@nestjs/common` ^11), CommonJS, built w
   - **Removals are soft deletes,** so they sync to the tablets. Platform prices (`item_channel_prices`) sync as well (migration 0008), so they're updated or soft-deleted, never replaced.
   - **Price changes:** every one ends the old `price_history` row and starts a new one (`newPrice`), so the offline price check in `sync/handlers/orders.ts` still matches.
   - **Cost prices** are returned and saved only with `reports.revenue.view`.
+- `settings/`: the owner's settings (`settings.manage`, owner only).
+  - `GET /api/settings` returns them all.
+  - `PUT /api/settings/business`, `/orders` and `/commissions` save them. `/orders` covers pay before prep, portion counts and the idle lock; switching counts on adds missing count records.
+  - `PUT /api/settings/moolre` saves the vendor's Moolre account. It first asks Moolre about a made-up payment, so wrong details are refused (AIN codes) without charging anyone. The key is sealed with `SECRETS_KEY`, and only the last 4 digits of the account are returned. It uses `MOOLRE`, exported by `PaymentsModule`.
 - `manager/`: what only a manager or the owner does, on the dashboard. The tablet can't do any of it.
   - `POST /api/orders/:orderId/refunds` (`refunds.record`): money handed back by hand, outside the drawer, full or partial up to what's owed. It lowers the order's `amountPaid`.
   - `PUT /api/orders/:orderId/discount` (`discounts.apply`): percent, amount or none, on an order that isn't fully paid. It's re-priced with `priceOrder`, can't go below what's paid, and starts prep if it clears what's owed.

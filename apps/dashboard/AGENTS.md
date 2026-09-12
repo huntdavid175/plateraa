@@ -61,7 +61,12 @@ The web dashboard for owners and managers (plan.md §3.1). It uses:
     - the team, with Add and Edit dialogs (PINs typed twice and checked with `pinProblem`, never shown);
     - the owner's "Who sees sales totals" switches;
     - the Tablets card, with sign out.
-  - Settings: business details and dark mode so far.
+  - Settings (`SettingsPage`):
+    - Business (name, type);
+    - Appearance (dark mode);
+    - Orders (pay before prep, portion counts, idle lock), where toggles save at once;
+    - Payments (the Moolre account, with "Check and save", and platform commissions).
+    - Managers see only Appearance and the business name.
   - The rest are placeholders until their slices.
 - **Keep the first screen light on mobile data.** Big libraries load lazily: the recharts chart is `pages/MoneyInChart.tsx`, loaded with `lazy()`.
 

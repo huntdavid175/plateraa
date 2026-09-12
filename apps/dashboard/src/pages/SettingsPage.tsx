@@ -1,44 +1,471 @@
-import type { ReactNode } from 'react';
+import { VENDOR_TYPES, type VendorType } from '@plateraa/shared';
+import { useMutation, useQuery } from '@tanstack/react-query';
+import { useState, type InputHTMLAttributes, type ReactNode } from 'react';
+import { amountText, cedis, parseAmount } from '../lib/money';
+import { useSession } from '../lib/session';
+import {
+  fetchSettings,
+  refreshSettings,
+  saveBusiness,
+  saveCommissions,
+  saveMoolre,
+  saveOrderSettings,
+  type Commissions,
+  type OrderSettings,
+  type Settings,
+} from '../lib/settings';
 import { setDark, useDark } from '../lib/theme';
 import { VENDOR_TYPE_WORDS } from '../lib/words';
 import { useMe } from '../shell/Shell';
-import { Section, Toggle } from '../ui/controls';
+import {
+  Button,
+  ErrorNote,
+  FieldLabel,
+  Section,
+  Spinner,
+  TextInput,
+  Toggle,
+  cx,
+} from '../ui/controls';
+import { Dialog } from '../ui/Dialog';
 import { Page } from '../ui/Page';
+
+const IDLE_CHOICES = [60, 180, 300, 600, 900];
 
 export function SettingsPage() {
   const me = useMe();
-  const dark = useDark();
+  const { tenantId } = useSession();
+  const isOwner = me.capabilities.includes('settings.manage');
+  const settings = useQuery({
+    queryKey: ['settings', tenantId],
+    queryFn: fetchSettings,
+    enabled: isOwner,
+  });
+
   return (
     <Page title="Settings" narrow>
-      <Section title="Business">
-        <Row label="Business name" value={me.businessName} />
-        <Row label="Type" value={VENDOR_TYPE_WORDS[me.vendorType]} />
-      </Section>
+      {isOwner && settings.isPending && (
+        <div className="flex justify-center py-10">
+          <Spinner />
+        </div>
+      )}
+      {settings.isError && <ErrorNote>{settings.error.message}</ErrorNote>}
+      {settings.data && <BusinessSection business={settings.data.business} />}
+      {!isOwner && (
+        <Section title="Business">
+          <Row label="Business name" value={me.businessName} />
+          <Row label="Type" value={VENDOR_TYPE_WORDS[me.vendorType]} />
+        </Section>
+      )}
 
       <Section title="Appearance">
-        <div className="flex items-center justify-between gap-4 px-5 py-4">
-          <div>
-            <p className="text-sm font-medium">Dark mode</p>
-            <p className="mt-0.5 text-xs text-muted">
-              Switch between light and dark on this browser.
-            </p>
-          </div>
-          <Toggle on={dark} onChange={setDark} label="Dark mode" />
-        </div>
+        <DarkModeRow />
       </Section>
 
-      <p className="px-1 text-xs text-muted">
-        Order, payment and staff settings are coming to this page next.
-      </p>
+      {settings.data && (
+        <>
+          <OrdersSection orders={settings.data.orders} />
+          <PaymentsSection settings={settings.data} />
+        </>
+      )}
+      {!isOwner && (
+        <p className="px-1 text-xs text-muted">
+          Only the owner changes how orders and payments work.
+        </p>
+      )}
     </Page>
   );
 }
 
-function Row({ label, value }: { label: string; value: ReactNode }) {
+function Row({ label, value, action }: { label: string; value: ReactNode; action?: ReactNode }) {
   return (
     <div className="flex items-center justify-between gap-4 px-5 py-4">
       <span className="text-sm">{label}</span>
-      <span className="text-right text-sm text-muted">{value}</span>
+      <div className="flex items-center gap-3">
+        <span className="text-right text-sm text-muted">{value}</span>
+        {action}
+      </div>
     </div>
+  );
+}
+
+function SwitchRow({
+  title,
+  detail,
+  on,
+  onChange,
+  disabled,
+}: {
+  title: string;
+  detail: string;
+  on: boolean;
+  onChange: (on: boolean) => void;
+  disabled?: boolean;
+}) {
+  return (
+    <div className="flex items-center justify-between gap-4 px-5 py-4">
+      <div className="flex-1">
+        <p className="text-sm font-medium">{title}</p>
+        <p className="mt-0.5 text-xs text-muted">{detail}</p>
+      </div>
+      <Toggle on={on} onChange={onChange} label={title} disabled={disabled} />
+    </div>
+  );
+}
+
+function DarkModeRow() {
+  const dark = useDark();
+  return (
+    <SwitchRow
+      title="Dark mode"
+      detail="Switch between light and dark on this browser."
+      on={dark}
+      onChange={setDark}
+    />
+  );
+}
+
+function BusinessSection({ business }: { business: Settings['business'] }) {
+  const [name, setName] = useState(business.name);
+  const [type, setType] = useState<VendorType>(business.vendorType);
+  const changed = name.trim() !== business.name || type !== business.vendorType;
+  const saving = useMutation({
+    mutationFn: () => saveBusiness({ name: name.trim(), vendorType: type }),
+    onSuccess: refreshSettings,
+  });
+
+  return (
+    <Section title="Business">
+      <div className="space-y-4 px-5 py-4">
+        <div>
+          <FieldLabel htmlFor="business-name">Business name</FieldLabel>
+          <TextInput
+            id="business-name"
+            maxLength={80}
+            value={name}
+            onChange={(event) => setName(event.target.value)}
+          />
+          <p className="mt-1 text-xs text-muted">On receipts, and in the payment link texts.</p>
+        </div>
+        <div>
+          <FieldLabel htmlFor="business-type">Type</FieldLabel>
+          <select
+            id="business-type"
+            value={type}
+            onChange={(event) => setType(event.target.value as VendorType)}
+            className="h-11 w-full rounded-xl border border-border bg-surface px-3 text-sm text-text outline-none focus:border-brand"
+          >
+            {VENDOR_TYPES.map((value) => (
+              <option key={value} value={value}>
+                {VENDOR_TYPE_WORDS[value]}
+              </option>
+            ))}
+          </select>
+        </div>
+        {saving.error && <ErrorNote>{saving.error.message}</ErrorNote>}
+        {changed && (
+          <Button
+            small
+            busy={saving.isPending}
+            disabled={name.trim().length < 2}
+            onClick={() => saving.mutate()}
+          >
+            Save
+          </Button>
+        )}
+      </div>
+    </Section>
+  );
+}
+
+function OrdersSection({ orders }: { orders: OrderSettings }) {
+  const saving = useMutation({ mutationFn: saveOrderSettings, onSuccess: refreshSettings });
+  // Show the change straight away; it goes back if saving fails.
+  const shown = saving.isPending && saving.variables ? saving.variables : orders;
+  const set = (patch: Partial<OrderSettings>) => saving.mutate({ ...shown, ...patch });
+
+  return (
+    <Section title="Orders">
+      <SwitchRow
+        title="Pay before prep"
+        detail="Orders don’t go to the kitchen until they’re paid. The payment that clears one sends it straight there."
+        on={shown.requirePaymentBeforePrep}
+        onChange={(on) => set({ requirePaymentBeforePrep: on })}
+      />
+      <SwitchRow
+        title="Count portions each morning"
+        detail="Staff add how many portions are ready on the tablet’s Stock tab. Sales count down, and an item sells out by itself at zero."
+        on={shown.countPortions}
+        onChange={(on) => set({ countPortions: on })}
+      />
+      <div className="flex items-center justify-between gap-4 px-5 py-4">
+        <div className="flex-1">
+          <p className="text-sm font-medium">Lock an idle tablet after</p>
+          <p className="mt-0.5 text-xs text-muted">
+            Then the next person unlocks it with their PIN.
+          </p>
+        </div>
+        <select
+          aria-label="Lock an idle tablet after"
+          value={shown.idleLockSeconds}
+          onChange={(event) => set({ idleLockSeconds: Number(event.target.value) })}
+          className="h-9 rounded-lg border border-border bg-surface px-2 text-sm text-text outline-none focus:border-brand"
+        >
+          {[...new Set([...IDLE_CHOICES, shown.idleLockSeconds])]
+            .sort((a, b) => a - b)
+            .map((seconds) => (
+              <option key={seconds} value={seconds}>
+                {Math.round(seconds / 60)} min
+              </option>
+            ))}
+        </select>
+      </div>
+      {saving.error && (
+        <div className="p-4">
+          <ErrorNote>{saving.error.message}</ErrorNote>
+        </div>
+      )}
+    </Section>
+  );
+}
+
+function commissionWords(commission: Commissions['BOLT_FOOD']): string {
+  const parts = [
+    commission.rateBps !== null ? `${amountText(commission.rateBps).replace(/\.00$/, '')}%` : null,
+    commission.flatAmount !== null ? `${cedis(commission.flatAmount)} an order` : null,
+  ].filter(Boolean);
+  return parts.length ? parts.join(' + ') : 'Not set: sales show as gross';
+}
+
+function PaymentsSection({ settings }: { settings: Settings }) {
+  const [dialog, setDialog] = useState<'moolre' | 'commissions' | null>(null);
+  const { moolre, commissions } = settings;
+  return (
+    <>
+      <Section title="Payments">
+        <Row
+          label="Moolre account"
+          value={
+            moolre.connected ? (
+              <span className="font-medium text-green">
+                Connected · ending {moolre.accountEnding}
+              </span>
+            ) : (
+              <span className="font-medium text-amber">Not connected</span>
+            )
+          }
+          action={
+            <Button variant="secondary" small onClick={() => setDialog('moolre')}>
+              {moolre.connected ? 'Change' : 'Connect'}
+            </Button>
+          }
+        />
+        <Row
+          label="Bolt Food commission"
+          value={commissionWords(commissions.BOLT_FOOD)}
+          action={
+            <Button variant="secondary" small onClick={() => setDialog('commissions')}>
+              Edit
+            </Button>
+          }
+        />
+        <Row label="Chowdeck commission" value={commissionWords(commissions.CHOWDECK)} />
+      </Section>
+      {!moolre.connected && (
+        <p className="-mt-3 mb-5 px-1 text-xs text-muted">
+          Without a Moolre account, payment links can’t go out, so phone orders can’t be paid.
+        </p>
+      )}
+      {dialog === 'moolre' && <MoolreDialog current={moolre} onClose={() => setDialog(null)} />}
+      {dialog === 'commissions' && (
+        <CommissionsDialog current={commissions} onClose={() => setDialog(null)} />
+      )}
+    </>
+  );
+}
+
+function MoolreDialog({ current, onClose }: { current: Settings['moolre']; onClose: () => void }) {
+  const [apiUser, setApiUser] = useState(current.apiUser ?? '');
+  const [publicKey, setPublicKey] = useState('');
+  const [accountNumber, setAccountNumber] = useState('');
+  const [email, setEmail] = useState(current.email ?? '');
+  const ready =
+    apiUser.trim() &&
+    publicKey.trim().length >= 8 &&
+    /^\d{6,20}$/.test(accountNumber.trim()) &&
+    email.includes('@');
+  const saving = useMutation({
+    mutationFn: () =>
+      saveMoolre({
+        apiUser: apiUser.trim(),
+        publicKey: publicKey.trim(),
+        accountNumber: accountNumber.trim(),
+        email: email.trim(),
+      }),
+    onSuccess: () => {
+      refreshSettings();
+      onClose();
+    },
+  });
+
+  const field = (
+    id: string,
+    label: string,
+    value: string,
+    onChange: (value: string) => void,
+    extra: Partial<InputHTMLAttributes<HTMLInputElement>> = {},
+  ) => (
+    <div>
+      <FieldLabel htmlFor={id}>{label}</FieldLabel>
+      <TextInput
+        id={id}
+        value={value}
+        onChange={(event) => onChange(event.target.value)}
+        {...extra}
+      />
+    </div>
+  );
+
+  return (
+    <Dialog title="Your Moolre account" onClose={onClose}>
+      <form
+        className="space-y-4"
+        onSubmit={(event) => {
+          event.preventDefault();
+          if (ready) saving.mutate();
+        }}
+      >
+        <p className="text-sm text-muted">
+          Payment-link money goes straight into this account; it never passes through Plateraa. Find
+          these on app.moolre.com. Only the public key is needed, never the private one.
+        </p>
+        {field('moolre-user', 'Username', apiUser, setApiUser, {
+          autoComplete: 'off',
+          autoFocus: true,
+        })}
+        {field('moolre-key', 'Public key', publicKey, setPublicKey, {
+          type: 'password',
+          autoComplete: 'off',
+          placeholder: current.connected ? 'Type it again to change the account' : undefined,
+        })}
+        {field('moolre-account', 'Moolre account number', accountNumber, setAccountNumber, {
+          inputMode: 'numeric',
+          autoComplete: 'off',
+          placeholder: current.accountEnding ? `Ends ${current.accountEnding}` : undefined,
+        })}
+        {field('moolre-email', 'Email on the account', email, setEmail, { type: 'email' })}
+        {saving.error && <ErrorNote>{saving.error.message}</ErrorNote>}
+        <div className="mt-6 flex gap-2">
+          <Button variant="ghost" onClick={onClose}>
+            Cancel
+          </Button>
+          <Button type="submit" full disabled={!ready} busy={saving.isPending}>
+            Check and save
+          </Button>
+        </div>
+        {saving.isPending && (
+          <p className="text-center text-xs text-muted">
+            Asking Moolre whether it knows this account…
+          </p>
+        )}
+      </form>
+    </Dialog>
+  );
+}
+
+/** "15" or "12.5" as basis points, "" as null, anything else as undefined (not valid). */
+function percentBps(text: string): number | null | undefined {
+  if (!text.trim()) return null;
+  const bps = parseAmount(text);
+  return bps !== null && bps <= 10_000 ? bps : undefined;
+}
+
+function moneyOrNull(text: string): number | null | undefined {
+  if (!text.trim()) return null;
+  return parseAmount(text) ?? undefined;
+}
+
+function CommissionsDialog({ current, onClose }: { current: Commissions; onClose: () => void }) {
+  const start = (value: number | null, percent: boolean) =>
+    value === null ? '' : percent ? amountText(value).replace(/\.00$/, '') : amountText(value);
+  const [form, setForm] = useState({
+    boltRate: start(current.BOLT_FOOD.rateBps, true),
+    boltFlat: start(current.BOLT_FOOD.flatAmount, false),
+    chowRate: start(current.CHOWDECK.rateBps, true),
+    chowFlat: start(current.CHOWDECK.flatAmount, false),
+  });
+  const parsed = {
+    BOLT_FOOD: { rateBps: percentBps(form.boltRate), flatAmount: moneyOrNull(form.boltFlat) },
+    CHOWDECK: { rateBps: percentBps(form.chowRate), flatAmount: moneyOrNull(form.chowFlat) },
+  };
+  const valid = Object.values(parsed).every(
+    (c) => c.rateBps !== undefined && c.flatAmount !== undefined,
+  );
+  const saving = useMutation({
+    mutationFn: () => saveCommissions(parsed as Commissions),
+    onSuccess: () => {
+      refreshSettings();
+      onClose();
+    },
+  });
+
+  const input = (key: keyof typeof form, label: string, suffix: string) => (
+    <div>
+      <FieldLabel htmlFor={key}>{label}</FieldLabel>
+      <div className="flex h-11 items-center gap-1 rounded-xl border border-border bg-surface px-3 focus-within:border-brand">
+        {suffix === 'GH₵' && <span className="font-mono text-xs text-muted">GH₵</span>}
+        <input
+          id={key}
+          inputMode="decimal"
+          value={form[key]}
+          onChange={(event) => setForm({ ...form, [key]: event.target.value })}
+          className="w-full min-w-0 bg-transparent font-mono text-sm outline-none"
+        />
+        {suffix === '%' && <span className="font-mono text-xs text-muted">%</span>}
+      </div>
+    </div>
+  );
+
+  return (
+    <Dialog title="Platform commissions" onClose={onClose}>
+      <form
+        className="space-y-5"
+        onSubmit={(event) => {
+          event.preventDefault();
+          if (valid) saving.mutate();
+        }}
+      >
+        <p className="text-sm text-muted">
+          What Bolt Food and Chowdeck keep from each order, so profit is right. Leave both blank and
+          their sales show as gross.
+        </p>
+        {(
+          [
+            ['Bolt Food', 'boltRate', 'boltFlat'],
+            ['Chowdeck', 'chowRate', 'chowFlat'],
+          ] as const
+        ).map(([name, rate, flat]) => (
+          <div key={name}>
+            <p className="mb-2 text-sm font-semibold">{name}</p>
+            <div className="grid grid-cols-2 gap-3">
+              {input(rate, 'Percent', '%')}
+              {input(flat, 'Plus per order', 'GH₵')}
+            </div>
+          </div>
+        ))}
+        {!valid && (
+          <p className={cx('text-xs text-amber')}>Check the numbers: a percent is up to 100.</p>
+        )}
+        {saving.error && <ErrorNote>{saving.error.message}</ErrorNote>}
+        <div className="mt-6 flex gap-2">
+          <Button variant="ghost" onClick={onClose}>
+            Cancel
+          </Button>
+          <Button type="submit" full disabled={!valid} busy={saving.isPending}>
+            Save
+          </Button>
+        </div>
+      </form>
+    </Dialog>
   );
 }

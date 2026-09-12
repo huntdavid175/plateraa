@@ -1087,6 +1087,155 @@
           "Menu"
         ]
       }
+    },
+    "/api/settings": {
+      "get": {
+        "operationId": "SettingsController_get",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SettingsDto_Output"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "Settings"
+        ]
+      }
+    },
+    "/api/settings/business": {
+      "put": {
+        "operationId": "SettingsController_business",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/BusinessDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "204": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "Settings"
+        ]
+      }
+    },
+    "/api/settings/orders": {
+      "put": {
+        "operationId": "SettingsController_orders",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/OrderSettingsDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "204": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "Settings"
+        ]
+      }
+    },
+    "/api/settings/moolre": {
+      "put": {
+        "operationId": "SettingsController_moolre",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/MoolreAccountDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MoolreSavedDto_Output"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "Settings"
+        ]
+      }
+    },
+    "/api/settings/commissions": {
+      "put": {
+        "operationId": "SettingsController_commissions",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CommissionsDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "204": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "Settings"
+        ]
+      }
     }
   },
   "info": {
@@ -4552,6 +4701,290 @@
         },
         "required": [
           "name"
+        ]
+      },
+      "SettingsDto_Output": {
+        "type": "object",
+        "properties": {
+          "business": {
+            "type": "object",
+            "properties": {
+              "name": {
+                "type": "string"
+              },
+              "vendorType": {
+                "type": "string",
+                "enum": [
+                  "CHOP_BAR",
+                  "FAST_FOOD",
+                  "CAFE_BAKERY",
+                  "JUICE",
+                  "CLOUD_KITCHEN",
+                  "FOOD_TRUCK",
+                  "OTHER"
+                ]
+              }
+            },
+            "required": [
+              "name",
+              "vendorType"
+            ],
+            "additionalProperties": false
+          },
+          "orders": {
+            "type": "object",
+            "properties": {
+              "requirePaymentBeforePrep": {
+                "type": "boolean"
+              },
+              "countPortions": {
+                "type": "boolean"
+              },
+              "idleLockSeconds": {
+                "type": "integer",
+                "minimum": -9007199254740991,
+                "maximum": 9007199254740991
+              }
+            },
+            "required": [
+              "requirePaymentBeforePrep",
+              "countPortions",
+              "idleLockSeconds"
+            ],
+            "additionalProperties": false
+          },
+          "moolre": {
+            "type": "object",
+            "properties": {
+              "connected": {
+                "type": "boolean"
+              },
+              "apiUser": {
+                "type": "string",
+                "nullable": true
+              },
+              "accountEnding": {
+                "type": "string",
+                "nullable": true
+              },
+              "email": {
+                "type": "string",
+                "nullable": true
+              }
+            },
+            "required": [
+              "connected",
+              "apiUser",
+              "accountEnding",
+              "email"
+            ],
+            "additionalProperties": false
+          },
+          "commissions": {
+            "type": "object",
+            "properties": {
+              "BOLT_FOOD": {
+                "type": "object",
+                "properties": {
+                  "rateBps": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 10000,
+                    "nullable": true
+                  },
+                  "flatAmount": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 10000000,
+                    "nullable": true
+                  }
+                },
+                "required": [
+                  "rateBps",
+                  "flatAmount"
+                ],
+                "additionalProperties": false
+              },
+              "CHOWDECK": {
+                "type": "object",
+                "properties": {
+                  "rateBps": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 10000,
+                    "nullable": true
+                  },
+                  "flatAmount": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 10000000,
+                    "nullable": true
+                  }
+                },
+                "required": [
+                  "rateBps",
+                  "flatAmount"
+                ],
+                "additionalProperties": false
+              }
+            },
+            "required": [
+              "BOLT_FOOD",
+              "CHOWDECK"
+            ],
+            "additionalProperties": false
+          }
+        },
+        "required": [
+          "business",
+          "orders",
+          "moolre",
+          "commissions"
+        ],
+        "additionalProperties": false
+      },
+      "BusinessDto": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "minLength": 2,
+            "maxLength": 80
+          },
+          "vendorType": {
+            "type": "string",
+            "enum": [
+              "CHOP_BAR",
+              "FAST_FOOD",
+              "CAFE_BAKERY",
+              "JUICE",
+              "CLOUD_KITCHEN",
+              "FOOD_TRUCK",
+              "OTHER"
+            ]
+          }
+        },
+        "required": [
+          "name",
+          "vendorType"
+        ]
+      },
+      "OrderSettingsDto": {
+        "type": "object",
+        "properties": {
+          "requirePaymentBeforePrep": {
+            "type": "boolean"
+          },
+          "countPortions": {
+            "type": "boolean"
+          },
+          "idleLockSeconds": {
+            "type": "integer",
+            "minimum": 60,
+            "maximum": 1800
+          }
+        },
+        "required": [
+          "requirePaymentBeforePrep",
+          "countPortions",
+          "idleLockSeconds"
+        ]
+      },
+      "MoolreAccountDto": {
+        "type": "object",
+        "properties": {
+          "apiUser": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 100
+          },
+          "publicKey": {
+            "type": "string",
+            "minLength": 8,
+            "maxLength": 500
+          },
+          "accountNumber": {
+            "type": "string",
+            "pattern": "^\\d{6,20}$"
+          },
+          "email": {
+            "type": "string",
+            "format": "email",
+            "pattern": "^(?:[A-Za-z0-9_'+\\-]+\\.)*[A-Za-z0-9_'+\\-]*[A-Za-z0-9_+-]@(?:[A-Za-z0-9][A-Za-z0-9\\-]*\\.)+[A-Za-z]{2,}$"
+          }
+        },
+        "required": [
+          "apiUser",
+          "publicKey",
+          "accountNumber",
+          "email"
+        ]
+      },
+      "MoolreSavedDto_Output": {
+        "type": "object",
+        "properties": {
+          "connected": {
+            "type": "boolean"
+          },
+          "accountEnding": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "connected",
+          "accountEnding"
+        ],
+        "additionalProperties": false
+      },
+      "CommissionsDto": {
+        "type": "object",
+        "properties": {
+          "BOLT_FOOD": {
+            "type": "object",
+            "properties": {
+              "rateBps": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 10000,
+                "nullable": true
+              },
+              "flatAmount": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 10000000,
+                "nullable": true
+              }
+            },
+            "required": [
+              "rateBps",
+              "flatAmount"
+            ]
+          },
+          "CHOWDECK": {
+            "type": "object",
+            "properties": {
+              "rateBps": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 10000,
+                "nullable": true
+              },
+              "flatAmount": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 10000000,
+                "nullable": true
+              }
+            },
+            "required": [
+              "rateBps",
+              "flatAmount"
+            ]
+          }
+        },
+        "required": [
+          "BOLT_FOOD",
+          "CHOWDECK"
         ]
       }
     }

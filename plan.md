@@ -247,15 +247,23 @@ _11 Sep: the server side is built from Moolre's docs (docs.moolre.com; their `/a
     - _**Portion counts:** with counts on, a new item gets its count record._
     - _**Platform prices on the tablet:** they sync there (migration 0008; tablet local migration v5, which also forgets the pull cursor, so an updated tablet pulls everything once). A Bolt Food or Chowdeck order is priced at the platform's price as soon as that source is chosen._
 - [ ] Delivery zones + fees
-- [ ] Channel commissions (rate or flat; blank = shown as "Gross")
+- [x] Channel commissions (rate or flat; blank = shown as "Gross")
+  - _12 Sep: in the dashboard's Settings, under Payments (`PUT /api/settings/commissions`). A percent, a fixed amount per order, or both, for Bolt Food and Chowdeck. The day summary's profit takes them off._
 - [x] Staff management + revenue visibility settings (per role, per person)
   - _12 Sep: the dashboard's Staff page, to the design._
     - _**The team:** add staff (name, role, PIN typed twice, never shown), edit their name, role and PIN, and switch people off. Switched off means no tablet unlock or dashboard sign-in; the tablet drops them at its next sync._
     - _**Ranks:** managers look after staff and riders; only the owner changes managers, and nobody changes the owner._
     - _**Sales totals:** the owner switches them on per role, or per person ("Role setting / Always / Never"). This is `PUT /api/staff/revenue-visibility` and `seesRevenue`, and it applies at once._
     - _**Tablets:** listed with when they were last online (now kept, at most once a minute), and a manager can sign one out if it's lost._
-- [ ] Setting: count portions each morning (prep counts), off by default (_11 Sep user decision; the tablet side is done, §2.4_). Switching it on gives every menu item a daily count record, and new items get one too.
-- [ ] Order setting: pay before prep (on by default; the owner can switch it off)
+- [x] Setting: count portions each morning (prep counts), off by default (_11 Sep user decision; the tablet side is done, §2.4_). Switching it on gives every menu item a daily count record, and new items get one too.
+  - _12 Sep: a switch in the dashboard's Settings (`PUT /api/settings/orders`). Switching it on adds the count records that are missing; new items get theirs from the menu editor. The `settings:portion-counts` script is kept for `--production` set-ups._
+- [x] Order setting: pay before prep (on by default; the owner can switch it off)
+  - _12 Sep: in the same Orders section, with how soon an idle tablet locks. Both sync to the tablet._
+- [x] The vendor's own Moolre account, from the dashboard (not a plan item before: it replaces the `settings:moolre-account` script)
+  - _12 Sep: Settings → Payments → Connect (`PUT /api/settings/moolre`)._
+    - _**The check:** before saving, Moolre is asked about a made-up payment. It refuses details it doesn't know (codes AIN…), so wrong details are caught at once, and nobody is charged._
+    - _**Storage:** the key is sealed with `SECRETS_KEY`, and only the account's last 4 digits are ever shown._
+    - _**Onboarding** will use the same endpoint._
 - [x] Manager tools: record drawer payouts against the tablet's open shift (booked as expenses); apply discounts to unpaid orders; a "refunds owed" list and recording refunds given back by hand (outside the drawer, full or partial, reason required)
   - _12 Sep: done on the dashboard, and all audited._
     - _**Refunds** (`POST /api/orders/:id/refunds`), from the Refunds page or the order: cash or mobile money, full or partial up to what's owed, reason required. A refund lowers the order's amount paid._
