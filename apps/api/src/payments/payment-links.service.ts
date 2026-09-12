@@ -53,9 +53,13 @@ const TICK_MS = 60_000;
 
 type Outcome = 'PAID' | 'PENDING' | 'FAILED' | 'EXPIRED' | 'UNKNOWN';
 
-/** What a Moolre refusal means for the counter, in words. */
-function failureWords(error: unknown): string {
+/**
+ * What a Moolre refusal means for the counter, in words, with Moolre's own code so the cause can
+ * be looked up. `stage`: whether making the link or texting it failed.
+ */
+export function failureWords(error: unknown, stage: 'link' | 'text' = 'link'): string {
   if (!(error instanceof MoolreError)) return "The link couldn't be made. Send it again.";
+  const detail = `(Moolre ${error.code}: ${error.message.replace(/\.+$/, '')})`.slice(0, 120);
   switch (error.code) {
     case 'NOT_CONNECTED':
       return "This business hasn't connected its Moolre account yet.";
@@ -69,9 +73,12 @@ function failureWords(error: unknown): string {
     case 'UNREACHABLE':
       return "Moolre couldn't be reached. Send the link again.";
     default:
-      return error.code.startsWith('AIN')
-        ? "Moolre didn't accept this business's account details."
-        : `Moolre said: ${error.message}`.slice(0, 160);
+      if (error.code.startsWith('AIN')) {
+        return stage === 'text'
+          ? `Moolre didn't accept Plateraa's SMS key ${detail}.`
+          : `Moolre didn't accept this business's account details ${detail}.`;
+      }
+      return `Moolre said: ${error.message}`.slice(0, 160);
   }
 }
 
@@ -236,6 +243,7 @@ export class PaymentLinks implements OnApplicationBootstrap, OnApplicationShutdo
       return;
     }
 
+    let stage: 'link' | 'text' = 'link';
     try {
       const credentials = this.credentials(account);
       let url = link.url;
@@ -255,6 +263,7 @@ export class PaymentLinks implements OnApplicationBootstrap, OnApplicationShutdo
             .where(eq(paymentLinks.id, link.id)),
         );
       }
+      stage = 'text';
       await this.moolre.sendSms({
         phone: link.phone,
         message: linkMessage(business.name, order.displayNumber, link.amount, url),
@@ -275,10 +284,14 @@ export class PaymentLinks implements OnApplicationBootstrap, OnApplicationShutdo
     } catch (error) {
       // A temporary problem: the claim lapses and a later round tries again, same reference.
       if (error instanceof MoolreError && error.retryable && link.attempts < MAX_ATTEMPTS) return;
-      if (!(error instanceof MoolreError)) {
+      if (error instanceof MoolreError) {
+        this.logger.warn(
+          `Payment link ${link.id}: ${stage} failed, ${error.code} ${error.message}`,
+        );
+      } else {
         this.logger.error(`Payment link ${link.id} failed`, error as Error);
       }
-      await fail(failureWords(error));
+      await fail(failureWords(error, stage));
     }
   }
 
