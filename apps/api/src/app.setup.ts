@@ -11,7 +11,12 @@ export function configureApp(app: NestExpressApplication): void {
   const env = app.get<Env>(ENV);
   const auth = app.get<Auth>(AUTH);
 
-  app.enableCors({ origin: env.TRUSTED_ORIGINS, credentials: true });
+  // The dashboard reads its bearer token from Better Auth's set-auth-token header after signing in.
+  app.enableCors({
+    origin: env.TRUSTED_ORIGINS,
+    credentials: true,
+    exposedHeaders: ['set-auth-token'],
+  });
   // Render sits one proxy in front: the caller's own address (Moolre's callbacks) is the next hop.
   app.set('trust proxy', 1);
   // Vendors pay for data by the megabyte: gzip every response big enough to benefit.

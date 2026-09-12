@@ -20,6 +20,7 @@ describe('OpenAPI document', () => {
       expect.arrayContaining([
         '/api/onboarding/business',
         '/api/me/businesses',
+        '/api/me/context',
         '/api/devices/register',
         '/api/devices/current/staff',
         '/api/sessions/pin',

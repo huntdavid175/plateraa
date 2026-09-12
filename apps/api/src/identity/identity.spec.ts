@@ -80,6 +80,24 @@ describe.skipIf(!hasDatabase())('identity (against Neon)', () => {
     );
   });
 
+  it('tells the dashboard who is signed in and what they may do', async () => {
+    const res = await dashboard(request(server).get('/api/me/context')).expect(200);
+    expect(res.body).toMatchObject({
+      tenantId: owner.tenantId,
+      businessName: "Ama's Chop Bar",
+      vendorType: 'CHOP_BAR',
+      staffId: owner.staffId,
+      displayName: 'Ama',
+      role: 'OWNER',
+    });
+    expect(res.body.capabilities).toContain('reports.revenue.view');
+
+    await request(server)
+      .get('/api/me/context')
+      .set('Authorization', `Bearer ${owner.session}`)
+      .expect(400);
+  });
+
   it('refuses an obvious PIN', async () => {
     await dashboard(request(server).put(`/api/staff/${owner.staffId}/pin`))
       .send({ pin: '123456' })

@@ -19,14 +19,25 @@ A solo founder (GitHub `huntdavid175`) builds it with an AI agent. Work started 
   - Phase 1: monorepo, CI, schema with RLS, shared rules, auth, sync push/pull with 15 commands, OpenAPI client.
   - The §2.0/§2.0b decision changes.
   - The day-1 tablet test.
-- **Phase 1 leftovers:** Sentry, the Render worker, and a Neon branch per PR.
+- **Phase 1 leftovers:** Sentry on the tablet (at its next EAS build), the Render worker, and a Neon branch per PR. Sentry for the API and the Neon `test` branch were done on 12 Sep.
 - **Done (11 Sep, Phase 2):**
   - §2.1: the offline engine in `apps/mobile/src/offline`, tested in Node.
   - §2.2: the app shell, tablet registration, the PIN switcher, adding staff, the sync banner and the "Needs attention" screen. Tried on the tablet and working.
   - §2.3: taking orders (the counter screen, the orders list, cash, hold, edit and cancel). Tried on the tablet and working.
   - §2.4: the Drawer tab (drops, pay-ins, a blind count at close) and the Stock tab (one-tap sold out, optional portion counts). Not tried on the tablet yet. Owner summaries moved to 3.2.
-  - §2.5, server side: payment links through each vendor's own Moolre account, texted by Moolre SMS, and counted only once Moolre's status check confirms them. See `apps/api/AGENTS.md`.
-- **Next:** §2.5 on the tablet ("Send payment link", and each link's status on the order), then the Moolre sandbox test once the keys arrive. See `apps/mobile/AGENTS.md`.
+  - §2.5: payment links through each vendor's own Moolre account, texted by Moolre SMS, and counted only once Moolre's status check confirms them. The tablet sends them and shows each link's status. A real link was paid end to end on live Moolre on 12 Sep. See `apps/api/AGENTS.md`.
+  - The rest of Phase 2 (12 Sep): "not synced yet" labels, refund owed, and the restyled screens.
+- **Now: Phase 3.1, the dashboard**, built slice by slice to the user's Figma Make design. See `apps/dashboard/AGENTS.md`.
+  - Done: the shell (sign-in, business picker, navigation, dark mode).
+  - Next, in order:
+    1. Today;
+    2. Orders;
+    3. Menu and the item editor;
+    4. refunds, payouts and discounts;
+    5. Staff and tablets;
+    6. Settings, including a live Moolre connection check;
+    7. onboarding;
+    8. expenses, stock and reports.
 - Founder tasks (Moolre, lawyer, printers, domain, Play Console) are Phase 0 in `plan.md`.
 
 ## Working with the user
@@ -60,14 +71,14 @@ A solo founder (GitHub `huntdavid175`) builds it with an AI agent. Work started 
 | API       | NestJS 11.2, nestjs-zod 5.5 + Zod 4.6, Better Auth 1.7.4, jose 6, @node-rs/argon2                              |
 | Data      | drizzle-orm 0.45.2 on Neon Postgres 18.6 (Frankfurt)                                                           |
 | Tablet    | Expo SDK 57 (RN 0.86.3, React 19.2.3), op-sqlite 18.2.1                                                        |
-| Web       | Vite 8 + React 19 (dashboard), Next 16.3 (storefront), Tailwind 4                                              |
+| Web       | Vite 8 + React 19, React Router 7, TanStack Query 5 (dashboard), Next 16.3 (storefront), Tailwind 4            |
 
 ## Layout
 
 ```
 apps/api            NestJS API                        → apps/api/AGENTS.md
 apps/mobile         Expo tablet app + Kotlin modules  → apps/mobile/AGENTS.md
-apps/dashboard      Vite React (scaffold only)
+apps/dashboard      Vite React dashboard              → apps/dashboard/AGENTS.md
 apps/storefront     Next.js (scaffold only)
 packages/db         Drizzle schema, migrations, RLS   → packages/db/AGENTS.md
 packages/shared     money, pricing, order rules, capabilities, sync command schemas

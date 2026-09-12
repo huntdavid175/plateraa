@@ -234,7 +234,8 @@ _11 Sep: the server side is built from Moolre's docs (docs.moolre.com; their `/a
 
 ### 3.1 Dashboard
 
-- [ ] App shell (Vite, TanStack Query/Table, shadcn themed hard)
+- [x] App shell (Vite, TanStack Query/Table, shadcn themed hard)
+  - _12 Sep: built to the user's Figma Make design (`apps/dashboard/design`) instead of shadcn: Vite 8, React Router 7, TanStack Query 5, Tailwind 4 with the design's colours, and light and dark mode. Owners and managers sign in with email and password (Better Auth's bearer token; the API now lets the browser read the `set-auth-token` header). They then pick a business (skipped when there's only one). Laptops get the sidebar; phones get a bottom bar plus "More". Screens a person can't use are hidden. `GET /api/me/context` gives the dashboard the person's name, role and permissions. Today, Orders, Menu, Staff and Refunds are placeholders until their slices._
 - [ ] Onboarding that works in a phone browser: business → vendor type → starter template → price grid → staff & PINs → connect their own Moolre account (required; we check it works) → install-app QR (≤20 min)
 - [ ] Menu CRUD: categories, items, variants, modifier groups, add-ons, prep time, station, cost price
 - [ ] Delivery zones + fees

@@ -1,1 +1,94 @@
 @import 'tailwindcss';
+
+/* Dark mode follows the `dark` class on <html> (see src/lib/theme.ts). */
+@custom-variant dark (&:where(.dark, .dark *));
+
+/* Colours from the Figma Make design (design/dashboard_design.make). */
+:root {
+  --bg: #f6f5f3;
+  --surface: #ffffff;
+  --tile: #eceae7;
+  --border: #e2dfd9;
+  --text: #1a1917;
+  --muted: #6b6860;
+  --brand: #e8701a;
+  --brand-fg: #ffffff;
+  --brand-subtle: #fdf0e7;
+  --green: #1a7a4a;
+  --green-bg: #e6f4ed;
+  --amber: #92570a;
+  --amber-bg: #fef3e2;
+  --red: #b91c1c;
+  --red-bg: #fee2e2;
+  --blue: #1e5fad;
+  --blue-bg: #e3edfa;
+}
+
+html.dark {
+  --bg: #111110;
+  --surface: #1c1a18;
+  --tile: #252220;
+  --border: #35302b;
+  --text: #f0ede8;
+  --muted: #9e9a94;
+  --brand-subtle: #2a1808;
+  --green: #34d07a;
+  --green-bg: #0d2318;
+  --amber: #f5a623;
+  --amber-bg: #241605;
+  --red: #f87171;
+  --red-bg: #2a0c0c;
+  --blue: #60a5fa;
+  --blue-bg: #0d1e35;
+}
+
+/* Tailwind classes for the colours above: bg-surface, text-muted, border-border, bg-brand, … */
+@theme inline {
+  --color-bg: var(--bg);
+  --color-surface: var(--surface);
+  --color-tile: var(--tile);
+  --color-border: var(--border);
+  --color-text: var(--text);
+  --color-muted: var(--muted);
+  --color-brand: var(--brand);
+  --color-brand-fg: var(--brand-fg);
+  --color-brand-subtle: var(--brand-subtle);
+  --color-green: var(--green);
+  --color-green-bg: var(--green-bg);
+  --color-amber: var(--amber);
+  --color-amber-bg: var(--amber-bg);
+  --color-red: var(--red);
+  --color-red-bg: var(--red-bg);
+  --color-blue: var(--blue);
+  --color-blue-bg: var(--blue-bg);
+  --font-sans: 'DM Sans', system-ui, sans-serif;
+  --font-mono: 'DM Mono', ui-monospace, monospace;
+}
+
+html,
+body,
+#root {
+  height: 100%;
+}
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+  transition:
+    background 0.2s,
+    color 0.2s;
+}
+
+/* Scrollbars show only while hovering. */
+.scroll-area {
+  scrollbar-width: none;
+}
+.scroll-area::-webkit-scrollbar {
+  display: none;
+}
+.scroll-area:hover {
+  scrollbar-width: thin;
+  scrollbar-color: var(--tile) transparent;
+}

@@ -52,6 +52,22 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/me/context": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["MeController_context"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/devices/register": {
         parameters: {
             query?: never;
@@ -189,6 +205,17 @@ export interface components {
             staffId: string;
             /** @enum {string} */
             role: "OWNER" | "MANAGER" | "STAFF" | "RIDER";
+        };
+        ContextDto_Output: {
+            tenantId: string;
+            businessName: string;
+            /** @enum {string} */
+            vendorType: "CHOP_BAR" | "FAST_FOOD" | "CAFE_BAKERY" | "JUICE" | "CLOUD_KITCHEN" | "FOOD_TRUCK" | "OTHER";
+            staffId: string;
+            displayName: string;
+            /** @enum {string} */
+            role: "OWNER" | "MANAGER" | "STAFF" | "RIDER";
+            capabilities: ("orders.take" | "orders.cancel" | "payments.record" | "shift.operate" | "shift.own_cash.view" | "stock.count" | "deliveries.update" | "refunds.record" | "payouts.record" | "discounts.apply" | "catalog.manage" | "staff.manage" | "expenses.manage" | "devices.manage" | "settings.manage" | "reports.revenue.view")[];
         };
         RegisterDeviceDto: {
             /** Format: ulid */
@@ -435,6 +462,23 @@ export interface components {
                 /** Format: ulid */
                 staffId: string;
                 /** @enum {string} */
+                type: "payment.request_link";
+                payload: {
+                    /** Format: ulid */
+                    linkId: string;
+                    /** Format: ulid */
+                    orderId: string;
+                    phone: string;
+                };
+            } | {
+                /** Format: ulid */
+                id: string;
+                deviceSeq: number;
+                /** Format: date-time */
+                deviceTs: string;
+                /** Format: ulid */
+                staffId: string;
+                /** @enum {string} */
                 type: "shift.open";
                 payload: {
                     /** Format: ulid */
@@ -642,6 +686,25 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["BusinessDto_Output"][];
+                };
+            };
+        };
+    };
+    MeController_context: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ContextDto_Output"];
                 };
             };
         };
