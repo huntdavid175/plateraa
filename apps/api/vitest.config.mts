@@ -8,9 +8,10 @@ export default defineConfig({
     include: ['src/**/*.spec.ts'],
     // The Neon "test" branch is brought up to the latest migration first (skipped in CI).
     globalSetup: ['./src/test/global-setup.ts'],
-    // Integration specs make real round trips to Neon and hash with Argon2.
-    testTimeout: 30_000,
-    hookTimeout: 30_000,
+    // Integration specs make dozens of real round trips to Neon in Frankfurt (some tests take
+    // over 20 s from Ghana) and hash with Argon2.
+    testTimeout: 60_000,
+    hookTimeout: 60_000,
     // They also share one test database, so run the files one at a time.
     fileParallelism: false,
   },
