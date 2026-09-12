@@ -48,6 +48,10 @@ The web dashboard for owners and managers (plan.md §3.1). It uses:
   - Today (`TodayPage`): the day summary, the refunds-owed banner and recent orders.
   - Orders (`OrdersPage`): a day's orders, filtered by source and by paid or not. The day and the filters live in the address, so a view can be shared. Totals show only with `reports.revenue.view`.
   - Order (`OrderPage`): one order in full. Links to it pass `state: { back, label }`, so "←" returns to where the person came from.
+  - Menu (`MenuPage`): category pills, item cards, and one-tap sold out.
+  - `ItemEditorPage` (`/menu/items/new`, `/menu/items/:itemId`): the design's full-screen editor.
+    - It keeps a text form (`ItemForm`) and turns it into the API's item with `toInput()`, which also finds the first thing to fix.
+    - A new item, size, group or option gets its `ulid()` in the browser.
   - Refunds (`RefundsPage`): orders owed money back, each with "Record refund given".
   - `money-dialogs.tsx`: the dialogs for recording a refund, applying a discount (previewed with `priceOrder`, as the server prices it) and recording a payout.
     - Each dialog makes its id with `ulid()` when it opens, so pressing Save again after a lost reply records it once.

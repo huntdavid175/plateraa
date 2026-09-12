@@ -1,6 +1,8 @@
 import { createBrowserRouter, Navigate } from 'react-router';
 import { ChooseBusinessPage } from './auth/ChooseBusinessPage';
 import { SignInPage } from './auth/SignInPage';
+import { ItemEditorPage } from './pages/ItemEditorPage';
+import { MenuPage } from './pages/MenuPage';
 import { OrderPage } from './pages/OrderPage';
 import { OrdersPage } from './pages/OrdersPage';
 import { RefundsPage } from './pages/RefundsPage';
@@ -31,15 +33,9 @@ export const router = createBrowserRouter([
       { index: true, Component: TodayPage },
       { path: 'orders', Component: OrdersPage },
       { path: 'orders/:orderId', Component: OrderPage },
-      {
-        path: 'menu',
-        element: (
-          <ComingSoon
-            title="Menu"
-            what="Add and edit items, sizes, extras, and Bolt and Chowdeck prices."
-          />
-        ),
-      },
+      { path: 'menu', Component: MenuPage },
+      { path: 'menu/items/new', Component: ItemEditorPage },
+      { path: 'menu/items/:itemId', Component: ItemEditorPage },
       {
         path: 'staff',
         element: (

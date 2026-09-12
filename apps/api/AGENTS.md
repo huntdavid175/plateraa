@@ -25,6 +25,11 @@ NestJS 11 (not 12: nestjs-zod 5.5 needs `@nestjs/common` ^11), CommonJS, built w
 - `reports/`: `GET /api/reports/day?date=`, the day summary (plan.md §3.2). Needs `reports.revenue.view`.
   - Figures hang off the orders' trading day; the definitions are in `reports.module.ts`.
   - `business-day.ts` has `businessToday()` (today in the business's timezone) and `dueSql`.
+- `menu/`: menu setup (`catalog.manage`).
+  - `GET /api/menu` returns the whole menu. `PUT /api/menu/items/:itemId` creates or replaces an item, sent with the whole item: sizes, extras groups with their options, and Bolt Food and Chowdeck prices. Also: remove an item, sold out for today, and categories.
+  - **Removals are soft deletes,** so they sync to the tablets.
+  - **Price changes:** every one ends the old `price_history` row and starts a new one (`newPrice`), so the offline price check in `sync/handlers/orders.ts` still matches.
+  - **Cost prices** are returned and saved only with `reports.revenue.view`.
 - `manager/`: what only a manager or the owner does, on the dashboard. The tablet can't do any of it.
   - `POST /api/orders/:orderId/refunds` (`refunds.record`): money handed back by hand, outside the drawer, full or partial up to what's owed. It lowers the order's `amountPaid`.
   - `PUT /api/orders/:orderId/discount` (`discounts.apply`): percent, amount or none, on an order that isn't fully paid. It's re-priced with `priceOrder`, can't go below what's paid, and starts prep if it clears what's owed.

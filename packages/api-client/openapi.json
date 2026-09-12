@@ -681,6 +681,255 @@
           "Drawers"
         ]
       }
+    },
+    "/api/menu": {
+      "get": {
+        "operationId": "MenuController_get",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MenuDto_Output"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "Menu"
+        ]
+      }
+    },
+    "/api/menu/items/{itemId}": {
+      "put": {
+        "operationId": "MenuController_saveItem",
+        "parameters": [
+          {
+            "name": "itemId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SaveItemDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SavedDto_Output"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "Menu"
+        ]
+      },
+      "delete": {
+        "operationId": "MenuController_removeItem",
+        "parameters": [
+          {
+            "name": "itemId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "Menu"
+        ]
+      }
+    },
+    "/api/menu/items/{itemId}/sold-out": {
+      "put": {
+        "operationId": "MenuController_setSoldOut",
+        "parameters": [
+          {
+            "name": "itemId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SoldOutDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SoldOutSavedDto_Output"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "Menu"
+        ]
+      }
+    },
+    "/api/menu/categories": {
+      "post": {
+        "operationId": "MenuController_addCategory",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CategoryDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SavedDto_Output"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "Menu"
+        ]
+      }
+    },
+    "/api/menu/categories/{categoryId}": {
+      "put": {
+        "operationId": "MenuController_renameCategory",
+        "parameters": [
+          {
+            "name": "categoryId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RenameCategoryDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SavedDto_Output"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "Menu"
+        ]
+      },
+      "delete": {
+        "operationId": "MenuController_removeCategory",
+        "parameters": [
+          {
+            "name": "categoryId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "Menu"
+        ]
+      }
     }
   },
   "info": {
@@ -3472,6 +3721,505 @@
           "payoutId"
         ],
         "additionalProperties": false
+      },
+      "MenuDto_Output": {
+        "type": "object",
+        "properties": {
+          "categories": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "id": {
+                  "type": "string"
+                },
+                "name": {
+                  "type": "string"
+                },
+                "position": {
+                  "type": "integer",
+                  "minimum": -9007199254740991,
+                  "maximum": 9007199254740991
+                }
+              },
+              "required": [
+                "id",
+                "name",
+                "position"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "items": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "id": {
+                  "type": "string"
+                },
+                "categoryId": {
+                  "type": "string",
+                  "nullable": true
+                },
+                "name": {
+                  "type": "string"
+                },
+                "description": {
+                  "type": "string",
+                  "nullable": true
+                },
+                "price": {
+                  "type": "integer",
+                  "minimum": -9007199254740991,
+                  "maximum": 9007199254740991
+                },
+                "costPrice": {
+                  "type": "integer",
+                  "minimum": -9007199254740991,
+                  "maximum": 9007199254740991,
+                  "nullable": true
+                },
+                "prepMinutes": {
+                  "type": "integer",
+                  "minimum": -9007199254740991,
+                  "maximum": 9007199254740991,
+                  "nullable": true
+                },
+                "station": {
+                  "type": "string",
+                  "enum": [
+                    "KITCHEN",
+                    "DRINKS"
+                  ]
+                },
+                "soldOutToday": {
+                  "type": "boolean"
+                },
+                "position": {
+                  "type": "integer",
+                  "minimum": -9007199254740991,
+                  "maximum": 9007199254740991
+                },
+                "channelPrices": {
+                  "type": "object",
+                  "properties": {
+                    "BOLT_FOOD": {
+                      "type": "integer",
+                      "minimum": -9007199254740991,
+                      "maximum": 9007199254740991,
+                      "nullable": true
+                    },
+                    "CHOWDECK": {
+                      "type": "integer",
+                      "minimum": -9007199254740991,
+                      "maximum": 9007199254740991,
+                      "nullable": true
+                    }
+                  },
+                  "required": [
+                    "BOLT_FOOD",
+                    "CHOWDECK"
+                  ],
+                  "additionalProperties": false
+                },
+                "variants": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "id": {
+                        "type": "string"
+                      },
+                      "name": {
+                        "type": "string"
+                      },
+                      "price": {
+                        "type": "integer",
+                        "minimum": -9007199254740991,
+                        "maximum": 9007199254740991
+                      },
+                      "costPrice": {
+                        "type": "integer",
+                        "minimum": -9007199254740991,
+                        "maximum": 9007199254740991,
+                        "nullable": true
+                      },
+                      "channelPrices": {
+                        "type": "object",
+                        "properties": {
+                          "BOLT_FOOD": {
+                            "type": "integer",
+                            "minimum": -9007199254740991,
+                            "maximum": 9007199254740991,
+                            "nullable": true
+                          },
+                          "CHOWDECK": {
+                            "type": "integer",
+                            "minimum": -9007199254740991,
+                            "maximum": 9007199254740991,
+                            "nullable": true
+                          }
+                        },
+                        "required": [
+                          "BOLT_FOOD",
+                          "CHOWDECK"
+                        ],
+                        "additionalProperties": false
+                      }
+                    },
+                    "required": [
+                      "id",
+                      "name",
+                      "price",
+                      "costPrice",
+                      "channelPrices"
+                    ],
+                    "additionalProperties": false
+                  }
+                },
+                "groups": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "id": {
+                        "type": "string"
+                      },
+                      "name": {
+                        "type": "string"
+                      },
+                      "required": {
+                        "type": "boolean"
+                      },
+                      "maxSelect": {
+                        "type": "integer",
+                        "minimum": -9007199254740991,
+                        "maximum": 9007199254740991
+                      },
+                      "options": {
+                        "type": "array",
+                        "items": {
+                          "type": "object",
+                          "properties": {
+                            "id": {
+                              "type": "string"
+                            },
+                            "name": {
+                              "type": "string"
+                            },
+                            "priceDelta": {
+                              "type": "integer",
+                              "minimum": -9007199254740991,
+                              "maximum": 9007199254740991
+                            }
+                          },
+                          "required": [
+                            "id",
+                            "name",
+                            "priceDelta"
+                          ],
+                          "additionalProperties": false
+                        }
+                      },
+                      "sharedWith": {
+                        "type": "array",
+                        "items": {
+                          "type": "string"
+                        }
+                      }
+                    },
+                    "required": [
+                      "id",
+                      "name",
+                      "required",
+                      "maxSelect",
+                      "options",
+                      "sharedWith"
+                    ],
+                    "additionalProperties": false
+                  }
+                }
+              },
+              "required": [
+                "id",
+                "categoryId",
+                "name",
+                "description",
+                "price",
+                "costPrice",
+                "prepMinutes",
+                "station",
+                "soldOutToday",
+                "position",
+                "channelPrices",
+                "variants",
+                "groups"
+              ],
+              "additionalProperties": false
+            }
+          }
+        },
+        "required": [
+          "categories",
+          "items"
+        ],
+        "additionalProperties": false
+      },
+      "SaveItemDto": {
+        "type": "object",
+        "properties": {
+          "categoryId": {
+            "type": "string",
+            "format": "ulid",
+            "pattern": "^[0-7][0-9A-HJKMNP-TV-Za-hjkmnp-tv-z]{25}$",
+            "nullable": true
+          },
+          "name": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 80
+          },
+          "description": {
+            "type": "string",
+            "maxLength": 300,
+            "nullable": true
+          },
+          "price": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 100000000
+          },
+          "costPrice": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 100000000,
+            "nullable": true
+          },
+          "prepMinutes": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 240,
+            "nullable": true
+          },
+          "station": {
+            "type": "string",
+            "enum": [
+              "KITCHEN",
+              "DRINKS"
+            ]
+          },
+          "variants": {
+            "maxItems": 10,
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "id": {
+                  "type": "string",
+                  "format": "ulid",
+                  "pattern": "^[0-7][0-9A-HJKMNP-TV-Za-hjkmnp-tv-z]{25}$"
+                },
+                "name": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 40
+                },
+                "price": {
+                  "type": "integer",
+                  "minimum": 0,
+                  "maximum": 100000000
+                },
+                "costPrice": {
+                  "type": "integer",
+                  "minimum": 0,
+                  "maximum": 100000000,
+                  "nullable": true
+                },
+                "channelPrices": {
+                  "default": {},
+                  "type": "object",
+                  "properties": {
+                    "BOLT_FOOD": {
+                      "type": "integer",
+                      "minimum": 0,
+                      "maximum": 100000000,
+                      "nullable": true
+                    },
+                    "CHOWDECK": {
+                      "type": "integer",
+                      "minimum": 0,
+                      "maximum": 100000000,
+                      "nullable": true
+                    }
+                  }
+                }
+              },
+              "required": [
+                "id",
+                "name",
+                "price"
+              ]
+            }
+          },
+          "groups": {
+            "maxItems": 10,
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "id": {
+                  "type": "string",
+                  "format": "ulid",
+                  "pattern": "^[0-7][0-9A-HJKMNP-TV-Za-hjkmnp-tv-z]{25}$"
+                },
+                "name": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 60
+                },
+                "required": {
+                  "type": "boolean"
+                },
+                "maxSelect": {
+                  "type": "integer",
+                  "minimum": 1,
+                  "maximum": 20
+                },
+                "options": {
+                  "minItems": 1,
+                  "maxItems": 30,
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "id": {
+                        "type": "string",
+                        "format": "ulid",
+                        "pattern": "^[0-7][0-9A-HJKMNP-TV-Za-hjkmnp-tv-z]{25}$"
+                      },
+                      "name": {
+                        "type": "string",
+                        "minLength": 1,
+                        "maxLength": 60
+                      },
+                      "priceDelta": {
+                        "type": "integer",
+                        "minimum": -100000000,
+                        "maximum": 100000000
+                      }
+                    },
+                    "required": [
+                      "id",
+                      "name",
+                      "priceDelta"
+                    ]
+                  }
+                }
+              },
+              "required": [
+                "id",
+                "name",
+                "required",
+                "maxSelect",
+                "options"
+              ]
+            }
+          },
+          "channelPrices": {
+            "default": {},
+            "type": "object",
+            "properties": {
+              "BOLT_FOOD": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 100000000,
+                "nullable": true
+              },
+              "CHOWDECK": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 100000000,
+                "nullable": true
+              }
+            }
+          }
+        },
+        "required": [
+          "categoryId",
+          "name",
+          "price",
+          "station",
+          "variants",
+          "groups"
+        ]
+      },
+      "SavedDto_Output": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "id"
+        ],
+        "additionalProperties": false
+      },
+      "SoldOutDto": {
+        "type": "object",
+        "properties": {
+          "soldOut": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "soldOut"
+        ]
+      },
+      "SoldOutSavedDto_Output": {
+        "type": "object",
+        "properties": {
+          "soldOutToday": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "soldOutToday"
+        ],
+        "additionalProperties": false
+      },
+      "CategoryDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "ulid",
+            "pattern": "^[0-7][0-9A-HJKMNP-TV-Za-hjkmnp-tv-z]{25}$"
+          },
+          "name": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 40
+          }
+        },
+        "required": [
+          "id",
+          "name"
+        ]
+      },
+      "RenameCategoryDto": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 40
+          }
+        },
+        "required": [
+          "name"
+        ]
       }
     }
   }

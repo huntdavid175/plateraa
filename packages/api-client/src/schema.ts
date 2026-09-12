@@ -308,6 +308,86 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/menu": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["MenuController_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/menu/items/{itemId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put: operations["MenuController_saveItem"];
+        post?: never;
+        delete: operations["MenuController_removeItem"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/menu/items/{itemId}/sold-out": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put: operations["MenuController_setSoldOut"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/menu/categories": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["MenuController_addCategory"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/menu/categories/{categoryId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put: operations["MenuController_renameCategory"];
+        post?: never;
+        delete: operations["MenuController_removeCategory"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
 }
 export type webhooks = Record<string, never>;
 export interface components {
@@ -935,6 +1015,110 @@ export interface components {
         PayoutRecordedDto_Output: {
             payoutId: string;
         };
+        MenuDto_Output: {
+            categories: {
+                id: string;
+                name: string;
+                position: number;
+            }[];
+            items: {
+                id: string;
+                categoryId: string | null;
+                name: string;
+                description: string | null;
+                price: number;
+                costPrice: number | null;
+                prepMinutes: number | null;
+                /** @enum {string} */
+                station: "KITCHEN" | "DRINKS";
+                soldOutToday: boolean;
+                position: number;
+                channelPrices: {
+                    BOLT_FOOD: number | null;
+                    CHOWDECK: number | null;
+                };
+                variants: {
+                    id: string;
+                    name: string;
+                    price: number;
+                    costPrice: number | null;
+                    channelPrices: {
+                        BOLT_FOOD: number | null;
+                        CHOWDECK: number | null;
+                    };
+                }[];
+                groups: {
+                    id: string;
+                    name: string;
+                    required: boolean;
+                    maxSelect: number;
+                    options: {
+                        id: string;
+                        name: string;
+                        priceDelta: number;
+                    }[];
+                    sharedWith: string[];
+                }[];
+            }[];
+        };
+        SaveItemDto: {
+            /** Format: ulid */
+            categoryId: string | null;
+            name: string;
+            description?: string | null;
+            price: number;
+            costPrice?: number | null;
+            prepMinutes?: number | null;
+            /** @enum {string} */
+            station: "KITCHEN" | "DRINKS";
+            variants: {
+                /** Format: ulid */
+                id: string;
+                name: string;
+                price: number;
+                costPrice?: number | null;
+                /** @default {} */
+                channelPrices: {
+                    BOLT_FOOD?: number | null;
+                    CHOWDECK?: number | null;
+                };
+            }[];
+            groups: {
+                /** Format: ulid */
+                id: string;
+                name: string;
+                required: boolean;
+                maxSelect: number;
+                options: {
+                    /** Format: ulid */
+                    id: string;
+                    name: string;
+                    priceDelta: number;
+                }[];
+            }[];
+            /** @default {} */
+            channelPrices: {
+                BOLT_FOOD?: number | null;
+                CHOWDECK?: number | null;
+            };
+        };
+        SavedDto_Output: {
+            id: string;
+        };
+        SoldOutDto: {
+            soldOut: boolean;
+        };
+        SoldOutSavedDto_Output: {
+            soldOutToday: boolean;
+        };
+        CategoryDto: {
+            /** Format: ulid */
+            id: string;
+            name: string;
+        };
+        RenameCategoryDto: {
+            name: string;
+        };
     };
     responses: never;
     parameters: never;
@@ -1353,6 +1537,161 @@ export interface operations {
                 content: {
                     "application/json": components["schemas"]["PayoutRecordedDto_Output"];
                 };
+            };
+        };
+    };
+    MenuController_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MenuDto_Output"];
+                };
+            };
+        };
+    };
+    MenuController_saveItem: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                itemId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["SaveItemDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SavedDto_Output"];
+                };
+            };
+        };
+    };
+    MenuController_removeItem: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                itemId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    MenuController_setSoldOut: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                itemId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["SoldOutDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SoldOutSavedDto_Output"];
+                };
+            };
+        };
+    };
+    MenuController_addCategory: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CategoryDto"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SavedDto_Output"];
+                };
+            };
+        };
+    };
+    MenuController_renameCategory: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                categoryId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["RenameCategoryDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SavedDto_Output"];
+                };
+            };
+        };
+    };
+    MenuController_removeCategory: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                categoryId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
             };
         };
     };
