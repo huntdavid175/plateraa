@@ -548,6 +548,86 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/expenses": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["ExpensesController_list"];
+        put?: never;
+        post: operations["ExpensesController_add"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/expenses/{expenseId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        delete: operations["ExpensesController_remove"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/stock": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["ExpensesController_stock"];
+        put?: never;
+        post: operations["ExpensesController_addStockItem"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/stock/{stockItemId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put: operations["ExpensesController_updateStockItem"];
+        post?: never;
+        delete: operations["ExpensesController_removeStockItem"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/stock/{stockItemId}/count": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["ExpensesController_count"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
 }
 export type webhooks = Record<string, never>;
 export interface components {
@@ -1433,6 +1513,73 @@ export interface components {
                 flatAmount: number | null;
             };
         };
+        ExpenseRowDto_Output: {
+            id: string;
+            spentOn: string;
+            amount: number;
+            /** @enum {string} */
+            category: "INGREDIENTS" | "GAS" | "PACKAGING" | "TRANSPORT" | "RENT" | "ELECTRICITY" | "WATER" | "SALARIES" | "AIRTIME_DATA" | "RIDER_PAYMENTS" | "MARKETING" | "OTHER";
+            /** @enum {string} */
+            method: "CASH_DRAWER" | "OWNER_CASH" | "MOMO" | "BANK" | "OTHER";
+            note: string | null;
+            supplierName: string | null;
+            fromDrawer: boolean;
+            purchase: {
+                stockItemId: string;
+                name: string;
+                unit: string;
+                quantity: number;
+            } | null;
+            by: string | null;
+        };
+        AddExpenseDto: {
+            /** Format: ulid */
+            id: string;
+            amount: number;
+            /** @enum {string} */
+            category: "INGREDIENTS" | "GAS" | "PACKAGING" | "TRANSPORT" | "RENT" | "ELECTRICITY" | "WATER" | "SALARIES" | "AIRTIME_DATA" | "RIDER_PAYMENTS" | "MARKETING" | "OTHER";
+            /** @enum {string} */
+            method: "OWNER_CASH" | "MOMO" | "BANK" | "OTHER";
+            /** Format: date */
+            spentOn: string;
+            note?: string;
+            supplierName?: string;
+            purchase?: {
+                /** Format: ulid */
+                stockItemId: string;
+                quantity: number;
+            };
+        };
+        StockRowDto_Output: {
+            id: string;
+            name: string;
+            unit: string;
+            onHand: number;
+            lowThreshold: number | null;
+            low: boolean;
+        };
+        AddStockItemDto: {
+            /** Format: ulid */
+            id: string;
+            name: string;
+            unit: string;
+            lowThreshold?: number | null;
+            onHand?: number;
+        };
+        UpdateStockItemDto: {
+            name: string;
+            unit: string;
+            lowThreshold: number | null;
+        };
+        CountDto: {
+            /** Format: ulid */
+            movementId: string;
+            counted: number;
+        };
+        CountedDto_Output: {
+            onHand: number;
+            difference: number;
+        };
     };
     responses: never;
     parameters: never;
@@ -2235,6 +2382,179 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content?: never;
+            };
+        };
+    };
+    ExpensesController_list: {
+        parameters: {
+            query?: {
+                from?: string;
+                to?: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ExpenseRowDto_Output"][];
+                };
+            };
+        };
+    };
+    ExpensesController_add: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AddExpenseDto"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SavedDto_Output"];
+                };
+            };
+        };
+    };
+    ExpensesController_remove: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                expenseId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    ExpensesController_stock: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["StockRowDto_Output"][];
+                };
+            };
+        };
+    };
+    ExpensesController_addStockItem: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AddStockItemDto"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SavedDto_Output"];
+                };
+            };
+        };
+    };
+    ExpensesController_updateStockItem: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                stockItemId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["UpdateStockItemDto"];
+            };
+        };
+        responses: {
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    ExpensesController_removeStockItem: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                stockItemId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    ExpensesController_count: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                stockItemId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CountDto"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CountedDto_Output"];
+                };
             };
         };
     };

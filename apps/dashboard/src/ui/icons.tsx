@@ -64,6 +64,20 @@ export const SettingsIcon = (p: IconProps) => (
   </Icon>
 );
 
+export const WalletIcon = (p: IconProps) => (
+  <Icon {...p}>
+    <rect x="2" y="6" width="20" height="14" rx="2" />
+    <path d="M2 10h20M16 15h2M6 6V5a2 2 0 012-2h8a2 2 0 012 2v1" />
+  </Icon>
+);
+
+export const BoxIcon = (p: IconProps) => (
+  <Icon {...p}>
+    <path d="M21 8l-9-5-9 5 9 5 9-5z" />
+    <path d="M3 8v8l9 5 9-5V8M12 13v8" />
+  </Icon>
+);
+
 export const SetupIcon = (p: IconProps) => (
   <Icon {...p}>
     <path d="M9 11l3 3L22 4" />

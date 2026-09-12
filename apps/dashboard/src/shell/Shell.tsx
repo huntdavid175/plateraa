@@ -8,6 +8,7 @@ import { setDark, useDark } from '../lib/theme';
 import { ROLE_WORDS, VENDOR_TYPE_WORDS } from '../lib/words';
 import { Button, ErrorNote, Spinner, Toggle, cx } from '../ui/controls';
 import {
+  BoxIcon,
   HomeIcon,
   MenuIcon,
   MoreIcon,
@@ -17,6 +18,7 @@ import {
   SetupIcon,
   SignOutIcon,
   StaffIcon,
+  WalletIcon,
 } from '../ui/icons';
 import { Centered } from '../ui/Page';
 
@@ -34,6 +36,8 @@ const NAV: NavItem[] = [
   { to: '/menu', label: 'Menu', Icon: MenuIcon, needs: 'catalog.manage' },
   { to: '/staff', label: 'Staff', Icon: StaffIcon, needs: 'staff.manage' },
   { to: '/refunds', label: 'Refunds', Icon: RefundIcon, needs: 'refunds.record' },
+  { to: '/expenses', label: 'Expenses', Icon: WalletIcon, needs: 'expenses.manage' },
+  { to: '/stock', label: 'Stock', Icon: BoxIcon, needs: 'catalog.manage' },
   { to: '/settings', label: 'Settings', Icon: SettingsIcon },
   { to: '/setup', label: 'Setup guide', Icon: SetupIcon, needs: 'settings.manage' },
 ];

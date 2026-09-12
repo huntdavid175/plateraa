@@ -6,6 +6,7 @@ import { AuthModule } from './auth/auth.module';
 import { ConfigModule } from './config/config.module';
 import { DatabaseModule } from './database/database.module';
 import { HealthController } from './health/health.controller';
+import { ExpensesModule } from './expenses/expenses.module';
 import { IdentityModule } from './identity/identity.module';
 import { ManagerModule } from './manager/manager.module';
 import { MenuModule } from './menu/menu.module';
@@ -29,6 +30,7 @@ import { SyncModule } from './sync/sync.module';
     ManagerModule,
     MenuModule,
     SettingsModule,
+    ExpensesModule,
   ],
   controllers: [HealthController],
   providers: [

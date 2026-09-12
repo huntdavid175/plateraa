@@ -1272,6 +1272,290 @@
           "Settings"
         ]
       }
+    },
+    "/api/expenses": {
+      "get": {
+        "operationId": "ExpensesController_list",
+        "parameters": [
+          {
+            "name": "from",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "format": "date",
+              "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))$",
+              "type": "string"
+            }
+          },
+          {
+            "name": "to",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "format": "date",
+              "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))$",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/ExpenseRowDto_Output"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "Expenses"
+        ]
+      },
+      "post": {
+        "operationId": "ExpensesController_add",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AddExpenseDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SavedDto_Output"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "Expenses"
+        ]
+      }
+    },
+    "/api/expenses/{expenseId}": {
+      "delete": {
+        "operationId": "ExpensesController_remove",
+        "parameters": [
+          {
+            "name": "expenseId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "Expenses"
+        ]
+      }
+    },
+    "/api/stock": {
+      "get": {
+        "operationId": "ExpensesController_stock",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/StockRowDto_Output"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "Expenses"
+        ]
+      },
+      "post": {
+        "operationId": "ExpensesController_addStockItem",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AddStockItemDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SavedDto_Output"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "Expenses"
+        ]
+      }
+    },
+    "/api/stock/{stockItemId}": {
+      "put": {
+        "operationId": "ExpensesController_updateStockItem",
+        "parameters": [
+          {
+            "name": "stockItemId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateStockItemDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "204": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "Expenses"
+        ]
+      },
+      "delete": {
+        "operationId": "ExpensesController_removeStockItem",
+        "parameters": [
+          {
+            "name": "stockItemId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "Expenses"
+        ]
+      }
+    },
+    "/api/stock/{stockItemId}/count": {
+      "post": {
+        "operationId": "ExpensesController_count",
+        "parameters": [
+          {
+            "name": "stockItemId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CountDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CountedDto_Output"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "Expenses"
+        ]
+      }
     }
   },
   "info": {
@@ -5269,6 +5553,324 @@
           "BOLT_FOOD",
           "CHOWDECK"
         ]
+      },
+      "ExpenseRowDto_Output": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "spentOn": {
+            "type": "string"
+          },
+          "amount": {
+            "type": "integer",
+            "minimum": -9007199254740991,
+            "maximum": 9007199254740991
+          },
+          "category": {
+            "type": "string",
+            "enum": [
+              "INGREDIENTS",
+              "GAS",
+              "PACKAGING",
+              "TRANSPORT",
+              "RENT",
+              "ELECTRICITY",
+              "WATER",
+              "SALARIES",
+              "AIRTIME_DATA",
+              "RIDER_PAYMENTS",
+              "MARKETING",
+              "OTHER"
+            ]
+          },
+          "method": {
+            "type": "string",
+            "enum": [
+              "CASH_DRAWER",
+              "OWNER_CASH",
+              "MOMO",
+              "BANK",
+              "OTHER"
+            ]
+          },
+          "note": {
+            "type": "string",
+            "nullable": true
+          },
+          "supplierName": {
+            "type": "string",
+            "nullable": true
+          },
+          "fromDrawer": {
+            "type": "boolean"
+          },
+          "purchase": {
+            "type": "object",
+            "properties": {
+              "stockItemId": {
+                "type": "string"
+              },
+              "name": {
+                "type": "string"
+              },
+              "unit": {
+                "type": "string"
+              },
+              "quantity": {
+                "type": "integer",
+                "minimum": -9007199254740991,
+                "maximum": 9007199254740991
+              }
+            },
+            "required": [
+              "stockItemId",
+              "name",
+              "unit",
+              "quantity"
+            ],
+            "additionalProperties": false,
+            "nullable": true
+          },
+          "by": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "required": [
+          "id",
+          "spentOn",
+          "amount",
+          "category",
+          "method",
+          "note",
+          "supplierName",
+          "fromDrawer",
+          "purchase",
+          "by"
+        ],
+        "additionalProperties": false
+      },
+      "AddExpenseDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "ulid",
+            "pattern": "^[0-7][0-9A-HJKMNP-TV-Za-hjkmnp-tv-z]{25}$"
+          },
+          "amount": {
+            "type": "integer",
+            "exclusiveMinimum": true,
+            "maximum": 100000000,
+            "minimum": 0
+          },
+          "category": {
+            "type": "string",
+            "enum": [
+              "INGREDIENTS",
+              "GAS",
+              "PACKAGING",
+              "TRANSPORT",
+              "RENT",
+              "ELECTRICITY",
+              "WATER",
+              "SALARIES",
+              "AIRTIME_DATA",
+              "RIDER_PAYMENTS",
+              "MARKETING",
+              "OTHER"
+            ]
+          },
+          "method": {
+            "type": "string",
+            "enum": [
+              "OWNER_CASH",
+              "MOMO",
+              "BANK",
+              "OTHER"
+            ]
+          },
+          "spentOn": {
+            "type": "string",
+            "format": "date",
+            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))$"
+          },
+          "note": {
+            "type": "string",
+            "maxLength": 200
+          },
+          "supplierName": {
+            "type": "string",
+            "maxLength": 80
+          },
+          "purchase": {
+            "type": "object",
+            "properties": {
+              "stockItemId": {
+                "type": "string",
+                "format": "ulid",
+                "pattern": "^[0-7][0-9A-HJKMNP-TV-Za-hjkmnp-tv-z]{25}$"
+              },
+              "quantity": {
+                "type": "integer",
+                "exclusiveMinimum": true,
+                "maximum": 100000,
+                "minimum": 0
+              }
+            },
+            "required": [
+              "stockItemId",
+              "quantity"
+            ]
+          }
+        },
+        "required": [
+          "id",
+          "amount",
+          "category",
+          "method",
+          "spentOn"
+        ]
+      },
+      "StockRowDto_Output": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "unit": {
+            "type": "string"
+          },
+          "onHand": {
+            "type": "integer",
+            "minimum": -9007199254740991,
+            "maximum": 9007199254740991
+          },
+          "lowThreshold": {
+            "type": "integer",
+            "minimum": -9007199254740991,
+            "maximum": 9007199254740991,
+            "nullable": true
+          },
+          "low": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "unit",
+          "onHand",
+          "lowThreshold",
+          "low"
+        ],
+        "additionalProperties": false
+      },
+      "AddStockItemDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "ulid",
+            "pattern": "^[0-7][0-9A-HJKMNP-TV-Za-hjkmnp-tv-z]{25}$"
+          },
+          "name": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 60
+          },
+          "unit": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 20
+          },
+          "lowThreshold": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 100000,
+            "nullable": true
+          },
+          "onHand": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 100000
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "unit"
+        ]
+      },
+      "UpdateStockItemDto": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 60
+          },
+          "unit": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 20
+          },
+          "lowThreshold": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 100000,
+            "nullable": true
+          }
+        },
+        "required": [
+          "name",
+          "unit",
+          "lowThreshold"
+        ]
+      },
+      "CountDto": {
+        "type": "object",
+        "properties": {
+          "movementId": {
+            "type": "string",
+            "format": "ulid",
+            "pattern": "^[0-7][0-9A-HJKMNP-TV-Za-hjkmnp-tv-z]{25}$"
+          },
+          "counted": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 100000
+          }
+        },
+        "required": [
+          "movementId",
+          "counted"
+        ]
+      },
+      "CountedDto_Output": {
+        "type": "object",
+        "properties": {
+          "onHand": {
+            "type": "integer",
+            "minimum": -9007199254740991,
+            "maximum": 9007199254740991
+          },
+          "difference": {
+            "type": "integer",
+            "minimum": -9007199254740991,
+            "maximum": 9007199254740991
+          }
+        },
+        "required": [
+          "onHand",
+          "difference"
+        ],
+        "additionalProperties": false
       }
     }
   }

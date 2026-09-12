@@ -37,6 +37,9 @@ NestJS 11 (not 12: nestjs-zod 5.5 needs `@nestjs/common` ^11), CommonJS, built w
   - **Removals are soft deletes,** so they sync to the tablets. Platform prices (`item_channel_prices`) sync as well (migration 0008), so they're updated or soft-deleted, never replaced.
   - **Price changes:** every one ends the old `price_history` row and starts a new one (`newPrice`), so the offline price check in `sync/handlers/orders.ts` still matches.
   - **Cost prices** are returned and saved only with `reports.revenue.view`.
+- `expenses/`: money out and key ingredients.
+  - `GET/POST /api/expenses` and `DELETE /api/expenses/:id` (`expenses.manage`). A purchase adds to an ingredient's stock with a PURCHASE movement, and removing it takes that back off. Drawer payouts can't be removed.
+  - `/api/stock` (`catalog.manage`) covers raw ingredients: add, edit, stop tracking, and a count (`/count`), which records the difference as a COUNT_ADJUST.
 - `settings/`: the owner's settings (`settings.manage`, owner only).
   - `GET /api/settings` returns them all.
   - `PUT /api/settings/business`, `/orders` and `/commissions` save them. `/orders` covers pay before prep, portion counts and the idle lock; switching counts on adds missing count records.

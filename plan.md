@@ -280,8 +280,18 @@ _11 Sep: the server side is built from Moolre's docs (docs.moolre.com; their `/a
     - _**Payouts** (`POST /api/drawers/:shiftId/payouts`), from the "Open drawers" card on Today, against a tablet's open shift. A payout can't be more than the drawer should hold, and it's booked as a `CASH_DRAWER` expense for today._
     - _**Discounts** (`PUT /api/orders/:id/discount`), by percent or amount on an order that isn't fully paid. The order is re-priced with `priceOrder` and can't go below what's paid. A discount that clears what's owed starts prep._
     - _The dashboard sends each refund and payout id, so a retry never records one twice._
-- [ ] Expenses + purchases entry (purchase = expense + stock item + qty)
-- [ ] Stock items: low-stock thresholds, raw-item counts
+- [x] Expenses + purchases entry (purchase = expense + stock item + qty)
+  - _12 Sep: the dashboard's Expenses page (`GET/POST /api/expenses`, `DELETE /api/expenses/:id`)._
+    - _**Entries:** the last 7 days, this month or last month, with a total. Each is paid by the owner's cash, MoMo, bank or other. Cash from a drawer is a payout, recorded from Today._
+    - _**Purchases:** "It's a stock purchase" adds the quantity to an ingredient, with a PURCHASE stock movement._
+    - _**Removing:** puts a purchase's stock back. Drawer payouts can't be removed, because the drawer counts on them._
+    - _**Retries:** the dashboard sends the id, so a retry records it once._
+- [x] Stock items: low-stock thresholds, raw-item counts
+  - _12 Sep: the dashboard's Stock page, for key ingredients (`/api/stock`)._
+    - _**Setting up:** add one with its unit, a "low at" mark and a starting count; edit or stop tracking it._
+    - _**Counting:** a count records the difference as a COUNT_ADJUST, so shrinkage shows up._
+    - _**Running low:** a banner lists what's at or under its mark._
+    - _**Still to do:** raw counts from the tablet (the `stock.raw_count` command exists; there's no tablet screen for it yet)._
 
 ### 3.2 Reporting
 

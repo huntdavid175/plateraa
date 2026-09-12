@@ -3,6 +3,7 @@ import { createBrowserRouter, Navigate } from 'react-router';
 import { ChooseBusinessPage } from './auth/ChooseBusinessPage';
 import { SignInPage } from './auth/SignInPage';
 import { SignUpPage } from './auth/SignUpPage';
+import { ExpensesPage } from './pages/ExpensesPage';
 import { ItemEditorPage } from './pages/ItemEditorPage';
 import { MenuPage } from './pages/MenuPage';
 import { OrderPage } from './pages/OrderPage';
@@ -10,6 +11,7 @@ import { OrdersPage } from './pages/OrdersPage';
 import { RefundsPage } from './pages/RefundsPage';
 import { SettingsPage } from './pages/SettingsPage';
 import { StaffPage } from './pages/StaffPage';
+import { StockPage } from './pages/StockPage';
 import { TodayPage } from './pages/TodayPage';
 import { Shell } from './shell/Shell';
 import { Button, Spinner } from './ui/controls';
@@ -60,6 +62,8 @@ export const router = createBrowserRouter([
       { path: 'menu/items/:itemId', Component: ItemEditorPage },
       { path: 'staff', Component: StaffPage },
       { path: 'refunds', Component: RefundsPage },
+      { path: 'expenses', Component: ExpensesPage },
+      { path: 'stock', Component: StockPage },
       { path: 'settings', Component: SettingsPage },
     ],
   },
