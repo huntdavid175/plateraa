@@ -56,7 +56,11 @@ export type Env = z.infer<typeof envSchema>;
  */
 export function loadEnv(): Env {
   if (existsSync('../../.env')) process.loadEnvFile('../../.env');
-  const result = envSchema.safeParse(process.env);
+  // An empty line (`KEY=`) means "not filled in yet", not a value, so it can't block startup.
+  const values = Object.fromEntries(
+    Object.entries(process.env).filter(([, value]) => value !== undefined && value !== ''),
+  );
+  const result = envSchema.safeParse(values);
   if (!result.success) {
     const problems = result.error.issues.map(
       (issue) => `${issue.path.join('.')}: ${issue.message}`,
