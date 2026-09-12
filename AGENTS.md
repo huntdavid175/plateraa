@@ -27,17 +27,24 @@ A solo founder (GitHub `huntdavid175`) builds it with an AI agent. Work started 
   - §2.4: the Drawer tab (drops, pay-ins, a blind count at close) and the Stock tab (one-tap sold out, optional portion counts). Not tried on the tablet yet. Owner summaries moved to 3.2.
   - §2.5: payment links through each vendor's own Moolre account, texted by Moolre SMS, and counted only once Moolre's status check confirms them. The tablet sends them and shows each link's status. A real link was paid end to end on live Moolre on 12 Sep. See `apps/api/AGENTS.md`.
   - The rest of Phase 2 (12 Sep): "not synced yet" labels, refund owed, and the restyled screens.
-- **Now: Phase 3.1, the dashboard**, built slice by slice to the user's Figma Make design. See `apps/dashboard/AGENTS.md`.
-  - Done (12 Sep):
-    - the shell (sign-in, business picker, navigation, dark mode);
-    - Today (the day summary);
-    - Orders and the order detail;
+- **Phase 3.1–3.2, the dashboard** (12 Sep), built slice by slice to the user's Figma Make design. See `apps/dashboard/AGENTS.md`.
+  - Pages:
+    - sign-in, sign-up and the 7-step onboarding;
+    - Today;
+    - Orders;
     - refunds, payouts and discounts;
     - Menu and the item editor, with Bolt Food and Chowdeck prices synced to the tablet;
     - Staff and tablets;
-    - Settings, including a live Moolre connection check;
-    - sign-up and onboarding.
-  - Next: expenses, stock and reports.
+    - Settings, including a live Moolre check;
+    - Expenses and Stock;
+    - Reports.
+  - Still open in `plan.md`:
+    - delivery zones;
+    - the pg-boss rollup;
+    - tap-through for every figure;
+    - raw counts on the tablet;
+    - deploying the dashboard, and adding its address to `TRUSTED_ORIGINS` on Render;
+    - 3.3 receipts.
 - Founder tasks (Moolre, lawyer, printers, domain, Play Console) are Phase 0 in `plan.md`.
 
 ## Working with the user
