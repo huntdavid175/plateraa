@@ -11,6 +11,7 @@ import {
   getTableColumns,
   gte,
   inArray,
+  itemChannelPrices,
   itemModifierGroups,
   itemVariants,
   items,
@@ -298,6 +299,10 @@ export class SyncService {
               .select()
               .from(itemModifierGroups)
               .where(changedSince(itemModifierGroups, cursor)),
+            itemChannelPrices: await tx
+              .select()
+              .from(itemChannelPrices)
+              .where(changedSince(itemChannelPrices, cursor)),
             deliveryZones: await tx
               .select()
               .from(deliveryZones)

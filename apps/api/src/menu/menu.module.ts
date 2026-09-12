@@ -210,7 +210,12 @@ export class MenuService {
       const channelRows = await tx
         .select()
         .from(itemChannelPrices)
-        .where(inArray(itemChannelPrices.source, [...CHANNELS]));
+        .where(
+          and(
+            inArray(itemChannelPrices.source, [...CHANNELS]),
+            isNull(itemChannelPrices.deletedAt),
+          ),
+        );
 
       const nameOf = new Map(itemRows.map((item) => [item.id, item.name]));
       const channelPrices = (itemId: string, variantId: string | null) => {
@@ -415,10 +420,12 @@ export class MenuService {
     }
   }
 
-  /** Bolt Food and Chowdeck prices for the item, or for each size. Blank means the menu price. */
+  /**
+   * Bolt Food and Chowdeck prices for the item, or for each size. Blank means the menu price.
+   * Rows are updated or soft-deleted rather than replaced, so every change reaches the tablets.
+   */
   private async saveChannelPrices(tx: Tx, tenantId: string, itemId: string, input: SaveItemInput) {
-    await tx.delete(itemChannelPrices).where(eq(itemChannelPrices.itemId, itemId));
-    const rows = [
+    const wanted = [
       ...(input.variants.length ? [] : [{ variantId: null, prices: input.channelPrices }]),
       ...input.variants.map((variant) => ({
         variantId: variant.id,
@@ -429,10 +436,33 @@ export class MenuService {
         const channelPrice = prices[source];
         return channelPrice === null || channelPrice === undefined
           ? []
-          : [{ id: ulid(), tenantId, itemId, variantId, source, price: pesewas(channelPrice) }];
+          : [{ variantId, source, price: pesewas(channelPrice) }];
       }),
     );
-    if (rows.length) await tx.insert(itemChannelPrices).values(rows);
+    const live = await tx
+      .select()
+      .from(itemChannelPrices)
+      .where(and(eq(itemChannelPrices.itemId, itemId), isNull(itemChannelPrices.deletedAt)));
+    const same = (a: { variantId: string | null; source: string }, b: typeof a) =>
+      a.variantId === b.variantId && a.source === b.source;
+
+    for (const row of wanted) {
+      const found = live.find((existing) => same(existing, row));
+      if (!found) {
+        await tx.insert(itemChannelPrices).values({ id: ulid(), tenantId, itemId, ...row });
+      } else if (found.price !== row.price) {
+        await tx
+          .update(itemChannelPrices)
+          .set({ price: row.price })
+          .where(eq(itemChannelPrices.id, found.id));
+      }
+    }
+    for (const gone of live.filter((existing) => !wanted.some((row) => same(existing, row)))) {
+      await tx
+        .update(itemChannelPrices)
+        .set({ deletedAt: new Date() })
+        .where(eq(itemChannelPrices.id, gone.id));
+    }
   }
 
   /**
@@ -545,7 +575,10 @@ export class MenuService {
         .update(itemModifierGroups)
         .set({ deletedAt: now })
         .where(and(eq(itemModifierGroups.itemId, itemId), isNull(itemModifierGroups.deletedAt)));
-      await tx.delete(itemChannelPrices).where(eq(itemChannelPrices.itemId, itemId));
+      await tx
+        .update(itemChannelPrices)
+        .set({ deletedAt: now })
+        .where(and(eq(itemChannelPrices.itemId, itemId), isNull(itemChannelPrices.deletedAt)));
       await tx
         .update(priceHistory)
         .set({ validTo: now })

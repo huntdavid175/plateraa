@@ -2,7 +2,7 @@ import { ulid } from 'ulid';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { InvalidCommandError } from './engine';
 import { MIGRATIONS, SYNCED_TABLES, columnsOf, migrate, openLocalDatabase } from './schema';
-import type { Database, Row } from './sql';
+import { Database as SqlDatabase, type Database, type Row } from './sql';
 import { provisionalSql } from './store';
 import {
   MENU,
@@ -63,6 +63,18 @@ describe('local database', () => {
     const db = await openLocalDatabase(nodeSqliteDriver());
     await migrate(db);
     expect(await db.get('PRAGMA user_version')).toEqual({ user_version: MIGRATIONS.length });
+  });
+
+  it('pulls everything again after the update that adds platform prices', async () => {
+    // A tablet on version 4 that has synced before.
+    const db = new SqlDatabase(nodeSqliteDriver());
+    for (const statement of MIGRATIONS.slice(0, 4).flat()) await db.run(statement);
+    await db.run('PRAGMA user_version = 4');
+    await db.run(`INSERT INTO meta (key, value) VALUES ('cursor', '12345')`);
+
+    await migrate(db);
+    // Without a cursor, the next pull is a full snapshot: prices set before the update arrive.
+    expect(await db.get(`SELECT value FROM meta WHERE key = 'cursor'`)).toBeFalsy();
   });
 });
 

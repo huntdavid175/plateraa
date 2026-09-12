@@ -7,7 +7,7 @@ import { Chip, OptionTile, Segmented } from '../ui/controls';
 import { Field, Label, PhoneField } from '../ui/Field';
 import { cedis, colors, font, space, text } from '../ui/theme';
 import { PLATFORM_NAMES, isPlatform, type Checkout, type CheckoutSource } from './checkout';
-import { priceTicket, type TicketLine } from './ticket';
+import { forSource, priceTicket, type PlatformPrices, type TicketLine } from './ticket';
 import { TicketLines } from './TicketLines';
 import { LINK_NOTE } from './words';
 
@@ -24,6 +24,7 @@ const SOURCES: readonly { value: Exclude<CheckoutSource, 'POS'>; label: string }
 export function RemoteOrderPanel({
   number,
   lines,
+  prices,
   onLines,
   canChange,
   onChangeLine,
@@ -33,6 +34,8 @@ export function RemoteOrderPanel({
 }: {
   number: string;
   lines: TicketLine[];
+  /** Bolt Food and Chowdeck prices, used as soon as one of them is chosen. */
+  prices: PlatformPrices;
   onLines: (update: (lines: TicketLine[]) => TicketLine[]) => void;
   canChange: (line: TicketLine) => boolean;
   onChangeLine: (line: TicketLine) => void;
@@ -61,7 +64,9 @@ export function RemoteOrderPanel({
 
   const ownDelivery = delivery && !platform;
   const fee = ownDelivery ? parseCedis(feeText.trim() || '0') : pesewas(0);
-  const priced = lines.length ? priceTicket(lines, ownDelivery && fee ? fee : undefined) : null;
+  // The ticket keeps menu prices; a platform order shows, and is saved at, the platform's prices.
+  const shown = source ? forSource(lines, source, prices) : lines;
+  const priced = shown.length ? priceTicket(shown, ownDelivery && fee ? fee : undefined) : null;
   const total = priced?.total ?? 0;
   const action = !source
     ? 'Choose where the order came from'
@@ -201,10 +206,12 @@ export function RemoteOrderPanel({
         <View style={styles.block}>
           <Label text="Items" />
           <TicketLines
-            lines={lines}
+            lines={shown}
             onLines={onLines}
             canChange={canChange}
-            onChange={onChangeLine}
+            onChange={(line) =>
+              onChangeLine(lines.find((original) => original.lineId === line.lineId) ?? line)
+            }
           />
         </View>
       </ScrollView>

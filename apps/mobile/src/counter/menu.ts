@@ -1,5 +1,28 @@
-import type { Pesewas, Station } from '@plateraa/shared';
+import type { OrderSource, Pesewas, Station } from '@plateraa/shared';
 import type { Sql } from '../offline/sql';
+import { platformPriceKey, type PlatformPrices } from './ticket';
+
+/** The query behind `platformPricesOf`, for screens that watch the local database. */
+export const PLATFORM_PRICES_SQL =
+  'SELECT source, item_id, variant_id, price FROM item_channel_prices';
+
+export interface PlatformPriceRow {
+  source: OrderSource;
+  item_id: string;
+  variant_id: string | null;
+  price: Pesewas;
+}
+
+/** Bolt Food and Chowdeck prices, from the rows of `PLATFORM_PRICES_SQL`. */
+export function platformPricesOf(rows: readonly PlatformPriceRow[]): PlatformPrices {
+  return new Map(
+    rows.map((row) => [platformPriceKey(row.source, row.item_id, row.variant_id), row.price]),
+  );
+}
+
+export async function loadPlatformPrices(db: Sql): Promise<PlatformPrices> {
+  return platformPricesOf(await db.all<PlatformPriceRow>(PLATFORM_PRICES_SQL));
+}
 
 export interface MenuModifier {
   id: string;

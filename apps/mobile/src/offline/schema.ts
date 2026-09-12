@@ -69,6 +69,11 @@ export const SYNCED_TABLES = [
     fields: ['id', 'itemId', 'groupId', 'position'],
   },
   {
+    name: 'item_channel_prices',
+    pullKey: 'itemChannelPrices',
+    fields: ['id', 'itemId', 'variantId', 'source', 'price'],
+  },
+  {
     name: 'delivery_zones',
     pullKey: 'deliveryZones',
     fields: ['id', 'name', 'fee', 'active', 'position'],
@@ -328,6 +333,16 @@ export const MIGRATIONS: readonly (readonly string[])[] = [
       failure TEXT, sent_at TEXT, expires_at TEXT, paid_at TEXT, created_at_device TEXT
     )`,
     `CREATE INDEX payment_links_order ON payment_links (order_id)`,
+  ],
+  [
+    // Bolt Food and Chowdeck prices set on the dashboard (plan.md §3.1), so a platform order
+    // carries the platform's price. Forgetting the cursor makes the next pull a full snapshot,
+    // which brings in the prices set before this update.
+    `CREATE TABLE item_channel_prices (
+      id TEXT PRIMARY KEY, item_id TEXT, variant_id TEXT, source TEXT, price INTEGER
+    )`,
+    `CREATE INDEX item_channel_prices_item ON item_channel_prices (item_id)`,
+    `DELETE FROM meta WHERE key = 'cursor'`,
   ],
 ];
 

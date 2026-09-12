@@ -27,7 +27,7 @@ NestJS 11 (not 12: nestjs-zod 5.5 needs `@nestjs/common` ^11), CommonJS, built w
   - `business-day.ts` has `businessToday()` (today in the business's timezone) and `dueSql`.
 - `menu/`: menu setup (`catalog.manage`).
   - `GET /api/menu` returns the whole menu. `PUT /api/menu/items/:itemId` creates or replaces an item, sent with the whole item: sizes, extras groups with their options, and Bolt Food and Chowdeck prices. Also: remove an item, sold out for today, and categories.
-  - **Removals are soft deletes,** so they sync to the tablets.
+  - **Removals are soft deletes,** so they sync to the tablets. Platform prices (`item_channel_prices`) sync as well (migration 0008), so they're updated or soft-deleted, never replaced.
   - **Price changes:** every one ends the old `price_history` row and starts a new one (`newPrice`), so the offline price check in `sync/handlers/orders.ts` still matches.
   - **Cost prices** are returned and saved only with `reports.revenue.view`.
 - `manager/`: what only a manager or the owner does, on the dashboard. The tablet can't do any of it.

@@ -1,4 +1,4 @@
-import { priceOrder, type Pesewas, type PricedOrder } from '@plateraa/shared';
+import { priceOrder, type OrderSource, type Pesewas, type PricedOrder } from '@plateraa/shared';
 
 export interface TicketModifier {
   modifierId: string;
@@ -49,6 +49,30 @@ export function changeQuantity(lines: TicketLine[], lineId: string, by: number):
 
 export function replaceLine(lines: TicketLine[], updated: TicketLine): TicketLine[] {
   return lines.map((line) => (line.lineId === updated.lineId ? updated : line));
+}
+
+/** Bolt Food and Chowdeck prices set on the dashboard, keyed by `platformPriceKey`. */
+export type PlatformPrices = ReadonlyMap<string, Pesewas>;
+
+export const platformPriceKey = (source: OrderSource, itemId: string, variantId?: string | null) =>
+  `${source}:${itemId}:${variantId ?? ''}`;
+
+/**
+ * The lines as an order from `source` carries them. On Bolt Food and Chowdeck each item is at the
+ * platform's own price where the owner set one, so it matches what the platform charged; every
+ * other source keeps the menu price. The ticket itself keeps menu prices, so changing the source
+ * back puts them back.
+ */
+export function forSource(
+  lines: TicketLine[],
+  source: OrderSource,
+  prices: PlatformPrices,
+): TicketLine[] {
+  if (source !== 'BOLT_FOOD' && source !== 'CHOWDECK') return lines;
+  return lines.map((line) => {
+    const price = prices.get(platformPriceKey(source, line.itemId, line.variantId));
+    return price === undefined ? line : { ...line, unitPrice: price };
+  });
 }
 
 /** The provisional total, from the same pricing function the server uses. */

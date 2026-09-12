@@ -183,7 +183,7 @@ _11 Sep: built (`apps/mobile/src/counter`; the counter screen is `app/index.tsx`
 - _Payment links can already be chosen, but they don't go out until §2.5 (Moolre); until then those orders wait under "Awaiting payment"._
 - _Server change: Bolt and Chowdeck orders no longer need a customer's number (the platforms keep it); phone orders need the caller's._
 - _Test menu for a business, until the dashboard's menu setup (3.1): `pnpm --filter @plateraa/api seed:test-menu "<business name>"`._
-- _Gap: Bolt and Chowdeck prices that differ from the menu aren't on the tablet yet (the dashboard sets them in 3.1), so such an order is kept but flagged for review._
+- _12 Sep: Bolt and Chowdeck prices set on the dashboard (3.1) now sync to the tablet. A Bolt or Chowdeck order is priced at them as soon as its source is chosen, so it's no longer flagged for review._
 
 - [x] Landscape tablet layout (8" minimum): order entry and prep queue side by side (_menu tiles, the order being typed in, and the orders list_)
   - _11 Sep, user decision: the counter follows the user's own Figma Make design (`apps/mobile/assets/design`): calm and spacious, two panes, one brand colour (#E8701A), DM Sans with DM Mono for money. Tabs across the top (Counter, Orders, Kitchen) replace the third column; a "Now cooking" strip under the menu shows the kitchen at a glance. Walk-ins: Charge opens a payment sheet (cash with keypad and change, or payment link); remote orders (phone, Bolt, Chowdeck) have their own panel. Drawer and Stock tabs come with 2.4._
@@ -245,7 +245,7 @@ _11 Sep: the server side is built from Moolre's docs (docs.moolre.com; their `/a
     - _**Syncing:** removals are soft deletes, so they reach the tablet. Every price change closes the old price-history row and starts a new one, so an order taken offline just before a change still matches._
     - _**Cost and margin** show only with `reports.revenue.view`._
     - _**Portion counts:** with counts on, a new item gets its count record._
-    - _**Still to do:** the tablet doesn't sync the platform prices yet (the next step)._
+    - _**Platform prices on the tablet:** they sync there (migration 0008; tablet local migration v5, which also forgets the pull cursor, so an updated tablet pulls everything once). A Bolt Food or Chowdeck order is priced at the platform's price as soon as that source is chosen._
 - [ ] Delivery zones + fees
 - [ ] Channel commissions (rate or flat; blank = shown as "Gross")
 - [ ] Staff management + revenue visibility settings (per role, per person)

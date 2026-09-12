@@ -130,7 +130,11 @@ async function priceLines(
     .select()
     .from(itemChannelPrices)
     .where(
-      and(inArray(itemChannelPrices.itemId, itemIds), eq(itemChannelPrices.source, input.source)),
+      and(
+        inArray(itemChannelPrices.itemId, itemIds),
+        eq(itemChannelPrices.source, input.source),
+        isNull(itemChannelPrices.deletedAt),
+      ),
     );
 
   const reviewReasons = new Set<string>();

@@ -1,5 +1,13 @@
 import type { NestExpressApplication } from '@nestjs/platform-express';
-import { and, eq, itemChannelPrices, priceHistory, withTenant, type Database } from '@plateraa/db';
+import {
+  and,
+  eq,
+  isNull,
+  itemChannelPrices,
+  priceHistory,
+  withTenant,
+  type Database,
+} from '@plateraa/db';
 import request from 'supertest';
 import { ulid } from 'ulid';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
@@ -107,6 +115,21 @@ describe.skipIf(!hasDatabase())('menu setup (against Neon)', () => {
     ]);
   });
 
+  it('sends the platform prices to the tablets', async () => {
+    const pull = await request(server())
+      .get('/api/sync/pull')
+      .set('x-device-token', vendor.deviceToken)
+      .expect(200);
+    expect(pull.body.changes.itemChannelPrices).toEqual([
+      expect.objectContaining({
+        itemId: ids.jollof,
+        variantId: ids.regular,
+        source: 'BOLT_FOOD',
+        price: 5000,
+      }),
+    ]);
+  });
+
   it('changes a price, keeping the old one in price history', async () => {
     await asOwner(request(server()).put(`/api/menu/items/${ids.jollof}`))
       .send({
@@ -150,8 +173,12 @@ describe.skipIf(!hasDatabase())('menu setup (against Neon)', () => {
     expect(item.variants.map((v: { id: string }) => v.id)).toEqual([ids.large]);
     expect(item.price).toBe(6000);
     const channel = await withTenant(db, vendor.tenantId, (tx) =>
-      tx.select().from(itemChannelPrices).where(eq(itemChannelPrices.itemId, ids.jollof)),
+      tx
+        .select()
+        .from(itemChannelPrices)
+        .where(and(eq(itemChannelPrices.itemId, ids.jollof), isNull(itemChannelPrices.deletedAt))),
     );
+    // Removed, not deleted, so the removal reaches the tablets.
     expect(channel).toEqual([]);
   });
 

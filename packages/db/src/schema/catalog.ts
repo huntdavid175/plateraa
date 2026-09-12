@@ -120,7 +120,10 @@ export const itemModifierGroups = pgTable(
   ],
 );
 
-/** A different price on one channel (e.g. +15% on Bolt Food to cover commission). */
+/**
+ * A different price on one channel (e.g. +15% on Bolt Food to cover commission). Synced to the
+ * tablets, so an order typed in from Bolt Food or Chowdeck carries the platform's price.
+ */
 export const itemChannelPrices = pgTable(
   'item_channel_prices',
   {
@@ -133,8 +136,12 @@ export const itemChannelPrices = pgTable(
     source: orderSource().notNull(),
     price: money().notNull(),
     ...timestamps(),
+    ...syncColumns(),
   },
-  (t) => [index('item_channel_prices_item').on(t.itemId)],
+  (t) => [
+    index('item_channel_prices_item').on(t.itemId),
+    index('item_channel_prices_sync').on(t.tenantId, t.syncXid),
+  ],
 );
 
 /**

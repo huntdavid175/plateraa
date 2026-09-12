@@ -38,6 +38,10 @@ The counter app. It runs on the vendor's own budget Android tablet (8–10", **l
 - `StockScreen` (the Stock tab, for anyone with `stock.count`): one tap per item marks it sold out for today or back on sale (`setSoldOut`).
 - Payment links (plan.md §2.5): `requestLink` queues one (command `payment.request_link`, local table `payment_links`, which syncs back with the link's state). A phone order sends its link as it's saved; a walk-in does when "Payment link" is chosen. One open link per order; `QueueOrder.link` is the latest, and `linkWords` says where it stands. The server makes and texts the link (`apps/api/AGENTS.md`).
 - Prep counts are optional (user decision, 11 Sep): the owner switches them on in the dashboard's settings (`count_portions`, off by default; `useCountPortions`). When on, the Stock tab's "Add portions" (`PortionsSheet`, `addPortions`) adds to today's count for items with a count record (`MenuItem.stockItemId`).
+- **Bolt Food and Chowdeck prices** (12 Sep) come from the dashboard. They're in the local table `item_channel_prices` (local migration v5, which also forgets the pull cursor, so an updated tablet pulls everything once).
+  - The ticket keeps menu prices.
+  - `forSource()` in `ticket.ts` re-prices it for the chosen source, and it's used for every draft, for edits to a platform order, and for what `RemoteOrderPanel` shows.
+  - `PLATFORM_PRICES_SQL` / `platformPricesOf()` in `menu.ts` load the prices.
 - `checkout.ts` checks an order before it's saved (who must give a number, delivery details); `views.ts` sorts the Orders screen by urgency.
 
 ## Look (`src/ui`)
