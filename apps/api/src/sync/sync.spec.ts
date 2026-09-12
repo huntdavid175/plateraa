@@ -4,10 +4,9 @@ import type { SyncCommandInput } from '@plateraa/shared';
 import request from 'supertest';
 import { ulid } from 'ulid';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
-import { loadEnv } from '../config/env';
 import { DATABASE, type DatabaseHandle } from '../database/database.module';
 import { removeVendors, seedMenu, setUpVendor, type Vendor } from '../test/fixtures';
-import { createTestApp, hasDatabase } from '../test/test-app';
+import { createTestApp, hasDatabase, testEnv } from '../test/test-app';
 
 describe.skipIf(!hasDatabase())('sync (against Neon)', () => {
   let app: NestExpressApplication;
@@ -83,7 +82,7 @@ describe.skipIf(!hasDatabase())('sync (against Neon)', () => {
   };
 
   beforeAll(async () => {
-    app = await createTestApp(loadEnv());
+    app = await createTestApp(testEnv());
     server = app.getHttpServer();
     db = app.get<DatabaseHandle>(DATABASE).db;
     vendor = await setUpVendor(server);

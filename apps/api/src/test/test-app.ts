@@ -1,5 +1,6 @@
 import { Test } from '@nestjs/testing';
 import type { NestExpressApplication } from '@nestjs/platform-express';
+import { testDatabaseUrl } from '@plateraa/db';
 import { configureApp } from '../app.setup';
 import { AppModule } from '../app.module';
 import { ENV, loadEnv, type Env } from '../config/env';
@@ -21,22 +22,27 @@ export const OFFLINE_TEST_ENV: Env = {
 };
 
 /**
- * True when a real database is configured (locally via .env); integration tests skip otherwise.
- * Tests create and delete businesses, so they refuse to run against the live database.
+ * True when the Neon `test` branch is configured (locally, TEST_DATABASE_URL in .env);
+ * integration tests skip otherwise, as in CI. It can't be `dev` or `production`
+ * (`testDatabaseUrl` throws): tests create and delete businesses, and Render's payment-link
+ * sender works on `dev`.
  */
 export function hasDatabase(): boolean {
-  let env: Env;
   try {
-    env = loadEnv();
+    loadEnv();
   } catch {
     return false;
   }
-  if (env.PRODUCTION_DATABASE_URL && env.PRODUCTION_DATABASE_URL === env.DATABASE_URL) {
-    throw new Error(
-      'DATABASE_URL is the live database. Point it at the development branch before running tests.',
-    );
-  }
-  return true;
+  return Boolean(testDatabaseUrl('pooled') && testDatabaseUrl('direct'));
+}
+
+/** The app's settings, pointed at the `test` branch. */
+export function testEnv(): Env {
+  return {
+    ...loadEnv(),
+    DATABASE_URL: testDatabaseUrl('pooled')!,
+    DATABASE_URL_DIRECT: testDatabaseUrl('direct')!,
+  };
 }
 
 /** The real app, with a pretend Moolre when a test gives one. */

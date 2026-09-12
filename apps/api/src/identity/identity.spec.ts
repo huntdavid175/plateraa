@@ -4,7 +4,7 @@ import { ulid } from 'ulid';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { loadEnv } from '../config/env';
 import { DATABASE, type DatabaseHandle } from '../database/database.module';
-import { createTestApp, hasDatabase } from '../test/test-app';
+import { createTestApp, hasDatabase, testEnv } from '../test/test-app';
 
 /**
  * The whole identity journey against Neon: owner signs up, creates a business, registers a
@@ -45,7 +45,7 @@ describe.skipIf(!hasDatabase())('identity (against Neon)', () => {
   let cashierId: string;
 
   beforeAll(async () => {
-    app = await createTestApp(loadEnv());
+    app = await createTestApp(testEnv());
     server = app.getHttpServer();
     owner = await signUpOwner('Ama');
   });

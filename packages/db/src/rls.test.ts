@@ -3,15 +3,12 @@ import type pg from 'pg';
 import { ulid } from 'ulid';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { createDatabase, withTenant, type Database } from './client.js';
+import { testDatabaseUrl } from './migrate.js';
 import { auditEvents, categories, tenants } from './schema/index.js';
 
-const url = process.env.DATABASE_URL_DIRECT;
-// These tests create and delete businesses: never against the live database.
-if (url && url === process.env.PRODUCTION_DATABASE_URL_DIRECT) {
-  throw new Error(
-    'DATABASE_URL_DIRECT is the live database. Point it at the development branch first.',
-  );
-}
+// The Neon "test" branch: these tests create and delete businesses, so never `dev` or
+// `production` (testDatabaseUrl refuses both). Unset, as in CI, and they skip.
+const url = testDatabaseUrl('direct');
 
 /** Tables that are deliberately not tenant-scoped: Better Auth logins sit above any one business. */
 const NOT_TENANT_SCOPED = new Set(['user', 'session', 'account', 'verification']);

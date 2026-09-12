@@ -14,11 +14,10 @@ import { pesewas, type Pesewas } from '@plateraa/shared';
 import request from 'supertest';
 import { ulid } from 'ulid';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
-import { loadEnv } from '../config/env';
 import { DATABASE, type DatabaseHandle } from '../database/database.module';
 import { removeVendors, seedMenu, setUpVendor, type Vendor } from '../test/fixtures';
 import { syncClient } from '../test/sync-client';
-import { createTestApp, hasDatabase } from '../test/test-app';
+import { createTestApp, hasDatabase, testEnv } from '../test/test-app';
 import type { MoolreAccount, MoolreApi, PaymentStatus } from './moolre';
 import { PaymentLinks } from './payment-links.service';
 import { sealSecret } from './secrets';
@@ -89,7 +88,7 @@ describe.skipIf(!hasDatabase())('payment links (against Neon, pretend Moolre)', 
 
   beforeAll(async () => {
     app = await createTestApp(
-      { ...loadEnv(), SECRETS_KEY: secretsKey, RUN_PAYMENT_LINKS: false },
+      { ...testEnv(), SECRETS_KEY: secretsKey, RUN_PAYMENT_LINKS: false },
       { moolre },
     );
     db = app.get<DatabaseHandle>(DATABASE).db;

@@ -11,10 +11,13 @@ const envSchema = z.object({
   /** Direct Neon connection: migrations and the pg-boss worker. */
   DATABASE_URL_DIRECT: z.url(),
   /**
-   * The live database, on the laptop only: setup scripts run with `--production` use it. On
-   * Render, DATABASE_URL itself is the live one; on the laptop it's the development branch.
+   * The Neon `production` branch, on the laptop only: setup scripts run with `--production` use
+   * it. It's kept for the pilot; until Render moves to it, Render's DATABASE_URL is `dev` too.
    */
   PRODUCTION_DATABASE_URL: z.url().optional(),
+  /** The Neon `test` branch, for the automated tests only (see test/test-app.ts). */
+  TEST_DATABASE_URL: z.url().optional(),
+  TEST_DATABASE_URL_DIRECT: z.url().optional(),
   /** Where this API reports its errors (Sentry). Set on Render only; unset, nothing is sent. */
   SENTRY_DSN: z.url().optional(),
   BETTER_AUTH_SECRET: z.string().min(32),

@@ -14,11 +14,10 @@ import {
 import request from 'supertest';
 import { ulid } from 'ulid';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
-import { loadEnv } from '../config/env';
 import { DATABASE, type DatabaseHandle } from '../database/database.module';
 import { removeVendors, seedMenu, setUpVendor, type Vendor } from '../test/fixtures';
 import { syncClient } from '../test/sync-client';
-import { createTestApp, hasDatabase } from '../test/test-app';
+import { createTestApp, hasDatabase, testEnv } from '../test/test-app';
 
 /**
  * Money, the cash drawer and stock, pushed the way a tablet would, in one story, with pay before
@@ -57,7 +56,7 @@ describe.skipIf(!hasDatabase())('sync: money, drawer and stock (against Neon)', 
     withTenant(db, vendor.tenantId, fn);
 
   beforeAll(async () => {
-    app = await createTestApp(loadEnv());
+    app = await createTestApp(testEnv());
     db = app.get<DatabaseHandle>(DATABASE).db;
     vendor = await setUpVendor(app.getHttpServer(), 'Esi');
     menu = await seedMenu(app, vendor.tenantId, today);
