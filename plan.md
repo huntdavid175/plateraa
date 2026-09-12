@@ -236,7 +236,17 @@ _11 Sep: the server side is built from Moolre's docs (docs.moolre.com; their `/a
 
 - [x] App shell (Vite, TanStack Query/Table, shadcn themed hard)
   - _12 Sep: built to the user's Figma Make design (`apps/dashboard/design`) instead of shadcn: Vite 8, React Router 7, TanStack Query 5, Tailwind 4 with the design's colours, and light and dark mode. Owners and managers sign in with email and password (Better Auth's bearer token; the API now lets the browser read the `set-auth-token` header). They then pick a business (skipped when there's only one). Laptops get the sidebar; phones get a bottom bar plus "More". Screens a person can't use are hidden. `GET /api/me/context` gives the dashboard the person's name, role and permissions. Today, Orders, Menu, Staff and Refunds are placeholders until their slices._
-- [ ] Onboarding that works in a phone browser: business → vendor type → starter template → price grid → staff & PINs → connect their own Moolre account (required; we check it works) → install-app QR (≤20 min)
+- [x] Onboarding that works in a phone browser: business → vendor type → starter template → price grid → staff & PINs → connect their own Moolre account (required; we check it works) → install-app QR (≤20 min)
+  - _12 Sep: "Create your account" (`/sign-up`, Better Auth email) leads into the design's 7-step setup (`/setup`), sized for a phone:_
+    - _**Business:** created at step 2._
+    - _**Starter menu:** the shared templates, with the type's own suggested first; the price grid leaves blank items off. It's saved in one transaction by `POST /api/menu/starter`, with extras at no charge until the owner prices them._
+    - _**PINs:** the owner's, then staff (never shown back)._
+    - _**Moolre:** the same live check as Settings._
+    - _**The tablet:** written steps._
+    - _**Setup guide:** the sidebar entry, for owners, reopens it at the menu step._
+  - _**Two differences from this plan item:**_
+    - _Moolre can be skipped ("You can connect Moolre later"), as the user's design shows. The plan said required._
+    - _There's no QR code yet: there's no store listing or stable APK link to point it at._
 - [x] Menu CRUD: categories, items, variants, modifier groups, add-ons, prep time, station, cost price
   - _12 Sep: the dashboard's Menu page and full-screen item editor, to the design._
     - _**The API:** `GET /api/menu`, `PUT /api/menu/items/:id` (create or replace, sent with the whole item), remove, sold out for today, and categories._

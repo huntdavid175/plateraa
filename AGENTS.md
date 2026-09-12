@@ -34,11 +34,10 @@ A solo founder (GitHub `huntdavid175`) builds it with an AI agent. Work started 
     - Orders and the order detail;
     - refunds, payouts and discounts;
     - Menu and the item editor, with Bolt Food and Chowdeck prices synced to the tablet;
-    - Staff and tablets.
-  - Next, in order:
-    1. Settings, including a live Moolre connection check;
-    2. onboarding;
-    3. expenses, stock and reports.
+    - Staff and tablets;
+    - Settings, including a live Moolre connection check;
+    - sign-up and onboarding.
+  - Next: expenses, stock and reports.
 - Founder tasks (Moolre, lawyer, printers, domain, Play Console) are Phase 0 in `plan.md`.
 
 ## Working with the user

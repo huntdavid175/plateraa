@@ -49,9 +49,15 @@ export function ChooseBusinessPage() {
       )}
 
       {businesses.data?.length === 0 && (
-        <p className="rounded-xl border border-border bg-surface px-4 py-4 text-sm text-muted">
-          This login isn’t an owner or manager of any business yet.
-        </p>
+        <div className="space-y-4">
+          <p className="rounded-xl border border-border bg-surface px-4 py-4 text-sm text-muted">
+            This login isn’t an owner or manager of any business yet. A manager is added by the
+            owner; an owner sets their business up here.
+          </p>
+          <Button full onClick={() => navigate('/setup')}>
+            Set up your business
+          </Button>
+        </div>
       )}
 
       {businesses.data && businesses.data.length > 0 && (

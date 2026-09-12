@@ -29,6 +29,7 @@ describe('OpenAPI document', () => {
         '/api/drawers',
         '/api/drawers/{shiftId}/payouts',
         '/api/menu',
+        '/api/menu/starter',
         '/api/settings',
         '/api/settings/business',
         '/api/settings/orders',

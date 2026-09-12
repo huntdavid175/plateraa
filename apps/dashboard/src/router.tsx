@@ -1,6 +1,8 @@
+import { Suspense, lazy } from 'react';
 import { createBrowserRouter, Navigate } from 'react-router';
 import { ChooseBusinessPage } from './auth/ChooseBusinessPage';
 import { SignInPage } from './auth/SignInPage';
+import { SignUpPage } from './auth/SignUpPage';
 import { ItemEditorPage } from './pages/ItemEditorPage';
 import { MenuPage } from './pages/MenuPage';
 import { OrderPage } from './pages/OrderPage';
@@ -10,7 +12,10 @@ import { SettingsPage } from './pages/SettingsPage';
 import { StaffPage } from './pages/StaffPage';
 import { TodayPage } from './pages/TodayPage';
 import { Shell } from './shell/Shell';
-import { Button } from './ui/controls';
+import { Button, Spinner } from './ui/controls';
+
+/** Loaded on its own: only new owners need it, and it brings the menu templates. */
+const SetupPage = lazy(() => import('./auth/SetupPage'));
 import { Centered } from './ui/Page';
 
 function Crashed() {
@@ -26,6 +31,22 @@ function Crashed() {
 export const router = createBrowserRouter([
   { path: '/sign-in', Component: SignInPage, errorElement: <Crashed /> },
   { path: '/businesses', Component: ChooseBusinessPage, errorElement: <Crashed /> },
+  { path: '/sign-up', Component: SignUpPage, errorElement: <Crashed /> },
+  {
+    path: '/setup',
+    element: (
+      <Suspense
+        fallback={
+          <div className="flex h-full items-center justify-center">
+            <Spinner />
+          </div>
+        }
+      >
+        <SetupPage />
+      </Suspense>
+    ),
+    errorElement: <Crashed />,
+  },
   {
     path: '/',
     Component: Shell,

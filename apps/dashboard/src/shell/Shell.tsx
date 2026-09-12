@@ -14,6 +14,7 @@ import {
   OrdersIcon,
   RefundIcon,
   SettingsIcon,
+  SetupIcon,
   SignOutIcon,
   StaffIcon,
 } from '../ui/icons';
@@ -34,6 +35,7 @@ const NAV: NavItem[] = [
   { to: '/staff', label: 'Staff', Icon: StaffIcon, needs: 'staff.manage' },
   { to: '/refunds', label: 'Refunds', Icon: RefundIcon, needs: 'refunds.record' },
   { to: '/settings', label: 'Settings', Icon: SettingsIcon },
+  { to: '/setup', label: 'Setup guide', Icon: SetupIcon, needs: 'settings.manage' },
 ];
 
 /** The phone's bottom bar fits five; the rest go under "More". */

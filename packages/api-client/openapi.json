@@ -936,6 +936,42 @@
         ]
       }
     },
+    "/api/menu/starter": {
+      "post": {
+        "operationId": "MenuController_starter",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/StarterMenuDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StarterDoneDto_Output"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "Menu"
+        ]
+      }
+    },
     "/api/menu/items/{itemId}/sold-out": {
       "put": {
         "operationId": "MenuController_setSoldOut",
@@ -4645,6 +4681,253 @@
         },
         "required": [
           "id"
+        ],
+        "additionalProperties": false
+      },
+      "StarterMenuDto": {
+        "type": "object",
+        "properties": {
+          "categories": {
+            "minItems": 1,
+            "maxItems": 20,
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "id": {
+                  "type": "string",
+                  "format": "ulid",
+                  "pattern": "^[0-7][0-9A-HJKMNP-TV-Za-hjkmnp-tv-z]{25}$"
+                },
+                "name": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 40
+                },
+                "items": {
+                  "minItems": 1,
+                  "maxItems": 60,
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "id": {
+                        "type": "string",
+                        "format": "ulid",
+                        "pattern": "^[0-7][0-9A-HJKMNP-TV-Za-hjkmnp-tv-z]{25}$"
+                      },
+                      "item": {
+                        "type": "object",
+                        "properties": {
+                          "name": {
+                            "type": "string",
+                            "minLength": 1,
+                            "maxLength": 80
+                          },
+                          "description": {
+                            "type": "string",
+                            "maxLength": 300,
+                            "nullable": true
+                          },
+                          "price": {
+                            "type": "integer",
+                            "minimum": 0,
+                            "maximum": 100000000
+                          },
+                          "costPrice": {
+                            "type": "integer",
+                            "minimum": 0,
+                            "maximum": 100000000,
+                            "nullable": true
+                          },
+                          "prepMinutes": {
+                            "type": "integer",
+                            "minimum": 0,
+                            "maximum": 240,
+                            "nullable": true
+                          },
+                          "station": {
+                            "type": "string",
+                            "enum": [
+                              "KITCHEN",
+                              "DRINKS"
+                            ]
+                          },
+                          "variants": {
+                            "maxItems": 10,
+                            "type": "array",
+                            "items": {
+                              "type": "object",
+                              "properties": {
+                                "id": {
+                                  "type": "string",
+                                  "format": "ulid",
+                                  "pattern": "^[0-7][0-9A-HJKMNP-TV-Za-hjkmnp-tv-z]{25}$"
+                                },
+                                "name": {
+                                  "type": "string",
+                                  "minLength": 1,
+                                  "maxLength": 40
+                                },
+                                "price": {
+                                  "type": "integer",
+                                  "minimum": 0,
+                                  "maximum": 100000000
+                                },
+                                "costPrice": {
+                                  "type": "integer",
+                                  "minimum": 0,
+                                  "maximum": 100000000,
+                                  "nullable": true
+                                },
+                                "channelPrices": {
+                                  "default": {},
+                                  "type": "object",
+                                  "properties": {
+                                    "BOLT_FOOD": {
+                                      "type": "integer",
+                                      "minimum": 0,
+                                      "maximum": 100000000,
+                                      "nullable": true
+                                    },
+                                    "CHOWDECK": {
+                                      "type": "integer",
+                                      "minimum": 0,
+                                      "maximum": 100000000,
+                                      "nullable": true
+                                    }
+                                  }
+                                }
+                              },
+                              "required": [
+                                "id",
+                                "name",
+                                "price"
+                              ]
+                            }
+                          },
+                          "groups": {
+                            "maxItems": 10,
+                            "type": "array",
+                            "items": {
+                              "type": "object",
+                              "properties": {
+                                "id": {
+                                  "type": "string",
+                                  "format": "ulid",
+                                  "pattern": "^[0-7][0-9A-HJKMNP-TV-Za-hjkmnp-tv-z]{25}$"
+                                },
+                                "name": {
+                                  "type": "string",
+                                  "minLength": 1,
+                                  "maxLength": 60
+                                },
+                                "required": {
+                                  "type": "boolean"
+                                },
+                                "maxSelect": {
+                                  "type": "integer",
+                                  "minimum": 1,
+                                  "maximum": 20
+                                },
+                                "options": {
+                                  "minItems": 1,
+                                  "maxItems": 30,
+                                  "type": "array",
+                                  "items": {
+                                    "type": "object",
+                                    "properties": {
+                                      "id": {
+                                        "type": "string",
+                                        "format": "ulid",
+                                        "pattern": "^[0-7][0-9A-HJKMNP-TV-Za-hjkmnp-tv-z]{25}$"
+                                      },
+                                      "name": {
+                                        "type": "string",
+                                        "minLength": 1,
+                                        "maxLength": 60
+                                      },
+                                      "priceDelta": {
+                                        "type": "integer",
+                                        "minimum": -100000000,
+                                        "maximum": 100000000
+                                      }
+                                    },
+                                    "required": [
+                                      "id",
+                                      "name",
+                                      "priceDelta"
+                                    ]
+                                  }
+                                }
+                              },
+                              "required": [
+                                "id",
+                                "name",
+                                "required",
+                                "maxSelect",
+                                "options"
+                              ]
+                            }
+                          },
+                          "channelPrices": {
+                            "default": {},
+                            "type": "object",
+                            "properties": {
+                              "BOLT_FOOD": {
+                                "type": "integer",
+                                "minimum": 0,
+                                "maximum": 100000000,
+                                "nullable": true
+                              },
+                              "CHOWDECK": {
+                                "type": "integer",
+                                "minimum": 0,
+                                "maximum": 100000000,
+                                "nullable": true
+                              }
+                            }
+                          }
+                        },
+                        "required": [
+                          "name",
+                          "price",
+                          "station",
+                          "variants",
+                          "groups"
+                        ]
+                      }
+                    },
+                    "required": [
+                      "id",
+                      "item"
+                    ]
+                  }
+                }
+              },
+              "required": [
+                "id",
+                "name",
+                "items"
+              ]
+            }
+          }
+        },
+        "required": [
+          "categories"
+        ]
+      },
+      "StarterDoneDto_Output": {
+        "type": "object",
+        "properties": {
+          "items": {
+            "type": "integer",
+            "minimum": -9007199254740991,
+            "maximum": 9007199254740991
+          }
+        },
+        "required": [
+          "items"
         ],
         "additionalProperties": false
       },

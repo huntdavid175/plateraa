@@ -404,6 +404,22 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/menu/starter": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["MenuController_starter"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/menu/items/{itemId}/sold-out": {
         parameters: {
             query?: never;
@@ -1291,6 +1307,59 @@ export interface components {
         SavedDto_Output: {
             id: string;
         };
+        StarterMenuDto: {
+            categories: {
+                /** Format: ulid */
+                id: string;
+                name: string;
+                items: {
+                    /** Format: ulid */
+                    id: string;
+                    item: {
+                        name: string;
+                        description?: string | null;
+                        price: number;
+                        costPrice?: number | null;
+                        prepMinutes?: number | null;
+                        /** @enum {string} */
+                        station: "KITCHEN" | "DRINKS";
+                        variants: {
+                            /** Format: ulid */
+                            id: string;
+                            name: string;
+                            price: number;
+                            costPrice?: number | null;
+                            /** @default {} */
+                            channelPrices: {
+                                BOLT_FOOD?: number | null;
+                                CHOWDECK?: number | null;
+                            };
+                        }[];
+                        groups: {
+                            /** Format: ulid */
+                            id: string;
+                            name: string;
+                            required: boolean;
+                            maxSelect: number;
+                            options: {
+                                /** Format: ulid */
+                                id: string;
+                                name: string;
+                                priceDelta: number;
+                            }[];
+                        }[];
+                        /** @default {} */
+                        channelPrices: {
+                            BOLT_FOOD?: number | null;
+                            CHOWDECK?: number | null;
+                        };
+                    };
+                }[];
+            }[];
+        };
+        StarterDoneDto_Output: {
+            items: number;
+        };
         SoldOutDto: {
             soldOut: boolean;
         };
@@ -1946,6 +2015,29 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content?: never;
+            };
+        };
+    };
+    MenuController_starter: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["StarterMenuDto"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["StarterDoneDto_Output"];
+                };
             };
         };
     };

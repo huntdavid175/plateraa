@@ -57,6 +57,13 @@ The web dashboard for owners and managers (plan.md §3.1). It uses:
     - Each dialog makes its id with `ulid()` when it opens, so pressing Save again after a lost reply records it once.
     - `refreshMoney()` reloads everything that shows money.
     - The refund and discount dialogs open from the order page; payouts open from the "Open drawers" card on Today.
+  - Sign-up and onboarding (`auth/SignUpPage`, `auth/SetupPage`, loaded lazily at `/setup`):
+    - the design's 7 steps, sized for a phone;
+    - the business is created at step 2;
+    - the starter menu is saved in one call (`lib/onboarding.ts` turns a template and its prices into it);
+    - PINs are never shown back;
+    - Moolre uses the Settings check.
+    - The sidebar's "Setup guide" (owners) reopens it at the menu step.
   - Staff (`StaffPage`):
     - the team, with Add and Edit dialogs (PINs typed twice and checked with `pinProblem`, never shown);
     - the owner's "Who sees sales totals" switches;

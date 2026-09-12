@@ -199,4 +199,39 @@ describe.skipIf(!hasDatabase())('menu setup (against Neon)', () => {
       .expect(400);
     await asOwner(request(server()).delete(`/api/menu/categories/${ids.rice}`)).expect(204);
   });
+
+  it('builds the onboarding starter menu in one go, sharing its extras, once', async () => {
+    const group = { id: ulid(), chicken: ulid(), egg: ulid() };
+    const extras = {
+      id: group.id,
+      name: 'Protein',
+      required: false,
+      maxSelect: 2,
+      options: [
+        { id: group.chicken, name: 'Chicken', priceDelta: 0 },
+        { id: group.egg, name: 'Egg', priceDelta: 0 },
+      ],
+    };
+    const item = (name: string, price: number) => ({
+      id: ulid(),
+      item: { name, price, station: 'KITCHEN', variants: [], groups: [extras], channelPrices: {} },
+    });
+    const body = {
+      categories: [
+        { id: ulid(), name: 'Rice', items: [item('Waakye', 4000), item('Red red', 3500)] },
+      ],
+    };
+    const res = await asOwner(request(server()).post('/api/menu/starter')).send(body).expect(201);
+    expect(res.body).toEqual({ items: 2 });
+
+    const built = await menu();
+    expect(built.categories.map((c: { name: string }) => c.name)).toEqual(['Rice']);
+    expect(built.items.map((i: { name: string; price: number }) => [i.name, i.price])).toEqual([
+      ['Waakye', 4000],
+      ['Red red', 3500],
+    ]);
+    expect(built.items[0].groups[0].sharedWith).toEqual(['Red red']);
+
+    await asOwner(request(server()).post('/api/menu/starter')).send(body).expect(400);
+  });
 });

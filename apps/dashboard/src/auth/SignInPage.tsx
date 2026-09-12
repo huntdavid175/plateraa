@@ -1,6 +1,6 @@
 import { useMutation } from '@tanstack/react-query';
 import { useState } from 'react';
-import { Navigate } from 'react-router';
+import { Link, Navigate } from 'react-router';
 import { signIn } from '../lib/api';
 import { useSlow } from '../lib/query';
 import { session, useSession } from '../lib/session';
@@ -59,6 +59,12 @@ export function SignInPage() {
             Plateraa is waking up. The first sign-in of the day can take up to a minute.
           </p>
         )}
+        <p className="text-center text-sm text-muted">
+          New to Plateraa?{' '}
+          <Link to="/sign-up" className="font-medium text-brand">
+            Set up your business
+          </Link>
+        </p>
       </form>
     </Centered>
   );

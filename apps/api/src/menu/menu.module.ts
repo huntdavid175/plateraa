@@ -165,6 +165,28 @@ class SoldOutSavedDto extends createZodDto(z.object({ soldOutToday: z.boolean() 
 
 type SaveItemInput = z.infer<typeof SaveItemDto.schema>;
 
+class StarterMenuDto extends createZodDto(
+  z.object({
+    categories: z
+      .array(
+        z.object({
+          id: z.ulid(),
+          name: z.string().trim().min(1).max(40),
+          items: z
+            .array(z.object({ id: z.ulid(), item: SaveItemDto.schema.omit({ categoryId: true }) }))
+            .min(1)
+            .max(60),
+        }),
+      )
+      .min(1)
+      .max(20),
+  }),
+) {}
+
+type StarterMenuInput = z.infer<typeof StarterMenuDto.schema>;
+
+class StarterDoneDto extends createZodDto(z.object({ items: z.number().int() })) {}
+
 /**
  * Menu setup on the dashboard (plan.md §3.1). Everything syncs to the tablets: removals are soft
  * deletes so they reach the tablet too, and every price change is kept in price history, so an
@@ -283,8 +305,45 @@ export class MenuService {
   async saveItem(actor: Actor, itemId: string, input: SaveItemInput) {
     if (!z.ulid().safeParse(itemId).success)
       throw new BadRequestException('That item id is not valid');
-    const seesCost = actor.capabilities.has('reports.revenue.view');
+    return withTenant(this.database.db, actor.tenantId, (tx) =>
+      this.saveItemIn(tx, actor, itemId, input),
+    );
+  }
+
+  /**
+   * The starter menu from onboarding, all at once: categories, and items with their sizes and
+   * prices and the template's extras (at no extra charge until the owner sets one). One
+   * transaction, so a dropped connection can't leave half a menu. Only for an empty menu.
+   */
+  async starterMenu(actor: Actor, input: StarterMenuInput) {
     return withTenant(this.database.db, actor.tenantId, async (tx) => {
+      const [existing] = await tx
+        .select({ id: items.id })
+        .from(items)
+        .where(isNull(items.deletedAt))
+        .limit(1);
+      if (existing) {
+        throw new BadRequestException(
+          'This business already has a menu. Add to it on the Menu page.',
+        );
+      }
+      let added = 0;
+      for (const [position, category] of input.categories.entries()) {
+        await tx
+          .insert(categories)
+          .values({ id: category.id, tenantId: actor.tenantId, name: category.name, position });
+        for (const entry of category.items) {
+          await this.saveItemIn(tx, actor, entry.id, { ...entry.item, categoryId: category.id });
+          added += 1;
+        }
+      }
+      return { items: added };
+    });
+  }
+
+  private async saveItemIn(tx: Tx, actor: Actor, itemId: string, input: SaveItemInput) {
+    const seesCost = actor.capabilities.has('reports.revenue.view');
+    {
       if (input.categoryId) {
         const [category] = await tx
           .select({ id: categories.id })
@@ -353,7 +412,7 @@ export class MenuService {
         },
       });
       return { id: itemId };
-    });
+    }
   }
 
   /** Sizes: kept, changed, added or removed. A changed price starts a new price-history row. */
@@ -723,6 +782,14 @@ export class MenuController {
     @Body() body: SaveItemDto,
   ) {
     return this.menu.saveItem(actor, itemId, body);
+  }
+
+  /** Onboarding's starter menu, from a template and the prices typed into the grid. */
+  @Post('starter')
+  @Authorized('catalog.manage')
+  @ApiCreatedResponse({ type: StarterDoneDto.Output })
+  starter(@CurrentActor() actor: Actor, @Body() body: StarterMenuDto) {
+    return this.menu.starterMenu(actor, body);
   }
 
   @Delete('items/:itemId')

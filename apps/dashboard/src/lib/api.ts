@@ -76,6 +76,31 @@ export async function signIn(email: string, password: string): Promise<string> {
   return token;
 }
 
+/** Creates an owner's email login with Better Auth, and returns its bearer token. */
+export async function signUp(name: string, email: string, password: string): Promise<string> {
+  let response: Response;
+  try {
+    response = await fetch(`${API_URL}/api/auth/sign-up/email`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ name, email, password }),
+    });
+  } catch {
+    throw new ApiError(OFFLINE, 0);
+  }
+  const body = (await response.json().catch(() => ({}))) as { token?: string; code?: string };
+  if (body.code?.startsWith('USER_ALREADY_EXISTS')) {
+    throw new ApiError('There’s already an account with this email. Sign in instead.', 422);
+  }
+  if (body.code === 'PASSWORD_TOO_SHORT') {
+    throw new ApiError('The password needs at least 8 characters.', 400);
+  }
+  if (!response.ok) throw new ApiError(messageOf(body, response.status), response.status);
+  const token = response.headers.get('set-auth-token') ?? body.token;
+  if (!token) throw new ApiError('Creating the account didn’t finish. Try signing in.', 500);
+  return token;
+}
+
 /** Forgets the login here at once, and ends it on the server when there's a connection. */
 export function signOut() {
   const { token } = session.get();
