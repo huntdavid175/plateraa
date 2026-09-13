@@ -1,4 +1,5 @@
 import {
+  BadRequestException,
   Controller,
   Get,
   Inject,
@@ -14,8 +15,10 @@ import {
   customers,
   desc,
   eq,
+  gte,
   inArray,
   isNull,
+  lte,
   orderEvents,
   orderItems,
   orders,
@@ -53,13 +56,34 @@ import type { Actor } from '../identity/request-context';
 import { nullableText } from '../openapi';
 import { businessToday, dueSql } from '../reports/business-day';
 
-class OrdersQueryDto extends createZodDto(
-  z.object({
-    /** The trading day, YYYY-MM-DD. Leave it out for today in the business's timezone. */
-    date: z.iso.date().optional(),
-    limit: z.coerce.number().int().min(1).max(500).default(50),
-  }),
-) {}
+/** The payment states the dashboard filters by, as its badges say them. */
+const PAID_STATES = ['PAID', 'UNPAID', 'REFUND_OWED', 'CANCELLED'] as const;
+const METHOD_LIST = /^(CASH|LINK|PLATFORM)(,(CASH|LINK|PLATFORM))*$/;
+/** The most days one list covers, as for reports. */
+const MAX_DAYS = 92;
+const DAY_MS = 86_400_000;
+
+const ordersQuerySchema = z.object({
+  /** One trading day, YYYY-MM-DD. Leave it (and from/to) out for today in the business's timezone. */
+  date: z.iso.date().optional(),
+  /** A range of trading days instead of one day, both given (at most 92 days). */
+  from: z.iso.date().optional(),
+  to: z.iso.date().optional(),
+  source: z.enum(ORDER_SOURCES).optional(),
+  /** Paid in full, still owed, owed a refund, or cancelled. */
+  paid: z.enum(PAID_STATES).optional(),
+  /** Paid, at least partly, this way; several separated by commas ("CASH,LINK"). */
+  method: z.string().regex(METHOD_LIST).optional(),
+  /** Has a line of this item, by the name it was sold under. */
+  item: z.string().trim().min(1).max(80).optional(),
+  /** Taken by this staff member. */
+  staffId: z.ulid().optional(),
+  limit: z.coerce.number().int().min(1).max(500).default(50),
+});
+
+class OrdersQueryDto extends createZodDto(ordersQuerySchema) {}
+
+type OrdersQuery = z.infer<typeof ordersQuerySchema>;
 
 const money = z.number().int();
 
@@ -206,16 +230,57 @@ interface Row {
 
 const iso = (date: Date | null) => date?.toISOString() ?? null;
 
+const closed = sql`${orders.status} in ('CANCELLED', 'REFUNDED')`;
+const owesRefund = sql`(${orders.amountPaid} > 0 and (${orders.status} = 'CANCELLED' or ${orders.amountPaid} > ${dueSql}))`;
+
+/** Each payment state in SQL, matching the dashboard's badges (`paymentState`). */
+const PAID_SQL: Record<(typeof PAID_STATES)[number], ReturnType<typeof sql>> = {
+  REFUND_OWED: owesRefund,
+  CANCELLED: sql`(${closed} and not ${owesRefund})`,
+  PAID: sql`(not ${closed} and not ${owesRefund} and ${orders.amountPaid} >= ${dueSql})`,
+  UNPAID: sql`(not ${closed} and ${orders.amountPaid} < ${dueSql})`,
+};
+
+/** The list's filters, each only when asked for. */
+function filtersOf(query: OrdersQuery) {
+  const methods = query.method?.split(',') as PaymentMethod[] | undefined;
+  return [
+    query.source ? eq(orders.source, query.source) : undefined,
+    query.paid ? PAID_SQL[query.paid] : undefined,
+    methods
+      ? sql`exists (select 1 from ${payments} where ${payments.orderId} = ${orders.id} and ${payments.status} = 'CONFIRMED' and ${payments.deletedAt} is null and ${inArray(payments.method, methods)})`
+      : undefined,
+    query.item
+      ? sql`exists (select 1 from ${orderItems} where ${orderItems.orderId} = ${orders.id} and ${orderItems.deletedAt} is null and ${orderItems.name} = ${query.item})`
+      : undefined,
+    query.staffId ? eq(orders.createdBy, query.staffId) : undefined,
+  ];
+}
+
 @Injectable()
 export class OrdersService {
   constructor(@Inject(DATABASE) private readonly database: DatabaseHandle) {}
 
-  /** A day's orders, newest first. */
-  async list(tenantId: string, query: { date?: string; limit: number }) {
+  /**
+   * A day's orders, or a range of days', newest first, with the filters the dashboard's figures
+   * link to (source, payment state, method, item, who took it).
+   */
+  async list(tenantId: string, query: OrdersQuery) {
+    if (query.from || query.to) {
+      if (!query.from || !query.to) throw new BadRequestException('Give the first and last day');
+      if (query.from > query.to)
+        throw new BadRequestException('The first day comes after the last');
+      if ((Date.parse(query.to) - Date.parse(query.from)) / DAY_MS >= MAX_DAYS) {
+        throw new BadRequestException(`Pick ${MAX_DAYS} days or fewer`);
+      }
+    }
     return withTenant(this.database.db, tenantId, async (tx) => {
-      const date = query.date ?? (await businessToday(tx)).date;
+      const days =
+        query.from && query.to
+          ? and(gte(orders.businessDate, query.from), lte(orders.businessDate, query.to))
+          : eq(orders.businessDate, query.date ?? (await businessToday(tx)).date);
       const rows = await this.selectRows(tx)
-        .where(and(eq(orders.businessDate, date), isNull(orders.deletedAt)))
+        .where(and(days, isNull(orders.deletedAt), ...filtersOf(query)))
         .orderBy(desc(orders.createdAtDevice))
         .limit(query.limit);
       return this.withItems(tx, rows);

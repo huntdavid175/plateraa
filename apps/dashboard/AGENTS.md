@@ -48,7 +48,8 @@ The web dashboard for owners and managers (plan.md §3.1). It uses:
 - `router.tsx` holds the routes; `pages/` holds the screens.
   - Today (`TodayPage`): the day summary, the refunds-owed banner and recent orders. The date box opens any past day (`/?date=`), without the open drawers; today itself is left to the server's trading day.
     - Tablet warnings (`devices.manage`): the `alerts` from `GET /api/devices`, checked every minute, worded by `lib/tablet-alerts.ts`. The Staff page's Tablets card shows the same, with each tablet's last finished sync.
-  - Orders (`OrdersPage`): a day's orders, filtered by source and by paid or not. The day and the filters live in the address, so a view can be shared. Totals show only with `reports.revenue.view`.
+  - Orders (`OrdersPage`): a day's orders (`?date=`) or a range's (`?from=&to=`), filtered by source and by paid or not, and by `method`, `item` or `staff` when a figure links there (shown as removable chips). Everything lives in the address, so a view can be shared; the server does the filtering. Totals show only with `reports.revenue.view`.
+  - **Every figure links to its rows**: Today's and Reports' figures open these Orders and Expenses views for their days (`linksFor` in `ReportsPage`).
   - Order (`OrderPage`): one order in full. Links to it pass `state: { back, label }`, so "←" returns to where the person came from. It links to the order's customer.
   - Customers (`CustomersPage`, search in `?q=`) and one customer (`CustomerPage`): their orders, first and last order, what they spent (with `reports.revenue.view`), and name and notes to edit (`customers.manage`). `lib/customers.ts`.
   - Menu (`MenuPage`): category pills, item cards, and one-tap sold out.
@@ -77,7 +78,7 @@ The web dashboard for owners and managers (plan.md §3.1). It uses:
     - by source and by payment method;
     - best sellers and expenses by kind;
     - staff, and drawer closes with their variances.
-  - Expenses (`ExpensesPage`): spending by range, with a total, and "Add expense", which can be a stock purchase.
+  - Expenses (`ExpensesPage`): spending by range, with a total, and "Add expense", which can be a stock purchase. The range (`?range=`, or `pick` with `from`/`to`), a `category` and `kind` (`purchase` or `other`) live in the address.
   - Stock (`StockPage`): key ingredients with a "running low" banner, and Count / Edit dialogs. `lib/expenses.ts` serves both pages.
   - Settings (`SettingsPage`):
     - Business (name, type);

@@ -110,28 +110,69 @@ export function ReportsPage() {
   );
 }
 
+/** The orders or expenses behind a figure, for the report's days. */
+function linksFor(period: Period) {
+  const days = { from: period.from, to: period.to };
+  return {
+    orders: (filters: Record<string, string> = {}) =>
+      `/orders?${new URLSearchParams({ ...days, ...filters })}`,
+    expenses: (filters: Record<string, string> = {}) =>
+      `/expenses?${new URLSearchParams({ range: 'pick', ...days, ...filters })}`,
+  };
+}
+
 function Report({ period, back }: { period: Period; back: BackTo }) {
   const { totals } = period;
+  const links = linksFor(period);
   return (
     <>
       <div className="mb-6 grid grid-cols-2 gap-3 md:grid-cols-4">
-        <Metric label="Sales" value={cedis(totals.sales)} sub={`${totals.orders} orders`} accent />
-        <Metric label="Money in" value={cedis(totals.moneyIn)} sub="Cash and payment links" />
-        <Metric label="Money out" value={cedis(totals.moneyOut)} sub="Expenses and payouts" />
+        <Metric
+          label="Sales"
+          value={cedis(totals.sales)}
+          sub={`${totals.orders} orders`}
+          accent
+          to={links.orders()}
+        />
+        <Metric
+          label="Money in"
+          value={cedis(totals.moneyIn)}
+          sub="Cash and payment links"
+          to={links.orders({ method: 'CASH,LINK' })}
+        />
+        <Metric
+          label="Money out"
+          value={cedis(totals.moneyOut)}
+          sub="Expenses and payouts"
+          to={links.expenses()}
+        />
         <Metric label="Profit" value={cedis(totals.profit)} sub="After expenses" />
       </div>
 
       <div className="mb-6 grid gap-6 md:grid-cols-2">
         <Box title="Profit and loss">
-          <Line label="Money in" value={cedis(totals.moneyIn)} />
+          <Line
+            label="Money in"
+            value={cedis(totals.moneyIn)}
+            to={links.orders({ method: 'CASH,LINK' })}
+          />
           {totals.platformOwed > 0 && (
             <Line
               label="Owed by Bolt and Chowdeck, after commission"
               value={`+${cedis(totals.platformOwed - totals.commissionEstimate)}`}
+              to={links.orders({ method: 'PLATFORM' })}
             />
           )}
-          <Line label="Purchases" value={`−${cedis(totals.purchases)}`} />
-          <Line label="Other expenses" value={`−${cedis(totals.otherExpenses)}`} />
+          <Line
+            label="Purchases"
+            value={`−${cedis(totals.purchases)}`}
+            to={links.expenses({ kind: 'purchase' })}
+          />
+          <Line
+            label="Other expenses"
+            value={`−${cedis(totals.otherExpenses)}`}
+            to={links.expenses({ kind: 'other' })}
+          />
           <div className="flex items-center justify-between bg-tile px-5 py-3.5 text-sm font-semibold">
             <span>Profit</span>
             <span className={cx('font-mono', totals.profit < 0 && 'text-red')}>
@@ -147,6 +188,7 @@ function Report({ period, back }: { period: Period; back: BackTo }) {
               key={item.name}
               label={`${item.name} · ${item.quantity}`}
               value={cedis(item.sales)}
+              to={links.orders({ item: item.name })}
             />
           ))}
         </Box>
@@ -188,13 +230,19 @@ function Report({ period, back }: { period: Period; back: BackTo }) {
               key={row.source}
               label={`${SOURCE_WORDS[row.source]} · ${row.orders}`}
               value={cedis(row.sales)}
+              to={links.orders({ source: row.source })}
             />
           ))}
         </Box>
         <Box title="How they paid">
           {period.byMethod.length === 0 && <Empty>No payments.</Empty>}
           {period.byMethod.map((row) => (
-            <Line key={row.method} label={METHOD_WORDS[row.method]} value={cedis(row.amount)} />
+            <Line
+              key={row.method}
+              label={METHOD_WORDS[row.method]}
+              value={cedis(row.amount)}
+              to={links.orders({ method: row.method })}
+            />
           ))}
         </Box>
         <Box title="Expenses by kind">
@@ -204,6 +252,7 @@ function Report({ period, back }: { period: Period; back: BackTo }) {
               key={row.category}
               label={EXPENSE_WORDS[row.category]}
               value={cedis(row.amount)}
+              to={links.expenses({ category: row.category })}
             />
           ))}
         </Box>
@@ -211,10 +260,11 @@ function Report({ period, back }: { period: Period; back: BackTo }) {
           {period.staff.length === 0 && <Empty>No orders.</Empty>}
           {period.staff.map((row) => (
             <Line
-              key={row.name}
+              key={row.staffId}
               label={`${row.name} · ${row.orders} orders`}
               value={`${cedis(row.sales)}`}
               sub={row.cash > 0 ? `${cedis(row.cash)} cash taken` : undefined}
+              to={links.orders({ staff: row.staffId })}
             />
           ))}
         </Box>
@@ -265,23 +315,33 @@ function Metric({
   value,
   sub,
   accent,
+  to,
 }: {
   label: string;
   value: string;
   sub: string;
   accent?: boolean;
+  /** Where the rows behind the figure are. */
+  to?: string;
 }) {
-  return (
-    <div
-      className={cx(
-        'rounded-xl border p-4',
-        accent ? 'border-brand/25 bg-brand-subtle' : 'border-border bg-surface',
-      )}
-    >
+  const className = cx(
+    'block rounded-xl border p-4',
+    accent ? 'border-brand/25 bg-brand-subtle' : 'border-border bg-surface',
+    to && 'transition-colors hover:border-brand/50',
+  );
+  const body = (
+    <>
       <p className="mb-2 text-xs font-medium text-muted">{label}</p>
       <p className={cx('font-mono text-lg font-semibold', accent && 'text-brand')}>{value}</p>
       <p className="mt-1 text-xs text-muted">{sub}</p>
-    </div>
+    </>
+  );
+  return to ? (
+    <Link to={to} className={className}>
+      {body}
+    </Link>
+  ) : (
+    <div className={className}>{body}</div>
   );
 }
 
@@ -304,15 +364,42 @@ function Box({
   );
 }
 
-function Line({ label, value, sub }: { label: string; value: string; sub?: string }) {
-  return (
-    <div className="flex items-center justify-between gap-4 border-b border-border px-5 py-3 last:border-b-0">
+function Line({
+  label,
+  value,
+  sub,
+  to,
+}: {
+  label: string;
+  value: string;
+  sub?: string;
+  /** Where the rows behind the figure are. */
+  to?: string;
+}) {
+  const className =
+    'flex items-center justify-between gap-4 border-b border-border px-5 py-3 last:border-b-0';
+  const body = (
+    <>
       <div className="min-w-0">
         <p className="truncate text-sm">{label}</p>
         {sub && <p className="text-xs text-muted">{sub}</p>}
       </div>
-      <span className="shrink-0 font-mono text-sm">{value}</span>
-    </div>
+      <span className="shrink-0 font-mono text-sm">
+        {value}
+        {to && (
+          <span aria-hidden="true" className="ml-2 text-muted">
+            ›
+          </span>
+        )}
+      </span>
+    </>
+  );
+  return to ? (
+    <Link to={to} className={cx(className, 'transition-colors hover:bg-tile/40')}>
+      {body}
+    </Link>
+  ) : (
+    <div className={className}>{body}</div>
   );
 }
 

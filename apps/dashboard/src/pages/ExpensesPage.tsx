@@ -1,6 +1,7 @@
 import { EXPENSE_CATEGORIES, type ExpenseCategory } from '@plateraa/shared';
 import { useMutation, useQuery } from '@tanstack/react-query';
 import { useState } from 'react';
+import { useSearchParams } from 'react-router';
 import { ulid } from 'ulid';
 import {
   METHOD_OUT_WORDS,
@@ -36,27 +37,76 @@ const RANGES = [
   { value: 'week', label: 'Last 7 days' },
   { value: 'month', label: 'This month' },
   { value: 'last', label: 'Last month' },
+  { value: 'pick', label: 'Pick days' },
 ] as const;
 type Range = (typeof RANGES)[number]['value'];
 
-function rangeOf(range: Range): { from: string; to: string } {
-  const today = todayHere();
+function rangeOf(range: Exclude<Range, 'pick'>, today: string): { from: string; to: string } {
   if (range === 'week') return { from: shiftDays(today, -6), to: today };
   if (range === 'month') return { from: `${today.slice(0, 7)}-01`, to: today };
   return lastMonth(today);
 }
 
-/** Money out that isn't a drawer payout: rent, gas, a supplier paid by MoMo. */
+const KIND_WORDS = { purchase: 'Purchases only', other: 'Other expenses only' } as const;
+type Kind = keyof typeof KIND_WORDS;
+
+const dateInput =
+  'h-9 rounded-lg border border-border bg-surface px-3 text-sm font-medium text-muted outline-none focus:border-brand';
+
+/**
+ * Money out: purchases, bills and drawer payouts. The days (`?range=`, or `from`/`to`), and a
+ * category (`?category=`) or purchases against the rest (`?kind=`), live in the address, so the
+ * figures on Today and Reports link straight here.
+ */
 export function ExpensesPage() {
   const { tenantId } = useSession();
-  const [range, setRange] = useState<Range>('week');
-  const dates = rangeOf(range);
+  const [params, setParams] = useSearchParams();
+  const today = todayHere();
+  const range =
+    RANGES.find((r) => r.value === params.get('range'))?.value ??
+    (params.get('from') ? 'pick' : 'week');
+  const dates =
+    range === 'pick'
+      ? { from: params.get('from') ?? shiftDays(today, -6), to: params.get('to') ?? today }
+      : rangeOf(range, today);
+  const category = EXPENSE_CATEGORIES.find((value) => value === params.get('category')) ?? null;
+  const kindParam = params.get('kind');
+  const kind: Kind | null = kindParam === 'purchase' || kindParam === 'other' ? kindParam : null;
+
+  const change = (patch: Record<string, string | null>) =>
+    setParams(
+      (previous) => {
+        const next = new URLSearchParams(previous);
+        for (const [key, value] of Object.entries(patch)) {
+          if (value === null) next.delete(key);
+          else next.set(key, value);
+        }
+        return next;
+      },
+      { replace: true },
+    );
+  const choose = (next: Range) =>
+    change(
+      next === 'pick'
+        ? { range: 'pick', from: dates.from, to: dates.to }
+        : { range: next === 'week' ? null : next, from: null, to: null },
+    );
+
   const list = useQuery({
     queryKey: ['expenses', tenantId, dates],
     queryFn: () => fetchExpenses(dates),
   });
   const [adding, setAdding] = useState(false);
-  const total = (list.data ?? []).reduce((sum, row) => sum + row.amount, 0);
+  const shown = (list.data ?? []).filter(
+    (row) =>
+      (!category || row.category === category) &&
+      (!kind || (kind === 'purchase') === Boolean(row.purchase)),
+  );
+  const total = shown.reduce((sum, row) => sum + row.amount, 0);
+  const chips = [
+    category && { key: 'category', label: EXPENSE_WORDS[category] },
+    kind && { key: 'kind', label: KIND_WORDS[kind] },
+  ].filter((chip): chip is { key: string; label: string } => Boolean(chip));
 
   return (
     <Page
@@ -69,7 +119,42 @@ export function ExpensesPage() {
       }
     >
       <div className="mb-5 flex flex-wrap items-center justify-between gap-3">
-        <PillFilter label="Which days" options={RANGES} value={range} onChange={setRange} />
+        <div className="flex flex-wrap items-center gap-2">
+          <PillFilter label="Which days" options={RANGES} value={range} onChange={choose} />
+          {range === 'pick' && (
+            <>
+              <input
+                type="date"
+                aria-label="First day"
+                value={dates.from}
+                max={today}
+                onChange={(event) => event.target.value && change({ from: event.target.value })}
+                className={dateInput}
+              />
+              <span className="text-sm text-muted">to</span>
+              <input
+                type="date"
+                aria-label="Last day"
+                value={dates.to}
+                max={today}
+                onChange={(event) => event.target.value && change({ to: event.target.value })}
+                className={dateInput}
+              />
+            </>
+          )}
+          {chips.map((chip) => (
+            <button
+              key={chip.key}
+              type="button"
+              onClick={() => change({ [chip.key]: null })}
+              aria-label={`${chip.label}: remove this filter`}
+              className="inline-flex h-9 items-center gap-2 rounded-lg border border-brand/30 bg-brand-subtle px-3 text-sm font-medium text-brand"
+            >
+              {chip.label}
+              <span aria-hidden="true">×</span>
+            </button>
+          ))}
+        </div>
         {list.data && (
           <p className="text-sm text-muted">
             Total <span className="font-mono font-semibold text-text">{cedis(total)}</span>
@@ -87,10 +172,12 @@ export function ExpensesPage() {
             <ErrorNote>{list.error.message}</ErrorNote>
           </div>
         )}
-        {list.data?.length === 0 && (
-          <p className="px-5 py-10 text-center text-sm text-muted">Nothing spent on these days.</p>
+        {list.data && shown.length === 0 && (
+          <p className="px-5 py-10 text-center text-sm text-muted">
+            {chips.length ? 'Nothing like that on these days.' : 'Nothing spent on these days.'}
+          </p>
         )}
-        {list.data?.map((expense) => (
+        {shown.map((expense) => (
           <ExpenseRow key={expense.id} expense={expense} />
         ))}
       </Card>

@@ -1432,6 +1432,7 @@ export interface components {
                 amount: number;
             }[];
             staff: {
+                staffId: string;
                 name: string;
                 orders: number;
                 sales: number;
@@ -2141,6 +2142,13 @@ export interface operations {
         parameters: {
             query?: {
                 date?: string;
+                from?: string;
+                to?: string;
+                source?: "POS" | "PHONE" | "STOREFRONT" | "BOLT_FOOD" | "CHOWDECK" | "OTHER";
+                paid?: "PAID" | "UNPAID" | "REFUND_OWED" | "CANCELLED";
+                method?: string;
+                item?: string;
+                staffId?: string;
                 limit?: number;
             };
             header?: never;

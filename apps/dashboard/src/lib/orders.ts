@@ -1,6 +1,10 @@
+import type { paths } from '@plateraa/api-client';
 import { api, call } from './api';
 
-export const fetchOrders = (query: { date?: string; limit?: number }) =>
+/** A day (`date`) or a range (`from`, `to`), and the filters figures link to. */
+export type OrdersQuery = NonNullable<paths['/api/orders']['get']['parameters']['query']>;
+
+export const fetchOrders = (query: OrdersQuery) =>
   call(api.GET('/api/orders', { params: { query } }));
 
 export const fetchRefundsOwed = () => call(api.GET('/api/orders/refunds-owed'));

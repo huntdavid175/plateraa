@@ -223,6 +223,10 @@ function Figures({ day, isToday }: { day: DaySummary; isToday: boolean }) {
   const others = day.bySource.filter(
     (row) => !(MAIN_SOURCES as readonly string[]).includes(row.source),
   );
+  // Each figure opens the rows behind it, for this day.
+  const orders = (filters: Record<string, string>) =>
+    `/orders?${new URLSearchParams({ date: day.date, ...filters })}`;
+  const oneDay = new URLSearchParams({ range: 'pick', from: day.date, to: day.date });
   return (
     <>
       <div className="mb-6 grid grid-cols-2 gap-3 md:grid-cols-4">
@@ -231,6 +235,7 @@ function Figures({ day, isToday }: { day: DaySummary; isToday: boolean }) {
           label="Money in"
           value={cedis(day.moneyIn)}
           sub={day.orders === 1 ? '1 order' : `${day.orders} orders`}
+          to={orders({ method: 'CASH,LINK' })}
         />
         <Metric
           label="Not yet collected"
@@ -242,16 +247,23 @@ function Figures({ day, isToday }: { day: DaySummary; isToday: boolean }) {
                 ? 'Unpaid orders'
                 : undefined
           }
+          to={
+            day.platformOwed > 0 && day.unpaid === 0
+              ? orders({ method: 'PLATFORM' })
+              : orders({ paid: 'UNPAID' })
+          }
         />
         <Metric
           label="Money out"
           value={cedis(day.moneyOut)}
           sub={`What's left: ${cedis(day.left)}`}
+          to={`/expenses?${oneDay}`}
         />
         <Metric
           label={isToday ? 'Profit today' : 'Profit'}
           value={cedis(day.profit)}
           sub={day.commissionEstimate > 0 ? 'After expenses and commission' : 'After expenses'}
+          to={`/reports?${oneDay}`}
         />
       </div>
 
@@ -282,6 +294,7 @@ function Figures({ day, isToday }: { day: DaySummary; isToday: boolean }) {
               label={SOURCE_WORDS[source]}
               sales={row?.sales ?? 0}
               orders={row?.orders ?? 0}
+              to={orders({ source })}
             />
           );
         })}
@@ -291,6 +304,7 @@ function Figures({ day, isToday }: { day: DaySummary; isToday: boolean }) {
             label={SOURCE_WORDS[row.source]}
             sales={row.sales}
             orders={row.orders}
+            to={orders({ source: row.source })}
           />
         ))}
       </div>
@@ -303,16 +317,20 @@ function Metric({
   value,
   sub,
   accent,
+  to,
 }: {
   label: string;
   value: string;
   sub?: string;
   accent?: boolean;
+  /** Where the rows behind the figure are. */
+  to: string;
 }) {
   return (
-    <div
+    <Link
+      to={to}
       className={cx(
-        'rounded-xl border p-4',
+        'block rounded-xl border p-4 transition-colors hover:border-brand/50',
         accent ? 'border-brand/25 bg-brand-subtle' : 'border-border bg-surface',
       )}
     >
@@ -321,17 +339,31 @@ function Metric({
         {value}
       </p>
       {sub && <p className="mt-1 text-xs text-muted">{sub}</p>}
-    </div>
+    </Link>
   );
 }
 
-function SourceCard({ label, sales, orders }: { label: string; sales: number; orders: number }) {
+function SourceCard({
+  label,
+  sales,
+  orders,
+  to,
+}: {
+  label: string;
+  sales: number;
+  orders: number;
+  /** The source's orders for the day. */
+  to: string;
+}) {
   return (
-    <Card className="p-4">
+    <Link
+      to={to}
+      className="block rounded-xl border border-border bg-surface p-4 transition-colors hover:border-brand/50"
+    >
       <p className="mb-1 text-xs text-muted">{label}</p>
       <p className="font-mono font-medium">{cedis(sales)}</p>
       <p className="mt-0.5 text-xs text-muted">{orders === 1 ? '1 order' : `${orders} orders`}</p>
-    </Card>
+    </Link>
   );
 }
 

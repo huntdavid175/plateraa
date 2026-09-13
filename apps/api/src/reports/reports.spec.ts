@@ -152,7 +152,9 @@ describe.skipIf(!hasDatabase())('reports and order lists (against Neon)', () => 
       { name: 'Sobolo', quantity: 1, sales: 1000 },
     ]);
     expect(res.body.byCategory).toEqual([{ category: 'GAS', amount: 2500 }]);
-    expect(res.body.staff).toEqual([{ name: 'Adwoa', orders: 3, sales: 14500, cash: 10000 }]);
+    expect(res.body.staff).toEqual([
+      { staffId: vendor.ownerStaffId, name: 'Adwoa', orders: 3, sales: 14500, cash: 10000 },
+    ]);
     expect(res.body.drawerCloses).toEqual([]);
 
     await dashboard(`/api/reports/period?from=${today}&to=2020-01-01`).expect(400);
@@ -229,5 +231,29 @@ describe.skipIf(!hasDatabase())('reports and order lists (against Neon)', () => 
     expect(res.body).toEqual([
       expect.objectContaining({ id: ids.d, status: 'CANCELLED', refundOwed: 1000 }),
     ]);
+  });
+
+  it('filters the orders the way the dashboard’s figures link to them', async () => {
+    const found = async (query: string) =>
+      ((await dashboard(`/api/orders?${query}`).expect(200)).body as { id: string }[])
+        .map((row) => row.id)
+        .sort();
+    const sorted = (...list: string[]) => [...list].sort();
+
+    expect(await found(`from=${today}&to=${today}`)).toEqual(sorted(ids.a, ids.b, ids.c, ids.d));
+    expect(await found('source=BOLT_FOOD')).toEqual([ids.c]);
+    expect(await found('paid=PAID')).toEqual(sorted(ids.a, ids.c));
+    expect(await found('paid=UNPAID')).toEqual([ids.b]);
+    expect(await found('paid=REFUND_OWED')).toEqual([ids.d]);
+    expect(await found('method=CASH')).toEqual(sorted(ids.a, ids.d));
+    expect(await found('method=CASH,LINK')).toEqual(sorted(ids.a, ids.d));
+    expect(await found('method=PLATFORM')).toEqual([ids.c]);
+    expect(await found('item=Sobolo')).toEqual(sorted(ids.b, ids.d));
+    expect(await found(`staffId=${vendor.ownerStaffId}&source=POS&paid=PAID`)).toEqual([ids.a]);
+
+    await dashboard(`/api/orders?from=${today}`).expect(400);
+    await dashboard(`/api/orders?from=${today}&to=2020-01-01`).expect(400);
+    await dashboard('/api/orders?from=2026-01-01&to=2026-12-31').expect(400);
+    await dashboard('/api/orders?method=CHEQUE').expect(400);
   });
 });

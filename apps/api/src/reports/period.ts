@@ -72,6 +72,8 @@ class PeriodDto extends createZodDto(
     byCategory: z.array(z.object({ category: z.enum(EXPENSE_CATEGORIES), amount: money })),
     staff: z.array(
       z.object({
+        /** For the link to the orders they took. */
+        staffId: z.string(),
         name: z.string(),
         orders: z.number().int(),
         sales: money,
@@ -230,6 +232,7 @@ export class PeriodService {
         staff: [...staff.entries()]
           .filter(([, entry]) => entry.orders > 0)
           .map(([staffId, entry]) => ({
+            staffId,
             name: names.find((row) => row.id === staffId)?.name ?? 'Someone removed',
             ...entry,
           }))

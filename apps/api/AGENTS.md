@@ -29,7 +29,7 @@ NestJS 11 (not 12: nestjs-zod 5.5 needs `@nestjs/common` ^11), CommonJS, built w
   - `payments.module.ts`: `POST /api/payments/moolre/callback`, public and left out of the OpenAPI document. It stores the callback raw in `provider_events`, answers at once, then checks with Moolre before any money counts.
   - `secrets.ts`: `sealSecret` / `openSecret` (AES-256-GCM under `SECRETS_KEY`) for the vendor's Moolre key in `moolre_accounts`.
 - `orders/` (dashboard reads):
-  - `GET /api/orders?date=&limit=`: a day's orders, newest first, with their items and how they were paid;
+  - `GET /api/orders?date=&limit=`: a day's orders, newest first, with their items and how they were paid. Or a range (`from`, `to`, up to 92 days), and filters the dashboard's figures link to: `source`, `paid` (PAID, UNPAID, REFUND_OWED, CANCELLED, as the dashboard's badges), `method` (`CASH,LINK`), `item` (by the name sold) and `staffId`. All filtered in SQL (`filtersOf`);
   - `GET /api/orders/refunds-owed`: orders from any day where the customer is owed money back. Needs `refunds.record`.
   - `GET /api/orders/:orderId`: one order in full: lines with extras, payments, refunds, payment links, the status history with who did what, and `customerId`.
 - `customers/`: `GET /api/customers?search=` (most recent first; a name or part of a number), `GET /api/customers/:id` (with their latest 50 orders, from `OrdersService.forCustomer`) and `PUT /api/customers/:id` (name and notes, `customers.manage`, audited; the number never changes). `spent` is null without `reports.revenue.view`.

@@ -121,7 +121,9 @@ describe.skipIf(!hasDatabase())('kept daily reports (against Neon)', () => {
       moneyOut: 700,
     });
     expect(res.body.byItem).toEqual([{ name: 'Jollof rice', quantity: 1, sales: 4500 }]);
-    expect(res.body.staff).toEqual([{ name: 'Afua', orders: 1, sales: 4500, cash: 5500 }]);
+    expect(res.body.staff).toEqual([
+      { staffId: vendor.ownerStaffId, name: 'Afua', orders: 1, sales: 4500, cash: 5500 },
+    ]);
   });
 
   it('keeps the quiet days in the range too, but never today', async () => {

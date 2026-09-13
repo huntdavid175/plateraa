@@ -320,7 +320,11 @@ _11 Sep: the server side is built from Moolre's docs (docs.moolre.com; their `/a
   - _13 Sep: done without pg-boss. Each finished day's figures are kept in `daily_reports` (server only, never synced; migration 0009) and read back from there by the day summary and Reports. Today is always worked out live._
     - _**Staying right:** every order, payment, refund, order line and expense carries the transaction that last wrote it (`sync_xid`; expenses got one). A kept day with anything written since it was worked out is worked out again, so a late refund, a link paid days later, an offline tablet's orders or last week's expense all show up._
     - _**When:** reports fill in missing or out-of-date days as they're read, so they're right even while the API sleeps. With `RUN_DAILY_REPORTS=true` the API also gets the last 62 days ready every hour. Nothing is added to taking an order: no triggers, no extra writes._
-- [ ] Every figure taps through to the rows behind it
+- [x] Every figure taps through to the rows behind it
+  - _13 Sep: done. `GET /api/orders` takes a day or a range (`from`/`to`, up to 92 days) and filters by source, payment state, method (`CASH,LINK`), item and who took the order. The dashboard's Orders and Expenses pages keep their days and filters in the address, with each filter shown and removable._
+    - _**Today:** money in, not yet collected and each source open the matching orders; money out opens the day's expenses; profit opens Reports for the day._
+    - _**Reports:** the totals, the profit-and-loss lines, best sellers, sources, payment methods, expense kinds and staff all open their orders or expenses._
+    - _Drawer closes don't open anything yet: there's no list of a drawer's cash sales to show._
   - _12 Sep, partly: each day on the Reports page opens that day's orders, and Today's recent orders open each order. The rest of the figures don't tap through yet._
 
 ### 3.3 Receipts & printing
