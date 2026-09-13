@@ -19,6 +19,8 @@ export type SaveStorefront = Omit<
 export const saveStorefront = (body: SaveStorefront) =>
   call(api.PUT('/api/storefront/settings', { body }));
 
-export function refreshStorefront() {
-  void queryClient.invalidateQueries({ queryKey: ['storefront'] });
-}
+/**
+ * Reloads the store's settings. A mutation's onSuccess returns this, so it stays pending (and
+ * keeps showing the new choice) until the fresh copy is in, instead of flicking back to the old.
+ */
+export const refreshStorefront = () => queryClient.invalidateQueries({ queryKey: ['storefront'] });

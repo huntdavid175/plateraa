@@ -19,9 +19,13 @@ export const saveMoolre = (body: {
   email: string;
 }) => call(api.PUT('/api/settings/moolre', { body }));
 
-/** After a change, settings load again, and so does the business name in the sidebar. */
-export function refreshSettings() {
-  void queryClient.invalidateQueries({ queryKey: ['settings'] });
-  void queryClient.invalidateQueries({ queryKey: ['me'] });
-  void queryClient.invalidateQueries({ queryKey: ['businesses'] });
-}
+/**
+ * After a change, settings load again, and so does the business name in the sidebar. A
+ * mutation's onSuccess returns this, so switches keep showing the new choice until it's in.
+ */
+export const refreshSettings = () =>
+  Promise.all(
+    ['settings', 'me', 'businesses'].map((key) =>
+      queryClient.invalidateQueries({ queryKey: [key] }),
+    ),
+  );

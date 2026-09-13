@@ -34,10 +34,12 @@ export type Tablet = Awaited<ReturnType<typeof fetchTablets>>[number];
 export const signOutTablet = (id: string) =>
   call(api.POST('/api/devices/{id}/sign-out', { params: { path: { id } } }));
 
-/** After a change on the Staff page, the team and the tablets load again. */
-export function refreshTeam() {
-  void queryClient.invalidateQueries({ queryKey: ['team'] });
-  void queryClient.invalidateQueries({ queryKey: ['tablets'] });
-  // Permissions may have changed for the person signed in.
-  void queryClient.invalidateQueries({ queryKey: ['me'] });
-}
+/**
+ * After a change on the Staff page, the team and the tablets load again, and the signed-in
+ * person's permissions, which may have changed. A mutation's onSuccess returns this, so switches
+ * keep showing the new choice until it's in.
+ */
+export const refreshTeam = () =>
+  Promise.all(
+    ['team', 'tablets', 'me'].map((key) => queryClient.invalidateQueries({ queryKey: [key] })),
+  );
