@@ -51,7 +51,7 @@ export function TopBar({ tab, onTab }: { tab: CounterTab; onTab: (tab: CounterTa
     option.value === 'drawer' ? runsDrawer : option.value === 'stock' ? countsStock : true,
   );
 
-  const go = (path: '/add-staff' | '/attention' | '/diagnostics') => {
+  const go = (path: '/today' | '/add-staff' | '/attention' | '/diagnostics') => {
     setMenuOpen(false);
     router.push(path);
   };
@@ -118,6 +118,8 @@ export function TopBar({ tab, onTab }: { tab: CounterTab; onTab: (tab: CounterTa
       >
         <Pressable style={styles.menuBackdrop} onPress={() => setMenuOpen(false)}>
           <View style={styles.menu} onStartShouldSetResponder={() => true}>
+            {/* Anyone can ask; the server shows the figures only to people allowed to see sales. */}
+            <MenuItem label="Today's sales" onPress={() => go('/today')} />
             {canAddStaff && <MenuItem label="Add staff" onPress={() => go('/add-staff')} />}
             <MenuItem
               label={

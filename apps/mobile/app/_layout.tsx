@@ -71,6 +71,7 @@ function Screens() {
           <Stack.Screen name="index" />
           <Stack.Screen name="attention" />
           <Stack.Screen name="add-staff" />
+          <Stack.Screen name="today" />
         </Stack.Protected>
         <Stack.Screen name="diagnostics" />
       </Stack>

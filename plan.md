@@ -205,7 +205,8 @@ _11 Sep: built (`apps/mobile/src/counter`; the counter screen is `app/index.tsx`
 - [x] Morning prep counts that count down on each sale → auto sold-out at 0
   - _11 Sep, user decision: optional. For cooked food it's hard to know how many portions were made, so the owner switches counts on or off in the dashboard's settings (off by default). When off, items sell until someone taps "sold out"._
   - _11 Sep: built. `tenant_settings.count_portions` (migration 0006) syncs to the tablet. When it's on, the Stock tab's "Add portions" adds to today's count for items that have a count record, sales count down, and the item sells out by itself at 0. Only the seed script makes count records so far; the dashboard makes them in 3.1. Until then, `pnpm --filter @plateraa/api settings:portion-counts "<business>" on` switches counts on. Not tried on the tablet yet._
-- [ ] Owner summaries held in memory only, cleared when the PIN session ends
+- [x] Owner summaries held in memory only, cleared when the PIN session ends
+  - _13 Sep: "Today's sales" in the tablet's More menu (`app/today.tsx`). The person types their PIN again, which opens a 15-minute server session, and the tablet fetches `GET /api/reports/day`, the same day summary as the dashboard's Today. The server decides: anyone the owner hasn't let see sales gets a plain "not allowed". The figures live only in the screen's memory: never in SQLite, and gone when the tablet locks, the app goes to the background, "Done" is tapped or the session runs out. It needs the internet, and says when changes still waiting to upload aren't in the figures. Not tried on the tablet yet._
   - _11 Sep: moved to go with the day summary in 3.2. The design says the owner's summary needs a connection, so the tablet will fetch it from the same reporting the dashboard uses rather than add up sales itself._
 
 ### 2.5 Payment links (pilot; added 10 Sep)

@@ -148,6 +148,18 @@ export function ownerApi(session: string, tenantId?: string) {
 }
 
 /**
+ * A short server session (15 minutes) opened with someone's PIN, for the few things the tablet
+ * does online as that person. Unlocking the tablet itself never needs the server.
+ */
+function pinSession(deviceToken: string, staffId: string, pin: string) {
+  const tablet = createApiClient(API_URL, { deviceToken: () => deviceToken });
+  return call(
+    (signal) => tablet.POST('/api/sessions/pin', { body: { staffId, pin }, signal }),
+    'Could not check your PIN',
+  );
+}
+
+/**
  * Adds someone at the counter. Online only: the server hashes their PIN. The manager confirms
  * with their own PIN, which opens a short server session for this one change.
  */
@@ -157,15 +169,7 @@ export async function addStaffAtCounter(input: {
   managerPin: string;
   person: { displayName: string; role: 'MANAGER' | 'STAFF' | 'RIDER'; pin: string };
 }) {
-  const tablet = createApiClient(API_URL, { deviceToken: () => input.deviceToken });
-  const session = await call(
-    (signal) =>
-      tablet.POST('/api/sessions/pin', {
-        body: { staffId: input.managerId, pin: input.managerPin },
-        signal,
-      }),
-    'Could not check your PIN',
-  );
+  const session = await pinSession(input.deviceToken, input.managerId, input.managerPin);
   const manager = createApiClient(API_URL, {
     deviceToken: () => input.deviceToken,
     bearer: () => session.token,
@@ -174,4 +178,38 @@ export async function addStaffAtCounter(input: {
     (signal) => manager.POST('/api/staff', { body: input.person, signal }),
     'Could not add this person',
   );
+}
+
+export const NO_SALES_ACCESS =
+  'The owner hasn’t let you see sales totals. They can switch it on for you on the dashboard’s Staff page.';
+
+/** Today's day summary, fetched with a PIN session. The caller keeps it in memory only. */
+export function fetchDaySummary(deviceToken: string, sessionToken: string) {
+  const counter = createApiClient(API_URL, {
+    deviceToken: () => deviceToken,
+    bearer: () => sessionToken,
+  });
+  return call(
+    (signal) => counter.GET('/api/reports/day', { params: { query: {} }, signal }),
+    'Could not load today’s figures',
+  );
+}
+
+export type DaySummary = Awaited<ReturnType<typeof fetchDaySummary>>;
+
+/**
+ * The owner's day summary at the counter. Whoever asks types their PIN again (so nobody else at
+ * an unlocked tablet can look), and the server decides whether they may see sales totals.
+ */
+export async function daySummaryAtCounter(input: {
+  deviceToken: string;
+  staffId: string;
+  pin: string;
+}): Promise<{ session: { token: string; expiresAt: string }; summary: DaySummary }> {
+  const session = await pinSession(input.deviceToken, input.staffId, input.pin);
+  if (!session.capabilities.includes('reports.revenue.view')) {
+    throw new ApiProblem(NO_SALES_ACCESS, 403);
+  }
+  const summary = await fetchDaySummary(input.deviceToken, session.token);
+  return { session: { token: session.token, expiresAt: session.expiresAt }, summary };
 }

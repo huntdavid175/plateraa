@@ -1,4 +1,10 @@
-import type { OrderSource, OrderStatus, OrderType, PaymentLinkStatus } from '@plateraa/shared';
+import type {
+  OrderSource,
+  OrderStatus,
+  OrderType,
+  PaymentLinkStatus,
+  PaymentMethod,
+} from '@plateraa/shared';
 import type { Lane } from './lanes';
 
 export const SOURCE_LABELS: Record<OrderSource, string> = {
@@ -8,6 +14,12 @@ export const SOURCE_LABELS: Record<OrderSource, string> = {
   BOLT_FOOD: 'Bolt',
   CHOWDECK: 'Chowdeck',
   OTHER: 'Other',
+};
+
+export const METHOD_LABELS: Record<PaymentMethod, string> = {
+  CASH: 'Cash',
+  LINK: 'Payment links',
+  PLATFORM: 'Paid on the platform',
 };
 
 export const LANE_LABELS: Record<Lane, string> = {
