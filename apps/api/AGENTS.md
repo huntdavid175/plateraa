@@ -29,8 +29,12 @@ NestJS 11 (not 12: nestjs-zod 5.5 needs `@nestjs/common` ^11), CommonJS, built w
   - `GET /api/orders/refunds-owed`: orders from any day where the customer is owed money back. Needs `refunds.record`.
   - `GET /api/orders/:orderId`: one order in full: lines with extras, payments, refunds, payment links, and the status history with who did what.
 - `reports/`: `GET /api/reports/day?date=`, the day summary (plan.md §3.2). Needs `reports.revenue.view`.
-  - Figures hang off the orders' trading day; the definitions are in `reports.module.ts`.
-  - `period.ts`: `GET /api/reports/period?from=&to=` (up to 92 days). It returns totals and a profit-and-loss, then day by day, by source, by method, best sellers, expenses by kind, staff activity, and drawer closes with their variances.
+  - Figures hang off the orders' trading day. `figures.ts` holds `DayFigures` (one day's figures, with their definitions) and `workOutDays()`, which works out any set of days in about ten grouped queries.
+  - `daily.ts`: `DailyReports.days(tx, tenantId, from, to)` is how both reports get their days.
+    - Finished days come from `daily_reports` while nothing on them has changed. Each row's `as_of` is the sync cursor when it was worked out, and any order, payment, refund, order line or expense on that day with a `sync_xid` at or after it means the day is worked out again and kept anew (`lastChangeByDay`, over the sync indexes).
+    - Today is always live. Missing days are filled in on read. `RUN_DAILY_REPORTS=true` also gets the last 62 days ready every hour.
+    - **When `DayFigures` changes shape or meaning, bump `REPORT_VERSION`,** and every kept day is worked out again.
+  - `period.ts`: `GET /api/reports/period?from=&to=` (up to 92 days). It adds up the days' figures into totals and a profit-and-loss, day by day, by source, by method, best sellers, expenses by kind and staff activity; drawer closes with their variances are read as they are.
   - `business-day.ts` has `businessToday()` (today in the business's timezone) and `dueSql`.
 - `menu/`: menu setup (`catalog.manage`).
   - `GET /api/menu` returns the whole menu. `PUT /api/menu/items/:itemId` creates or replaces an item, sent with the whole item: sizes, extras groups with their options, and Bolt Food and Chowdeck prices. Also: remove an item, sold out for today, and categories.
@@ -38,6 +42,7 @@ NestJS 11 (not 12: nestjs-zod 5.5 needs `@nestjs/common` ^11), CommonJS, built w
   - **Removals are soft deletes,** so they sync to the tablets. Platform prices (`item_channel_prices`) sync as well (migration 0008), so they're updated or soft-deleted, never replaced.
   - **Price changes:** every one ends the old `price_history` row and starts a new one (`newPrice`), so the offline price check in `sync/handlers/orders.ts` still matches.
   - **Cost prices** are returned and saved only with `reports.revenue.view`.
+  - `zones.ts`: delivery zones (`catalog.manage`). `GET /api/delivery-zones`, `PUT /api/delivery-zones/:zoneId` (create or change; the dashboard makes the id; names are unique, ignoring case) and `DELETE` (a soft delete, so it syncs). All audited.
 - `expenses/`: money out and key ingredients.
   - `GET/POST /api/expenses` and `DELETE /api/expenses/:id` (`expenses.manage`). A purchase adds to an ingredient's stock with a PURCHASE movement, and removing it takes that back off. Drawer payouts can't be removed.
   - `/api/stock` (`catalog.manage`) covers raw ingredients: add, edit, stop tracking, and a count (`/count`), which records the difference as a COUNT_ADJUST.

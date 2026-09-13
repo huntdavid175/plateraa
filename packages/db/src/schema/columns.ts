@@ -4,7 +4,7 @@ import { bigint, customType, text, timestamp } from 'drizzle-orm/pg-core';
 import { tenants } from './tenants.js';
 
 /** Postgres 64-bit transaction id. Set by trigger on every insert and update; the sync cursor. */
-const xid8 = customType<{ data: string; driverData: string }>({
+export const xid8 = customType<{ data: string; driverData: string }>({
   dataType: () => 'xid8',
 });
 

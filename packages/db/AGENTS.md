@@ -8,7 +8,8 @@ Neon Postgres 18.6 (AWS eu-central-1), drizzle-orm 0.45.2 with `casing: 'snake_c
 - `src/client.ts`: `createDatabase`, `withTenant(db, tenantId, fn)`, `withPlatform(db, fn)`.
 - `src/sync.ts`: `changedSince`, `nextSyncCursor` for the xid8 sync cursor.
 - `src/index.ts` also re-exports the drizzle operators, so apps never import `drizzle-orm` directly.
-- `migrations/`: `0000`–`0007`, all applied to `dev`. `production` gets them all with `db:migrate:production` when it's set up for the pilot.
+- `migrations/`: `0000`–`0009`, all applied to `dev`. `production` gets them all with `db:migrate:production` when it's set up for the pilot.
+- `daily_reports` (0009) keeps finished days' report figures. It's server only: no `sync_xid`, never pulled. `expenses` has a `sync_xid` although it never syncs, so the kept reports can tell a day's money out has changed.
 
 ## Tenant isolation (don't break it)
 

@@ -1,8 +1,9 @@
 import { useQuery } from '@tanstack/react-query';
-import { useState, type ReactNode } from 'react';
-import { Link } from 'react-router';
+import type { ReactNode } from 'react';
+import { Link, useLocation, useSearchParams } from 'react-router';
 import { lastMonth, shiftDays } from '../lib/expenses';
-import { cedis, clock, longDate, todayHere } from '../lib/money';
+import { cedis, clock, longDate, shortDate, todayHere } from '../lib/money';
+import type { BackTo } from '../lib/orders';
 import { fetchPeriod, type Period } from '../lib/reports';
 import { useSession } from '../lib/session';
 import { EXPENSE_WORDS, METHOD_WORDS, SOURCE_WORDS } from '../lib/words';
@@ -13,51 +14,103 @@ const RANGES = [
   { value: 'week', label: 'Last 7 days' },
   { value: 'month', label: 'This month' },
   { value: 'last', label: 'Last month' },
+  { value: 'pick', label: 'Pick days' },
 ] as const;
 type Range = (typeof RANGES)[number]['value'];
 
-function rangeOf(range: Range): { from: string; to: string } {
-  const today = todayHere();
+/** The most the API reports on at once. */
+const MAX_DAYS = 92;
+const DAY_MS = 86_400_000;
+
+function rangeOf(range: Exclude<Range, 'pick'>, today: string): { from: string; to: string } {
   if (range === 'week') return { from: shiftDays(today, -6), to: today };
   if (range === 'month') return { from: `${today.slice(0, 7)}-01`, to: today };
   return lastMonth(today);
 }
 
-const shortDate = (date: string) =>
-  new Intl.DateTimeFormat('en-GB', {
-    weekday: 'short',
-    day: 'numeric',
-    month: 'short',
-    timeZone: 'UTC',
-  }).format(new Date(`${date}T12:00:00Z`));
+/** What's wrong with a picked range, in words, or null. */
+function rangeProblem(from: string, to: string): string | null {
+  if (from > to) return 'The first day comes after the last.';
+  if ((Date.parse(to) - Date.parse(from)) / DAY_MS >= MAX_DAYS) {
+    return `Pick ${MAX_DAYS} days or fewer.`;
+  }
+  return null;
+}
 
-/** Money over a range of days (plan.md §3.2). Only for people allowed to see sales. */
+/**
+ * Money over a range of days (plan.md §3.2). Only for people allowed to see sales. The range
+ * lives in the address (`?range=`, and `from`/`to` for picked days), so a report can be shared.
+ */
 export function ReportsPage() {
   const { tenantId } = useSession();
-  const [range, setRange] = useState<Range>('week');
-  const { from, to } = rangeOf(range);
+  const { search } = useLocation();
+  const [params, setParams] = useSearchParams();
+  const today = todayHere();
+  const range = RANGES.find((r) => r.value === params.get('range'))?.value ?? 'week';
+  const { from, to } =
+    range === 'pick'
+      ? { from: params.get('from') ?? shiftDays(today, -6), to: params.get('to') ?? today }
+      : rangeOf(range, today);
+  const problem = range === 'pick' ? rangeProblem(from, to) : null;
+
   const period = useQuery({
     queryKey: ['period', tenantId, from, to],
     queryFn: () => fetchPeriod(from, to),
+    enabled: !problem,
   });
+
+  const choose = (next: Range) =>
+    setParams(
+      next === 'week' ? {} : next === 'pick' ? { range: next, from, to } : { range: next },
+      { replace: true },
+    );
+  const pickDay = (key: 'from' | 'to', value: string) => {
+    if (value) setParams({ range: 'pick', from, to, [key]: value }, { replace: true });
+  };
+  const dateInput =
+    'h-9 rounded-lg border border-border bg-surface px-3 text-sm font-medium text-muted outline-none focus:border-brand';
 
   return (
     <Page title="Reports" subtitle={`${longDate(from)} to ${longDate(to)}`}>
-      <div className="mb-5">
-        <PillFilter label="Which days" options={RANGES} value={range} onChange={setRange} />
+      <div className="mb-5 flex flex-wrap items-center gap-2">
+        <PillFilter label="Which days" options={RANGES} value={range} onChange={choose} />
+        {range === 'pick' && (
+          <div className="flex items-center gap-2">
+            <input
+              type="date"
+              aria-label="First day"
+              value={from}
+              max={today}
+              onChange={(event) => pickDay('from', event.target.value)}
+              className={dateInput}
+            />
+            <span className="text-sm text-muted">to</span>
+            <input
+              type="date"
+              aria-label="Last day"
+              value={to}
+              max={today}
+              onChange={(event) => pickDay('to', event.target.value)}
+              className={dateInput}
+            />
+          </div>
+        )}
       </div>
-      {period.isPending && (
+      {problem && <ErrorNote>{problem}</ErrorNote>}
+      {!problem && period.isPending && (
         <div className="flex justify-center py-16">
           <Spinner />
         </div>
       )}
       {period.isError && <ErrorNote>{period.error.message}</ErrorNote>}
-      {period.data && <Report period={period.data} />}
+      {!problem && period.data && (
+        <Report period={period.data} back={{ back: `/reports${search}`, label: 'Reports' }} />
+      )}
     </Page>
   );
 }
 
-function Report({ period }: { period: Period }) {
+function Report({ period, back }: { period: Period; back: BackTo }) {
   const { totals } = period;
   return (
     <>
@@ -111,7 +164,7 @@ function Report({ period }: { period: Period }) {
           <Link
             key={day.date}
             to={`/orders?date=${day.date}`}
-            state={{ back: '/reports', label: 'Reports' }}
+            state={back}
             className="grid grid-cols-[1fr_auto] gap-x-4 gap-y-0.5 border-b border-border px-5 py-3 text-sm transition-colors last:border-b-0 hover:bg-tile/40 md:grid-cols-[1.5fr_1fr_1fr_1fr_1fr]"
           >
             <span>{shortDate(day.date)}</span>

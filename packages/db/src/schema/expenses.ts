@@ -1,6 +1,7 @@
+import { sql } from 'drizzle-orm';
 import { date, index, integer, pgTable, text, timestamp } from 'drizzle-orm/pg-core';
 import { cashMovements } from './cash.js';
-import { id, money, tenantId, timestamps } from './columns.js';
+import { id, money, tenantId, timestamps, xid8 } from './columns.js';
 import { expenseCategory, expenseMethod } from './enums.js';
 import { staffMembers } from './identity.js';
 import { stockItems } from './stock.js';
@@ -30,7 +31,17 @@ export const expenses = pgTable(
       .notNull()
       .references(() => staffMembers.id),
     deletedAt: timestamp({ withTimezone: true }),
+    /**
+     * Stamped by trigger on every write, like the synced tables. Expenses never go to a tablet:
+     * this tells the stored daily reports that a day's money out has changed.
+     */
+    syncXid: xid8()
+      .notNull()
+      .default(sql`pg_current_xact_id()`),
     ...timestamps(),
   },
-  (t) => [index('expenses_spent_on').on(t.tenantId, t.spentOn)],
+  (t) => [
+    index('expenses_spent_on').on(t.tenantId, t.spentOn),
+    index('expenses_sync').on(t.tenantId, t.syncXid),
+  ],
 );

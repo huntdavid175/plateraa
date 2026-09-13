@@ -18,6 +18,7 @@ export const OFFLINE_TEST_ENV: Env = {
   MOOLRE_BASE_URL: 'https://sandbox.moolre.com',
   PAYMENT_LINK_MINUTES: 60,
   RUN_PAYMENT_LINKS: false,
+  RUN_DAILY_REPORTS: false,
   TRUSTED_ORIGINS: [],
 };
 

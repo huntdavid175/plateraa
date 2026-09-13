@@ -1,17 +1,5 @@
 import { Controller, Get, Inject, Injectable, Module, Query } from '@nestjs/common';
-import {
-  and,
-  eq,
-  expenses,
-  isNull,
-  ne,
-  orders,
-  payments,
-  platformReceivables,
-  refunds,
-  sql,
-  withTenant,
-} from '@plateraa/db';
+import { withTenant } from '@plateraa/db';
 import { ORDER_SOURCES, PAYMENT_METHODS, pesewas } from '@plateraa/shared';
 import { ApiBearerAuth, ApiOkResponse } from '@nestjs/swagger';
 import { createZodDto } from 'nestjs-zod';
@@ -19,7 +7,9 @@ import { z } from 'zod';
 import { DATABASE, type DatabaseHandle } from '../database/database.module';
 import { Authorized, CurrentActor } from '../identity/guards';
 import type { Actor } from '../identity/request-context';
-import { businessToday, countsAsSale, dueSql, toPesewas } from './business-day';
+import { businessToday } from './business-day';
+import { DailyReports } from './daily';
+import { emptyDay } from './figures';
 import { PeriodController, PeriodService } from './period';
 
 class DayQueryDto extends createZodDto(
@@ -66,107 +56,36 @@ class DaySummaryDto extends createZodDto(
 
 @Injectable()
 export class DaySummaryService {
-  constructor(@Inject(DATABASE) private readonly database: DatabaseHandle) {}
+  constructor(
+    @Inject(DATABASE) private readonly database: DatabaseHandle,
+    private readonly daily: DailyReports,
+  ) {}
 
   /**
-   * The day summary (plan.md §3.2). Everything hangs off the orders' trading day, so a link paid
-   * late still counts on the day its order was taken. Expenses count on the day they were spent.
+   * The day summary (plan.md §3.2). Today is worked out live; a finished day comes from the kept
+   * daily report while nothing on it has changed (see DailyReports).
    */
   async summary(tenantId: string, requested?: string) {
     return withTenant(this.database.db, tenantId, async (tx) => {
-      const today = await businessToday(tx);
-      const date = requested ?? today.date;
-      const ofDay = and(eq(orders.businessDate, date), isNull(orders.deletedAt));
-      const hourTaken = sql<number>`extract(hour from ${orders.createdAtDevice} at time zone ${today.timezone})::int`;
-
-      const bySource = await tx
-        .select({
-          source: orders.source,
-          orders: sql<number>`count(*)::int`,
-          sales: sql<string>`coalesce(sum(${dueSql}), 0)`,
-          unpaid: sql<string>`coalesce(sum(greatest(${dueSql} - ${orders.amountPaid}, 0)), 0)`,
-        })
-        .from(orders)
-        .where(and(ofDay, countsAsSale))
-        .groupBy(orders.source);
-
-      // Money already taken on a cancelled order still counts until the refund is recorded.
-      const confirmed = and(ofDay, eq(payments.status, 'CONFIRMED'), isNull(payments.deletedAt));
-      const byMethod = await tx
-        .select({ method: payments.method, amount: sql<string>`sum(${payments.amount})` })
-        .from(payments)
-        .innerJoin(orders, eq(orders.id, payments.orderId))
-        .where(confirmed)
-        .groupBy(payments.method);
-
-      const collectedByHour = await tx
-        .select({ hour: hourTaken, amount: sql<string>`sum(${payments.amount})` })
-        .from(payments)
-        .innerJoin(orders, eq(orders.id, payments.orderId))
-        .where(and(confirmed, ne(payments.method, 'PLATFORM')))
-        .groupBy(sql`1`);
-
-      const refundedByHour = await tx
-        .select({ hour: hourTaken, amount: sql<string>`sum(${refunds.amount})` })
-        .from(refunds)
-        .innerJoin(orders, eq(orders.id, refunds.orderId))
-        .where(and(ofDay, isNull(refunds.deletedAt), ne(refunds.method, 'PLATFORM')))
-        .groupBy(sql`1`);
-
-      const [owed] = await tx
-        .select({
-          gross: sql<string>`coalesce(sum(${platformReceivables.gross}), 0)`,
-          commission: sql<string>`coalesce(sum(${platformReceivables.commissionEstimate}), 0)`,
-        })
-        .from(platformReceivables)
-        .innerJoin(orders, eq(orders.id, platformReceivables.orderId))
-        .where(and(ofDay, countsAsSale));
-
-      const [spent] = await tx
-        .select({
-          total: sql<string>`coalesce(sum(${expenses.amount}), 0)`,
-          count: sql<number>`count(*)::int`,
-        })
-        .from(expenses)
-        .where(and(eq(expenses.spentOn, date), isNull(expenses.deletedAt)));
-
-      const hours = new Map<number, number>();
-      for (const row of collectedByHour) {
-        hours.set(row.hour, (hours.get(row.hour) ?? 0) + Number(row.amount));
-      }
-      for (const row of refundedByHour) {
-        hours.set(row.hour, (hours.get(row.hour) ?? 0) - Number(row.amount));
-      }
-
-      const total = (values: number[]) => values.reduce((sum, value) => sum + value, 0);
-      const moneyIn = total([...hours.values()]);
-      const platformOwed = toPesewas(owed?.gross);
-      const commissionEstimate = toPesewas(owed?.commission);
-      const unpaid = total(bySource.map((row) => Number(row.unpaid)));
-      const moneyOut = toPesewas(spent?.total);
-
+      const date = requested ?? (await businessToday(tx)).date;
+      const { days } = await this.daily.days(tx, tenantId, date, date);
+      const day = days.get(date) ?? emptyDay();
       return {
         date,
-        orders: total(bySource.map((row) => row.orders)),
-        sales: pesewas(total(bySource.map((row) => Number(row.sales)))),
-        moneyIn: pesewas(moneyIn),
-        notYetCollected: pesewas(platformOwed + unpaid),
-        platformOwed,
-        unpaid: pesewas(unpaid),
-        commissionEstimate,
-        moneyOut,
-        expenses: spent?.count ?? 0,
-        left: pesewas(moneyIn - moneyOut),
-        profit: pesewas(moneyIn + platformOwed - commissionEstimate - moneyOut),
-        byHour: [...hours.entries()]
-          .sort(([a], [b]) => a - b)
-          .map(([hour, amount]) => ({ hour, moneyIn: pesewas(amount) })),
-        bySource: bySource.map((row) => ({
-          source: row.source,
-          orders: row.orders,
-          sales: toPesewas(row.sales),
-        })),
-        byMethod: byMethod.map((row) => ({ method: row.method, amount: toPesewas(row.amount) })),
+        orders: day.orders,
+        sales: pesewas(day.sales),
+        moneyIn: pesewas(day.moneyIn),
+        notYetCollected: pesewas(day.platformOwed + day.unpaid),
+        platformOwed: pesewas(day.platformOwed),
+        unpaid: pesewas(day.unpaid),
+        commissionEstimate: pesewas(day.commissionEstimate),
+        moneyOut: pesewas(day.moneyOut),
+        expenses: day.expenses,
+        left: pesewas(day.moneyIn - day.moneyOut),
+        profit: pesewas(day.moneyIn + day.platformOwed - day.commissionEstimate - day.moneyOut),
+        byHour: day.byHour,
+        bySource: day.bySource,
+        byMethod: day.byMethod,
       };
     });
   }
@@ -188,6 +107,6 @@ export class ReportsController {
 
 @Module({
   controllers: [ReportsController, PeriodController],
-  providers: [DaySummaryService, PeriodService],
+  providers: [DaySummaryService, PeriodService, DailyReports],
 })
 export class ReportsModule {}

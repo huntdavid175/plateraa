@@ -30,6 +30,16 @@ export function longDate(date: string): string {
   }).format(new Date(`${date}T12:00:00Z`));
 }
 
+/** A trading day (YYYY-MM-DD) as "Sat 12 Sep". */
+export function shortDate(date: string): string {
+  return new Intl.DateTimeFormat('en-GB', {
+    weekday: 'short',
+    day: 'numeric',
+    month: 'short',
+    timeZone: 'UTC',
+  }).format(new Date(`${date}T12:00:00Z`));
+}
+
 /** A moment as "13:42", in this browser's timezone (Ghana's, for the vendors). */
 export function clock(isoTime: string): string {
   return new Intl.DateTimeFormat('en-GB', { hour: '2-digit', minute: '2-digit' }).format(

@@ -4,23 +4,22 @@ import {
   desc,
   devices,
   eq,
-  expenses,
-  gte,
-  isNotNull,
+  inArray,
   isNull,
-  lte,
-  ne,
-  orderItems,
-  orders,
-  payments,
-  platformReceivables,
-  refunds,
   shifts,
   sql,
   staffMembers,
   withTenant,
 } from '@plateraa/db';
-import { EXPENSE_CATEGORIES, ORDER_SOURCES, PAYMENT_METHODS, pesewas } from '@plateraa/shared';
+import {
+  EXPENSE_CATEGORIES,
+  ORDER_SOURCES,
+  PAYMENT_METHODS,
+  pesewas,
+  type ExpenseCategory,
+  type OrderSource,
+  type PaymentMethod,
+} from '@plateraa/shared';
 import { ApiBearerAuth, ApiOkResponse } from '@nestjs/swagger';
 import { createZodDto } from 'nestjs-zod';
 import { z } from 'zod';
@@ -28,7 +27,8 @@ import { DATABASE, type DatabaseHandle } from '../database/database.module';
 import { Authorized, CurrentActor } from '../identity/guards';
 import type { Actor } from '../identity/request-context';
 import { nullableText } from '../openapi';
-import { businessToday, countsAsSale, dueSql, toPesewas } from './business-day';
+import { DailyReports, daysBetween } from './daily';
+import { emptyDay } from './figures';
 
 const MAX_DAYS = 92;
 const DAY_MS = 86_400_000;
@@ -94,14 +94,26 @@ class PeriodDto extends createZodDto(
   }),
 ) {}
 
+/** Adds `amount` to the entry under `key`, making it if needed. */
+function tally<K>(totals: Map<K, number>, key: K, amount: number) {
+  totals.set(key, (totals.get(key) ?? 0) + amount);
+}
+
+/** Largest first. */
+const byAmount = <K>(totals: Map<K, number>) => [...totals.entries()].sort(([, a], [, b]) => b - a);
+
 /**
  * Reports over a range of trading days (plan.md §3.2), with the day summary's definitions: money
  * in is cash and link payments less refunds; profit adds what the platforms owe, less their
- * commission and money out. Worked out live; the rollup job comes later.
+ * commission and money out. Each day's figures come from DailyReports (kept for finished days,
+ * live for today); drawer closes are read as they are.
  */
 @Injectable()
 export class PeriodService {
-  constructor(@Inject(DATABASE) private readonly database: DatabaseHandle) {}
+  constructor(
+    @Inject(DATABASE) private readonly database: DatabaseHandle,
+    private readonly daily: DailyReports,
+  ) {}
 
   async period(actor: Actor, from: string, to: string) {
     if (from > to) throw new BadRequestException('The first day comes after the last');
@@ -110,119 +122,48 @@ export class PeriodService {
     }
 
     return withTenant(this.database.db, actor.tenantId, async (tx) => {
-      const { timezone } = await businessToday(tx);
-      const inRange = and(
-        gte(orders.businessDate, from),
-        lte(orders.businessDate, to),
-        isNull(orders.deletedAt),
-      );
-      const sales = and(inRange, countsAsSale);
-      const confirmed = and(inRange, eq(payments.status, 'CONFIRMED'), isNull(payments.deletedAt));
-      const spentInRange = and(
-        gte(expenses.spentOn, from),
-        lte(expenses.spentOn, to),
-        isNull(expenses.deletedAt),
-      );
+      const { timezone, days } = await this.daily.days(tx, actor.tenantId, from, to);
+      const figures = daysBetween(from, to).map((date) => ({
+        date,
+        day: days.get(date) ?? emptyDay(),
+      }));
 
-      const salesByDay = await tx
-        .select({
-          date: orders.businessDate,
-          orders: sql<number>`count(*)::int`,
-          sales: sql<string>`sum(${dueSql})`,
-        })
-        .from(orders)
-        .where(sales)
-        .groupBy(orders.businessDate);
+      const sources = new Map<OrderSource, { orders: number; sales: number }>();
+      const methods = new Map<PaymentMethod, number>();
+      const items = new Map<string, { quantity: number; sales: number }>();
+      const categories = new Map<ExpenseCategory, number>();
+      const staff = new Map<string, { orders: number; sales: number; cash: number }>();
+      for (const { day } of figures) {
+        for (const row of day.bySource) {
+          const entry = sources.get(row.source) ?? { orders: 0, sales: 0 };
+          entry.orders += row.orders;
+          entry.sales += row.sales;
+          sources.set(row.source, entry);
+        }
+        for (const row of day.byMethod) tally(methods, row.method, row.amount);
+        for (const row of day.byItem) {
+          const entry = items.get(row.name) ?? { quantity: 0, sales: 0 };
+          entry.quantity += row.quantity;
+          entry.sales += row.sales;
+          items.set(row.name, entry);
+        }
+        for (const row of day.byCategory) tally(categories, row.category, row.amount);
+        for (const row of day.staff) {
+          const entry = staff.get(row.staffId) ?? { orders: 0, sales: 0, cash: 0 };
+          entry.orders += row.orders;
+          entry.sales += row.sales;
+          entry.cash += row.cash;
+          staff.set(row.staffId, entry);
+        }
+      }
 
-      const inByDay = await tx
-        .select({ date: orders.businessDate, amount: sql<string>`sum(${payments.amount})` })
-        .from(payments)
-        .innerJoin(orders, eq(orders.id, payments.orderId))
-        .where(and(confirmed, ne(payments.method, 'PLATFORM')))
-        .groupBy(orders.businessDate);
-
-      const refundedByDay = await tx
-        .select({ date: orders.businessDate, amount: sql<string>`sum(${refunds.amount})` })
-        .from(refunds)
-        .innerJoin(orders, eq(orders.id, refunds.orderId))
-        .where(and(inRange, isNull(refunds.deletedAt), ne(refunds.method, 'PLATFORM')))
-        .groupBy(orders.businessDate);
-
-      const outByDay = await tx
-        .select({ date: expenses.spentOn, amount: sql<string>`sum(${expenses.amount})` })
-        .from(expenses)
-        .where(spentInRange)
-        .groupBy(expenses.spentOn);
-
-      const bySource = await tx
-        .select({
-          source: orders.source,
-          orders: sql<number>`count(*)::int`,
-          sales: sql<string>`sum(${dueSql})`,
-        })
-        .from(orders)
-        .where(sales)
-        .groupBy(orders.source);
-
-      const byMethod = await tx
-        .select({ method: payments.method, amount: sql<string>`sum(${payments.amount})` })
-        .from(payments)
-        .innerJoin(orders, eq(orders.id, payments.orderId))
-        .where(confirmed)
-        .groupBy(payments.method);
-
-      const byItem = await tx
-        .select({
-          name: orderItems.name,
-          quantity: sql<number>`sum(${orderItems.quantity})::int`,
-          sales: sql<string>`sum(${orderItems.lineTotal})`,
-        })
-        .from(orderItems)
-        .innerJoin(orders, eq(orders.id, orderItems.orderId))
-        .where(and(sales, isNull(orderItems.deletedAt)))
-        .groupBy(orderItems.name)
-        .orderBy(desc(sql`sum(${orderItems.lineTotal})`))
-        .limit(20);
-
-      const byCategory = await tx
-        .select({ category: expenses.category, amount: sql<string>`sum(${expenses.amount})` })
-        .from(expenses)
-        .where(spentInRange)
-        .groupBy(expenses.category)
-        .orderBy(desc(sql`sum(${expenses.amount})`));
-
-      const [purchased] = await tx
-        .select({ amount: sql<string>`coalesce(sum(${expenses.amount}), 0)` })
-        .from(expenses)
-        .where(and(spentInRange, isNotNull(expenses.stockItemId)));
-
-      const [owed] = await tx
-        .select({
-          gross: sql<string>`coalesce(sum(${platformReceivables.gross}), 0)`,
-          commission: sql<string>`coalesce(sum(${platformReceivables.commissionEstimate}), 0)`,
-        })
-        .from(platformReceivables)
-        .innerJoin(orders, eq(orders.id, platformReceivables.orderId))
-        .where(sales);
-
-      const takenBy = await tx
-        .select({
-          staffId: orders.createdBy,
-          name: staffMembers.displayName,
-          orders: sql<number>`count(*)::int`,
-          sales: sql<string>`sum(${dueSql})`,
-        })
-        .from(orders)
-        .innerJoin(staffMembers, eq(staffMembers.id, orders.createdBy))
-        .where(sales)
-        .groupBy(orders.createdBy, staffMembers.displayName);
-
-      const cashBy = await tx
-        .select({ staffId: payments.collectedBy, amount: sql<string>`sum(${payments.amount})` })
-        .from(payments)
-        .innerJoin(orders, eq(orders.id, payments.orderId))
-        .where(and(confirmed, eq(payments.method, 'CASH')))
-        .groupBy(payments.collectedBy);
+      const staffIds = [...staff.keys()];
+      const names = staffIds.length
+        ? await tx
+            .select({ id: staffMembers.id, name: staffMembers.displayName })
+            .from(staffMembers)
+            .where(inArray(staffMembers.id, staffIds))
+        : [];
 
       const closedOn = sql`(${shifts.closedAt} at time zone ${timezone})::date`;
       const closes = await tx
@@ -248,64 +189,49 @@ export class PeriodService {
         )
         .orderBy(desc(shifts.closedAt));
 
-      // Day by day, every day in the range, including quiet ones.
-      const days: string[] = [];
-      for (
-        let t = Date.parse(`${from}T00:00:00Z`);
-        t <= Date.parse(`${to}T00:00:00Z`);
-        t += DAY_MS
-      ) {
-        days.push(new Date(t).toISOString().slice(0, 10));
-      }
-      const amountOn = (rows: { date: string; amount: string }[], date: string) =>
-        Number(rows.find((row) => row.date === date)?.amount ?? 0);
-      const byDay = days.map((date) => {
-        const sold = salesByDay.find((row) => row.date === date);
-        return {
-          date,
-          orders: sold?.orders ?? 0,
-          sales: toPesewas(sold?.sales),
-          moneyIn: pesewas(amountOn(inByDay, date) - amountOn(refundedByDay, date)),
-          moneyOut: pesewas(amountOn(outByDay, date)),
-        };
-      });
-
       const sum = (values: number[]) => values.reduce((total, value) => total + value, 0);
-      const moneyIn = sum(byDay.map((day) => day.moneyIn));
-      const moneyOut = sum(byDay.map((day) => day.moneyOut));
-      const purchases = toPesewas(purchased?.amount);
-      const platformOwed = toPesewas(owed?.gross);
-      const commissionEstimate = toPesewas(owed?.commission);
+      const all = figures.map(({ day }) => day);
+      const moneyIn = sum(all.map((day) => day.moneyIn));
+      const moneyOut = sum(all.map((day) => day.moneyOut));
+      const purchases = sum(all.map((day) => day.purchases));
+      const platformOwed = sum(all.map((day) => day.platformOwed));
+      const commissionEstimate = sum(all.map((day) => day.commissionEstimate));
 
       return {
         from,
         to,
         totals: {
-          orders: sum(byDay.map((day) => day.orders)),
-          sales: pesewas(sum(byDay.map((day) => day.sales))),
+          orders: sum(all.map((day) => day.orders)),
+          sales: pesewas(sum(all.map((day) => day.sales))),
           moneyIn: pesewas(moneyIn),
-          platformOwed,
-          commissionEstimate,
+          platformOwed: pesewas(platformOwed),
+          commissionEstimate: pesewas(commissionEstimate),
           moneyOut: pesewas(moneyOut),
-          purchases,
+          purchases: pesewas(purchases),
           otherExpenses: pesewas(moneyOut - purchases),
           left: pesewas(moneyIn - moneyOut),
           profit: pesewas(moneyIn + platformOwed - commissionEstimate - moneyOut),
         },
-        byDay,
-        bySource: bySource.map((row) => ({ ...row, sales: toPesewas(row.sales) })),
-        byMethod: byMethod.map((row) => ({ method: row.method, amount: toPesewas(row.amount) })),
-        byItem: byItem.map((row) => ({ ...row, sales: toPesewas(row.sales) })),
-        byCategory: byCategory.map((row) => ({
-          category: row.category,
-          amount: toPesewas(row.amount),
+        byDay: figures.map(({ date, day }) => ({
+          date,
+          orders: day.orders,
+          sales: pesewas(day.sales),
+          moneyIn: pesewas(day.moneyIn),
+          moneyOut: pesewas(day.moneyOut),
         })),
-        staff: takenBy
-          .map((row) => ({
-            name: row.name,
-            orders: row.orders,
-            sales: toPesewas(row.sales),
-            cash: toPesewas(cashBy.find((cash) => cash.staffId === row.staffId)?.amount),
+        bySource: [...sources.entries()].map(([source, entry]) => ({ source, ...entry })),
+        byMethod: [...methods.entries()].map(([method, amount]) => ({ method, amount })),
+        byItem: [...items.entries()]
+          .sort(([, a], [, b]) => b.sales - a.sales)
+          .slice(0, 20)
+          .map(([name, entry]) => ({ name, ...entry })),
+        byCategory: byAmount(categories).map(([category, amount]) => ({ category, amount })),
+        // Everyone who took orders, as before: cash alone doesn't put someone on the list.
+        staff: [...staff.entries()]
+          .filter(([, entry]) => entry.orders > 0)
+          .map(([staffId, entry]) => ({
+            name: names.find((row) => row.id === staffId)?.name ?? 'Someone removed',
+            ...entry,
           }))
           .sort((a, b) => b.sales - a.sales),
         drawerCloses: closes.map((row) => ({

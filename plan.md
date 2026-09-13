@@ -57,6 +57,7 @@ Full design detail: `C:\Users\user\.claude\plans\plan-mode-prompt-you-peaceful-p
   - [x] API (_11 Sep: https://plateraa-api.onrender.com, Frankfurt, deploys itself from `main`. Checked: health answers, the database is reachable, the API docs page is off._)
   - [ ] _Before R1a: move to the Starter plan. Free sleeps after 15 minutes without traffic and takes about a minute to wake, and has no pre-deploy step, so migrations are run from the laptop for now. On Starter, set the pre-deploy command to `pnpm --filter @plateraa/db db:migrate`._
   - [ ] Worker (_when background jobs arrive: daily rollups, re-checking payment links_)
+    - _13 Sep: not needed yet. Both jobs run inside the API on a timer (`RUN_PAYMENT_LINKS`, `RUN_DAILY_REPORTS`), and the daily reports fill themselves in when read, so nothing depends on a worker being awake._
 - [ ] Sentry set up for api, mobile, dashboard and storefront
   - _12 Sep: the API is wired up (`instrument.ts`, `SentryGlobalFilter`, and `captureException` for payment-link and sync failures). It reports errors only, with no personal data, to Sentry's EU region (project `plateraa-api`; IP addresses not stored). A test event from the laptop arrived, and `SENTRY_DSN` is set on Render. The tablet needs `@sentry/react-native` and a new EAS build. The dashboard and storefront get it when they're built._
 
@@ -256,7 +257,8 @@ _11 Sep: the server side is built from Moolre's docs (docs.moolre.com; their `/a
     - _**Cost and margin** show only with `reports.revenue.view`._
     - _**Portion counts:** with counts on, a new item gets its count record._
     - _**Platform prices on the tablet:** they sync there (migration 0008; tablet local migration v5, which also forgets the pull cursor, so an updated tablet pulls everything once). A Bolt Food or Chowdeck order is priced at the platform's price as soon as that source is chosen._
-- [ ] Delivery zones + fees
+- [x] Delivery zones + fees
+  - _13 Sep: Settings → Delivery zones, for anyone who sets up the menu (`catalog.manage`, so managers too). Add a zone with its fee, change it, switch it off the tablet for a while, or remove it (`GET /api/delivery-zones`, `PUT` and `DELETE /api/delivery-zones/:id`, all audited). Removal is a soft delete, so it reaches the tablet. The tablet already showed zones and filled in the fee (§2.3), so it needed no change; an order taken offline with a zone removed since is still accepted._
 - [x] Channel commissions (rate or flat; blank = shown as "Gross")
   - _12 Sep: in the dashboard's Settings, under Payments (`PUT /api/settings/commissions`). A percent, a fixed amount per order, or both, for Bolt Food and Chowdeck. The day summary's profit takes them off._
 - [x] Staff management + revenue visibility settings (per role, per person)
@@ -303,13 +305,17 @@ _11 Sep: the server side is built from Moolre's docs (docs.moolre.com; their `/a
     - _**what's left:** money in − money out;_
     - _**profit:** money in + what the platforms owe − their estimated commission − money out._
   - _Also split by source and payment method, and money in by the hour, which drives the chart. The tablet's owner summary will use the same endpoint._
+  - _13 Sep: Today opens any past day too (the date box, or `/?date=`), with that day's figures and orders. Reports has "Pick days" for any range up to 92 days, and the range stays in the address so a report can be shared._
 - [x] Sales by channel, by item, by payment method
   - _12 Sep: the dashboard's Reports page (`GET /api/reports/period?from=&to=`, up to 92 days, `reports.revenue.view`). It uses the day summary's definitions and offers the last 7 days, this month or last month. It shows the totals, day by day, by source, by payment method, and the 20 best sellers._
 - [x] Expenses report, simple P&L (money in − purchases − expenses)
   - _12 Sep: on the Reports page: expenses by kind, and a profit-and-loss card (money in, plus what Bolt and Chowdeck owe after commission, less purchases, less other expenses)._
 - [x] Staff activity, shift variances
   - _12 Sep: on the Reports page. Staff shows each person's orders taken, their sales and the cash they took. Drawer closes shows expected, counted and the variance, with shortfalls in red._
-- [ ] pg-boss rollup job for past days
+- [x] pg-boss rollup job for past days
+  - _13 Sep: done without pg-boss. Each finished day's figures are kept in `daily_reports` (server only, never synced; migration 0009) and read back from there by the day summary and Reports. Today is always worked out live._
+    - _**Staying right:** every order, payment, refund, order line and expense carries the transaction that last wrote it (`sync_xid`; expenses got one). A kept day with anything written since it was worked out is worked out again, so a late refund, a link paid days later, an offline tablet's orders or last week's expense all show up._
+    - _**When:** reports fill in missing or out-of-date days as they're read, so they're right even while the API sleeps. With `RUN_DAILY_REPORTS=true` the API also gets the last 62 days ready every hour. Nothing is added to taking an order: no triggers, no extra writes._
 - [ ] Every figure taps through to the rows behind it
   - _12 Sep, partly: each day on the Reports page opens that day's orders, and Today's recent orders open each order. The rest of the figures don't tap through yet._
 

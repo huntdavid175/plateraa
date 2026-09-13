@@ -45,7 +45,7 @@ The web dashboard for owners and managers (plan.md §3.1). It uses:
 - `lib/orders.ts`, `lib/reports.ts`: fetchers, with row types taken from the generated client, and `paymentState()` (Paid / Unpaid / Refund owed / Cancelled).
 - `lib/money.ts`: `cedis()`, `longDate()`, `hourLabel()`. `lib/words.ts`: plain words for enums.
 - `router.tsx` holds the routes; `pages/` holds the screens.
-  - Today (`TodayPage`): the day summary, the refunds-owed banner and recent orders.
+  - Today (`TodayPage`): the day summary, the refunds-owed banner and recent orders. The date box opens any past day (`/?date=`), without the open drawers; today itself is left to the server's trading day.
   - Orders (`OrdersPage`): a day's orders, filtered by source and by paid or not. The day and the filters live in the address, so a view can be shared. Totals show only with `reports.revenue.view`.
   - Order (`OrderPage`): one order in full. Links to it pass `state: { back, label }`, so "←" returns to where the person came from.
   - Menu (`MenuPage`): category pills, item cards, and one-tap sold out.
@@ -68,7 +68,7 @@ The web dashboard for owners and managers (plan.md §3.1). It uses:
     - the team, with Add and Edit dialogs (PINs typed twice and checked with `pinProblem`, never shown);
     - the owner's "Who sees sales totals" switches;
     - the Tablets card, with sign out.
-  - Reports (`ReportsPage`, needs `reports.revenue.view`): a range of days, showing:
+  - Reports (`ReportsPage`, needs `reports.revenue.view`): the last 7 days, this month, last month, or "Pick days" (up to 92), kept in the address (`?range=pick&from=&to=`). It shows:
     - totals and a profit-and-loss;
     - day by day, where each day opens its orders;
     - by source and by payment method;
@@ -80,8 +80,9 @@ The web dashboard for owners and managers (plan.md §3.1). It uses:
     - Business (name, type);
     - Appearance (dark mode);
     - Orders (pay before prep, portion counts, idle lock), where toggles save at once;
+    - Delivery zones, for anyone with `catalog.manage` (managers too): add, change, switch off the tablet, remove (`lib/zones.ts`).
     - Payments (the Moolre account, with "Check and save", and platform commissions).
-    - Managers see only Appearance and the business name.
+    - Managers see Appearance, the business name and Delivery zones.
   - The rest are placeholders until their slices.
 - **Keep the first screen light on mobile data.** Big libraries load lazily: the recharts chart is `pages/MoneyInChart.tsx`, loaded with `lazy()`.
 

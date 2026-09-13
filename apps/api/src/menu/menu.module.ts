@@ -44,6 +44,7 @@ import { Authorized, CurrentActor } from '../identity/guards';
 import type { Actor } from '../identity/request-context';
 import { nullableText } from '../openapi';
 import { businessToday } from '../reports/business-day';
+import { ZonesController, ZonesService } from './zones';
 
 /** The delivery platforms an item can have its own price on. */
 const CHANNELS = ['BOLT_FOOD', 'CHOWDECK'] as const;
@@ -836,5 +837,5 @@ export class MenuController {
   }
 }
 
-@Module({ controllers: [MenuController], providers: [MenuService] })
+@Module({ controllers: [MenuController, ZonesController], providers: [MenuService, ZonesService] })
 export class MenuModule {}

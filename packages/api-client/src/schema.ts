@@ -484,6 +484,38 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/delivery-zones": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["ZonesController_list"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/delivery-zones/{zoneId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put: operations["ZonesController_save"];
+        post?: never;
+        delete: operations["ZonesController_remove"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/settings": {
         parameters: {
             query?: never;
@@ -1529,6 +1561,20 @@ export interface components {
         RenameCategoryDto: {
             name: string;
         };
+        ZonesDto_Output: {
+            id: string;
+            name: string;
+            fee: number;
+            active: boolean;
+        }[];
+        SaveZoneDto: {
+            name: string;
+            fee: number;
+            active: boolean;
+        };
+        ZoneSavedDto_Output: {
+            id: string;
+        };
         SettingsDto_Output: {
             business: {
                 name: string;
@@ -2364,6 +2410,69 @@ export interface operations {
             header?: never;
             path: {
                 categoryId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    ZonesController_list: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ZonesDto_Output"];
+                };
+            };
+        };
+    };
+    ZonesController_save: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                zoneId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["SaveZoneDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ZoneSavedDto_Output"];
+                };
+            };
+        };
+    };
+    ZonesController_remove: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                zoneId: string;
             };
             cookie?: never;
         };

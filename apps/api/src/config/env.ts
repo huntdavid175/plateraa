@@ -45,6 +45,11 @@ const envSchema = z.object({
    * a laptop sharing the database must never pick up real customers' links.
    */
   RUN_PAYMENT_LINKS: z.stringbool().default(false),
+  /**
+   * Whether this process works out finished days' reports ahead of time, every hour. Reports fill
+   * in any missing day themselves when they're read, so this only makes them quicker to open.
+   */
+  RUN_DAILY_REPORTS: z.stringbool().default(false),
   /** Comma-separated browser origins allowed to call the auth endpoints (the dashboard). */
   TRUSTED_ORIGINS: z
     .string()

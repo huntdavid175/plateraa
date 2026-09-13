@@ -38,9 +38,8 @@ A solo founder (GitHub `huntdavid175`) builds it with an AI agent. Work started 
     - Settings, including a live Moolre check;
     - Expenses and Stock;
     - Reports.
+  - 13 Sep: delivery zones (in Settings), Today for any past day, "Pick days" on Reports, and finished days' figures kept in `daily_reports` (not pg-boss: see `apps/api/AGENTS.md`).
   - Still open in `plan.md`:
-    - delivery zones;
-    - the pg-boss rollup;
     - tap-through for every figure;
     - raw counts on the tablet;
     - deploying the dashboard, and adding its address to `TRUSTED_ORIGINS` on Render;

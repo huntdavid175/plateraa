@@ -100,6 +100,7 @@ export async function seedMenu(
 
 /** Child tables first, so foreign keys never block a delete. */
 const TENANT_TABLES = [
+  'daily_reports',
   'audit_events',
   'sync_commands',
   'provider_events',
