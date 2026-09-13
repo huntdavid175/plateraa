@@ -42,9 +42,12 @@ export interface MenuCategory {
   items: MenuItem[];
 }
 
-/** Tapping the tile needs a choice first: a size, or a required extra like the soup. */
-export const needsChoice = (item: MenuItem) =>
-  item.variants.length > 0 || item.groups.some((group) => group.minSelect > 0);
+/**
+ * Tapping the tile opens the item's sheet first when there's anything to pick: a size, or extras
+ * like the protein, required or not (13 Sep: an optional protein was otherwise only reachable
+ * through "Change"). An item with neither goes straight onto the order.
+ */
+export const needsChoice = (item: MenuItem) => item.variants.length > 0 || item.groups.length > 0;
 
 /** The menu as the counter shows it: categories in order, then anything without one. */
 export async function loadMenu(db: Sql, businessDate: string): Promise<MenuCategory[]> {
