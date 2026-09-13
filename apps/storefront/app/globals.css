@@ -7,8 +7,12 @@
  * colour for the main action and the selected state, and status colours only with a word. The
  * brand colour is the store owner's choice (`--brand`, set per store in <Themed>); its lighter and
  * darker shades are worked out from it on `.themed`, where it's set.
+ *
+ * `inline` matters: it makes `bg-brand` read `var(--brand)` where it's used. Without it, Tailwind
+ * defines `--color-brand: var(--brand)` on :root, which settles on the default orange there, and
+ * every page shows orange whatever colour the owner chose.
  */
-@theme {
+@theme inline {
   --color-brand: var(--brand);
   --color-brand-hover: var(--brand-hover);
   --color-brand-tint: var(--brand-tint);

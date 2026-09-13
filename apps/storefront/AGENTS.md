@@ -6,7 +6,7 @@ The online store customers order from (plan.md §4.0): one link per business, `S
 
 - Built to the user's Figma Make design, `design/storefront design.make` (kept out of `public/`, which the site serves to anyone). It's a zip; its code is a git pack under `make_repos/` (unpack it as described for the dashboard's design). The screens are in `src/App.tsx`. Its sample data isn't used.
 - Colours are CSS variables in `app/globals.css`, exposed as Tailwind names: `bg-page`, `bg-card`, `bg-tile`, `border-border`, `text-ink`, `text-muted`, `bg-brand`, `bg-brand-tint`, `text-green` / `bg-green-bg`, and so on.
-- **The brand colour is the owner's choice.** `<Themed theme>` sets `--brand` from `STOREFRONT_THEME_COLOURS` (`@plateraa/shared`), and `.themed` works out `--brand-hover` and `--brand-tint` from it. Never hard-code the brand colour.
+- **The brand colour is the owner's choice.** `<Themed theme>` sets `--brand` from `STOREFRONT_THEME_COLOURS` (`@plateraa/shared`), and `.themed` works out `--brand-hover` and `--brand-tint` from it. Never hard-code the brand colour. Keep `@theme inline` in `globals.css`: with plain `@theme`, `--color-brand` settles on :root's default orange and the owner's colour only reaches things that use `var(--brand)` directly (it happened on 13 Sep).
 - Dark mode follows the phone, with a switch remembered in the browser (`plateraa-dark`), applied before the first paint by the script in `app/layout.tsx`.
 - DM Sans and DM Mono come from `@fontsource`, so builds need no network. Money is `ghs()` (`lib/money.ts`), from whole pesewas.
 
@@ -22,4 +22,4 @@ The online store customers order from (plan.md §4.0): one link per business, `S
 ## Running
 
 - `pnpm --filter @plateraa/storefront dev` serves http://localhost:3001. To use an API on the laptop, set `PLATERAA_API_URL=http://localhost:3000` in `apps/storefront/.env.local`. After changing `@plateraa/shared` or the API client, build them first.
-- **Not deployed yet.** It goes on Vercel once there's an account; then set `STOREFRONT_URL` on Render to its address, so the dashboard shows the right store link and QR code.
+- **Deployed on Vercel** (13 Sep) at `https://plateraa-storefront-bvos.vercel.app`, built from `main` by Vercel's GitHub link (each build shows as a GitHub deployment; a build's own long address needs a Vercel login, the short one is public). `STOREFRONT_URL` on Render must be this address, so the dashboard shows the right store link and QR code. `PLATERAA_API_URL` isn't set there, so it uses the Render API. Until `plateraa.com` is set up, store links are `<that address>/<slug>`.
