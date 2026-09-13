@@ -200,23 +200,24 @@ _11 Sep: built (`apps/mobile/src/counter`; the counter screen is `app/index.tsx`
   - _**Dine-in** shows only where the owner offers it: dashboard Settings → Orders (`offers_dine_in`). New chop bars, fast food places and cafés start with it on. Walk-ins taken so far became pickups (migration 0011)._
   - _**Bolt Food and Chowdeck** are no longer typed in by hand: their orders will arrive once their APIs are connected (R4). The dashboard hides their prices and commissions, which stay on the server for then._
   - _**Figures:** Today, Reports and the tablet's Today's sales show dine-in, pickup and delivery instead of where orders came from, and the Orders list filters by them (`?type=`)._
-  - _Not tried on the tablet yet._
+  - _13 Sep: tried on the tablet and working._
 - [x] Dark mode, and removing a line from the order (not plan items before; user request, 13 Sep)
   - _**Dark mode:** More → Dark mode on the tablet, remembered on that tablet. Warm dark greys as on the dashboard's dark mode, and the same orange. Switching draws the screens afresh, so an order half typed in is cleared; nobody is signed out._
   - _**Remove:** every line of the order being typed in (or changed) has Remove, which takes the whole line off in one tap, however many there are._
-  - _Not tried on the tablet yet._
+  - _**Fixes the same day:** any item with extras opens its sheet when tapped, not only items with a required extra (fried rice's optional protein was otherwise only reachable through "Change"); and every screen keeps clear of the tablet's status and navigation bars, which Android now draws over the app._
+  - _13 Sep: all tried on the tablet and working._
 
 ### 2.4 Cash & stock
 
-- [x] Open shift with float (_11 Sep: built with 2.3, because cash needs an open drawer, and worked on the tablet. Later that day it moved to the start of the day: once someone who runs the drawer unlocks and none is open, the counter asks for the float. "Not now" holds for the trading day, and the first cash sale then asks instead. The move isn't tried on the tablet yet._)
-- [x] Drops and pay-ins (payouts are recorded by a manager on the dashboard) (_11 Sep: the Drawer tab's "Take cash out" and "Put cash in", with an optional reason; payouts from the dashboard show in the same list. Not tried on the tablet yet._)
-- [x] Close shift: expected vs counted vs variance, own shift only (_11 Sep: a blind count. Staff enter the cash counted, and only then see what the tablet expected and the difference ("Short by GH₵ 5.00"). The figures show only to the person who closed, or to someone allowed to see revenue, because expected cash includes the shift's cash sales. Anyone who runs the drawer can close it, so a drawer left open can still be closed. Not tried on the tablet yet._)
-- [x] One-tap sold-out toggle (_11 Sep: the Stock tab lists the menu, each item with one button showing "On sale" or "Sold out"; a tap flips it, and it lasts the trading day. Not tried on the tablet yet._)
+- [x] Open shift with float (_11 Sep: built with 2.3, because cash needs an open drawer, and worked on the tablet. Later that day it moved to the start of the day: once someone who runs the drawer unlocks and none is open, the counter asks for the float. "Not now" holds for the trading day, and the first cash sale then asks instead. 13 Sep: the prompt at the start of the day works on the tablet._)
+- [x] Drops and pay-ins (payouts are recorded by a manager on the dashboard) (_11 Sep: the Drawer tab's "Take cash out" and "Put cash in", with an optional reason; payouts from the dashboard show in the same list. 13 Sep: works on the tablet._)
+- [x] Close shift: expected vs counted vs variance, own shift only (_11 Sep: a blind count. Staff enter the cash counted, and only then see what the tablet expected and the difference ("Short by GH₵ 5.00"). The figures show only to the person who closed, or to someone allowed to see revenue, because expected cash includes the shift's cash sales. Anyone who runs the drawer can close it, so a drawer left open can still be closed. 13 Sep: works on the tablet._)
+- [x] One-tap sold-out toggle (_11 Sep: the Stock tab lists the menu, each item with one button showing "On sale" or "Sold out"; a tap flips it, and it lasts the trading day. 13 Sep: works on the tablet._)
 - [x] Morning prep counts that count down on each sale → auto sold-out at 0
   - _11 Sep, user decision: optional. For cooked food it's hard to know how many portions were made, so the owner switches counts on or off in the dashboard's settings (off by default). When off, items sell until someone taps "sold out"._
   - _11 Sep: built. `tenant_settings.count_portions` (migration 0006) syncs to the tablet. When it's on, the Stock tab's "Add portions" adds to today's count for items that have a count record, sales count down, and the item sells out by itself at 0. Only the seed script makes count records so far; the dashboard makes them in 3.1. Until then, `pnpm --filter @plateraa/api settings:portion-counts "<business>" on` switches counts on. Not tried on the tablet yet._
 - [x] Owner summaries held in memory only, cleared when the PIN session ends
-  - _13 Sep: "Today's sales" in the tablet's More menu (`app/today.tsx`). The person types their PIN again, which opens a 15-minute server session, and the tablet fetches `GET /api/reports/day`, the same day summary as the dashboard's Today. The server decides: anyone the owner hasn't let see sales gets a plain "not allowed". The figures live only in the screen's memory: never in SQLite, and gone when the tablet locks, the app goes to the background, "Done" is tapped or the session runs out. It needs the internet, and says when changes still waiting to upload aren't in the figures. Not tried on the tablet yet._
+  - _13 Sep: "Today's sales" in the tablet's More menu (`app/today.tsx`). The person types their PIN again, which opens a 15-minute server session, and the tablet fetches `GET /api/reports/day`, the same day summary as the dashboard's Today. The server decides: anyone the owner hasn't let see sales gets a plain "not allowed". The figures live only in the screen's memory: never in SQLite, and gone when the tablet locks, the app goes to the background, "Done" is tapped or the session runs out. It needs the internet, and says when changes still waiting to upload aren't in the figures. 13 Sep: works on the tablet, and only for people allowed to see sales._
   - _11 Sep: moved to go with the day summary in 3.2. The design says the owner's summary needs a connection, so the tablet will fetch it from the same reporting the dashboard uses rather than add up sales itself._
 
 ### 2.5 Payment links (pilot; added 10 Sep)
@@ -372,7 +373,7 @@ _11 Sep: the server side is built from Moolre's docs (docs.moolre.com; their `/a
       - _changes from it were refused in the last day._
     - _**We're told** through Sentry when a tablet is online but stuck (at most once an hour per tablet). Server errors (5xx) and background-job failures already went to Sentry._
     - _**At the counter**, the banner warns once changes haven't reached the server for 30 minutes._
-    - _Not done: Sentry on the tablet itself (it needs a new EAS build), so a crash on the tablet isn't reported yet. Not tried on a real tablet yet._
+    - _Not done: Sentry on the tablet itself (it needs a new EAS build), so a crash on the tablet isn't reported yet. 13 Sep: the counter's sync warnings show on the tablet._
 - [ ] Admin CLI v0: list/suspend tenants, revoke a device, reset a PIN, export the audit log
 - [ ] All items in the **R1a definition of done** below are green
 - [ ] Install at 1–2 vendors; on site for their first day

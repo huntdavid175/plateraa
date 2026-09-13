@@ -24,7 +24,8 @@ A solo founder (GitHub `huntdavid175`) builds it with an AI agent. Work started 
   - §2.1: the offline engine in `apps/mobile/src/offline`, tested in Node.
   - §2.2: the app shell, tablet registration, the PIN switcher, adding staff, the sync banner and the "Needs attention" screen. Tried on the tablet and working.
   - §2.3: taking orders (the counter screen, the orders list, cash, hold, edit and cancel). Tried on the tablet and working.
-  - §2.4: the Drawer tab (drops, pay-ins, a blind count at close) and the Stock tab (one-tap sold out, optional portion counts). Not tried on the tablet yet. Owner summaries moved to 3.2.
+  - §2.4: the Drawer tab (drops, pay-ins, a blind count at close) and the Stock tab (one-tap sold out, optional portion counts). Tried on the tablet on 13 Sep and working, as are the float prompt at the start of the day, Today's sales and the sync warnings. Owner summaries moved to 3.2.
+- **Done (13 Sep, tablet):** Dine-in / Pickup / Delivery, dark mode, Remove on each order line, the item sheet for any item with extras, and screens clear of the status bar. All tried on the tablet and working.
   - §2.5: payment links through each vendor's own Moolre account, texted by Moolre SMS, and counted only once Moolre's status check confirms them. The tablet sends them and shows each link's status. A real link was paid end to end on live Moolre on 12 Sep. See `apps/api/AGENTS.md`.
   - The rest of Phase 2 (12 Sep): "not synced yet" labels, refund owed, and the restyled screens.
 - **Phase 3.1–3.2, the dashboard** (12 Sep), built slice by slice to the user's Figma Make design. See `apps/dashboard/AGENTS.md`.
