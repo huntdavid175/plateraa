@@ -60,6 +60,7 @@ The counter app. It runs on the vendor's own budget Android tablet (8–10", **l
 ## App (`app/`, `src/tablet`, `src/ui`)
 
 - `app/_layout.tsx` picks the screens from the tablet's state with `Stack.Protected`: `register` (not set up yet), then `lock` (the PIN switcher), then `index` (the main counter screen), plus `attention`, `add-staff` and `diagnostics`. Expo Router moves between them by itself when the state changes; don't navigate by hand for that.
+- **Edge to edge** (13 Sep): Android draws the app under the tablet's status bar (time, battery, Wi-Fi) and navigation bar. `app/_layout.tsx` pads every screen by the safe-area insets (`react-native-safe-area-context`). A full-screen `Modal` (`Overlay` in `Sheet.tsx`, `SaleDone`, the More menu) is `statusBarTranslucent` and `navigationBarTranslucent`, so its dimming covers the bars, and pads its own content with `useSafeAreaInsets()`. Do the same for any new one.
 - `src/tablet/TabletProvider.tsx`: the one database (`localDatabase()`), the registered tablet's credentials and sync engine, and who is unlocked. Screens read the database with `useLocalQuery(sql)`, which reads again whenever the data changes, and the engine's state with `useEngineState()`.
 - `src/tablet/credentials.ts`: the device token and tablet details, in `expo-secure-store`. The owner's email login is signed out once setup is done.
 - `src/tablet/pin-guard.ts`: the offline PIN check and lockout, counted in the `pin_attempts` table. `src/tablet/IdleLock.tsx` locks the tablet after the business's idle time.

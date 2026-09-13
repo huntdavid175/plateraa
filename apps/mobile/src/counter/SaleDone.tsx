@@ -19,6 +19,8 @@ export function SaleDone({ done, onDismiss }: { done: Done | null; onDismiss: ()
     <Modal
       visible={done !== null}
       transparent
+      statusBarTranslucent
+      navigationBarTranslucent
       animationType="fade"
       onRequestClose={onDismiss}
       supportedOrientations={['landscape', 'portrait']}

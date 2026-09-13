@@ -1,6 +1,7 @@
 import { useRouter } from 'expo-router';
 import { useState } from 'react';
 import { Modal, Pressable, Text, View } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import type { SyncState } from '../offline/engine';
 import { useEngineState, useTablet } from '../tablet/TabletProvider';
 import { saveAppearance } from '../ui/appearance';
@@ -44,6 +45,8 @@ export function TopBar({ tab, onTab }: { tab: CounterTab; onTab: (tab: CounterTa
   const state = useEngineState(engine);
   const router = useRouter();
   const [menuOpen, setMenuOpen] = useState(false);
+  // The menu drops from under this bar, which sits below the tablet's status bar.
+  const insets = useSafeAreaInsets();
   const connection = connectionOf(state);
   const canAddStaff = staff?.capabilities.has('staff.manage') ?? false;
   const runsDrawer = staff?.capabilities.has('shift.operate') ?? false;
@@ -113,11 +116,19 @@ export function TopBar({ tab, onTab }: { tab: CounterTab; onTab: (tab: CounterTa
       <Modal
         visible={menuOpen}
         transparent
+        statusBarTranslucent
+        navigationBarTranslucent
         animationType="fade"
         onRequestClose={() => setMenuOpen(false)}
         supportedOrientations={['landscape', 'portrait']}
       >
-        <Pressable style={styles.menuBackdrop} onPress={() => setMenuOpen(false)}>
+        <Pressable
+          style={[
+            styles.menuBackdrop,
+            { paddingTop: 64 + insets.top, paddingRight: space.lg + insets.right },
+          ]}
+          onPress={() => setMenuOpen(false)}
+        >
           <View style={styles.menu} onStartShouldSetResponder={() => true}>
             {/* Anyone can ask; the server shows the figures only to people allowed to see sales. */}
             <MenuItem label="Today's sales" onPress={() => go('/today')} />

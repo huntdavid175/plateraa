@@ -1,10 +1,15 @@
 import type { ReactNode } from 'react';
 import { Modal, Pressable, Text, View, type DimensionValue } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { colors, font, radii, themedStyles } from './theme';
+
+/** The gap around a card in the centre. */
+const GAP = 24;
 
 /**
  * A card over a dimmed screen: in the centre (payment), or as a panel from the right (an item's
- * options, over the order column). Tapping outside closes it.
+ * options, over the order column). Tapping outside closes it. The dimming covers the whole
+ * screen, the tablet's status and navigation bars too; the card keeps clear of them.
  */
 export function Overlay({
   visible,
@@ -21,24 +26,45 @@ export function Overlay({
   height?: DimensionValue;
   children: ReactNode;
 }) {
+  const insets = useSafeAreaInsets();
   return (
     <Modal
       visible={visible}
       transparent
+      statusBarTranslucent
+      navigationBarTranslucent
       animationType="fade"
       onRequestClose={onClose}
       supportedOrientations={['landscape', 'portrait']}
     >
       <Pressable
         accessibilityLabel="Close"
-        style={[styles.backdrop, side === 'right' && styles.backdropRight]}
+        style={[
+          styles.backdrop,
+          side === 'right'
+            ? styles.backdropRight
+            : {
+                paddingTop: GAP + insets.top,
+                paddingBottom: GAP + insets.bottom,
+                paddingLeft: GAP + insets.left,
+                paddingRight: GAP + insets.right,
+              },
+        ]}
         onPress={onClose}
       >
         <View
           onStartShouldSetResponder={() => true}
           style={
             side === 'right'
-              ? [styles.panel, { width: width ?? '38%' }]
+              ? [
+                  styles.panel,
+                  {
+                    width: width ?? '38%',
+                    paddingTop: insets.top,
+                    paddingBottom: insets.bottom,
+                    paddingRight: insets.right,
+                  },
+                ]
               : [styles.card, { width: width ?? 900, height: height ?? 680 }]
           }
         >
@@ -69,9 +95,8 @@ const styles = themedStyles(() => ({
     backgroundColor: 'rgba(26, 25, 23, 0.45)',
     justifyContent: 'center',
     alignItems: 'center',
-    padding: 24,
   },
-  backdropRight: { alignItems: 'flex-end', padding: 0 },
+  backdropRight: { alignItems: 'flex-end' },
   card: {
     maxWidth: '100%',
     maxHeight: '100%',
