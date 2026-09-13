@@ -5,7 +5,7 @@ An operating system for small informal Ghanaian food vendors. They take orders f
 - an **offline-first Android tablet app** at the counter;
 - a NestJS API;
 - a web dashboard for owners and managers;
-- later, a storefront.
+- an online store (the storefront) that customers order and pay from, one link per business.
 
 A solo founder (GitHub `huntdavid175`) builds it with an AI agent. Work started Thu 10 Sep 2026.
 
@@ -20,32 +20,38 @@ A solo founder (GitHub `huntdavid175`) builds it with an AI agent. Work started 
   - The §2.0/§2.0b decision changes.
   - The day-1 tablet test.
 - **Phase 1 leftovers:** Sentry on the tablet (at its next EAS build), the Render worker, and a Neon branch per PR. Sentry for the API and the Neon `test` branch were done on 12 Sep.
-- **Done (11 Sep, Phase 2):**
+- **Done (11–12 Sep, Phase 2):**
   - §2.1: the offline engine in `apps/mobile/src/offline`, tested in Node.
   - §2.2: the app shell, tablet registration, the PIN switcher, adding staff, the sync banner and the "Needs attention" screen. Tried on the tablet and working.
   - §2.3: taking orders (the counter screen, the orders list, cash, hold, edit and cancel). Tried on the tablet and working.
   - §2.4: the Drawer tab (drops, pay-ins, a blind count at close) and the Stock tab (one-tap sold out, optional portion counts). Tried on the tablet on 13 Sep and working, as are the float prompt at the start of the day, Today's sales and the sync warnings. Owner summaries moved to 3.2.
-- **The online store (13 Sep, plan.md §4.0),** moved up to before the pilot: the data and public API (`apps/api/src/storefront`), online orders on the tablet, Settings → Online store on the dashboard, and the storefront pages to the user's design (`apps/storefront`). Photos (items, the store's cover and logo, in Cloudflare R2) followed the same day. The storefront is live on Vercel at `https://plateraa-storefront-bvos.vercel.app` (see `apps/storefront/AGENTS.md`). Still open: the order sound on the tablet.
-- **Done (13 Sep, tablet):** Dine-in / Pickup / Delivery, dark mode, Remove on each order line, the item sheet for any item with extras, and screens clear of the status bar. All tried on the tablet and working.
   - §2.5: payment links through each vendor's own Moolre account, texted by Moolre SMS, and counted only once Moolre's status check confirms them. The tablet sends them and shows each link's status. A real link was paid end to end on live Moolre on 12 Sep. See `apps/api/AGENTS.md`.
   - The rest of Phase 2 (12 Sep): "not synced yet" labels, refund owed, and the restyled screens.
+- **Done (13 Sep, tablet):** Dine-in / Pickup / Delivery, dark mode, Remove on each order line, the item sheet for any item with extras, and screens clear of the status bar. All tried on the tablet and working.
+- **The online store (13 Sep, plan.md §4.0),** moved up to before the pilot:
+  - the data and public API (`apps/api/src/storefront`), online orders on the tablet (numbered W1, W2, …, with "N online orders to accept" in the top bar), and Settings → Online store on the dashboard;
+  - the storefront pages to the user's Figma Make design (`apps/storefront`), live on Vercel at `https://plateraa-storefront-bvos.vercel.app`, with `STOREFRONT_URL` on Render pointing there;
+  - photos: one per menu item, plus the store's cover picture and logo, kept in Cloudflare R2 (`apps/api/src/photos`);
+  - nine store looks (`STOREFRONT_LOOKS` in `@plateraa/shared`): the owner picks the page colour, and the top band, text and buttons follow it, in light and dark, with every look's contrast checked by a test.
+  - Still open: the order sound on the tablet (needs an EAS build), trying Accept on the tablet, and a real order placed from a phone.
 - **Phase 3.1–3.2, the dashboard** (12 Sep), built slice by slice to the user's Figma Make design. See `apps/dashboard/AGENTS.md`.
   - Pages:
     - sign-in, sign-up and the 7-step onboarding;
     - Today;
     - Orders;
     - refunds, payouts and discounts;
-    - Menu and the item editor, with Bolt Food and Chowdeck prices synced to the tablet;
+    - Menu and the item editor, with a photo per item ("Mark sold out" on each card; Bolt Food and Chowdeck prices hidden since 13 Sep, kept on the server);
     - Staff and tablets;
-    - Settings, including a live Moolre check;
+    - Settings, including a live Moolre check, delivery zones and the Online store;
     - Expenses and Stock;
     - Reports.
-  - 13 Sep: delivery zones (in Settings), Today for any past day, "Pick days" on Reports, and finished days' figures kept in `daily_reports` (not pg-boss: see `apps/api/AGENTS.md`). Then the Customers pages (new capability `customers.manage`), and no more scrollbars that shift the page.
+  - 13 Sep: delivery zones (in Settings), Today for any past day, "Pick days" on Reports, and finished days' figures kept in `daily_reports` (not pg-boss: see `apps/api/AGENTS.md`). Then the Customers pages (new capability `customers.manage`), and no more scrollbars that shift the page. Switches that save the moment they're tapped use `saveInPlace`, so they never flick back to the old value while saving (see `apps/dashboard/AGENTS.md`).
+  - 13 Sep: every figure on Today and Reports opens the orders or expenses behind it (drawer closes don't yet).
   - Still open in `plan.md`:
-    - tap-through for every figure;
-    - raw counts on the tablet;
+    - raw counts on the tablet (the `stock.raw_count` command exists; no tablet screen yet);
     - deploying the dashboard, and adding its address to `TRUSTED_ORIGINS` on Render (not yet: user decision, 13 Sep);
     - 3.3 receipts (later, once the printer arrives: user decision, 13 Sep).
+- **Next toward R1a** (`plan.md` Phase 4): the admin CLI v0 (list and suspend businesses, revoke a tablet, reset a PIN, export the audit log), a performance check on a 2–3 GB budget tablet, the APK size, the R1a definition of done, and moving Render to the `production` branch before installing at the first vendors.
 - Founder tasks (Moolre, lawyer, printers, domain, Play Console) are Phase 0 in `plan.md`.
 
 ## Working with the user
@@ -77,7 +83,7 @@ A solo founder (GitHub `huntdavid175`) builds it with an AI agent. Work started 
 | Area      | Versions                                                                                                       |
 | --------- | -------------------------------------------------------------------------------------------------------------- |
 | Toolchain | Node 24, pnpm 10.34.5, Turborepo 2.10.12, TypeScript 6.0.3 (not 7: typescript-eslint), ESLint 10, Prettier 3.9 |
-| API       | NestJS 11.2, nestjs-zod 5.5 + Zod 4.6, Better Auth 1.7.4, jose 6, @node-rs/argon2                              |
+| API       | NestJS 11.2, nestjs-zod 5.5 + Zod 4.6, Better Auth 1.7.4, jose 6, @node-rs/argon2, aws4fetch 1.0 (R2 photos)   |
 | Data      | drizzle-orm 0.45.2 on Neon Postgres 18.6 (Frankfurt)                                                           |
 | Tablet    | Expo SDK 57 (RN 0.86.3, React 19.2.3), op-sqlite 18.2.1                                                        |
 | Web       | Vite 8 + React 19, React Router 7, TanStack Query 5 (dashboard), Next 16.3 (storefront), Tailwind 4            |
@@ -103,6 +109,7 @@ packages/ui         web components (empty so far)
 - `order-payment.ts`: `amountDue`, `isAwaitingPayment`, `paymentStartsPrep`, `refundOwed`.
 - `capabilities.ts`: role → capabilities (STAFF / MANAGER / OWNER).
 - `sync-commands.ts`: Zod command schemas plus `COMMAND_CAPABILITY`.
+- `storefront.ts`: `STOREFRONT_THEMES` and `STOREFRONT_LOOKS`, each store look's light and dark colours. `storefront.test.ts` checks every look's contrast.
 - `pin.ts`, `phone.ts`, `enums.ts`, `menu-templates.ts`.
 
 ## Commands
@@ -116,6 +123,8 @@ On this Windows machine, `pnpm` works in PowerShell. **In Git Bash the global `p
 - **Database tests are local-only.** Tests that need the database run against the Neon `test` branch (`TEST_DATABASE_URL` / `TEST_DATABASE_URL_DIRECT` in the root `.env`, brought up to the latest migration before each run), and **skip themselves when it isn't set, including in CI**. So run `pnpm test` locally before pushing any change to the API or the database.
 - **Migrations:** `pnpm --filter @plateraa/db db:generate`, then `db:migrate`.
 - **Deployed API:** `https://plateraa-api.onrender.com` (Render, Frankfurt, free plan, service `srv-dahug3rm8hqs73deg150`). It deploys from `main` **only after CI passes** (auto-deploy trigger "checks pass"), so a failed CI run means no deploy. To check: `gh run list` (GitHub CLI; re-run a run that failed at startup with `gh run rerun <id>`), and Render's deploys through its API with `RENDER_API_KEY` from `.env` (`GET https://api.render.com/v1/services/<service>/deploys`, and `GET /v1/logs?ownerId=…&resource=<service>` for the logs). On the free plan a new instance is sometimes stopped before it opens its port. Render then waits out a 15-minute port scan, and on 13 Sep it marked that deploy live while running the previous build. So after a deploy that sat at `update_in_progress`, check its startup log lists the new modules (`InstanceLoader`). If it doesn't, redeploy the commit with the build cache cleared (`POST /v1/services/<service>/deploys` with `{"clearCache":"clear"}`). The free plan has no pre-deploy step, so **before pushing code that needs a new migration, run `pnpm --filter @plateraa/db db:migrate`** (the `dev` branch, which Render also uses for now). Once the `production` branch is in use, run `db:migrate:production` too.
+- **Deployed storefront:** `https://plateraa-storefront-bvos.vercel.app` (Vercel, set up by the user on 13 Sep through Vercel's GitHub link). Vercel builds every push to `main` itself, **without waiting for CI**, and each build shows as a GitHub deployment (`gh api repos/huntdavid175/plateraa/deployments`, then `…/deployments/<id>/statuses`). So a storefront change can be live before Render has deployed the API change it needs: keep them compatible, or push the API first. `STOREFRONT_URL` on Render is this address; it makes the dashboard's store link and QR code.
+- **The dashboard isn't deployed** (user decision, 13 Sep): it runs on the laptop against the Render API (`pnpm --filter @plateraa/dashboard dev`).
 - **Three Neon branches** (Frankfurt). `test` is only for the automated tests. `dev` is used by Render, the tablet, the test business and the laptop during development. `production` is untouched and kept for the pilot: before R1a it gets every migration, Render moves to it, and the pilot vendors are set up there. On the laptop, `DATABASE_URL` / `DATABASE_URL_DIRECT` are `dev`. `PRODUCTION_DATABASE_URL` / `PRODUCTION_DATABASE_URL_DIRECT` are `production` (empty until we set it up), used only by `db:migrate:production` and by setup scripts run with `--production`. Tests refuse to run on `dev` (Render's payment-link sender works there and picked up a test's link once) or on `production`.
 - **Errors** from the deployed API go to Sentry (EU region; `SENTRY_DSN` on Render only). The tablet joins at its next EAS build.
 - **Payment links** only run where `RUN_PAYMENT_LINKS=true`: on Render, never on the laptop, which shares the database. They also need `SECRETS_KEY`, `MOOLRE_BASE_URL`, `MOOLRE_SMS_VASKEY` and `MOOLRE_SMS_SENDER_ID` (see `.env.example`). A vendor's own Moolre account is saved with `pnpm --filter @plateraa/api settings:moolre-account "<business>"`.
