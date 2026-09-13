@@ -27,7 +27,8 @@ NestJS 11 (not 12: nestjs-zod 5.5 needs `@nestjs/common` ^11), CommonJS, built w
 - `orders/` (dashboard reads):
   - `GET /api/orders?date=&limit=`: a day's orders, newest first, with their items and how they were paid;
   - `GET /api/orders/refunds-owed`: orders from any day where the customer is owed money back. Needs `refunds.record`.
-  - `GET /api/orders/:orderId`: one order in full: lines with extras, payments, refunds, payment links, and the status history with who did what.
+  - `GET /api/orders/:orderId`: one order in full: lines with extras, payments, refunds, payment links, the status history with who did what, and `customerId`.
+- `customers/`: `GET /api/customers?search=` (most recent first; a name or part of a number), `GET /api/customers/:id` (with their latest 50 orders, from `OrdersService.forCustomer`) and `PUT /api/customers/:id` (name and notes, `customers.manage`, audited; the number never changes). `spent` is null without `reports.revenue.view`.
 - `reports/`: `GET /api/reports/day?date=`, the day summary (plan.md §3.2). Needs `reports.revenue.view`.
   - Figures hang off the orders' trading day. `figures.ts` holds `DayFigures` (one day's figures, with their definitions) and `workOutDays()`, which works out any set of days in about ten grouped queries.
   - `daily.ts`: `DailyReports.days(tx, tenantId, from, to)` is how both reports get their days.

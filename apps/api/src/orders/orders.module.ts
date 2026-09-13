@@ -63,7 +63,7 @@ class OrdersQueryDto extends createZodDto(
 
 const money = z.number().int();
 
-const orderRowSchema = z.object({
+export const orderRowSchema = z.object({
   id: z.string(),
   /** As shouted across the counter: the tablet's letter and the day's number, e.g. "A15". */
   displayNumber: z.string(),
@@ -107,6 +107,8 @@ class OrderDetailDto extends createZodDto(
     externalReference: nullableText(),
     /** Why the owner should look at it, e.g. PRICE_MISMATCH. */
     reviewReasons: z.array(z.string()),
+    /** For the link to the customer's page. */
+    customerId: nullableText(),
     customerName: nullableText(),
     items: z.array(
       z.object({
@@ -240,6 +242,17 @@ export class OrdersService {
     });
   }
 
+  /** One customer's orders from any day, newest first. */
+  async forCustomer(tenantId: string, customerId: string, limit: number) {
+    return withTenant(this.database.db, tenantId, async (tx) => {
+      const rows = await this.selectRows(tx)
+        .where(and(eq(orders.customerId, customerId), isNull(orders.deletedAt)))
+        .orderBy(desc(orders.createdAtDevice))
+        .limit(limit);
+      return this.withItems(tx, rows);
+    });
+  }
+
   /** One order in full: its lines, money, payment links and history. */
   async detail(tenantId: string, orderId: string) {
     return withTenant(this.database.db, tenantId, async (tx) => {
@@ -254,6 +267,7 @@ export class OrdersService {
           cancelReason: orders.cancelReason,
           externalReference: orders.externalReference,
           reviewReasons: orders.reviewReasons,
+          customerId: orders.customerId,
           customerName: customers.name,
         })
         .from(orders)
@@ -351,6 +365,7 @@ export class OrdersService {
         cancelReason: order.cancelReason,
         externalReference: order.externalReference,
         reviewReasons: order.reviewReasons,
+        customerId: order.customerId,
         customerName: order.customerName,
         items: lines.map((line) => ({
           ...line,
@@ -472,5 +487,5 @@ export class OrdersController {
   }
 }
 
-@Module({ controllers: [OrdersController], providers: [OrdersService] })
+@Module({ controllers: [OrdersController], providers: [OrdersService], exports: [OrdersService] })
 export class OrdersModule {}

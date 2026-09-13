@@ -93,7 +93,7 @@ export function MenuPage() {
         </Link>
       }
     >
-      <div className="mb-6 flex gap-1 overflow-x-auto rounded-xl bg-tile p-1">
+      <div className="no-scrollbar mb-6 flex gap-1 overflow-x-auto rounded-xl bg-tile p-1">
         {pills.map((pill) => (
           <button
             key={pill.id}

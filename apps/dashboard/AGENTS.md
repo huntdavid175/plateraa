@@ -24,6 +24,7 @@ The web dashboard for owners and managers (plan.md §3.1). It uses:
   - Dark mode is the `dark` class on `<html>` (`lib/theme.ts`). It starts from the device's own setting and is then remembered per browser.
 - **Fonts:** DM Sans for text; DM Mono (`font-mono`) for money and order numbers.
 - **Plain words.** Every screen works at phone width: the sidebar shows from `md` up; below that there's a bottom bar plus "More".
+- **Scrollbars** (`src/index.css`): nothing may show a bar on hover, since it takes width and shifts the page. `no-scrollbar` for the sidebar and rows of pills (they still scroll), `page-scroll` for a page's own scrolling (thin, with its room always kept), `thin-scrollbar` for dialogs.
 
 ## Layout
 
@@ -47,7 +48,8 @@ The web dashboard for owners and managers (plan.md §3.1). It uses:
 - `router.tsx` holds the routes; `pages/` holds the screens.
   - Today (`TodayPage`): the day summary, the refunds-owed banner and recent orders. The date box opens any past day (`/?date=`), without the open drawers; today itself is left to the server's trading day.
   - Orders (`OrdersPage`): a day's orders, filtered by source and by paid or not. The day and the filters live in the address, so a view can be shared. Totals show only with `reports.revenue.view`.
-  - Order (`OrderPage`): one order in full. Links to it pass `state: { back, label }`, so "←" returns to where the person came from.
+  - Order (`OrderPage`): one order in full. Links to it pass `state: { back, label }`, so "←" returns to where the person came from. It links to the order's customer.
+  - Customers (`CustomersPage`, search in `?q=`) and one customer (`CustomerPage`): their orders, first and last order, what they spent (with `reports.revenue.view`), and name and notes to edit (`customers.manage`). `lib/customers.ts`.
   - Menu (`MenuPage`): category pills, item cards, and one-tap sold out.
   - `ItemEditorPage` (`/menu/items/new`, `/menu/items/:itemId`): the design's full-screen editor.
     - It keeps a text form (`ItemForm`) and turns it into the API's item with `toInput()`, which also finds the first thing to fix.

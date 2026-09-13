@@ -10,6 +10,7 @@ import { Button, ErrorNote, Spinner, Toggle, cx } from '../ui/controls';
 import {
   BoxIcon,
   ChartIcon,
+  CustomersIcon,
   HomeIcon,
   MenuIcon,
   MoreIcon,
@@ -34,6 +35,7 @@ interface NavItem {
 const NAV: NavItem[] = [
   { to: '/', label: 'Today', Icon: HomeIcon },
   { to: '/orders', label: 'Orders', Icon: OrdersIcon },
+  { to: '/customers', label: 'Customers', Icon: CustomersIcon },
   { to: '/menu', label: 'Menu', Icon: MenuIcon, needs: 'catalog.manage' },
   { to: '/staff', label: 'Staff', Icon: StaffIcon, needs: 'staff.manage' },
   { to: '/refunds', label: 'Refunds', Icon: RefundIcon, needs: 'refunds.record' },
@@ -94,7 +96,7 @@ export function Shell() {
       <Sidebar me={me} nav={nav} />
       <div className="flex min-w-0 flex-1 flex-col">
         <PhoneHeader me={me} overflow={nav.slice(BOTTOM_BAR_SIZE)} />
-        <main className="scroll-area flex-1 overflow-y-auto pb-20 md:pb-0">
+        <main className="page-scroll flex-1 overflow-y-auto pb-20 md:pb-0">
           <Outlet context={me} />
         </main>
       </div>
@@ -111,7 +113,7 @@ function Sidebar({ me, nav }: { me: Me; nav: NavItem[] }) {
         <BusinessBlock me={me} />
       </div>
 
-      <nav className="scroll-area flex-1 space-y-0.5 overflow-y-auto px-3 py-3">
+      <nav className="no-scrollbar flex-1 space-y-0.5 overflow-y-auto px-3 py-3">
         {nav.map(({ to, label, Icon }) => (
           <NavLink
             key={to}

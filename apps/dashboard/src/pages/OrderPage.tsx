@@ -235,6 +235,17 @@ function OrderBody({ order }: { order: OrderDetail }) {
           <div className="space-y-3 px-5 py-4">
             {order.customerName && <Pair label="Name" value={order.customerName} />}
             {order.customerPhone && <Pair label="Phone" value={phoneWords(order.customerPhone)} />}
+            {order.customerId && (
+              <div className="text-right">
+                <Link
+                  to={`/customers/${order.customerId}`}
+                  state={{ back: `/orders/${order.id}`, label: `Order ${order.displayNumber}` }}
+                  className="text-xs font-medium text-brand"
+                >
+                  All their orders →
+                </Link>
+              </div>
+            )}
             {order.deliveryAddress && <Pair label="Deliver to" value={order.deliveryAddress} />}
             {order.externalReference && (
               <Pair label={`${SOURCE_WORDS[order.source]} order`} value={order.externalReference} />

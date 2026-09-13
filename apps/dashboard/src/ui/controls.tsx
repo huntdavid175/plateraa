@@ -174,7 +174,7 @@ export function PillFilter<T extends string>({
     <div
       role="group"
       aria-label={label}
-      className="flex h-9 max-w-full items-center gap-1 overflow-x-auto rounded-lg border border-border bg-surface p-1"
+      className="no-scrollbar flex h-9 max-w-full items-center gap-1 overflow-x-auto rounded-lg border border-border bg-surface p-1"
     >
       {options.map((option) => (
         <button

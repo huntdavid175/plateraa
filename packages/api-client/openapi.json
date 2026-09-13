@@ -638,6 +638,127 @@
         ]
       }
     },
+    "/api/customers": {
+      "get": {
+        "operationId": "CustomersController_list",
+        "parameters": [
+          {
+            "name": "search",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "maxLength": 40,
+              "type": "string"
+            }
+          },
+          {
+            "name": "limit",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "minimum": 1,
+              "maximum": 200,
+              "default": 100,
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/CustomerRowDto_Output"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "Customers"
+        ]
+      }
+    },
+    "/api/customers/{customerId}": {
+      "get": {
+        "operationId": "CustomersController_detail",
+        "parameters": [
+          {
+            "name": "customerId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CustomerDetailDto_Output"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "Customers"
+        ]
+      },
+      "put": {
+        "operationId": "CustomersController_save",
+        "parameters": [
+          {
+            "name": "customerId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SaveCustomerDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "204": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "Customers"
+        ]
+      }
+    },
     "/api/reports/day": {
       "get": {
         "operationId": "ReportsController_day",
@@ -1874,6 +1995,7 @@
                 "staff.manage",
                 "expenses.manage",
                 "devices.manage",
+                "customers.manage",
                 "settings.manage",
                 "reports.revenue.view"
               ]
@@ -2104,6 +2226,7 @@
                 "staff.manage",
                 "expenses.manage",
                 "devices.manage",
+                "customers.manage",
                 "settings.manage",
                 "reports.revenue.view"
               ]
@@ -4027,6 +4150,10 @@
               "type": "string"
             }
           },
+          "customerId": {
+            "type": "string",
+            "nullable": true
+          },
           "customerName": {
             "type": "string",
             "nullable": true
@@ -4262,6 +4389,7 @@
           "cancelReason",
           "externalReference",
           "reviewReasons",
+          "customerId",
           "customerName",
           "payments",
           "refunds",
@@ -4269,6 +4397,261 @@
           "history"
         ],
         "additionalProperties": false
+      },
+      "CustomerRowDto_Output": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "phone": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string",
+            "nullable": true
+          },
+          "notes": {
+            "type": "string",
+            "nullable": true
+          },
+          "orders": {
+            "type": "integer",
+            "minimum": -9007199254740991,
+            "maximum": 9007199254740991
+          },
+          "spent": {
+            "type": "integer",
+            "minimum": -9007199254740991,
+            "maximum": 9007199254740991,
+            "nullable": true
+          },
+          "firstOrderOn": {
+            "type": "string",
+            "nullable": true
+          },
+          "lastOrderOn": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "required": [
+          "id",
+          "phone",
+          "name",
+          "notes",
+          "orders",
+          "spent",
+          "firstOrderOn",
+          "lastOrderOn"
+        ],
+        "additionalProperties": false
+      },
+      "CustomerDetailDto_Output": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "phone": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string",
+            "nullable": true
+          },
+          "notes": {
+            "type": "string",
+            "nullable": true
+          },
+          "orders": {
+            "type": "integer",
+            "minimum": -9007199254740991,
+            "maximum": 9007199254740991
+          },
+          "spent": {
+            "type": "integer",
+            "minimum": -9007199254740991,
+            "maximum": 9007199254740991,
+            "nullable": true
+          },
+          "firstOrderOn": {
+            "type": "string",
+            "nullable": true
+          },
+          "lastOrderOn": {
+            "type": "string",
+            "nullable": true
+          },
+          "recentOrders": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "id": {
+                  "type": "string"
+                },
+                "displayNumber": {
+                  "type": "string"
+                },
+                "businessDate": {
+                  "type": "string"
+                },
+                "source": {
+                  "type": "string",
+                  "enum": [
+                    "POS",
+                    "PHONE",
+                    "STOREFRONT",
+                    "BOLT_FOOD",
+                    "CHOWDECK",
+                    "OTHER"
+                  ]
+                },
+                "type": {
+                  "type": "string",
+                  "enum": [
+                    "WALK_IN",
+                    "PICKUP",
+                    "DELIVERY"
+                  ]
+                },
+                "status": {
+                  "type": "string",
+                  "enum": [
+                    "NEW",
+                    "CONFIRMED",
+                    "PREPARING",
+                    "READY",
+                    "OUT_FOR_DELIVERY",
+                    "COMPLETED",
+                    "CANCELLED",
+                    "REFUNDED"
+                  ]
+                },
+                "onHold": {
+                  "type": "boolean"
+                },
+                "total": {
+                  "type": "integer",
+                  "minimum": -9007199254740991,
+                  "maximum": 9007199254740991
+                },
+                "amountDue": {
+                  "type": "integer",
+                  "minimum": -9007199254740991,
+                  "maximum": 9007199254740991
+                },
+                "amountPaid": {
+                  "type": "integer",
+                  "minimum": -9007199254740991,
+                  "maximum": 9007199254740991
+                },
+                "refundOwed": {
+                  "type": "integer",
+                  "minimum": -9007199254740991,
+                  "maximum": 9007199254740991
+                },
+                "paidWith": {
+                  "type": "array",
+                  "items": {
+                    "type": "string",
+                    "enum": [
+                      "CASH",
+                      "PLATFORM",
+                      "LINK"
+                    ]
+                  }
+                },
+                "items": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "name": {
+                        "type": "string"
+                      },
+                      "variantName": {
+                        "type": "string",
+                        "nullable": true
+                      },
+                      "quantity": {
+                        "type": "integer",
+                        "minimum": -9007199254740991,
+                        "maximum": 9007199254740991
+                      }
+                    },
+                    "required": [
+                      "name",
+                      "variantName",
+                      "quantity"
+                    ],
+                    "additionalProperties": false
+                  }
+                },
+                "takenAt": {
+                  "type": "string"
+                },
+                "takenBy": {
+                  "type": "string",
+                  "nullable": true
+                },
+                "customerPhone": {
+                  "type": "string",
+                  "nullable": true
+                }
+              },
+              "required": [
+                "id",
+                "displayNumber",
+                "businessDate",
+                "source",
+                "type",
+                "status",
+                "onHold",
+                "total",
+                "amountDue",
+                "amountPaid",
+                "refundOwed",
+                "paidWith",
+                "items",
+                "takenAt",
+                "takenBy",
+                "customerPhone"
+              ],
+              "additionalProperties": false
+            }
+          }
+        },
+        "required": [
+          "id",
+          "phone",
+          "name",
+          "notes",
+          "orders",
+          "spent",
+          "firstOrderOn",
+          "lastOrderOn",
+          "recentOrders"
+        ],
+        "additionalProperties": false
+      },
+      "SaveCustomerDto": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "maxLength": 80
+          },
+          "notes": {
+            "type": "string",
+            "maxLength": 300
+          }
+        },
+        "required": [
+          "name",
+          "notes"
+        ]
       },
       "DaySummaryDto_Output": {
         "type": "object",

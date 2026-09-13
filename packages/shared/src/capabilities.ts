@@ -16,6 +16,7 @@ export const CAPABILITIES = [
   'staff.manage',
   'expenses.manage',
   'devices.manage',
+  'customers.manage', // dashboard: change a customer's name and notes
   'settings.manage',
   'reports.revenue.view', // any aggregate money figure: sales totals, profit, margins
 ] as const;
@@ -42,6 +43,7 @@ const ROLE_CAPABILITIES: Record<Role, readonly Capability[]> = {
     'staff.manage',
     'expenses.manage',
     'devices.manage',
+    'customers.manage',
   ],
   STAFF: STAFF_CAPABILITIES,
   RIDER: ['deliveries.update'],

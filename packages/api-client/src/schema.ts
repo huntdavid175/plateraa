@@ -292,6 +292,38 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/customers": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["CustomersController_list"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/customers/{customerId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["CustomersController_detail"];
+        put: operations["CustomersController_save"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/reports/day": {
         parameters: {
             query?: never;
@@ -711,7 +743,7 @@ export interface components {
             displayName: string;
             /** @enum {string} */
             role: "OWNER" | "MANAGER" | "STAFF" | "RIDER";
-            capabilities: ("orders.take" | "orders.cancel" | "payments.record" | "shift.operate" | "shift.own_cash.view" | "stock.count" | "deliveries.update" | "refunds.record" | "payouts.record" | "discounts.apply" | "catalog.manage" | "staff.manage" | "expenses.manage" | "devices.manage" | "settings.manage" | "reports.revenue.view")[];
+            capabilities: ("orders.take" | "orders.cancel" | "payments.record" | "shift.operate" | "shift.own_cash.view" | "stock.count" | "deliveries.update" | "refunds.record" | "payouts.record" | "discounts.apply" | "catalog.manage" | "staff.manage" | "expenses.manage" | "devices.manage" | "customers.manage" | "settings.manage" | "reports.revenue.view")[];
         };
         RegisterDeviceDto: {
             /** Format: ulid */
@@ -761,7 +793,7 @@ export interface components {
                 /** @enum {string} */
                 role: "OWNER" | "MANAGER" | "STAFF" | "RIDER";
             };
-            capabilities: ("orders.take" | "orders.cancel" | "payments.record" | "shift.operate" | "shift.own_cash.view" | "stock.count" | "deliveries.update" | "refunds.record" | "payouts.record" | "discounts.apply" | "catalog.manage" | "staff.manage" | "expenses.manage" | "devices.manage" | "settings.manage" | "reports.revenue.view")[];
+            capabilities: ("orders.take" | "orders.cancel" | "payments.record" | "shift.operate" | "shift.own_cash.view" | "stock.count" | "deliveries.update" | "refunds.record" | "payouts.record" | "discounts.apply" | "catalog.manage" | "staff.manage" | "expenses.manage" | "devices.manage" | "customers.manage" | "settings.manage" | "reports.revenue.view")[];
         };
         TeamDto_Output: {
             staff: {
@@ -1227,6 +1259,7 @@ export interface components {
             cancelReason: string | null;
             externalReference: string | null;
             reviewReasons: string[];
+            customerId: string | null;
             customerName: string | null;
             payments: {
                 id: string;
@@ -1267,6 +1300,55 @@ export interface components {
                 by: string | null;
                 at: string;
             }[];
+        };
+        CustomerRowDto_Output: {
+            id: string;
+            phone: string;
+            name: string | null;
+            notes: string | null;
+            orders: number;
+            spent: number | null;
+            firstOrderOn: string | null;
+            lastOrderOn: string | null;
+        };
+        CustomerDetailDto_Output: {
+            id: string;
+            phone: string;
+            name: string | null;
+            notes: string | null;
+            orders: number;
+            spent: number | null;
+            firstOrderOn: string | null;
+            lastOrderOn: string | null;
+            recentOrders: {
+                id: string;
+                displayNumber: string;
+                businessDate: string;
+                /** @enum {string} */
+                source: "POS" | "PHONE" | "STOREFRONT" | "BOLT_FOOD" | "CHOWDECK" | "OTHER";
+                /** @enum {string} */
+                type: "WALK_IN" | "PICKUP" | "DELIVERY";
+                /** @enum {string} */
+                status: "NEW" | "CONFIRMED" | "PREPARING" | "READY" | "OUT_FOR_DELIVERY" | "COMPLETED" | "CANCELLED" | "REFUNDED";
+                onHold: boolean;
+                total: number;
+                amountDue: number;
+                amountPaid: number;
+                refundOwed: number;
+                paidWith: ("CASH" | "PLATFORM" | "LINK")[];
+                items: {
+                    name: string;
+                    variantName: string | null;
+                    quantity: number;
+                }[];
+                takenAt: string;
+                takenBy: string | null;
+                customerPhone: string | null;
+            }[];
+        };
+        SaveCustomerDto: {
+            name: string;
+            notes: string;
         };
         DaySummaryDto_Output: {
             date: string;
@@ -2105,6 +2187,72 @@ export interface operations {
                 content: {
                     "application/json": components["schemas"]["OrderDetailDto_Output"];
                 };
+            };
+        };
+    };
+    CustomersController_list: {
+        parameters: {
+            query?: {
+                search?: string;
+                limit?: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CustomerRowDto_Output"][];
+                };
+            };
+        };
+    };
+    CustomersController_detail: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                customerId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CustomerDetailDto_Output"];
+                };
+            };
+        };
+    };
+    CustomersController_save: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                customerId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["SaveCustomerDto"];
+            };
+        };
+        responses: {
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
             };
         };
     };

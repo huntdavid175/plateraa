@@ -3,6 +3,8 @@ import { createBrowserRouter, Navigate } from 'react-router';
 import { ChooseBusinessPage } from './auth/ChooseBusinessPage';
 import { SignInPage } from './auth/SignInPage';
 import { SignUpPage } from './auth/SignUpPage';
+import { CustomerPage } from './pages/CustomerPage';
+import { CustomersPage } from './pages/CustomersPage';
 import { ExpensesPage } from './pages/ExpensesPage';
 import { ItemEditorPage } from './pages/ItemEditorPage';
 import { MenuPage } from './pages/MenuPage';
@@ -58,6 +60,8 @@ export const router = createBrowserRouter([
       { index: true, Component: TodayPage },
       { path: 'orders', Component: OrdersPage },
       { path: 'orders/:orderId', Component: OrderPage },
+      { path: 'customers', Component: CustomersPage },
+      { path: 'customers/:customerId', Component: CustomerPage },
       { path: 'menu', Component: MenuPage },
       { path: 'menu/items/new', Component: ItemEditorPage },
       { path: 'menu/items/:itemId', Component: ItemEditorPage },

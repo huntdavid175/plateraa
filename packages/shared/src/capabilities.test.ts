@@ -43,6 +43,8 @@ describe('resolveCapabilities', () => {
     expect(manager.has('refunds.record')).toBe(true);
     expect(manager.has('payouts.record')).toBe(true);
     expect(manager.has('discounts.apply')).toBe(true);
+    expect(manager.has('customers.manage')).toBe(true);
     expect(manager.has('settings.manage')).toBe(false);
+    expect(resolveCapabilities('STAFF').has('customers.manage')).toBe(false);
   });
 });

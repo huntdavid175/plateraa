@@ -4,6 +4,7 @@ import { SentryGlobalFilter, SentryModule } from '@sentry/nestjs/setup';
 import { ZodValidationPipe } from 'nestjs-zod';
 import { AuthModule } from './auth/auth.module';
 import { ConfigModule } from './config/config.module';
+import { CustomersModule } from './customers/customers.module';
 import { DatabaseModule } from './database/database.module';
 import { HealthController } from './health/health.controller';
 import { ExpensesModule } from './expenses/expenses.module';
@@ -26,6 +27,7 @@ import { SyncModule } from './sync/sync.module';
     PaymentsModule,
     SyncModule,
     OrdersModule,
+    CustomersModule,
     ReportsModule,
     ManagerModule,
     MenuModule,

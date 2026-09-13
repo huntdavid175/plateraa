@@ -81,14 +81,28 @@ body {
     color 0.2s;
 }
 
-/* Scrollbars show only while hovering. */
-.scroll-area {
+/*
+ * Scrollbars. A bar that appears on hover takes width and shifts everything beside it, so none
+ * of them do.
+ */
+
+/* No bar at all: the sidebar and rows of pills. They still scroll by wheel, trackpad or finger. */
+.no-scrollbar {
   scrollbar-width: none;
 }
-.scroll-area::-webkit-scrollbar {
+.no-scrollbar::-webkit-scrollbar {
   display: none;
 }
-.scroll-area:hover {
+
+/* A thin bar, only when there's more to see: dialogs. */
+.thin-scrollbar {
   scrollbar-width: thin;
-  scrollbar-color: var(--tile) transparent;
+  scrollbar-color: var(--border) transparent;
+}
+
+/* The page itself: a thin bar, with its room always kept so the page never moves when it shows. */
+.page-scroll {
+  scrollbar-gutter: stable;
+  scrollbar-width: thin;
+  scrollbar-color: var(--border) transparent;
 }

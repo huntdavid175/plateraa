@@ -51,6 +51,13 @@ export const StaffIcon = (p: IconProps) => (
   </Icon>
 );
 
+export const CustomersIcon = (p: IconProps) => (
+  <Icon {...p}>
+    <circle cx="12" cy="8" r="4" />
+    <path d="M4 21v-1a8 8 0 0116 0v1" />
+  </Icon>
+);
+
 export const RefundIcon = (p: IconProps) => (
   <Icon {...p}>
     <path d="M1 4v6h6M3.51 15a9 9 0 102.13-9.36L1 10" />

@@ -294,6 +294,9 @@ _11 Sep: the server side is built from Moolre's docs (docs.moolre.com; their `/a
     - _**Counting:** a count records the difference as a COUNT_ADJUST, so shrinkage shows up._
     - _**Running low:** a banner lists what's at or under its mark._
     - _**Still to do:** raw counts from the tablet (the `stock.raw_count` command exists; there's no tablet screen for it yet)._
+- [x] Customers (not a plan item before: the dashboard had no way to see them)
+  - _13 Sep: the Customers page lists everyone whose number was taken with an order (the tablet adds them with phone orders and deliveries), most recent first, with a search by name or number. Each customer's page shows their orders, first and last order, and what they spent (only with `reports.revenue.view`). A manager or the owner (new capability `customers.manage`) can fix a name or add notes, which sync to the tablets; the number never changes. An order's page links to its customer (`GET /api/customers`, `GET` and `PUT /api/customers/:id`, audited)._
+  - _Left out: flagging a problem customer. The column syncs, but the tablet doesn't show it yet, so a flag would do nothing at the counter._
 
 ### 3.2 Reporting
 

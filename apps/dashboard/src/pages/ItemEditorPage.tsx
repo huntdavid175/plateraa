@@ -306,7 +306,7 @@ function Editor({ menu, item }: { menu: Menu; item: MenuItem | undefined }) {
         </Button>
       </div>
 
-      <div className="scroll-area flex-1 overflow-y-auto">
+      <div className="page-scroll flex-1 overflow-y-auto">
         <div className="mx-auto w-full max-w-2xl space-y-6 px-4 py-5">
           {(problem ?? saving.error?.message) && (
             <ErrorNote>{problem ?? saving.error?.message}</ErrorNote>
