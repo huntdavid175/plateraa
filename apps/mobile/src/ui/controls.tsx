@@ -1,5 +1,5 @@
-import { Pressable, StyleSheet, Text, View } from 'react-native';
-import { colors, font, radii, space, text } from './theme';
+import { Pressable, Text, View } from 'react-native';
+import { colors, font, radii, space, text, themed, themedStyles } from './theme';
 
 /** Two to four choices side by side, like Pickup | Delivery. */
 export function Segmented<T extends string>({
@@ -89,7 +89,7 @@ export function OptionTile({
 
 type Tone = 'neutral' | 'good' | 'amber' | 'red' | 'info' | 'offline' | 'stock';
 
-const TONES: Record<Tone, { backgroundColor: string; color: string }> = {
+const TONES: Record<Tone, { backgroundColor: string; color: string }> = themed(() => ({
   neutral: { backgroundColor: colors.track, color: colors.text2 },
   good: { backgroundColor: colors.goodBg, color: colors.goodInk },
   amber: { backgroundColor: colors.amberBg, color: colors.amberInk },
@@ -97,7 +97,7 @@ const TONES: Record<Tone, { backgroundColor: string; color: string }> = {
   info: { backgroundColor: colors.infoBg, color: colors.infoInk },
   offline: { backgroundColor: colors.offlineBg, color: colors.offlineInk },
   stock: { backgroundColor: colors.stockBg, color: colors.stockInk },
-};
+}));
 
 /** A small word in a pill. Status is always a word, never colour alone. */
 export function Badge({
@@ -153,7 +153,7 @@ export function Stepper({
   );
 }
 
-const styles = StyleSheet.create({
+const styles = themedStyles(() => ({
   track: {
     flexDirection: 'row',
     alignSelf: 'flex-start',
@@ -168,7 +168,7 @@ const styles = StyleSheet.create({
     borderRadius: radii.sm,
     justifyContent: 'center',
   },
-  segmentOn: { backgroundColor: colors.canvas, elevation: 1 },
+  segmentOn: { backgroundColor: colors.raised, elevation: 1 },
   segmentLabel: { fontFamily: font.medium, fontSize: 15, color: colors.muted },
   segmentLabelOn: { fontFamily: font.semibold, color: colors.ink },
   chip: {
@@ -227,4 +227,4 @@ const styles = StyleSheet.create({
     fontSize: text.body,
     color: colors.ink,
   },
-});
+}));

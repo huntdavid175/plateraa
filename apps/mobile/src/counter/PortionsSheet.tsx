@@ -1,10 +1,10 @@
 import { useEffect, useState } from 'react';
-import { StyleSheet, Text, View, useWindowDimensions } from 'react-native';
+import { Text, View, useWindowDimensions } from 'react-native';
 import { problemText } from '../tablet/api';
 import { Button } from '../ui/Button';
 import { Label } from '../ui/Field';
 import { CloseButton, Overlay } from '../ui/Sheet';
-import { colors, font, plural, radii, space } from '../ui/theme';
+import { colors, font, plural, radii, space, themedStyles } from '../ui/theme';
 import { Keypad } from './Keypad';
 
 /** The most a count can add at once (the sync command's limit). */
@@ -86,7 +86,7 @@ export function PortionsSheet({
   );
 }
 
-const styles = StyleSheet.create({
+const styles = themedStyles(() => ({
   sheet: { padding: 28, gap: 20 },
   head: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: 12 },
   title: { flex: 1, fontFamily: font.semibold, fontSize: 20, color: colors.ink },
@@ -108,4 +108,4 @@ const styles = StyleSheet.create({
   displayOn: { borderColor: colors.brand, color: colors.ink },
   problem: { fontFamily: font.medium, fontSize: 15, color: colors.redInk },
   actions: { flexDirection: 'row', gap: space.sm },
-});
+}));

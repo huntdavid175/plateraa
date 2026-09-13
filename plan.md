@@ -201,6 +201,10 @@ _11 Sep: built (`apps/mobile/src/counter`; the counter screen is `app/index.tsx`
   - _**Bolt Food and Chowdeck** are no longer typed in by hand: their orders will arrive once their APIs are connected (R4). The dashboard hides their prices and commissions, which stay on the server for then._
   - _**Figures:** Today, Reports and the tablet's Today's sales show dine-in, pickup and delivery instead of where orders came from, and the Orders list filters by them (`?type=`)._
   - _Not tried on the tablet yet._
+- [x] Dark mode, and removing a line from the order (not plan items before; user request, 13 Sep)
+  - _**Dark mode:** More → Dark mode on the tablet, remembered on that tablet. Warm dark greys as on the dashboard's dark mode, and the same orange. Switching draws the screens afresh, so an order half typed in is cleared; nobody is signed out._
+  - _**Remove:** every line of the order being typed in (or changed) has Remove, which takes the whole line off in one tap, however many there are._
+  - _Not tried on the tablet yet._
 
 ### 2.4 Cash & stock
 

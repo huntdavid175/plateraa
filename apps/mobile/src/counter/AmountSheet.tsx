@@ -1,11 +1,11 @@
 import { pesewas, type Pesewas } from '@plateraa/shared';
 import { useEffect, useState } from 'react';
-import { StyleSheet, Text, View, useWindowDimensions } from 'react-native';
+import { Text, View, useWindowDimensions } from 'react-native';
 import { problemText } from '../tablet/api';
 import { Button } from '../ui/Button';
 import { Field } from '../ui/Field';
 import { CloseButton, Overlay } from '../ui/Sheet';
-import { colors, font, space } from '../ui/theme';
+import { colors, font, space, themedStyles } from '../ui/theme';
 import { amountOf } from './amounts';
 import { AmountDisplay, Keypad } from './Keypad';
 
@@ -104,7 +104,7 @@ export function AmountSheet({
   );
 }
 
-const styles = StyleSheet.create({
+const styles = themedStyles(() => ({
   sheet: { padding: 28, gap: 20 },
   head: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
   title: { fontFamily: font.semibold, fontSize: 20, color: colors.ink },
@@ -113,4 +113,4 @@ const styles = StyleSheet.create({
   side: { flex: 1, gap: space.md },
   problem: { fontFamily: font.medium, fontSize: 15, color: colors.redInk },
   actions: { flexDirection: 'row', gap: space.sm },
-});
+}));

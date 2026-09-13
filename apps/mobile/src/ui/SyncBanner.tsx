@@ -1,8 +1,8 @@
 import { useRouter } from 'expo-router';
-import { Alert, StyleSheet, Text, View } from 'react-native';
+import { Alert, Text, View } from 'react-native';
 import { useEngineState, useTablet } from '../tablet/TabletProvider';
 import { Button } from './Button';
-import { colors, font, plural, radii, space, text, timeOf } from './theme';
+import { colors, font, plural, radii, space, text, themed, themedStyles, timeOf } from './theme';
 
 type Tone = 'warning' | 'danger' | 'info';
 
@@ -100,13 +100,13 @@ export function SyncBanner({
   );
 }
 
-const INK: Record<Tone, string> = {
+const INK: Record<Tone, string> = themed(() => ({
   warning: colors.amberInk,
   danger: colors.redInk,
   info: colors.infoInk,
-};
+}));
 
-const styles = StyleSheet.create({
+const styles = themedStyles(() => ({
   stack: { gap: space.sm },
   banner: {
     flexDirection: 'row',
@@ -120,4 +120,4 @@ const styles = StyleSheet.create({
   danger: { backgroundColor: colors.redBg },
   info: { backgroundColor: colors.infoBg },
   message: { flex: 1, fontFamily: font.medium, fontSize: text.small, lineHeight: 20 },
-});
+}));

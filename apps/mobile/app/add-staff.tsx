@@ -1,12 +1,12 @@
 import { pinProblem } from '@plateraa/shared';
 import { useState } from 'react';
-import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { Pressable, ScrollView, Text, View } from 'react-native';
 import { addStaffAtCounter, problemText } from '../src/tablet/api';
 import { useEngineState, useTablet } from '../src/tablet/TabletProvider';
 import { Button } from '../src/ui/Button';
 import { Field, Label, digitsOnly } from '../src/ui/Field';
 import { Header } from '../src/ui/Header';
-import { colors, font, radii, space, text } from '../src/ui/theme';
+import { colors, font, radii, space, text, themedStyles } from '../src/ui/theme';
 
 type NewRole = 'STAFF' | 'RIDER' | 'MANAGER';
 
@@ -142,7 +142,7 @@ export default function AddStaff() {
   );
 }
 
-const styles = StyleSheet.create({
+const styles = themedStyles(() => ({
   screen: { flexGrow: 1, gap: space.md, padding: space.lg, backgroundColor: colors.ground },
   warning: {
     fontFamily: font.medium,
@@ -178,4 +178,4 @@ const styles = StyleSheet.create({
   choiceHint: { fontFamily: font.regular, fontSize: text.small, color: colors.muted },
   problem: { fontFamily: font.medium, fontSize: text.body, color: colors.redInk },
   done: { fontFamily: font.medium, fontSize: text.body, color: colors.goodInk },
-});
+}));

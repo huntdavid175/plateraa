@@ -1,7 +1,7 @@
 import type { Pesewas } from '@plateraa/shared';
-import { Modal, Pressable, StyleSheet, Text, View } from 'react-native';
+import { Modal, Pressable, Text, View } from 'react-native';
 import { Label } from '../ui/Field';
-import { cedis, colors, font, radii, space } from '../ui/theme';
+import { cedis, colors, font, radii, space, themedStyles } from '../ui/theme';
 
 export interface Done {
   number: string;
@@ -50,7 +50,7 @@ export function SaleDone({ done, onDismiss }: { done: Done | null; onDismiss: ()
   );
 }
 
-const styles = StyleSheet.create({
+const styles = themedStyles(() => ({
   backdrop: {
     flex: 1,
     backgroundColor: 'rgba(26, 25, 23, 0.55)',
@@ -79,4 +79,4 @@ const styles = StyleSheet.create({
     marginTop: space.sm,
   },
   hint: { fontFamily: font.regular, fontSize: 14, color: colors.muted, marginTop: space.xs },
-});
+}));

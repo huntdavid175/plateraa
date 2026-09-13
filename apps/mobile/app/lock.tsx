@@ -1,13 +1,13 @@
 import type { Role } from '@plateraa/shared';
 import { Link } from 'expo-router';
 import { useState } from 'react';
-import { ActivityIndicator, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { ActivityIndicator, Pressable, ScrollView, Text, View } from 'react-native';
 import PlateraaCrypto from '../modules/plateraa-crypto/src/PlateraaCryptoModule';
 import { checkPin, pinMessage } from '../src/tablet/pin-guard';
 import { useLocalQuery, useTablet } from '../src/tablet/TabletProvider';
 import { PinPad } from '../src/ui/PinPad';
 import { SyncBanner } from '../src/ui/SyncBanner';
-import { colors, font, radii, space, text } from '../src/ui/theme';
+import { colors, font, radii, space, text, themedStyles } from '../src/ui/theme';
 
 interface Person {
   id: string;
@@ -131,7 +131,7 @@ export default function LockScreen() {
   );
 }
 
-const styles = StyleSheet.create({
+const styles = themedStyles(() => ({
   screen: {
     flex: 1,
     flexDirection: 'row',
@@ -190,4 +190,4 @@ const styles = StyleSheet.create({
     textAlign: 'center',
   },
   hint: { fontFamily: font.regular, fontSize: text.body, color: colors.muted },
-});
+}));

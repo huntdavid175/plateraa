@@ -1,10 +1,10 @@
 import type { Station } from '@plateraa/shared';
 import { useState } from 'react';
-import { Alert, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { Alert, ScrollView, Text, View } from 'react-native';
 import { problemText } from '../tablet/api';
 import { Button } from '../ui/Button';
 import { Chip, Segmented } from '../ui/controls';
-import { colors, font, radii, space } from '../ui/theme';
+import { colors, font, radii, space, themedStyles } from '../ui/theme';
 import { advance, type Counter } from './actions';
 import { useNow } from './hooks';
 import { laneOf, urgency } from './lanes';
@@ -170,7 +170,7 @@ export function KitchenScreen({
   );
 }
 
-const styles = StyleSheet.create({
+const styles = themedStyles(() => ({
   screen: { flex: 1, backgroundColor: colors.ground },
   bar: {
     flexDirection: 'row',
@@ -198,7 +198,7 @@ const styles = StyleSheet.create({
     gap: 12,
   },
   cardFallback: { width: '48%' },
-  cardAmber: { borderColor: '#F59E0B' },
+  cardAmber: { borderColor: colors.amber },
   cardRed: { borderColor: colors.red },
   cardHead: { flexDirection: 'row', alignItems: 'center', gap: 10 },
   number: { fontFamily: font.monoMedium, fontSize: 32, color: colors.ink },
@@ -222,4 +222,4 @@ const styles = StyleSheet.create({
     paddingVertical: 2,
     marginTop: 4,
   },
-});
+}));

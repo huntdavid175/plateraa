@@ -1,11 +1,11 @@
 import { parseCedis, pesewas, type OrderType, type Pesewas } from '@plateraa/shared';
 import { useEffect, useState } from 'react';
-import { ScrollView, StyleSheet, Text, View } from 'react-native';
+import { ScrollView, Text, View } from 'react-native';
 import { useLocalQuery } from '../tablet/TabletProvider';
 import { Button } from '../ui/Button';
 import { Chip, Segmented } from '../ui/controls';
 import { Field, Label, PhoneField } from '../ui/Field';
-import { cedis, colors, font, space, text } from '../ui/theme';
+import { cedis, colors, font, space, text, themedStyles } from '../ui/theme';
 import { ghanaPhone, type Checkout } from './checkout';
 import { useOffersDineIn } from './hooks';
 import type { QueueOrder } from './queue';
@@ -222,7 +222,7 @@ export function OrderPane({
   );
 }
 
-const styles = StyleSheet.create({
+const styles = themedStyles(() => ({
   pane: {
     flex: 38,
     backgroundColor: colors.canvas,
@@ -269,4 +269,4 @@ const styles = StyleSheet.create({
   totalLabel: { fontFamily: font.medium, fontSize: 15, color: colors.muted },
   total: { fontFamily: font.monoMedium, fontSize: text.total, color: colors.ink },
   actions: { flexDirection: 'row', gap: 10 },
-});
+}));

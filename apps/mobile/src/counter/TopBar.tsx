@@ -1,10 +1,11 @@
 import { useRouter } from 'expo-router';
 import { useState } from 'react';
-import { Modal, Pressable, StyleSheet, Text, View } from 'react-native';
+import { Modal, Pressable, Text, View } from 'react-native';
 import type { SyncState } from '../offline/engine';
 import { useEngineState, useTablet } from '../tablet/TabletProvider';
+import { saveAppearance } from '../ui/appearance';
 import { Badge } from '../ui/controls';
-import { colors, font, plural, radii, space, text } from '../ui/theme';
+import { colors, font, getScheme, plural, radii, space, text, themedStyles } from '../ui/theme';
 
 export type CounterTab = 'counter' | 'orders' | 'kitchen' | 'drawer' | 'stock';
 
@@ -129,6 +130,13 @@ export function TopBar({ tab, onTab }: { tab: CounterTab; onTab: (tab: CounterTa
               }
               onPress={() => go('/attention')}
             />
+            <MenuItem
+              label={getScheme() === 'dark' ? 'Light mode' : 'Dark mode'}
+              onPress={() => {
+                setMenuOpen(false);
+                saveAppearance(getScheme() === 'dark' ? 'light' : 'dark');
+              }}
+            />
             <MenuItem label="Tablet check" onPress={() => go('/diagnostics')} />
             <MenuItem
               label="Lock the tablet"
@@ -156,7 +164,7 @@ function MenuItem({ label, onPress }: { label: string; onPress: () => void }) {
   );
 }
 
-const styles = StyleSheet.create({
+const styles = themedStyles(() => ({
   bar: {
     height: 64,
     flexDirection: 'row',
@@ -204,4 +212,4 @@ const styles = StyleSheet.create({
   },
   menuItem: { minHeight: 52, justifyContent: 'center', paddingHorizontal: space.md },
   menuLabel: { fontFamily: font.medium, fontSize: text.body, color: colors.ink },
-});
+}));

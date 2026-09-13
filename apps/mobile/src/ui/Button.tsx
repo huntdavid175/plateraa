@@ -1,5 +1,5 @@
-import { ActivityIndicator, Pressable, StyleSheet, Text } from 'react-native';
-import { colors, font, radii } from './theme';
+import { ActivityIndicator, Pressable, Text } from 'react-native';
+import { colors, font, radii, themedStyles } from './theme';
 
 type Kind = 'primary' | 'secondary' | 'danger' | 'ghost';
 
@@ -52,21 +52,21 @@ export function Button({
   );
 }
 
-const PRESSED = StyleSheet.create({
+const PRESSED = themedStyles(() => ({
   primary: { backgroundColor: colors.brandPressed },
   secondary: { backgroundColor: colors.track },
-  danger: { backgroundColor: '#FEE2E2' },
+  danger: { backgroundColor: colors.redTint },
   ghost: { backgroundColor: colors.track },
-});
+}));
 
-const LABEL = StyleSheet.create({
+const LABEL = themedStyles(() => ({
   primary: { color: colors.onBrand },
   secondary: { color: colors.text2, fontFamily: font.medium },
   danger: { color: colors.redInk, fontFamily: font.medium },
   ghost: { color: colors.brand, fontFamily: font.medium },
-});
+}));
 
-const styles = StyleSheet.create({
+const styles = themedStyles(() => ({
   base: {
     minHeight: 56,
     borderRadius: radii.lg,
@@ -83,4 +83,4 @@ const styles = StyleSheet.create({
   inactive: { opacity: 0.5 },
   label: { fontFamily: font.semibold, fontSize: 17, color: colors.onBrand },
   labelMd: { fontSize: 15 },
-});
+}));

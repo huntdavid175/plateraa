@@ -1,10 +1,10 @@
-import { StyleSheet, Text, View } from 'react-native';
+import { Pressable, Text, View } from 'react-native';
 import { Button } from '../ui/Button';
 import { Stepper } from '../ui/controls';
-import { cedis, colors, font, space, text } from '../ui/theme';
-import { changeQuantity, priceTicket, type TicketLine } from './ticket';
+import { cedis, colors, font, radii, space, text, themedStyles } from '../ui/theme';
+import { changeQuantity, priceTicket, removeLine, type TicketLine } from './ticket';
 
-/** The lines of the order being typed in: name, extras, price, and − n +. */
+/** The lines of the order being typed in: name, extras, price, − n +, and Remove. */
 export function TicketLines({
   lines,
   onLines,
@@ -54,6 +54,15 @@ export function TicketLines({
               {canChange(line) && (
                 <Button label="Change" kind="ghost" size="md" onPress={() => onChange(line)} />
               )}
+              {/* The whole line in one tap, however many there are. */}
+              <Pressable
+                accessibilityRole="button"
+                accessibilityLabel={`Remove ${line.name}`}
+                onPress={() => onLines((current) => removeLine(current, line.lineId))}
+                style={({ pressed }) => [styles.remove, pressed && styles.removePressed]}
+              >
+                <Text style={styles.removeLabel}>Remove</Text>
+              </Pressable>
             </View>
           </View>
         );
@@ -62,7 +71,7 @@ export function TicketLines({
   );
 }
 
-const styles = StyleSheet.create({
+const styles = themedStyles(() => ({
   empty: {
     fontFamily: font.regular,
     fontSize: text.small,
@@ -83,4 +92,13 @@ const styles = StyleSheet.create({
   extras: { fontFamily: font.regular, fontSize: 13, color: colors.muted },
   price: { fontFamily: font.monoMedium, fontSize: 15, color: colors.ink },
   controls: { flexDirection: 'row', alignItems: 'center', gap: space.md },
-});
+  remove: {
+    marginLeft: 'auto',
+    minHeight: 44,
+    paddingHorizontal: 12,
+    borderRadius: radii.md,
+    justifyContent: 'center',
+  },
+  removePressed: { backgroundColor: colors.redTint },
+  removeLabel: { fontFamily: font.medium, fontSize: 15, color: colors.redInk },
+}));

@@ -47,6 +47,11 @@ export function changeQuantity(lines: TicketLine[], lineId: string, by: number):
   });
 }
 
+/** Takes a line off the ticket, whatever its quantity. */
+export function removeLine(lines: TicketLine[], lineId: string): TicketLine[] {
+  return lines.filter((line) => line.lineId !== lineId);
+}
+
 export function replaceLine(lines: TicketLine[], updated: TicketLine): TicketLine[] {
   return lines.map((line) => (line.lineId === updated.lineId ? updated : line));
 }

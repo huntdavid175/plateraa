@@ -1,7 +1,7 @@
 import { PIN_LENGTH } from '@plateraa/shared';
 import { useEffect, useState } from 'react';
-import { Pressable, StyleSheet, Text, View } from 'react-native';
-import { colors, font, radii, space } from './theme';
+import { Pressable, Text, View } from 'react-native';
+import { colors, font, radii, space, themedStyles } from './theme';
 
 const KEYS = ['1', '2', '3', '4', '5', '6', '7', '8', '9', 'clear', '0', 'back'] as const;
 type Key = (typeof KEYS)[number];
@@ -68,7 +68,7 @@ export function PinPad({
 const KEY_WIDTH = 96;
 const GAP = 12;
 
-const styles = StyleSheet.create({
+const styles = themedStyles(() => ({
   pad: { alignItems: 'center', gap: space.lg },
   dots: { flexDirection: 'row', gap: 14 },
   dot: {
@@ -99,4 +99,4 @@ const styles = StyleSheet.create({
   keyDisabled: { opacity: 0.5 },
   keyLabel: { fontFamily: font.monoMedium, fontSize: 24, color: colors.ink },
   keyWord: { fontFamily: font.medium, fontSize: 15, color: colors.muted },
-});
+}));

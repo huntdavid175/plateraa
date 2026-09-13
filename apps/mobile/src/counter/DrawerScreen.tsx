@@ -1,10 +1,10 @@
 import { useState } from 'react';
-import { ActivityIndicator, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { ActivityIndicator, ScrollView, Text, View } from 'react-native';
 import { useTablet } from '../tablet/TabletProvider';
 import { Button } from '../ui/Button';
 import { Badge } from '../ui/controls';
 import { Label } from '../ui/Field';
-import { cedis, colors, font, radii, space, text, timeOf } from '../ui/theme';
+import { cedis, colors, font, radii, space, text, themed, themedStyles, timeOf } from '../ui/theme';
 import { closeDrawer, moveCash, openDrawer, type Counter } from './actions';
 import { AmountSheet } from './AmountSheet';
 import { seesDrawerResult, varianceWords, type ClosedDrawer, type DrawerMovement } from './drawer';
@@ -19,7 +19,11 @@ const MOVEMENT_WORDS: Record<DrawerMovement['type'], string> = {
   PAYOUT: 'Paid out (dashboard)',
 };
 
-const TONE_COLOURS = { good: colors.goodInk, amber: colors.amberInk, red: colors.redInk };
+const TONE_COLOURS = themed(() => ({
+  good: colors.goodInk,
+  amber: colors.amberInk,
+  red: colors.redInk,
+}));
 
 /**
  * The cash drawer: open it with a float, take cash out to the safe or put some in, and close it
@@ -220,7 +224,7 @@ function Figure({ label, value, colour }: { label: string; value: string; colour
   );
 }
 
-const styles = StyleSheet.create({
+const styles = themedStyles(() => ({
   screen: { flex: 1, backgroundColor: colors.ground },
   loading: { marginTop: space.xl },
   content: {
@@ -259,4 +263,4 @@ const styles = StyleSheet.create({
   figures: { flexDirection: 'row', gap: space.md, flexWrap: 'wrap', marginTop: space.xs },
   figure: { flexGrow: 1, gap: 4 },
   figureValue: { fontFamily: font.monoMedium, fontSize: 22, color: colors.ink },
-});
+}));

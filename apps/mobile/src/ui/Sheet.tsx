@@ -1,6 +1,6 @@
 import type { ReactNode } from 'react';
-import { Modal, Pressable, StyleSheet, Text, View, type DimensionValue } from 'react-native';
-import { colors, font, radii } from './theme';
+import { Modal, Pressable, Text, View, type DimensionValue } from 'react-native';
+import { colors, font, radii, themedStyles } from './theme';
 
 /**
  * A card over a dimmed screen: in the centre (payment), or as a panel from the right (an item's
@@ -63,7 +63,7 @@ export function CloseButton({ onPress }: { onPress: () => void }) {
   );
 }
 
-const styles = StyleSheet.create({
+const styles = themedStyles(() => ({
   backdrop: {
     flex: 1,
     backgroundColor: 'rgba(26, 25, 23, 0.45)',
@@ -95,4 +95,4 @@ const styles = StyleSheet.create({
   },
   closePressed: { backgroundColor: colors.line },
   closeLabel: { fontFamily: font.regular, fontSize: 22, lineHeight: 24, color: colors.muted },
-});
+}));

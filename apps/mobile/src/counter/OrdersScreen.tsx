@@ -1,11 +1,11 @@
 import { canEditItems, refundOwed, type OrderStatus, type OrderType } from '@plateraa/shared';
 import { useMemo, useState } from 'react';
-import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { Pressable, ScrollView, Text, View } from 'react-native';
 import { problemText } from '../tablet/api';
 import { Button } from '../ui/Button';
 import { Badge, Chip } from '../ui/controls';
 import { Field, Label } from '../ui/Field';
-import { cedis, colors, font, radii, space, text } from '../ui/theme';
+import { cedis, colors, font, radii, space, text, themed, themedStyles } from '../ui/theme';
 import {
   advance,
   cancelOrder,
@@ -37,12 +37,12 @@ import {
 } from './words';
 
 /** A payment link's state is always a sentence; the colour only backs it up. */
-const LINK_COLOURS = {
+const LINK_COLOURS = themed(() => ({
   info: colors.infoInk,
   good: colors.goodInk,
   amber: colors.amberInk,
   red: colors.redInk,
-} as const;
+}));
 
 type Tone = 'neutral' | 'good' | 'amber' | 'red' | 'info';
 
@@ -557,7 +557,7 @@ function OrderDetail({
   );
 }
 
-const styles = StyleSheet.create({
+const styles = themedStyles(() => ({
   screen: { flex: 1, flexDirection: 'row', backgroundColor: colors.ground },
   linkLine: { fontFamily: font.medium, fontSize: text.body, lineHeight: 22 },
   rowTotalBox: { flexDirection: 'row', alignItems: 'center', gap: space.sm },
@@ -593,7 +593,7 @@ const styles = StyleSheet.create({
     minWidth: 22,
     paddingHorizontal: 6,
     borderRadius: 10,
-    backgroundColor: '#DEDAD6',
+    backgroundColor: colors.countBg,
     alignItems: 'center',
   },
   countOn: { backgroundColor: colors.brand },
@@ -604,12 +604,12 @@ const styles = StyleSheet.create({
   row: {
     flexDirection: 'row',
     borderRadius: radii.lg,
-    backgroundColor: '#EDECEA',
+    backgroundColor: colors.tileMuted,
     borderWidth: 1.5,
     borderColor: 'transparent',
     overflow: 'hidden',
   },
-  rowOn: { backgroundColor: colors.canvas, borderColor: colors.line },
+  rowOn: { backgroundColor: colors.raised, borderColor: colors.line },
   edge: { width: 4 },
   edgeRed: { backgroundColor: colors.red },
   edgeBrand: { backgroundColor: colors.brand },
@@ -688,4 +688,4 @@ const styles = StyleSheet.create({
     gap: space.sm,
   },
   actionRow: { flexDirection: 'row', gap: space.sm },
-});
+}));

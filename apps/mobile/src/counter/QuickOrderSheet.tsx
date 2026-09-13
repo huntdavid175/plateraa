@@ -1,7 +1,7 @@
-import { StyleSheet, Text, View, useWindowDimensions } from 'react-native';
+import { Text, View, useWindowDimensions } from 'react-native';
 import { Button } from '../ui/Button';
 import { CloseButton, Overlay } from '../ui/Sheet';
-import { colors, font, space } from '../ui/theme';
+import { colors, font, space, themedStyles } from '../ui/theme';
 import { useNow } from './hooks';
 import { extrasText, type QueueOrder } from './queue';
 import { kitchenSince, minutesSince } from './views';
@@ -71,7 +71,7 @@ export function QuickOrderSheet({
   );
 }
 
-const styles = StyleSheet.create({
+const styles = themedStyles(() => ({
   sheet: { padding: space.lg, gap: space.md },
   head: { flexDirection: 'row', alignItems: 'center', gap: 12 },
   number: { fontFamily: font.monoMedium, fontSize: 36, color: colors.ink },
@@ -82,4 +82,4 @@ const styles = StyleSheet.create({
   line: { fontFamily: font.medium, fontSize: 19, color: colors.ink },
   extras: { fontFamily: font.regular, fontSize: 15, color: colors.muted },
   note: { fontFamily: font.medium, fontSize: 15, color: colors.amberInk },
-});
+}));

@@ -1,6 +1,6 @@
 import { useState } from 'react';
-import { StyleSheet, Text, TextInput, View, type TextInputProps } from 'react-native';
-import { colors, font, radii, space, text } from './theme';
+import { Text, TextInput, View, type TextInputProps } from 'react-native';
+import { colors, font, radii, space, text, themedStyles } from './theme';
 
 /** A small uppercase label, with a brand-coloured star when the field is required. */
 export function Label({
@@ -93,7 +93,7 @@ export function PhoneField({
 /** Keeps only digits, for PIN boxes. */
 export const digitsOnly = (value: string) => value.replace(/\D/g, '');
 
-const styles = StyleSheet.create({
+const styles = themedStyles(() => ({
   field: { gap: 6 },
   label: {
     fontFamily: font.medium,
@@ -141,4 +141,4 @@ const styles = StyleSheet.create({
     fontSize: text.body,
     color: colors.ink,
   },
-});
+}));

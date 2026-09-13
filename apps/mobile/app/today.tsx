@@ -1,6 +1,6 @@
 import { useRouter } from 'expo-router';
 import { useCallback, useEffect, useState } from 'react';
-import { AppState, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { AppState, ScrollView, Text, View } from 'react-native';
 import { METHOD_LABELS, TYPE_LABELS } from '../src/counter/words';
 import {
   ApiProblem,
@@ -14,7 +14,7 @@ import { useEngineState, useTablet } from '../src/tablet/TabletProvider';
 import { Button } from '../src/ui/Button';
 import { Field, Label, digitsOnly } from '../src/ui/Field';
 import { Header } from '../src/ui/Header';
-import { cedis, colors, font, plural, radii, space, text } from '../src/ui/theme';
+import { cedis, colors, font, plural, radii, space, text, themedStyles } from '../src/ui/theme';
 
 interface Session {
   token: string;
@@ -253,7 +253,7 @@ function Line({ label, value }: { label: string; value: string }) {
   );
 }
 
-const styles = StyleSheet.create({
+const styles = themedStyles(() => ({
   screen: { flexGrow: 1, gap: space.md, padding: space.lg, backgroundColor: colors.ground },
   warning: {
     fontFamily: font.medium,
@@ -300,4 +300,4 @@ const styles = StyleSheet.create({
   lineValue: { fontFamily: font.monoMedium, fontSize: text.body, color: colors.ink },
   actions: { flexDirection: 'row', gap: space.sm },
   problem: { fontFamily: font.medium, fontSize: text.body, color: colors.redInk },
-});
+}));

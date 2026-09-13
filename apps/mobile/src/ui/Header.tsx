@@ -1,7 +1,7 @@
 import { useRouter } from 'expo-router';
-import { StyleSheet, Text, View } from 'react-native';
+import { Text, View } from 'react-native';
 import { Button } from './Button';
-import { colors, font, space, text } from './theme';
+import { colors, font, space, text, themedStyles } from './theme';
 
 /** A screen title with a way back. */
 export function Header({ title }: { title: string }) {
@@ -14,7 +14,7 @@ export function Header({ title }: { title: string }) {
   );
 }
 
-const styles = StyleSheet.create({
+const styles = themedStyles(() => ({
   bar: { flexDirection: 'row', alignItems: 'center', gap: space.md },
   title: { fontFamily: font.semibold, fontSize: text.heading, color: colors.ink },
-});
+}));

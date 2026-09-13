@@ -4,7 +4,6 @@ import {
   PermissionsAndroid,
   Platform,
   ScrollView,
-  StyleSheet,
   Text,
   View,
   useWindowDimensions,
@@ -16,7 +15,7 @@ import PlateraaCrypto from '../modules/plateraa-crypto/src/PlateraaCryptoModule'
 import { Receipt } from '../src/printing/escpos';
 import { Button } from '../src/ui/Button';
 import { Header } from '../src/ui/Header';
-import { colors, font, radii, space, text } from '../src/ui/theme';
+import { colors, font, radii, space, text, themedStyles } from '../src/ui/theme';
 
 /**
  * Tablet check: the day-1 test (plan.md §1.2), kept for trying a new tablet or printer. Does
@@ -170,7 +169,7 @@ export default function TabletCheck() {
   );
 }
 
-const styles = StyleSheet.create({
+const styles = themedStyles(() => ({
   screen: {
     flex: 1,
     flexDirection: 'row',
@@ -184,4 +183,4 @@ const styles = StyleSheet.create({
   logContent: { padding: space.lg, gap: space.sm },
   hint: { fontFamily: font.regular, fontSize: text.body, color: colors.muted },
   logLine: { fontFamily: font.mono, fontSize: text.small, color: colors.ink },
-});
+}));

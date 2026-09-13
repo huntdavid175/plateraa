@@ -1,6 +1,6 @@
-import { Pressable, StyleSheet, Text, View } from 'react-native';
+import { Pressable, Text, View } from 'react-native';
 import { Label } from '../ui/Field';
-import { colors, font, radii, space } from '../ui/theme';
+import { colors, font, radii, space, themedStyles } from '../ui/theme';
 import { KEYS, pressKey } from './amounts';
 
 /** A big number pad for cash amounts, or whole numbers (portions) without the decimal point. */
@@ -44,7 +44,7 @@ export function AmountDisplay({ label, typed }: { label: string; typed: string }
   );
 }
 
-const styles = StyleSheet.create({
+const styles = themedStyles(() => ({
   keypad: { width: 216, flexDirection: 'row', flexWrap: 'wrap', gap: space.sm },
   key: {
     width: 66,
@@ -73,4 +73,4 @@ const styles = StyleSheet.create({
     color: colors.disabled,
   },
   displayOn: { borderColor: colors.brand, color: colors.ink },
-});
+}));

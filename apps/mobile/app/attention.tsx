@@ -1,11 +1,11 @@
 import { useEffect, useState } from 'react';
-import { ActivityIndicator, FlatList, StyleSheet, Text, View } from 'react-native';
+import { ActivityIndicator, FlatList, Text, View } from 'react-native';
 import type { RefusedCommand } from '../src/offline/engine';
 import { describeCommand } from '../src/tablet/describe';
 import { useEngineState, useLocalQuery, useTablet } from '../src/tablet/TabletProvider';
 import { Button } from '../src/ui/Button';
 import { Header } from '../src/ui/Header';
-import { colors, font, radii, space, text, timeOf } from '../src/ui/theme';
+import { colors, font, radii, space, text, themedStyles, timeOf } from '../src/ui/theme';
 
 /** Changes the server refused. They were undone on the tablet and are never sent again. */
 export default function NeedsAttention() {
@@ -69,7 +69,7 @@ export default function NeedsAttention() {
   );
 }
 
-const styles = StyleSheet.create({
+const styles = themedStyles(() => ({
   screen: { flex: 1, gap: space.md, padding: space.lg, backgroundColor: colors.ground },
   intro: {
     fontFamily: font.regular,
@@ -92,4 +92,4 @@ const styles = StyleSheet.create({
   what: { fontFamily: font.semibold, fontSize: text.body, color: colors.ink },
   why: { fontFamily: font.medium, fontSize: text.body, color: colors.redInk },
   meta: { fontFamily: font.regular, fontSize: text.small, color: colors.muted },
-});
+}));

@@ -1,6 +1,6 @@
 import { amountDue, sub, type Pesewas } from '@plateraa/shared';
 import { useEffect, useMemo, useState } from 'react';
-import { StyleSheet, Text, View } from 'react-native';
+import { Text, View } from 'react-native';
 import {
   OPEN_SHIFT_SQL,
   advance,
@@ -36,7 +36,7 @@ import { problemText } from '../src/tablet/api';
 import { newId } from '../src/tablet/ids';
 import { useLocalQuery, useTablet } from '../src/tablet/TabletProvider';
 import { SyncBanner } from '../src/ui/SyncBanner';
-import { cedis, colors, font, radii, space } from '../src/ui/theme';
+import { cedis, colors, font, radii, space, themedStyles } from '../src/ui/theme';
 
 /** "Not now" on the drawer prompt lasts the trading day, across lock and unlock. */
 let drawerSkippedOn: string | null = null;
@@ -337,14 +337,16 @@ export default function CounterScreen() {
 
       {notice && (
         <View style={[styles.toast, notice.problem && styles.toastProblem]} pointerEvents="none">
-          <Text style={styles.toastText}>{notice.text}</Text>
+          <Text style={[styles.toastText, notice.problem && styles.toastTextProblem]}>
+            {notice.text}
+          </Text>
         </View>
       )}
     </View>
   );
 }
 
-const styles = StyleSheet.create({
+const styles = themedStyles(() => ({
   screen: { flex: 1, backgroundColor: colors.canvas },
   body: { flex: 1, flexDirection: 'row' },
   toast: {
@@ -352,11 +354,12 @@ const styles = StyleSheet.create({
     left: space.lg,
     bottom: 72,
     maxWidth: 560,
-    backgroundColor: colors.ink,
+    backgroundColor: colors.inverse,
     borderRadius: radii.lg,
     paddingHorizontal: space.md,
     paddingVertical: 12,
   },
-  toastProblem: { backgroundColor: colors.redInk },
-  toastText: { fontFamily: font.medium, fontSize: 15, color: colors.onBrand },
-});
+  toastProblem: { backgroundColor: colors.redSolid },
+  toastText: { fontFamily: font.medium, fontSize: 15, color: colors.onInverse },
+  toastTextProblem: { color: colors.onBrand },
+}));

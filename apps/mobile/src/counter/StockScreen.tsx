@@ -1,16 +1,8 @@
 import { useState } from 'react';
-import {
-  ActivityIndicator,
-  Alert,
-  Pressable,
-  ScrollView,
-  StyleSheet,
-  Text,
-  View,
-} from 'react-native';
+import { ActivityIndicator, Alert, Pressable, ScrollView, Text, View } from 'react-native';
 import { problemText } from '../tablet/api';
 import { Label } from '../ui/Field';
-import { cedis, colors, font, plural, radii, space, text } from '../ui/theme';
+import { cedis, colors, font, plural, radii, space, text, themedStyles } from '../ui/theme';
 import { addPortions, setSoldOut, type Counter } from './actions';
 import { useCountPortions, useMenu } from './hooks';
 import type { MenuItem } from './menu';
@@ -145,7 +137,7 @@ function SoldOutSwitch({
   );
 }
 
-const styles = StyleSheet.create({
+const styles = themedStyles(() => ({
   screen: { flex: 1, backgroundColor: colors.ground },
   loading: { marginTop: space.xl },
   content: {
@@ -192,4 +184,4 @@ const styles = StyleSheet.create({
   dot: { width: 8, height: 8, borderRadius: 4 },
   switchLabel: { fontFamily: font.semibold, fontSize: 15, color: colors.text2 },
   switchLabelOut: { color: colors.redInk },
-});
+}));

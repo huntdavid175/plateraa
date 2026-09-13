@@ -6,12 +6,17 @@ import { DMSans_600SemiBold } from '@expo-google-fonts/dm-sans/600SemiBold';
 import { useFonts } from 'expo-font';
 import { Stack } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
-import { ActivityIndicator, StyleSheet, Text, View } from 'react-native';
+import { ActivityIndicator, Text, View } from 'react-native';
 import { IdleLock } from '../src/tablet/IdleLock';
 import { TabletProvider, useTablet } from '../src/tablet/TabletProvider';
-import { colors, space, text } from '../src/ui/theme';
+import { loadAppearance } from '../src/ui/appearance';
+import { colors, space, text, themedStyles, useScheme } from '../src/ui/theme';
+
+// Light or dark, as this tablet was left, before anything is drawn.
+loadAppearance();
 
 export default function RootLayout() {
+  const scheme = useScheme();
   // The fonts ship inside the app; if they ever fail to load, the tablet's own font is used.
   const [fontsReady, fontError] = useFonts({
     DMSans_400Regular,
@@ -29,8 +34,9 @@ export default function RootLayout() {
   }
   return (
     <TabletProvider>
-      <StatusBar style="dark" />
-      <Screens />
+      <StatusBar style={scheme === 'dark' ? 'light' : 'dark'} />
+      {/* A new look draws every screen afresh; the tablet stays unlocked and keeps syncing. */}
+      <Screens key={scheme} />
     </TabletProvider>
   );
 }
@@ -79,7 +85,7 @@ function Screens() {
   );
 }
 
-const styles = StyleSheet.create({
+const styles = themedStyles(() => ({
   centre: {
     flex: 1,
     justifyContent: 'center',
@@ -88,4 +94,4 @@ const styles = StyleSheet.create({
     padding: space.xl,
   },
   problem: { fontSize: text.body, color: colors.redInk, textAlign: 'center' },
-});
+}));

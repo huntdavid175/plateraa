@@ -1,12 +1,12 @@
 import { pesewas, sub, type Pesewas } from '@plateraa/shared';
 import { useEffect, useState } from 'react';
-import { ScrollView, StyleSheet, Text, View, useWindowDimensions } from 'react-native';
+import { ScrollView, Text, View, useWindowDimensions } from 'react-native';
 import { problemText } from '../tablet/api';
 import { Button } from '../ui/Button';
 import { Segmented } from '../ui/controls';
 import { Label, PhoneField } from '../ui/Field';
 import { CloseButton, Overlay } from '../ui/Sheet';
-import { cedis, colors, font, radii, space, text } from '../ui/theme';
+import { cedis, colors, font, radii, space, text, themedStyles } from '../ui/theme';
 import { openDrawer, openShiftOf, type Counter } from './actions';
 import { amountOf, plainAmount } from './amounts';
 import { AmountDisplay, Keypad } from './Keypad';
@@ -254,7 +254,7 @@ export function PaymentSheet({
   );
 }
 
-const styles = StyleSheet.create({
+const styles = themedStyles(() => ({
   sheet: { flex: 1, flexDirection: 'row' },
   grow: { flex: 1 },
   summary: {
@@ -333,4 +333,4 @@ const styles = StyleSheet.create({
     borderTopWidth: 1,
     borderTopColor: colors.divider,
   },
-});
+}));

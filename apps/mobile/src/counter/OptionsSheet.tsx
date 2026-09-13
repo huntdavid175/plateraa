@@ -1,12 +1,12 @@
 import { add, mul } from '@plateraa/shared';
 import { useEffect, useState } from 'react';
-import { ScrollView, StyleSheet, Text, View } from 'react-native';
+import { ScrollView, Text, View } from 'react-native';
 import { newId } from '../tablet/ids';
 import { Button } from '../ui/Button';
 import { OptionTile, Stepper } from '../ui/controls';
 import { Label } from '../ui/Field';
 import { CloseButton, Overlay } from '../ui/Sheet';
-import { cedis, colors, font, space, text } from '../ui/theme';
+import { cedis, colors, font, space, text, themedStyles } from '../ui/theme';
 import type { MenuGroup, MenuItem } from './menu';
 import type { TicketLine } from './ticket';
 
@@ -173,7 +173,7 @@ export function OptionsSheet({
   );
 }
 
-const styles = StyleSheet.create({
+const styles = themedStyles(() => ({
   head: {
     flexDirection: 'row',
     alignItems: 'flex-start',
@@ -212,4 +212,4 @@ const styles = StyleSheet.create({
   lineTotal: { alignItems: 'flex-end', gap: 2 },
   lineTotalValue: { fontFamily: font.monoMedium, fontSize: text.heading, color: colors.ink },
   missing: { fontFamily: font.medium, fontSize: 13, color: colors.brandInk },
-});
+}));

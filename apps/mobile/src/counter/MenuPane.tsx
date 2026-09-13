@@ -1,7 +1,7 @@
 import { useState } from 'react';
-import { ActivityIndicator, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { ActivityIndicator, Pressable, ScrollView, Text, View } from 'react-native';
 import { Badge, Chip } from '../ui/controls';
-import { cedis, colors, font, radii, space, text } from '../ui/theme';
+import { cedis, colors, font, radii, space, text, themedStyles } from '../ui/theme';
 import { useNow } from './hooks';
 import { urgency } from './lanes';
 import type { MenuCategory, MenuItem } from './menu';
@@ -224,7 +224,7 @@ function KitchenStrip({
   );
 }
 
-const styles = StyleSheet.create({
+const styles = themedStyles(() => ({
   pane: { flex: 62, backgroundColor: colors.ground },
   grow: { flex: 1 },
   chipRow: { flexGrow: 0 },
@@ -249,7 +249,7 @@ const styles = StyleSheet.create({
   },
   tileFallback: { flex: 1 },
   tilePressed: { backgroundColor: colors.tilePressed },
-  tileSoldOut: { backgroundColor: '#EDECEA', opacity: 0.55 },
+  tileSoldOut: { backgroundColor: colors.tileMuted, opacity: 0.55 },
   tileTop: { flexDirection: 'row', justifyContent: 'space-between', gap: space.xs },
   tileName: {
     flexShrink: 1,
@@ -274,11 +274,11 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   amberChip: { backgroundColor: colors.amberBg },
-  redChip: { backgroundColor: '#FEE2E2' },
+  redChip: { backgroundColor: colors.redTint },
   readyChip: { backgroundColor: colors.goodBg },
   pressedChip: { opacity: 0.7 },
   chipText: { fontFamily: font.monoMedium, fontSize: 14, color: colors.text2 },
   amberText: { color: colors.amberInk },
   redText: { color: colors.redInk },
   readyText: { color: colors.goodInk },
-});
+}));

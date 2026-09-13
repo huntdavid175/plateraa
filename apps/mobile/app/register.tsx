@@ -1,6 +1,6 @@
 import { pinProblem } from '@plateraa/shared';
 import { useState } from 'react';
-import { ScrollView, StyleSheet, Text, View } from 'react-native';
+import { ScrollView, Text, View } from 'react-native';
 import type { SyncEngine } from '../src/offline/engine';
 import { resetLocalData } from '../src/offline/schema';
 import { ownerApi, problemText, signIn, type Business } from '../src/tablet/api';
@@ -9,7 +9,7 @@ import { createEngine, localDatabase, useTablet } from '../src/tablet/TabletProv
 import { Button } from '../src/ui/Button';
 import { OptionTile } from '../src/ui/controls';
 import { Field, digitsOnly } from '../src/ui/Field';
-import { colors, font, radii, space, text } from '../src/ui/theme';
+import { colors, font, radii, space, text, themedStyles } from '../src/ui/theme';
 
 interface Registered {
   session: string;
@@ -245,7 +245,7 @@ export default function RegisterScreen() {
   );
 }
 
-const styles = StyleSheet.create({
+const styles = themedStyles(() => ({
   screen: {
     flexGrow: 1,
     flexDirection: 'row',
@@ -267,4 +267,4 @@ const styles = StyleSheet.create({
   heading: { fontFamily: font.semibold, fontSize: text.heading, color: colors.ink },
   hint: { fontFamily: font.regular, fontSize: text.small, lineHeight: 20, color: colors.muted },
   problem: { fontFamily: font.medium, fontSize: text.body, color: colors.redInk },
-});
+}));
