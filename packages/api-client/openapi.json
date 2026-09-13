@@ -7442,13 +7442,15 @@
           "theme": {
             "type": "string",
             "enum": [
+              "classic",
               "orange",
               "red",
-              "green",
-              "teal",
-              "blue",
+              "pink",
               "purple",
-              "pink"
+              "blue",
+              "teal",
+              "green",
+              "gold"
             ]
           },
           "area": {
@@ -7522,13 +7524,15 @@
           "theme": {
             "type": "string",
             "enum": [
+              "classic",
               "orange",
               "red",
-              "green",
-              "teal",
-              "blue",
+              "pink",
               "purple",
-              "pink"
+              "blue",
+              "teal",
+              "green",
+              "gold"
             ]
           },
           "area": {
@@ -7579,13 +7583,15 @@
           "theme": {
             "type": "string",
             "enum": [
+              "classic",
               "orange",
               "red",
-              "green",
-              "teal",
-              "blue",
+              "pink",
               "purple",
-              "pink"
+              "blue",
+              "teal",
+              "green",
+              "gold"
             ]
           },
           "coverUrl": {
@@ -7958,13 +7964,15 @@
           "theme": {
             "type": "string",
             "enum": [
+              "classic",
               "orange",
               "red",
-              "green",
-              "teal",
-              "blue",
+              "pink",
               "purple",
-              "pink"
+              "blue",
+              "teal",
+              "green",
+              "gold"
             ]
           },
           "type": {

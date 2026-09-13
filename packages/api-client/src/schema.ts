@@ -1946,7 +1946,7 @@ export interface components {
             cashOnPickup: boolean;
             acceptFirst: boolean;
             /** @enum {string} */
-            theme: "orange" | "red" | "green" | "teal" | "blue" | "purple" | "pink";
+            theme: "classic" | "orange" | "red" | "pink" | "purple" | "blue" | "teal" | "green" | "gold";
             area: string | null;
             phone: string | null;
             hours: string | null;
@@ -1963,7 +1963,7 @@ export interface components {
             cashOnPickup: boolean;
             acceptFirst: boolean;
             /** @enum {string} */
-            theme: "orange" | "red" | "green" | "teal" | "blue" | "purple" | "pink";
+            theme: "classic" | "orange" | "red" | "pink" | "purple" | "blue" | "teal" | "green" | "gold";
             area: string;
             phone: string;
             hours: string;
@@ -1975,7 +1975,7 @@ export interface components {
             phone: string | null;
             hours: string | null;
             /** @enum {string} */
-            theme: "orange" | "red" | "green" | "teal" | "blue" | "purple" | "pink";
+            theme: "classic" | "orange" | "red" | "pink" | "purple" | "blue" | "teal" | "green" | "gold";
             coverUrl: string | null;
             logoUrl: string | null;
             open: boolean;
@@ -2056,7 +2056,7 @@ export interface components {
             storeName: string;
             storePhone: string | null;
             /** @enum {string} */
-            theme: "orange" | "red" | "green" | "teal" | "blue" | "purple" | "pink";
+            theme: "classic" | "orange" | "red" | "pink" | "purple" | "blue" | "teal" | "green" | "gold";
             /** @enum {string} */
             type: "DINE_IN" | "PICKUP" | "DELIVERY";
             /** @enum {string} */

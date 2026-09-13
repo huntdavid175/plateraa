@@ -31,7 +31,7 @@ type Screen = 'store' | 'cart' | 'checkout' | 'paying';
 type Fulfilment = 'PICKUP' | 'DELIVERY';
 
 const primary =
-  'h-12 w-full rounded-xl bg-brand text-sm font-semibold text-white transition-all hover:bg-brand-hover active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-40 disabled:active:scale-100';
+  'h-12 w-full rounded-xl bg-brand text-sm font-semibold text-on-brand transition-all hover:bg-brand-hover active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-40 disabled:active:scale-100';
 
 /** The store's page: its menu, an item's choices, the cart and checkout (the user's design). */
 export function Storefront({ store }: { store: Store }) {
@@ -189,7 +189,7 @@ function StoreScreen({
         <div className="lg:flex-1">
           <div className="mx-auto max-w-[430px] lg:max-w-none">
             <header className="border-b border-border bg-card">
-              <div className="relative h-32 overflow-hidden bg-brand-tint lg:h-40">
+              <div className="relative h-32 overflow-hidden bg-hero lg:h-40">
                 {store.coverUrl && (
                   <>
                     <img
@@ -210,18 +210,20 @@ function StoreScreen({
                       className="h-12 w-12 flex-shrink-0 rounded-xl bg-card object-cover shadow-sm"
                     />
                   ) : (
-                    <div className="flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-xl bg-brand text-base font-bold text-white shadow-sm">
+                    <div className="flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-xl bg-brand text-base font-bold text-on-brand shadow-sm">
                       {initialsOf(store.name)}
                     </div>
                   )}
                   <div className="min-w-0">
                     <h1
-                      className={`truncate text-lg leading-tight font-semibold ${store.coverUrl ? 'text-white' : 'text-ink'}`}
+                      className={`truncate text-lg leading-tight font-semibold ${store.coverUrl ? 'text-white' : 'text-on-hero'}`}
                     >
                       {store.name}
                     </h1>
                     {store.area && (
-                      <p className={`text-xs ${store.coverUrl ? 'text-white/85' : 'text-muted'}`}>
+                      <p
+                        className={`text-xs ${store.coverUrl ? 'text-white/85' : 'text-on-hero/80'}`}
+                      >
                         {store.area}
                       </p>
                     )}
@@ -270,7 +272,7 @@ function StoreScreen({
                       onClick={() => jump(section.id)}
                       className={`flex-shrink-0 rounded-full border px-4 py-1.5 text-sm font-medium whitespace-nowrap transition-all ${
                         active === section.id
-                          ? 'border-brand bg-brand text-white'
+                          ? 'border-brand bg-brand text-on-brand'
                           : 'border-border bg-tile text-muted'
                       }`}
                     >
@@ -382,7 +384,7 @@ function StoreScreen({
           <button
             type="button"
             onClick={onCart}
-            className="flex h-14 w-full items-center justify-between rounded-xl bg-brand px-5 text-sm font-semibold text-white shadow-lg transition-all hover:bg-brand-hover active:scale-[0.98]"
+            className="flex h-14 w-full items-center justify-between rounded-xl bg-brand px-5 text-sm font-semibold text-on-brand shadow-lg transition-all hover:bg-brand-hover active:scale-[0.98]"
           >
             <span className="rounded-lg bg-white/25 px-2.5 py-1 font-mono text-xs font-bold">
               {count}
@@ -414,7 +416,7 @@ function FulfilmentChoice({
           onClick={() => onChange(option)}
           className={`flex-1 rounded-lg border py-2 text-sm font-medium transition-all ${
             value === option
-              ? 'border-brand bg-brand-tint text-brand'
+              ? 'border-brand bg-brand-tint text-brand-ink'
               : 'border-border bg-tile text-muted'
           }`}
         >
@@ -470,13 +472,13 @@ function ItemCard({
           <PhotoPlaceholder name={item.name} />
         )}
         {orderable && (
-          <div className="absolute right-1.5 bottom-1.5 flex h-6 w-6 items-center justify-center rounded-full bg-brand shadow-sm">
+          <div className="absolute right-1.5 bottom-1.5 flex h-6 w-6 items-center justify-center rounded-full bg-brand text-on-brand shadow-sm">
             <svg
               width="12"
               height="12"
               fill="none"
               viewBox="0 0 12 12"
-              stroke="white"
+              stroke="currentColor"
               strokeWidth="2.5"
               strokeLinecap="round"
               aria-hidden="true"
@@ -591,7 +593,7 @@ function ItemSheet({
                     aria-pressed={size.id === variantId}
                     className={`rounded-lg border px-4 py-2 text-sm font-medium transition-all ${
                       size.id === variantId
-                        ? 'border-brand bg-brand-tint text-brand'
+                        ? 'border-brand bg-brand-tint text-brand-ink'
                         : 'border-border bg-tile text-ink'
                     }`}
                   >
@@ -752,7 +754,7 @@ function CartScreen({
           <button
             type="button"
             onClick={onBack}
-            className="mt-4 rounded-xl bg-brand px-6 py-2.5 text-sm font-semibold text-white"
+            className="mt-4 rounded-xl bg-brand px-6 py-2.5 text-sm font-semibold text-on-brand"
           >
             Browse the menu
           </button>

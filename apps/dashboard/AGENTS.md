@@ -86,7 +86,7 @@ The web dashboard for owners and managers (plan.md §3.1). It uses:
     - Business (name, type);
     - Appearance (dark mode);
     - Orders (dine-in, pay before prep, portion counts, idle lock), where toggles save at once;
-    - Online store (plan.md §4.0), for anyone with `storefront.manage` (the owner and managers; `lib/storefront.ts`): the store on or off, its link with Copy and a QR code (`qrcode-generator`, downloadable), taking orders now, cash when they collect, accept first, the colour (`STOREFRONT_THEMES` swatches), the cover picture and logo, and what its page shows (area, phone, hours). It says when Moolre isn't connected or there are no delivery zones yet;
+    - Online store (plan.md §4.0), for anyone with `storefront.manage` (the owner and managers; `lib/storefront.ts`): the store on or off, its link with Copy and a QR code (`qrcode-generator`, downloadable), taking orders now, cash when they collect, accept first, the look (`STOREFRONT_LOOKS`, each shown as a tiny store page: its page colour, band, card and button), the cover picture and logo, and what its page shows (area, phone, hours). It says when Moolre isn't connected or there are no delivery zones yet;
     - Delivery zones, for anyone with `catalog.manage` (managers too): add, change, switch off the tablet, remove (`lib/zones.ts`).
     - Payments (the Moolre account, with "Check and save").
   - **Bolt Food and Chowdeck are hidden** (user decision, 13 Sep) until their APIs connect: no commissions in Settings, and no platform prices in the item editor, whose "Cost and margin" section now shows only with `reports.revenue.view`. The editor still sends the prices it loaded, so none are lost.

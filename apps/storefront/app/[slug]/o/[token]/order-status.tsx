@@ -138,7 +138,7 @@ export function OrderStatus({ token, initial }: { token: string; initial: Tracke
         <p className="mb-1 text-xs font-semibold tracking-wider text-muted uppercase">
           Order number
         </p>
-        <p className="font-mono text-5xl font-bold text-brand">{order.number}</p>
+        <p className="font-mono text-5xl font-bold text-brand-ink">{order.number}</p>
         <p className="mt-2 text-sm text-muted">
           {order.storeName} · {order.type === 'DELIVERY' ? 'Delivery' : 'Pickup'}
         </p>
@@ -163,7 +163,7 @@ export function OrderStatus({ token, initial }: { token: string; initial: Tracke
         </div>
       ) : waitingForPayment(order) ? (
         <div className="mb-6 rounded-xl border border-brand/30 bg-brand-tint p-5 text-center">
-          <p className="font-semibold text-brand">
+          <p className="font-semibold text-brand-ink">
             {lapsed ? 'Your payment didn’t go through' : 'Waiting for payment'}
           </p>
           <p className="mt-1 text-sm text-muted">
@@ -175,7 +175,7 @@ export function OrderStatus({ token, initial }: { token: string; initial: Tracke
             type="button"
             onClick={() => void pay()}
             disabled={paying}
-            className="mt-3 rounded-xl bg-brand px-6 py-2.5 text-sm font-semibold text-white disabled:opacity-50"
+            className="mt-3 rounded-xl bg-brand px-6 py-2.5 text-sm font-semibold text-on-brand disabled:opacity-50"
           >
             {paying ? (
               'Opening the payment page…'
@@ -197,7 +197,7 @@ export function OrderStatus({ token, initial }: { token: string; initial: Tracke
                 <div className="flex flex-col items-center">
                   <div
                     className={`flex h-7 w-7 flex-shrink-0 items-center justify-center rounded-full border-2 transition-all ${
-                      done ? 'border-brand bg-brand' : 'border-border bg-tile'
+                      done ? 'border-brand bg-brand text-on-brand' : 'border-border bg-tile'
                     }`}
                   >
                     {done && (
@@ -210,7 +210,7 @@ export function OrderStatus({ token, initial }: { token: string; initial: Tracke
                       >
                         <path
                           d="M2 6L5 9L10 3"
-                          stroke="white"
+                          stroke="currentColor"
                           strokeWidth="2"
                           strokeLinecap="round"
                           strokeLinejoin="round"
@@ -284,7 +284,7 @@ export function OrderStatus({ token, initial }: { token: string; initial: Tracke
       {order.storePhone && (
         <p className="text-center text-xs text-muted">
           Questions? Call {order.storeName} on{' '}
-          <a href={`tel:${order.storePhone}`} className="text-brand underline">
+          <a href={`tel:${order.storePhone}`} className="text-brand-ink underline">
             {phoneWords(order.storePhone)}
           </a>
         </p>

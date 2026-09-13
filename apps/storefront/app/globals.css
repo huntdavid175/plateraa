@@ -3,19 +3,25 @@
 @custom-variant dark (&:where(.dark, .dark *));
 
 /*
- * The storefront's look, from the user's Figma Make design (design/): warm greys, one brand
- * colour for the main action and the selected state, and status colours only with a word. The
- * brand colour is the store owner's choice (`--brand`, set per store in <Themed>); its lighter and
- * darker shades are worked out from it on `.themed`, where it's set.
+ * The storefront's look, from the user's Figma Make design (design/). Each store has its own look
+ * (STOREFRONT_LOOKS in @plateraa/shared, set by <Themed>): the page colour the owner picked, a
+ * stronger band across the top (`hero`), tinted words, and buttons in a colour that goes with the
+ * page (`brand`, with `on-brand` words and `brand-ink` for words in the button colour). Status
+ * colours only ever come with a word. The values below are the Classic look, for pages that
+ * aren't a store's (the home page, "not found").
  *
  * `inline` matters: it makes `bg-brand` read `var(--brand)` where it's used. Without it, Tailwind
- * defines `--color-brand: var(--brand)` on :root, which settles on the default orange there, and
- * every page shows orange whatever colour the owner chose.
+ * defines `--color-brand: var(--brand)` on :root, which settles on the default there, and every
+ * store shows the default whatever look the owner chose.
  */
 @theme inline {
   --color-brand: var(--brand);
   --color-brand-hover: var(--brand-hover);
   --color-brand-tint: var(--brand-tint);
+  --color-brand-ink: var(--brand-ink);
+  --color-on-brand: var(--on-brand);
+  --color-hero: var(--hero);
+  --color-on-hero: var(--on-hero);
   --color-page: var(--page);
   --color-card: var(--card);
   --color-tile: var(--tile);
@@ -34,13 +40,17 @@
 }
 
 :root {
-  --brand: #e8701a;
   --page: #f6f5f3;
   --card: #ffffff;
   --tile: #eceae7;
   --border: #e2dfd9;
   --ink: #1a1917;
-  --muted: #6b6860;
+  --muted: #67645c;
+  --hero: #fbe3cf;
+  --on-hero: #1a1917;
+  --brand: #b8500c;
+  --on-brand: #ffffff;
+  --brand-ink: #a8490b;
   --green: #2d7a4a;
   --green-bg: #e8f5ee;
   --amber: #b85c00;
@@ -55,7 +65,12 @@
   --tile: #252320;
   --border: #332f2a;
   --ink: #f0ede8;
-  --muted: #9e9a94;
+  --muted: #a29e98;
+  --hero: #3a2412;
+  --on-hero: #f6e6d8;
+  --brand: #f08a3e;
+  --on-brand: #1a0d03;
+  --brand-ink: #f5a060;
   --green: #34d07a;
   --green-bg: #0d2318;
   --amber: #f5a623;
@@ -64,15 +79,13 @@
   --red-bg: #2a0c0c;
 }
 
-.themed,
+/* Worked out from the look's own colours; the percentages match BRAND_TINT_PERCENT. */
 :root {
   --brand-hover: color-mix(in srgb, var(--brand) 86%, black);
-  --brand-tint: color-mix(in srgb, var(--brand) 9%, white);
+  --brand-tint: color-mix(in srgb, var(--brand) 14%, var(--card));
 }
-
-.dark .themed,
-.dark:root {
-  --brand-tint: color-mix(in srgb, var(--brand) 22%, #1c1a18);
+:root.dark {
+  --brand-tint: color-mix(in srgb, var(--brand) 20%, var(--card));
 }
 
 * {

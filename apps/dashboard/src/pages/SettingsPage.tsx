@@ -1,6 +1,6 @@
 import {
+  STOREFRONT_LOOKS,
   STOREFRONT_THEMES,
-  STOREFRONT_THEME_COLOURS,
   VENDOR_TYPES,
   type StorefrontTheme,
   type VendorType,
@@ -397,25 +397,53 @@ function ThemeRow({
 }) {
   return (
     <div className="px-5 py-4">
-      <p className="text-sm font-medium">Colour</p>
-      <p className="mt-0.5 text-xs text-muted">For the buttons on your store’s page.</p>
-      <div className="mt-3 flex flex-wrap gap-3" role="radiogroup" aria-label="Store colour">
-        {STOREFRONT_THEMES.map((key) => (
-          <button
-            key={key}
-            type="button"
-            role="radio"
-            aria-checked={theme === key}
-            aria-label={STOREFRONT_THEME_COLOURS[key].name}
-            title={STOREFRONT_THEME_COLOURS[key].name}
-            onClick={() => onChange(key)}
-            className={cx(
-              'h-9 w-9 rounded-full transition',
-              theme === key && 'ring-2 ring-text ring-offset-2 ring-offset-surface',
-            )}
-            style={{ backgroundColor: STOREFRONT_THEME_COLOURS[key].brand }}
-          />
-        ))}
+      <p className="text-sm font-medium">Look</p>
+      <p className="mt-0.5 text-xs text-muted">
+        Pick your page’s colour. The buttons get a colour that goes with it. Now:{' '}
+        {STOREFRONT_LOOKS[theme].describe.toLowerCase()}.
+      </p>
+      <div
+        className="mt-3 grid grid-cols-3 gap-2 sm:grid-cols-5"
+        role="radiogroup"
+        aria-label="Store look"
+      >
+        {STOREFRONT_THEMES.map((key) => {
+          const look = STOREFRONT_LOOKS[key];
+          const colours = look.light;
+          return (
+            <button
+              key={key}
+              type="button"
+              role="radio"
+              aria-checked={theme === key}
+              aria-label={`${look.name}: ${look.describe}`}
+              title={look.describe}
+              onClick={() => onChange(key)}
+              className={cx(
+                'overflow-hidden rounded-xl border text-left transition',
+                theme === key ? 'border-text ring-2 ring-text' : 'border-border hover:border-muted',
+              )}
+            >
+              {/* A tiny store page: the band, a card, and a button. */}
+              <span className="block p-2" style={{ backgroundColor: colours.page }}>
+                <span className="block h-3 rounded" style={{ backgroundColor: colours.hero }} />
+                <span className="mt-1.5 flex items-center gap-1.5">
+                  <span
+                    className="block h-4 flex-1 rounded"
+                    style={{ backgroundColor: colours.card }}
+                  />
+                  <span
+                    className="block h-4 w-7 rounded"
+                    style={{ backgroundColor: colours.brand }}
+                  />
+                </span>
+              </span>
+              <span className="block truncate bg-surface px-2 py-1.5 text-xs font-medium">
+                {look.name}
+              </span>
+            </button>
+          );
+        })}
       </div>
     </div>
   );

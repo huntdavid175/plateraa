@@ -1,13 +1,23 @@
 'use client';
 
-import { STOREFRONT_THEME_COLOURS, type StorefrontTheme } from '@plateraa/shared';
-import { useEffect, useState, type CSSProperties, type ReactNode } from 'react';
+import { STOREFRONT_LOOKS, type StorefrontPalette, type StorefrontTheme } from '@plateraa/shared';
+import { useEffect, useState, type ReactNode } from 'react';
 
-/** The page in the store's own colour; the lighter and darker shades come from it (globals.css). */
+const cssVars = (p: StorefrontPalette) =>
+  `--page:${p.page};--card:${p.card};--tile:${p.tile};--border:${p.border};--ink:${p.ink};` +
+  `--muted:${p.muted};--hero:${p.hero};--on-hero:${p.onHero};--brand:${p.brand};` +
+  `--on-brand:${p.onBrand};--brand-ink:${p.brandInk};`;
+
+/**
+ * The page in the store's own look (STOREFRONT_LOOKS), light or dark. Set on the page's root, so
+ * the whole window takes it, and the button shades in globals.css follow. `:root:root` and
+ * `:root.dark` outrank the stylesheet's own defaults.
+ */
 export function Themed({ theme, children }: { theme: StorefrontTheme; children: ReactNode }) {
-  const style = { '--brand': STOREFRONT_THEME_COLOURS[theme].brand } as CSSProperties;
+  const look = STOREFRONT_LOOKS[theme] ?? STOREFRONT_LOOKS.classic;
   return (
-    <div className="themed min-h-screen bg-page text-ink" style={style}>
+    <div className="min-h-screen bg-page text-ink">
+      <style>{`:root:root{${cssVars(look.light)}}:root.dark{${cssVars(look.dark)}}`}</style>
       {children}
     </div>
   );
