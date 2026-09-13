@@ -1,0 +1,25 @@
+# Storefront (`@plateraa/storefront`)
+
+The online store customers order from (plan.md §4.0): one link per business, `STOREFRONT_URL/<slug>`, that the vendor shares on WhatsApp and Instagram. Next.js 16 (App Router, Turbopack), React 19, Tailwind 4. Phone first; on a laptop the cart is a side panel.
+
+## Design
+
+- Built to the user's Figma Make design, `design/storefront design.make` (kept out of `public/`, which the site serves to anyone). It's a zip; its code is a git pack under `make_repos/` (unpack it as described for the dashboard's design). The screens are in `src/App.tsx`. Its sample data isn't used.
+- Colours are CSS variables in `app/globals.css`, exposed as Tailwind names: `bg-page`, `bg-card`, `bg-tile`, `border-border`, `text-ink`, `text-muted`, `bg-brand`, `bg-brand-tint`, `text-green` / `bg-green-bg`, and so on.
+- **The brand colour is the owner's choice.** `<Themed theme>` sets `--brand` from `STOREFRONT_THEME_COLOURS` (`@plateraa/shared`), and `.themed` works out `--brand-hover` and `--brand-tint` from it. Never hard-code the brand colour.
+- Dark mode follows the phone, with a switch remembered in the browser (`plateraa-dark`), applied before the first paint by the script in `app/layout.tsx`.
+- DM Sans and DM Mono come from `@fontsource`, so builds need no network. Money is `ghs()` (`lib/money.ts`), from whole pesewas.
+
+## How it works
+
+- **Only the storefront's server talks to the API** (`lib/api.ts`; `PLATERAA_API_URL`, the Render API by default). Pages load their data on the server, and the browser calls server actions (`app/actions.ts`) to place an order, pay and check a payment. Actions never throw: they return `{ ok: false, message }` for the page to show.
+- `app/[slug]/page.tsx` reads the store fresh on every visit; `storefront.tsx` is the client side (menu, item sheet, cart, checkout).
+- **The cart** is kept in the browser (`lib/cart.ts`) and priced with `priceOrder` from `@plateraa/shared` for showing; the server prices the order itself. Lines that sold out or changed since they were added must come off before checkout.
+- **Checkout** keeps one `orderId` per visit, so a retry records the order once. Paying online: the page's address is swapped for the order's status page, then the customer goes to Moolre's page, so Back lands on the status page.
+- `app/[slug]/o/[token]/` is the order's status page. It asks Moolre at once when the customer comes back from paying, then looks again every 15 s while the order is open. "Pay" opens a fresh payment page when the last one lapsed.
+- **Photos:** `photoUrl` is null until photo storage is set up, so cards show the item's initials, and there's no cover photo: the header band is the store's colour.
+
+## Running
+
+- `pnpm --filter @plateraa/storefront dev` serves http://localhost:3001. To use an API on the laptop, set `PLATERAA_API_URL=http://localhost:3000` in `apps/storefront/.env.local`. After changing `@plateraa/shared` or the API client, build them first.
+- **Not deployed yet.** It goes on Vercel once there's an account; then set `STOREFRONT_URL` on Render to its address, so the dashboard shows the right store link and QR code.

@@ -1,7 +1,14 @@
+import { Message } from '../components/ui';
+
+/** Plateraa's own address: each store lives at its own link, such as /amas-kitchen. */
 export default function Home() {
   return (
-    <main className="p-6">
-      <h1 className="text-2xl font-semibold">Plateraa</h1>
+    <main>
+      <Message icon="🍲" title="Plateraa">
+        <p className="mt-2 max-w-xs text-sm text-muted">
+          Order from your favourite food spot with the link they shared with you.
+        </p>
+      </Message>
     </main>
   );
 }

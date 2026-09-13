@@ -25,6 +25,7 @@ A solo founder (GitHub `huntdavid175`) builds it with an AI agent. Work started 
   - §2.2: the app shell, tablet registration, the PIN switcher, adding staff, the sync banner and the "Needs attention" screen. Tried on the tablet and working.
   - §2.3: taking orders (the counter screen, the orders list, cash, hold, edit and cancel). Tried on the tablet and working.
   - §2.4: the Drawer tab (drops, pay-ins, a blind count at close) and the Stock tab (one-tap sold out, optional portion counts). Tried on the tablet on 13 Sep and working, as are the float prompt at the start of the day, Today's sales and the sync warnings. Owner summaries moved to 3.2.
+- **The online store (13 Sep, plan.md §4.0),** moved up to before the pilot: the data and public API (`apps/api/src/storefront`), online orders on the tablet, Settings → Online store on the dashboard, and the storefront pages to the user's design (`apps/storefront`). Still open: photos, the order sound on the tablet, and deploying the storefront (needs a Vercel account).
 - **Done (13 Sep, tablet):** Dine-in / Pickup / Delivery, dark mode, Remove on each order line, the item sheet for any item with extras, and screens clear of the status bar. All tried on the tablet and working.
   - §2.5: payment links through each vendor's own Moolre account, texted by Moolre SMS, and counted only once Moolre's status check confirms them. The tablet sends them and shows each link's status. A real link was paid end to end on live Moolre on 12 Sep. See `apps/api/AGENTS.md`.
   - The rest of Phase 2 (12 Sep): "not synced yet" labels, refund owed, and the restyled screens.
@@ -87,7 +88,7 @@ A solo founder (GitHub `huntdavid175`) builds it with an AI agent. Work started 
 apps/api            NestJS API                        → apps/api/AGENTS.md
 apps/mobile         Expo tablet app + Kotlin modules  → apps/mobile/AGENTS.md
 apps/dashboard      Vite React dashboard              → apps/dashboard/AGENTS.md
-apps/storefront     Next.js (scaffold only)
+apps/storefront     Next.js online store              → apps/storefront/AGENTS.md
 packages/db         Drizzle schema, migrations, RLS   → packages/db/AGENTS.md
 packages/shared     money, pricing, order rules, capabilities, sync command schemas
 packages/api-client generated OpenAPI types + createApiClient()

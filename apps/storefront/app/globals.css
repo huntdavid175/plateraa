@@ -1,1 +1,142 @@
 @import 'tailwindcss';
+
+@custom-variant dark (&:where(.dark, .dark *));
+
+/*
+ * The storefront's look, from the user's Figma Make design (design/): warm greys, one brand
+ * colour for the main action and the selected state, and status colours only with a word. The
+ * brand colour is the store owner's choice (`--brand`, set per store in <Themed>); its lighter and
+ * darker shades are worked out from it on `.themed`, where it's set.
+ */
+@theme {
+  --color-brand: var(--brand);
+  --color-brand-hover: var(--brand-hover);
+  --color-brand-tint: var(--brand-tint);
+  --color-page: var(--page);
+  --color-card: var(--card);
+  --color-tile: var(--tile);
+  --color-border: var(--border);
+  --color-ink: var(--ink);
+  --color-muted: var(--muted);
+  --color-green: var(--green);
+  --color-green-bg: var(--green-bg);
+  --color-amber: var(--amber);
+  --color-amber-bg: var(--amber-bg);
+  --color-red: var(--red);
+  --color-red-bg: var(--red-bg);
+
+  --font-sans: 'DM Sans', ui-sans-serif, system-ui, sans-serif;
+  --font-mono: 'DM Mono', ui-monospace, monospace;
+}
+
+:root {
+  --brand: #e8701a;
+  --page: #f6f5f3;
+  --card: #ffffff;
+  --tile: #eceae7;
+  --border: #e2dfd9;
+  --ink: #1a1917;
+  --muted: #6b6860;
+  --green: #2d7a4a;
+  --green-bg: #e8f5ee;
+  --amber: #b85c00;
+  --amber-bg: #fff0e0;
+  --red: #c0392b;
+  --red-bg: #fdecea;
+}
+
+.dark {
+  --page: #111110;
+  --card: #1c1a18;
+  --tile: #252320;
+  --border: #332f2a;
+  --ink: #f0ede8;
+  --muted: #9e9a94;
+  --green: #34d07a;
+  --green-bg: #0d2318;
+  --amber: #f5a623;
+  --amber-bg: #241605;
+  --red: #f87171;
+  --red-bg: #2a0c0c;
+}
+
+.themed,
+:root {
+  --brand-hover: color-mix(in srgb, var(--brand) 86%, black);
+  --brand-tint: color-mix(in srgb, var(--brand) 9%, white);
+}
+
+.dark .themed,
+.dark:root {
+  --brand-tint: color-mix(in srgb, var(--brand) 22%, #1c1a18);
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  font-family: var(--font-sans);
+  background-color: var(--page);
+  color: var(--ink);
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Rows that scroll sideways without a bar. */
+.scrollbar-hide {
+  scrollbar-width: none;
+}
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;
+}
+
+.sheet-enter {
+  animation: slide-up 0.3s cubic-bezier(0.32, 0.72, 0, 1) forwards;
+}
+@keyframes slide-up {
+  from {
+    transform: translateY(100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+.skeleton {
+  background: linear-gradient(90deg, var(--tile) 25%, var(--page) 50%, var(--tile) 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.5s infinite;
+}
+@keyframes shimmer {
+  0% {
+    background-position: 200% 0;
+  }
+  100% {
+    background-position: -200% 0;
+  }
+}
+
+.stepper-btn {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  border: 1.5px solid var(--border);
+  background: var(--card);
+  color: var(--ink);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 18px;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+.stepper-btn:hover {
+  border-color: var(--brand);
+  color: var(--brand);
+}
+.stepper-btn:disabled {
+  opacity: 0.3;
+  cursor: default;
+}
