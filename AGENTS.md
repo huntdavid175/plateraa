@@ -54,6 +54,7 @@ A solo founder (GitHub `huntdavid175`) builds it with an AI agent. Work started 
   - Non-cash money goes only through Moolre, into **each vendor's own Moolre account**. It never passes through us. Direct MoMo can't be recorded; only cash and "paid via platform" are entered by hand. How we take our 2% ("the split") is decided later.
   - **Payment links are in the pilot** (§2.5), if Moolre API access arrives by Thu 24 Sep.
   - **Every order is Dine-in, Pickup or Delivery** (13 Sep), typed in at the counter, a phone call's too. Any order pays cash or by payment link; a link needs the customer's number, and so does a delivery. Dine-in shows only where the owner switches it on in the dashboard.
+  - **The storefront comes before the pilot** (13 Sep; plan.md §4.0): customers pay online through the vendor's own Moolre account, or cash on pickup where the vendor switches it on; the owner or a manager chooses whether paid online orders go straight to the kitchen or wait for Accept; item photos from the start; the pages follow the user's Figma Make design. The paid plan stays in R2.
   - **Bolt Food and Chowdeck aren't typed in by hand** (13 Sep). Their orders come once their APIs are connected. Until then the tablet doesn't offer them, and the dashboard hides their prices and commissions (kept on the server).
   - 6-digit PINs for everyone. The offline PIN check is not tied to the Android Keystore.
   - **The tablet can't refund, pay out or discount.** Managers do those on the dashboard:

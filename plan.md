@@ -348,6 +348,28 @@ _11 Sep: the server side is built from Moolre's docs (docs.moolre.com; their `/a
 
 ## Phase 4: Hardening → R1a live (Week 4: Thu 1 – Thu 8 Oct)
 
+### 4.0 Storefront (moved up from R2; user decision, 13 Sep)
+
+_What vendors need most: one link on WhatsApp and Instagram where customers order and pay. Decided 13 Sep:_
+
+- _**Payment:** online through the vendor's own Moolre account wherever it's connected; cash on pickup is a switch each vendor turns on or off in Settings._
+- _**At the counter:** the owner or a manager chooses whether a paid online order goes straight to the kitchen or waits for staff to tap Accept._
+- _**Photos** from the start, uploaded in the dashboard's item editor._
+- _**Design:** the user makes it in Figma Make. The API and the ordering logic are built first._
+- _The paid plan (prepaid 30-day passes) stays in R2._
+
+- [ ] Data (migration 0012): the store's settings on `tenant_settings` (online store on, taking orders now, cash on pickup, accept first); online orders need no staff member or tablet (`orders.created_by` becomes optional); a daily counter for online order numbers (W1, W2, …); a private token per online order for its status page.
+- [ ] Public API, no login, rate-limited:
+  - `GET /api/public/stores/:slug`: the menu with prices, photos and today's sold-out items, the delivery zones, and what's offered (pickup, delivery, cash on pickup). Never cost prices or sales figures.
+  - `POST /api/public/stores/:slug/orders`: priced by the server from the menu, never from the browser; the customer's name and number; pickup, or delivery with the zone's fee. The same order sent twice is recorded once. Paying online makes the Moolre link at once and sends the customer straight to it (no text message).
+  - `GET /api/public/orders/:token`: where the order stands, for the customer's status page.
+- [ ] Tablet: online orders arrive with the next sync (within 30 s), marked "Online", with a banner for new ones, and Accept where the store asks for it. A sound needs a new EAS build.
+- [ ] Dashboard: Settings → Online store (the switches, and the store's link and QR code to share); photo upload in the item editor.
+- [ ] Photos: kept in object storage (Cloudflare R2 unless decided otherwise) and resized on upload, so pages stay light on mobile data.
+- [ ] The storefront pages, to the user's Figma Make design: the store and its menu, an item's sizes and extras, the cart, pickup or delivery, details and payment, and the order's status. Next.js, rendered on the server, hosted on Vercel.
+- [ ] Tests: the public routes (priced from the menu, sold-out and closed-store refusals, a repeat recorded once, another store's items refused), the payment path end to end with the pretend Moolre, and Accept on the tablet.
+- _Founder: the Figma Make design; a Cloudflare account (R2) for photos; a Vercel account for the pages; `plateraa.com` for tidy store links (the Vercel address until then)._
+
 - [x] Offline torture script: airplane mode mid-order, kill the app mid-sync, replay a batch twice, 200 queued commands
   - _13 Sep: `pnpm --filter @plateraa/mobile stress` (see `apps/mobile/AGENTS.md`). The tablet's real sync engine, with SQLite in a file, sells the way the counter does against the real API on the Neon `test` branch, over a connection that fails on purpose. Six scenarios, side by side:_
     - _a 100-order day with the middle third in airplane mode, the drawer closed at the end;_
@@ -407,7 +429,7 @@ _Vendor's own Moolre account only (decided 10 Sep): customer money never passes 
 
 ## Later releases (plan in detail when we get there)
 
-- [ ] **R2**: Storefront PWA + paid plan (prepaid 30-day MoMo passes). The storefront is the one link vendors put on WhatsApp and Instagram; customers pay online before the order goes to the kitchen
+- [ ] **R2**: Paid plan (prepaid 30-day MoMo passes). _The storefront itself moved up to §4.0 on 13 Sep (user decision)._
 - [ ] **R3**: Marketing: segments, composer, templates, promo codes, attribution, opt-outs, spend caps
 - [ ] **R4**: Bolt Food API adapter (after integrator approval)
 - [ ] **Future: the split.** How Plateraa takes its 2% on Moolre payments. Until it's decided, customer money goes only into each vendor's own Moolre account (10 Sep). Gated on Moolre's written answers + the legal opinion. Work parked here from the old R1.5: settlement accounts (WALLET / DIRECT / POOLED, effective-dated), double-entry ledger, commission sweep, payout jobs, refunds via Transfer (vendor bears the 1% + 2%), KYC on payout MoMo numbers
