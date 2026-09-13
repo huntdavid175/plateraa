@@ -44,6 +44,8 @@ export const tenantSettings = pgTable('tenant_settings', {
   requirePaymentBeforePrep: boolean().notNull().default(true),
   /** Morning portion counts that count down with each sale. Optional: off unless the owner turns it on. */
   countPortions: boolean().notNull().default(false),
+  /** Customers can eat here, so the tablet offers Dine-in beside Pickup and Delivery. */
+  offersDineIn: boolean().notNull().default(false),
   updatedAt: timestamp({ withTimezone: true })
     .notNull()
     .defaultNow()

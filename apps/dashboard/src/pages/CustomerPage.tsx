@@ -10,7 +10,7 @@ import {
 import { cedis, shortDate } from '../lib/money';
 import { orderLine, paymentState, type BackTo } from '../lib/orders';
 import { useSession } from '../lib/session';
-import { SOURCE_WORDS, phoneWords } from '../lib/words';
+import { kindWords, phoneWords } from '../lib/words';
 import { useMe } from '../shell/Shell';
 import {
   Badge,
@@ -118,7 +118,7 @@ function CustomerBody({ customer }: { customer: CustomerDetail }) {
                 <div className="flex items-center gap-2">
                   <span className="font-mono text-xs text-muted">{order.displayNumber}</span>
                   <span className="text-xs text-muted">{shortDate(order.businessDate)}</span>
-                  <Tag>{SOURCE_WORDS[order.source]}</Tag>
+                  <Tag>{kindWords(order)}</Tag>
                 </div>
                 <p className="mt-0.5 truncate text-sm">{orderLine(order.items)}</p>
               </div>

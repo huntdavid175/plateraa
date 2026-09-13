@@ -75,7 +75,7 @@ describe.skipIf(!hasDatabase())('customers (against Neon)', () => {
         displayNumber: 'A3',
         businessDate: today,
         source: 'POS',
-        type: 'WALK_IN',
+        type: 'DINE_IN',
         lines: line(menu.sobolo, 1000),
       }),
     );

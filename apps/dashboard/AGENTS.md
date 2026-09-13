@@ -83,9 +83,11 @@ The web dashboard for owners and managers (plan.md §3.1). It uses:
   - Settings (`SettingsPage`):
     - Business (name, type);
     - Appearance (dark mode);
-    - Orders (pay before prep, portion counts, idle lock), where toggles save at once;
+    - Orders (dine-in, pay before prep, portion counts, idle lock), where toggles save at once;
     - Delivery zones, for anyone with `catalog.manage` (managers too): add, change, switch off the tablet, remove (`lib/zones.ts`).
-    - Payments (the Moolre account, with "Check and save", and platform commissions).
+    - Payments (the Moolre account, with "Check and save").
+  - **Bolt Food and Chowdeck are hidden** (user decision, 13 Sep) until their APIs connect: no commissions in Settings, and no platform prices in the item editor, whose "Cost and margin" section now shows only with `reports.revenue.view`. The editor still sends the prices it loaded, so none are lost.
+  - **Dine-in, pickup and delivery** replace "where the order came from": Today's cards, Reports' "Dine-in, pickup and delivery" box and the Orders filter (`?type=`), with Dine-in only where the owner offers it (`me.offersDineIn`). Orders are worded by `kindWords` ("Dine-in", or "Bolt · Pickup" for one from elsewhere); `?source=` still works as a removable chip.
     - Managers see Appearance, the business name and Delivery zones.
   - The rest are placeholders until their slices.
 - **Keep the first screen light on mobile data.** Big libraries load lazily: the recharts chart is `pages/MoneyInChart.tsx`, loaded with `lazy()`.

@@ -10,7 +10,7 @@ import { useNow } from './hooks';
 import { laneOf, urgency } from './lanes';
 import { extrasText, type QueueOrder } from './queue';
 import { kitchenSince, minutesSince } from './views';
-import { SOURCE_LABELS, nextStepLabel } from './words';
+import { kindLabel, nextStepLabel } from './words';
 
 type View_ = 'cooking' | 'ready';
 
@@ -113,12 +113,7 @@ export function KitchenScreen({
                 <View style={styles.cardHead}>
                   <Text style={styles.number}>{order.display_number}</Text>
                   <Text style={styles.source} numberOfLines={1}>
-                    {SOURCE_LABELS[order.source]}
-                    {order.type === 'DELIVERY'
-                      ? ' · Delivery'
-                      : order.type === 'PICKUP'
-                        ? ' · Pickup'
-                        : ''}
+                    {kindLabel(order)}
                   </Text>
                   <View style={styles.time}>
                     <Text

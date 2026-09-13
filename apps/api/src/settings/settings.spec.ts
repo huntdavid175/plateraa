@@ -62,7 +62,13 @@ describe.skipIf(!hasDatabase())('owner settings (against Neon)', () => {
   it('starts from the defaults', async () => {
     expect(await settings()).toEqual({
       business: { name: "Ama's Chop Bar", vendorType: 'CHOP_BAR' },
-      orders: { requirePaymentBeforePrep: true, countPortions: false, idleLockSeconds: 180 },
+      // A chop bar starts with dine-in on.
+      orders: {
+        requirePaymentBeforePrep: true,
+        countPortions: false,
+        offersDineIn: true,
+        idleLockSeconds: 180,
+      },
       moolre: { connected: false, apiUser: null, accountEnding: null, email: null },
       commissions: {
         BOLT_FOOD: { rateBps: null, flatAmount: null },
@@ -81,11 +87,17 @@ describe.skipIf(!hasDatabase())('owner settings (against Neon)', () => {
 
   it('gives every item a count record when portion counts go on', async () => {
     await asOwner(request(server()).put('/api/settings/orders'))
-      .send({ requirePaymentBeforePrep: false, countPortions: true, idleLockSeconds: 300 })
+      .send({
+        requirePaymentBeforePrep: false,
+        countPortions: true,
+        offersDineIn: false,
+        idleLockSeconds: 300,
+      })
       .expect(204);
     expect((await settings()).orders).toEqual({
       requirePaymentBeforePrep: false,
       countPortions: true,
+      offersDineIn: false,
       idleLockSeconds: 300,
     });
     // Jollof already had one; sobolo gets one now.

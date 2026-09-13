@@ -1,7 +1,7 @@
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { colors, font, radii, space, text } from './theme';
 
-/** Two to four choices side by side, like Walk-in | Delivery. */
+/** Two to four choices side by side, like Pickup | Delivery. */
 export function Segmented<T extends string>({
   options,
   value,

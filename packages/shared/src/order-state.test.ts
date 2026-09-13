@@ -29,8 +29,8 @@ describe('order state machine', () => {
     expect(initialStatus('API')).toBe('NEW');
   });
 
-  it('taps a walk-in order through to completed without going out for delivery', () => {
-    expect(tapThrough('NEW', 'WALK_IN')).toEqual([
+  it('taps a dine-in order through to completed without going out for delivery', () => {
+    expect(tapThrough('NEW', 'DINE_IN')).toEqual([
       'NEW',
       'CONFIRMED',
       'PREPARING',
@@ -52,8 +52,8 @@ describe('order state machine', () => {
   it('blocks impossible jumps', () => {
     expect(canTransition('READY', 'COMPLETED', 'DELIVERY')).toBe(false);
     expect(canTransition('READY', 'OUT_FOR_DELIVERY', 'PICKUP')).toBe(false);
-    expect(canTransition('NEW', 'READY', 'WALK_IN')).toBe(false);
-    expect(canTransition('CONFIRMED', 'REFUNDED', 'WALK_IN')).toBe(false);
+    expect(canTransition('NEW', 'READY', 'DINE_IN')).toBe(false);
+    expect(canTransition('CONFIRMED', 'REFUNDED', 'DINE_IN')).toBe(false);
     expect(() => assertTransition('COMPLETED', 'PREPARING', 'PICKUP')).toThrow(OrderStateError);
   });
 

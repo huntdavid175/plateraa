@@ -195,6 +195,12 @@ _11 Sep: built (`apps/mobile/src/counter`; the counter screen is `app/index.tsx`
 - [x] Prep queue: readable from 2 m, amber/red timers, tap to advance, optional Kitchen/Drinks split (_amber at the prep time, red at half as long again; "from 2 m" not measured yet_)
 - [x] Hold / resume / edit before prep / cancel with a reason (anyone can cancel a paid order; it then shows "refund owed" until a manager records the refund)
 - [x] Payments: walk-ins by cash or payment link; phone orders by payment link only; Bolt/Chowdeck as paid via platform (links: §2.5) (_cash and "paid on Bolt/Chowdeck" work; links can be chosen, and go out once §2.5 is done_)
+- [x] Dine-in, Pickup or Delivery (not a plan item before; user decision, 13 Sep, replacing the walk-in / phone / Bolt / Chowdeck choices above)
+  - _**At the counter:** every order is typed in as Dine-in, Pickup or Delivery: one tap instead of "Remote order", then "Phone", then the type. A phone call is typed in the same way, and any order pays cash or by payment link; a link needs the customer's number, and so does a delivery. Staff pick "Served" for a dine-in, "Handed over" for a pickup._
+  - _**Dine-in** shows only where the owner offers it: dashboard Settings → Orders (`offers_dine_in`). New chop bars, fast food places and cafés start with it on. Walk-ins taken so far became pickups (migration 0011)._
+  - _**Bolt Food and Chowdeck** are no longer typed in by hand: their orders will arrive once their APIs are connected (R4). The dashboard hides their prices and commissions, which stay on the server for then._
+  - _**Figures:** Today, Reports and the tablet's Today's sales show dine-in, pickup and delivery instead of where orders came from, and the Orders list filters by them (`?type=`)._
+  - _Not tried on the tablet yet._
 
 ### 2.4 Cash & stock
 

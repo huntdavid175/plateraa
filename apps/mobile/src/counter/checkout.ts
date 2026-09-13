@@ -1,21 +1,11 @@
-import { normalizeGhanaPhone, pesewas, type Pesewas } from '@plateraa/shared';
+import { normalizeGhanaPhone, pesewas, type OrderType, type Pesewas } from '@plateraa/shared';
 import type { OrderDraft } from './actions';
 import type { TicketLine } from './ticket';
 
-export type CheckoutSource = 'POS' | 'PHONE' | 'BOLT_FOOD' | 'CHOWDECK';
-
-export const PLATFORM_NAMES: Partial<Record<CheckoutSource, string>> = {
-  BOLT_FOOD: 'Bolt',
-  CHOWDECK: 'Chowdeck',
-};
-
-export const isPlatform = (source: CheckoutSource) =>
-  source === 'BOLT_FOOD' || source === 'CHOWDECK';
-
 /** What the order column has collected, before the order is saved. */
 export interface Checkout {
-  source: CheckoutSource;
-  delivery: boolean;
+  /** Dine-in, pickup or delivery. */
+  type: OrderType;
   phone: string;
   name: string;
   address: string;
@@ -23,19 +13,16 @@ export interface Checkout {
   /** Null when what was typed isn't an amount. */
   fee: Pesewas | null;
   riderKeepsFee: boolean;
-  reference: string;
 }
 
-export const emptyCheckout = (source: CheckoutSource): Checkout => ({
-  source,
-  delivery: false,
+export const emptyCheckout = (type: OrderType): Checkout => ({
+  type,
   phone: '',
   name: '',
   address: '',
   zoneId: null,
   fee: pesewas(0),
   riderKeepsFee: false,
-  reference: '',
 });
 
 /** A Ghanaian number as customers are keyed (+233…): "24 123 4567" and "024 123 4567" both work. */
@@ -45,8 +32,8 @@ export function ghanaPhone(value: string): string | null {
 }
 
 /**
- * The order to save, or an error saying what's missing. Phone orders and payment links need the
- * customer's number; so does delivery by the vendor's own rider. Bolt and Chowdeck don't.
+ * The order to save, or an error saying what's missing. Every order is typed in at the counter,
+ * a phone call's too. A payment link needs the customer's number, and so does a delivery.
  */
 export function toDraft(checkout: Checkout, lines: TicketLine[], paidByLink: boolean): OrderDraft {
   if (!lines.length) throw new Error('Add something to the order first');
@@ -54,25 +41,22 @@ export function toDraft(checkout: Checkout, lines: TicketLine[], paidByLink: boo
   const phone = typed ? ghanaPhone(typed) : null;
   if (typed && !phone) throw new Error("That isn't a Ghanaian phone number");
 
-  const platform = isPlatform(checkout.source);
-  const ownDelivery = checkout.delivery && !platform;
-  if (!phone && (checkout.source === 'PHONE' || paidByLink || ownDelivery)) {
+  const delivery = checkout.type === 'DELIVERY';
+  if (!phone && (paidByLink || delivery)) {
     throw new Error(
-      checkout.source === 'PHONE'
-        ? "Add the caller's number: the payment link goes there"
-        : paidByLink
-          ? "Add the customer's number: the payment link goes there"
-          : "Add the customer's number for the rider",
+      paidByLink
+        ? "Add the customer's number: the payment link goes there"
+        : "Add the customer's number for the rider",
     );
   }
   const name = checkout.name.trim();
   const customer = phone ? { phone, ...(name ? { name } : {}) } : undefined;
 
-  if (ownDelivery) {
+  if (delivery) {
     if (!checkout.address.trim()) throw new Error('Add the delivery address');
     if (checkout.fee === null) throw new Error("The delivery fee isn't an amount");
     return {
-      source: checkout.source,
+      source: 'POS',
       type: 'DELIVERY',
       lines,
       customer,
@@ -84,12 +68,5 @@ export function toDraft(checkout: Checkout, lines: TicketLine[], paidByLink: boo
       },
     };
   }
-  const reference = checkout.reference.trim();
-  return {
-    source: checkout.source,
-    type: checkout.source === 'POS' ? 'WALK_IN' : 'PICKUP',
-    lines,
-    customer,
-    ...(platform && reference ? { externalReference: reference } : {}),
-  };
+  return { source: 'POS', type: checkout.type, lines, customer };
 }

@@ -53,7 +53,7 @@ NestJS 11 (not 12: nestjs-zod 5.5 needs `@nestjs/common` ^11), CommonJS, built w
   - `/api/stock` (`catalog.manage`) covers raw ingredients: add, edit, stop tracking, and a count (`/count`), which records the difference as a COUNT_ADJUST.
 - `settings/`: the owner's settings (`settings.manage`, owner only).
   - `GET /api/settings` returns them all.
-  - `PUT /api/settings/business`, `/orders` and `/commissions` save them. `/orders` covers pay before prep, portion counts and the idle lock; switching counts on adds missing count records.
+  - `PUT /api/settings/business`, `/orders` and `/commissions` save them. `/orders` covers pay before prep, portion counts, dine-in (`offersDineIn`, synced to the tablet and in `/api/me/context`; a new business of a `DINE_IN_VENDOR_TYPES` type starts with it on) and the idle lock; switching counts on adds missing count records. Commissions stay for Bolt Food and Chowdeck's APIs, though the dashboard hides them since 13 Sep.
   - `PUT /api/settings/moolre` saves the vendor's Moolre account. It first asks Moolre about a made-up payment, so wrong details are refused (AIN codes) without charging anyone. The key is sealed with `SECRETS_KEY`, and only the last 4 digits of the account are returned. It uses `MOOLRE`, exported by `PaymentsModule`.
 - `manager/`: what only a manager or the owner does, on the dashboard. The tablet can't do any of it.
   - `POST /api/orders/:orderId/refunds` (`refunds.record`): money handed back by hand, outside the drawer, full or partial up to what's owed. It lowers the order's `amountPaid`.

@@ -15,26 +15,27 @@ const lines: TicketLine[] = [
 ];
 
 describe('checking an order before it is saved', () => {
-  it('takes a walk-in with no number, but needs one for a payment link', () => {
-    expect(toDraft(emptyCheckout('POS'), lines, false)).toMatchObject({
+  it('takes dine-in and pickup with no number, but needs one for a payment link', () => {
+    expect(toDraft(emptyCheckout('DINE_IN'), lines, false)).toMatchObject({
       source: 'POS',
-      type: 'WALK_IN',
+      type: 'DINE_IN',
     });
-    expect(() => toDraft(emptyCheckout('POS'), lines, true)).toThrow(/customer's number/);
+    expect(toDraft(emptyCheckout('PICKUP'), lines, false)).toMatchObject({
+      source: 'POS',
+      type: 'PICKUP',
+    });
+    expect(() => toDraft(emptyCheckout('PICKUP'), lines, true)).toThrow(/customer's number/);
     expect(
-      toDraft({ ...emptyCheckout('POS'), phone: '24 123 4567' }, lines, true).customer,
-    ).toEqual({ phone: '+233241234567' });
+      toDraft({ ...emptyCheckout('PICKUP'), phone: '24 123 4567', name: ' Kofi ' }, lines, true)
+        .customer,
+    ).toEqual({ phone: '+233241234567', name: 'Kofi' });
   });
 
-  it("needs the caller's number for a phone order, but not for Bolt or Chowdeck", () => {
-    expect(() => toDraft(emptyCheckout('PHONE'), lines, true)).toThrow(/caller's number/);
-    expect(
-      toDraft({ ...emptyCheckout('BOLT_FOOD'), reference: ' BF-22 ' }, lines, false),
-    ).toMatchObject({ source: 'BOLT_FOOD', type: 'PICKUP', externalReference: 'BF-22' });
-  });
-
-  it('needs an address and a fee that is an amount for delivery, and notes who keeps the fee', () => {
-    const delivery = { ...emptyCheckout('POS'), delivery: true, phone: '0241234567' };
+  it('needs a number, an address and a fee that is an amount for delivery, and notes who keeps the fee', () => {
+    expect(() => toDraft({ ...emptyCheckout('DELIVERY'), address: 'Osu' }, lines, false)).toThrow(
+      /for the rider/,
+    );
+    const delivery = { ...emptyCheckout('DELIVERY'), phone: '0241234567' };
     expect(() => toDraft(delivery, lines, false)).toThrow(/address/);
     expect(() => toDraft({ ...delivery, address: 'Osu', fee: null }, lines, false)).toThrow(/fee/);
     expect(
@@ -44,16 +45,18 @@ describe('checking an order before it is saved', () => {
         false,
       ),
     ).toMatchObject({
+      source: 'POS',
       type: 'DELIVERY',
       delivery: { address: 'Osu', fee: 1500, feeCollectedBy: 'RIDER' },
     });
   });
 
-  it('refuses a number that is not Ghanaian', () => {
+  it('refuses a number that is not Ghanaian, and an empty order', () => {
     expect(ghanaPhone('024 123 4567')).toBe('+233241234567');
     expect(ghanaPhone('12345')).toBeNull();
-    expect(() => toDraft({ ...emptyCheckout('POS'), phone: '12345' }, lines, false)).toThrow(
+    expect(() => toDraft({ ...emptyCheckout('PICKUP'), phone: '12345' }, lines, false)).toThrow(
       /Ghanaian/,
     );
+    expect(() => toDraft(emptyCheckout('PICKUP'), [], false)).toThrow(/Add something/);
   });
 });

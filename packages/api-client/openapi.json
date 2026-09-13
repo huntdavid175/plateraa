@@ -574,6 +574,19 @@
             }
           },
           {
+            "name": "type",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "DINE_IN",
+                "PICKUP",
+                "DELIVERY"
+              ]
+            }
+          },
+          {
             "name": "paid",
             "required": false,
             "in": "query",
@@ -2040,6 +2053,9 @@
               "OTHER"
             ]
           },
+          "offersDineIn": {
+            "type": "boolean"
+          },
           "staffId": {
             "type": "string"
           },
@@ -2085,6 +2101,7 @@
           "tenantId",
           "businessName",
           "vendorType",
+          "offersDineIn",
           "staffId",
           "displayName",
           "role",
@@ -2641,7 +2658,7 @@
                         "type": {
                           "type": "string",
                           "enum": [
-                            "WALK_IN",
+                            "DINE_IN",
                             "PICKUP",
                             "DELIVERY"
                           ]
@@ -3952,7 +3969,7 @@
           "type": {
             "type": "string",
             "enum": [
-              "WALK_IN",
+              "DINE_IN",
               "PICKUP",
               "DELIVERY"
             ]
@@ -4088,7 +4105,7 @@
           "type": {
             "type": "string",
             "enum": [
-              "WALK_IN",
+              "DINE_IN",
               "PICKUP",
               "DELIVERY"
             ]
@@ -4641,7 +4658,7 @@
                 "type": {
                   "type": "string",
                   "enum": [
-                    "WALK_IN",
+                    "DINE_IN",
                     "PICKUP",
                     "DELIVERY"
                   ]
@@ -4902,6 +4919,38 @@
               "additionalProperties": false
             }
           },
+          "byType": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "type": {
+                  "type": "string",
+                  "enum": [
+                    "DINE_IN",
+                    "PICKUP",
+                    "DELIVERY"
+                  ]
+                },
+                "orders": {
+                  "type": "integer",
+                  "minimum": -9007199254740991,
+                  "maximum": 9007199254740991
+                },
+                "sales": {
+                  "type": "integer",
+                  "minimum": -9007199254740991,
+                  "maximum": 9007199254740991
+                }
+              },
+              "required": [
+                "type",
+                "orders",
+                "sales"
+              ],
+              "additionalProperties": false
+            }
+          },
           "byMethod": {
             "type": "array",
             "items": {
@@ -4944,6 +4993,7 @@
           "profit",
           "byHour",
           "bySource",
+          "byType",
           "byMethod"
         ],
         "additionalProperties": false
@@ -5093,6 +5143,38 @@
               },
               "required": [
                 "source",
+                "orders",
+                "sales"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "byType": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "type": {
+                  "type": "string",
+                  "enum": [
+                    "DINE_IN",
+                    "PICKUP",
+                    "DELIVERY"
+                  ]
+                },
+                "orders": {
+                  "type": "integer",
+                  "minimum": -9007199254740991,
+                  "maximum": 9007199254740991
+                },
+                "sales": {
+                  "type": "integer",
+                  "minimum": -9007199254740991,
+                  "maximum": 9007199254740991
+                }
+              },
+              "required": [
+                "type",
                 "orders",
                 "sales"
               ],
@@ -5280,6 +5362,7 @@
           "totals",
           "byDay",
           "bySource",
+          "byType",
           "byMethod",
           "byItem",
           "byCategory",
@@ -6368,6 +6451,9 @@
               "countPortions": {
                 "type": "boolean"
               },
+              "offersDineIn": {
+                "type": "boolean"
+              },
               "idleLockSeconds": {
                 "type": "integer",
                 "minimum": -9007199254740991,
@@ -6377,6 +6463,7 @@
             "required": [
               "requirePaymentBeforePrep",
               "countPortions",
+              "offersDineIn",
               "idleLockSeconds"
             ],
             "additionalProperties": false
@@ -6506,6 +6593,9 @@
           "countPortions": {
             "type": "boolean"
           },
+          "offersDineIn": {
+            "type": "boolean"
+          },
           "idleLockSeconds": {
             "type": "integer",
             "minimum": 60,
@@ -6515,6 +6605,7 @@
         "required": [
           "requirePaymentBeforePrep",
           "countPortions",
+          "offersDineIn",
           "idleLockSeconds"
         ]
       },

@@ -8,13 +8,29 @@ import type {
 import type { Lane } from './lanes';
 
 export const SOURCE_LABELS: Record<OrderSource, string> = {
-  POS: 'Walk-in',
+  POS: 'Counter',
   PHONE: 'Phone',
   STOREFRONT: 'Online',
   BOLT_FOOD: 'Bolt',
   CHOWDECK: 'Chowdeck',
   OTHER: 'Other',
 };
+
+export const TYPE_LABELS: Record<OrderType, string> = {
+  DINE_IN: 'Dine-in',
+  PICKUP: 'Pickup',
+  DELIVERY: 'Delivery',
+};
+
+/**
+ * What kind of order it is, as its card says it: "Dine-in", or "Bolt · Pickup" for one that didn't
+ * come in at the counter (older phone orders, and later the platforms' own).
+ */
+export function kindLabel(order: { source: OrderSource; type: OrderType }): string {
+  return order.source === 'POS'
+    ? TYPE_LABELS[order.type]
+    : `${SOURCE_LABELS[order.source]} · ${TYPE_LABELS[order.type]}`;
+}
 
 export const METHOD_LABELS: Record<PaymentMethod, string> = {
   CASH: 'Cash',
@@ -51,7 +67,11 @@ export function nextStepLabel(status: OrderStatus, type: OrderType): string | nu
     case 'PREPARING':
       return 'Ready';
     case 'READY':
-      return type === 'DELIVERY' ? 'Out for delivery' : 'Handed over';
+      return type === 'DELIVERY'
+        ? 'Out for delivery'
+        : type === 'DINE_IN'
+          ? 'Served'
+          : 'Handed over';
     case 'OUT_FOR_DELIVERY':
       return 'Delivered';
     default:

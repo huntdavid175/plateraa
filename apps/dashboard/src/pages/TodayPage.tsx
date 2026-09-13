@@ -1,3 +1,4 @@
+import { ORDER_TYPES } from '@plateraa/shared';
 import { useQuery } from '@tanstack/react-query';
 import { Suspense, lazy, useState, type ReactNode } from 'react';
 import { Link, useSearchParams } from 'react-router';
@@ -15,16 +16,13 @@ import { fetchDay, type DaySummary } from '../lib/reports';
 import { alertTone, tabletAlertWords } from '../lib/tablet-alerts';
 import { fetchTablets, type Tablet } from '../lib/team';
 import { useSession } from '../lib/session';
-import { SOURCE_WORDS } from '../lib/words';
+import { TYPE_WORDS, kindWords } from '../lib/words';
 import { useMe } from '../shell/Shell';
 import { Badge, Button, Card, ErrorNote, Spinner, Tag, cx } from '../ui/controls';
 import { Page } from '../ui/Page';
 import { PayoutDialog } from './money-dialogs';
 
 const MoneyInChart = lazy(() => import('./MoneyInChart'));
-
-/** The four order sources every vendor has; storefront and other show only when used. */
-const MAIN_SOURCES = ['POS', 'PHONE', 'BOLT_FOOD', 'CHOWDECK'] as const;
 
 /** Today, or any past day picked with `?date=` (so a day can be shared). */
 export function TodayPage() {
@@ -107,7 +105,7 @@ export function TodayPage() {
               <ErrorNote>{day.error.message}</ErrorNote>
             </div>
           )}
-          {day.data && <Figures day={day.data} isToday={isToday} />}
+          {day.data && <Figures day={day.data} isToday={isToday} offersDineIn={me.offersDineIn} />}
         </>
       ) : (
         <Card className="mb-6 px-5 py-4">
@@ -219,9 +217,19 @@ function OpenDrawers({ drawers }: { drawers: Drawer[] }) {
   );
 }
 
-function Figures({ day, isToday }: { day: DaySummary; isToday: boolean }) {
-  const others = day.bySource.filter(
-    (row) => !(MAIN_SOURCES as readonly string[]).includes(row.source),
+function Figures({
+  day,
+  isToday,
+  offersDineIn,
+}: {
+  day: DaySummary;
+  isToday: boolean;
+  offersDineIn: boolean;
+}) {
+  // Dine-in shows where the owner offers it, or on a day that had some.
+  const types = ORDER_TYPES.filter(
+    (type) =>
+      type !== 'DINE_IN' || offersDineIn || day.byType.some((row) => row.type === 'DINE_IN'),
   );
   // Each figure opens the rows behind it, for this day.
   const orders = (filters: Record<string, string>) =>
@@ -285,28 +293,19 @@ function Figures({ day, isToday }: { day: DaySummary; isToday: boolean }) {
         )}
       </Card>
 
-      <div className="mb-6 grid grid-cols-2 gap-3 md:grid-cols-4">
-        {MAIN_SOURCES.map((source) => {
-          const row = day.bySource.find((r) => r.source === source);
+      <div className="mb-6 grid grid-cols-2 gap-3 md:grid-cols-3">
+        {types.map((type) => {
+          const row = day.byType.find((r) => r.type === type);
           return (
-            <SourceCard
-              key={source}
-              label={SOURCE_WORDS[source]}
+            <TypeCard
+              key={type}
+              label={TYPE_WORDS[type]}
               sales={row?.sales ?? 0}
               orders={row?.orders ?? 0}
-              to={orders({ source })}
+              to={orders({ type })}
             />
           );
         })}
-        {others.map((row) => (
-          <SourceCard
-            key={row.source}
-            label={SOURCE_WORDS[row.source]}
-            sales={row.sales}
-            orders={row.orders}
-            to={orders({ source: row.source })}
-          />
-        ))}
       </div>
     </>
   );
@@ -343,7 +342,7 @@ function Metric({
   );
 }
 
-function SourceCard({
+function TypeCard({
   label,
   sales,
   orders,
@@ -352,7 +351,7 @@ function SourceCard({
   label: string;
   sales: number;
   orders: number;
-  /** The source's orders for the day. */
+  /** The day's dine-in, pickup or delivery orders. */
   to: string;
 }) {
   return (
@@ -416,7 +415,7 @@ function RecentOrders({
           <div className="min-w-0 flex-1">
             <div className="flex items-center gap-2">
               <span className="font-mono text-xs text-muted">{order.displayNumber}</span>
-              <Tag>{SOURCE_WORDS[order.source]}</Tag>
+              <Tag>{kindWords(order)}</Tag>
             </div>
             <p className="mt-0.5 truncate text-sm">{orderLine(order.items)}</p>
           </div>

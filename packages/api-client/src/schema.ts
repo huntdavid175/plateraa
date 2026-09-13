@@ -739,6 +739,7 @@ export interface components {
             businessName: string;
             /** @enum {string} */
             vendorType: "CHOP_BAR" | "FAST_FOOD" | "CAFE_BAKERY" | "JUICE" | "CLOUD_KITCHEN" | "FOOD_TRUCK" | "OTHER";
+            offersDineIn: boolean;
             staffId: string;
             displayName: string;
             /** @enum {string} */
@@ -872,7 +873,7 @@ export interface components {
                     /** @enum {string} */
                     source: "POS" | "PHONE" | "STOREFRONT" | "BOLT_FOOD" | "CHOWDECK" | "OTHER";
                     /** @enum {string} */
-                    type: "WALK_IN" | "PICKUP" | "DELIVERY";
+                    type: "DINE_IN" | "PICKUP" | "DELIVERY";
                     externalReference?: string;
                     customer?: {
                         phone: string;
@@ -1206,7 +1207,7 @@ export interface components {
             /** @enum {string} */
             source: "POS" | "PHONE" | "STOREFRONT" | "BOLT_FOOD" | "CHOWDECK" | "OTHER";
             /** @enum {string} */
-            type: "WALK_IN" | "PICKUP" | "DELIVERY";
+            type: "DINE_IN" | "PICKUP" | "DELIVERY";
             /** @enum {string} */
             status: "NEW" | "CONFIRMED" | "PREPARING" | "READY" | "OUT_FOR_DELIVERY" | "COMPLETED" | "CANCELLED" | "REFUNDED";
             onHold: boolean;
@@ -1231,7 +1232,7 @@ export interface components {
             /** @enum {string} */
             source: "POS" | "PHONE" | "STOREFRONT" | "BOLT_FOOD" | "CHOWDECK" | "OTHER";
             /** @enum {string} */
-            type: "WALK_IN" | "PICKUP" | "DELIVERY";
+            type: "DINE_IN" | "PICKUP" | "DELIVERY";
             /** @enum {string} */
             status: "NEW" | "CONFIRMED" | "PREPARING" | "READY" | "OUT_FOR_DELIVERY" | "COMPLETED" | "CANCELLED" | "REFUNDED";
             onHold: boolean;
@@ -1336,7 +1337,7 @@ export interface components {
                 /** @enum {string} */
                 source: "POS" | "PHONE" | "STOREFRONT" | "BOLT_FOOD" | "CHOWDECK" | "OTHER";
                 /** @enum {string} */
-                type: "WALK_IN" | "PICKUP" | "DELIVERY";
+                type: "DINE_IN" | "PICKUP" | "DELIVERY";
                 /** @enum {string} */
                 status: "NEW" | "CONFIRMED" | "PREPARING" | "READY" | "OUT_FOR_DELIVERY" | "COMPLETED" | "CANCELLED" | "REFUNDED";
                 onHold: boolean;
@@ -1382,6 +1383,12 @@ export interface components {
                 orders: number;
                 sales: number;
             }[];
+            byType: {
+                /** @enum {string} */
+                type: "DINE_IN" | "PICKUP" | "DELIVERY";
+                orders: number;
+                sales: number;
+            }[];
             byMethod: {
                 /** @enum {string} */
                 method: "CASH" | "PLATFORM" | "LINK";
@@ -1413,6 +1420,12 @@ export interface components {
             bySource: {
                 /** @enum {string} */
                 source: "POS" | "PHONE" | "STOREFRONT" | "BOLT_FOOD" | "CHOWDECK" | "OTHER";
+                orders: number;
+                sales: number;
+            }[];
+            byType: {
+                /** @enum {string} */
+                type: "DINE_IN" | "PICKUP" | "DELIVERY";
                 orders: number;
                 sales: number;
             }[];
@@ -1676,6 +1689,7 @@ export interface components {
             orders: {
                 requirePaymentBeforePrep: boolean;
                 countPortions: boolean;
+                offersDineIn: boolean;
                 idleLockSeconds: number;
             };
             moolre: {
@@ -1703,6 +1717,7 @@ export interface components {
         OrderSettingsDto: {
             requirePaymentBeforePrep: boolean;
             countPortions: boolean;
+            offersDineIn: boolean;
             idleLockSeconds: number;
         };
         MoolreAccountDto: {
@@ -2145,6 +2160,7 @@ export interface operations {
                 from?: string;
                 to?: string;
                 source?: "POS" | "PHONE" | "STOREFRONT" | "BOLT_FOOD" | "CHOWDECK" | "OTHER";
+                type?: "DINE_IN" | "PICKUP" | "DELIVERY";
                 paid?: "PAID" | "UNPAID" | "REFUND_OWED" | "CANCELLED";
                 method?: string;
                 item?: string;

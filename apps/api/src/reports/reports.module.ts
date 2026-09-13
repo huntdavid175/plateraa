@@ -1,6 +1,6 @@
 import { Controller, Get, Inject, Injectable, Module, Query } from '@nestjs/common';
 import { withTenant } from '@plateraa/db';
-import { ORDER_SOURCES, PAYMENT_METHODS, pesewas } from '@plateraa/shared';
+import { ORDER_SOURCES, ORDER_TYPES, PAYMENT_METHODS, pesewas } from '@plateraa/shared';
 import { ApiBearerAuth, ApiOkResponse } from '@nestjs/swagger';
 import { createZodDto } from 'nestjs-zod';
 import { z } from 'zod';
@@ -50,6 +50,10 @@ class DaySummaryDto extends createZodDto(
     bySource: z.array(
       z.object({ source: z.enum(ORDER_SOURCES), orders: z.number().int(), sales: money }),
     ),
+    /** Dine-in, pickup and delivery. */
+    byType: z.array(
+      z.object({ type: z.enum(ORDER_TYPES), orders: z.number().int(), sales: money }),
+    ),
     byMethod: z.array(z.object({ method: z.enum(PAYMENT_METHODS), amount: money })),
   }),
 ) {}
@@ -85,6 +89,7 @@ export class DaySummaryService {
         profit: pesewas(day.moneyIn + day.platformOwed - day.commissionEstimate - day.moneyOut),
         byHour: day.byHour,
         bySource: day.bySource,
+        byType: day.byType,
         byMethod: day.byMethod,
       };
     });

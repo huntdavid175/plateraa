@@ -112,7 +112,7 @@ export function Badge({ tone, children }: { tone: keyof typeof BADGE_TONES; chil
   );
 }
 
-/** A grey tag for where an order came from: Walk-in, Phone, Bolt, Chowdeck. */
+/** A grey tag for what kind of order it is: Dine-in, Pickup, Delivery. */
 export function Tag({ children }: { children: ReactNode }) {
   return (
     <span className="inline-flex items-center rounded bg-tile px-2 py-0.5 text-xs font-medium text-muted">
@@ -157,7 +157,7 @@ export function Spinner({ light }: { light?: boolean }) {
   );
 }
 
-/** A row of choices where one is on, e.g. All / Walk-in / Phone. */
+/** A row of choices where one is on, e.g. All / Dine-in / Pickup. */
 export function PillFilter<T extends string>({
   label,
   options,

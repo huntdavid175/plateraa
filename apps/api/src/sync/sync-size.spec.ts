@@ -160,7 +160,7 @@ describe.skipIf(!hasDatabase())('how much data a sync uses (against Neon)', () =
         displayNumber: `A${n + 1}`,
         businessDate: today,
         source: 'POS',
-        type: 'WALK_IN',
+        type: 'DINE_IN',
         lines,
       }),
       sync.command('payment.record_cash', { paymentId: ulid(), orderId, shiftId, amount: total }),

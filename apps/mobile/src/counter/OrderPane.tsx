@@ -1,4 +1,4 @@
-import { parseCedis, pesewas, type Pesewas } from '@plateraa/shared';
+import { parseCedis, pesewas, type OrderType, type Pesewas } from '@plateraa/shared';
 import { useEffect, useState } from 'react';
 import { ScrollView, StyleSheet, Text, View } from 'react-native';
 import { useLocalQuery } from '../tablet/TabletProvider';
@@ -7,15 +7,16 @@ import { Chip, Segmented } from '../ui/controls';
 import { Field, Label, PhoneField } from '../ui/Field';
 import { cedis, colors, font, space, text } from '../ui/theme';
 import { ghanaPhone, type Checkout } from './checkout';
+import { useOffersDineIn } from './hooks';
 import type { QueueOrder } from './queue';
 import { priceTicket, type TicketLine } from './ticket';
 import { TicketLines } from './TicketLines';
-
-type Kind = 'walk-in' | 'delivery';
+import { TYPE_LABELS } from './words';
 
 /**
- * The order being typed in at the counter: walk-in or delivery, the customer's number, the lines
- * and the total, with Charge and Hold pinned at the bottom.
+ * The order being typed in at the counter: dine-in (where the owner offers it), pickup or
+ * delivery, the customer's number, the lines and the total, with Charge and Hold pinned at the
+ * bottom. A phone call is typed in here too.
  */
 export function OrderPane({
   number,
@@ -26,7 +27,6 @@ export function OrderPane({
   editing,
   onStopEditing,
   onSaveEdit,
-  onRemote,
   onCharge,
   onHold,
   busy,
@@ -40,7 +40,6 @@ export function OrderPane({
   editing: QueueOrder | null;
   onStopEditing: () => void;
   onSaveEdit: () => void;
-  onRemote: () => void;
   onCharge: (checkout: Checkout) => void;
   onHold: (checkout: Checkout) => void;
   busy: boolean;
@@ -50,7 +49,12 @@ export function OrderPane({
   const zones = useLocalQuery<{ id: string; name: string; fee: Pesewas }>(
     'SELECT id, name, fee FROM delivery_zones WHERE active = 1 ORDER BY position, name',
   );
-  const [kind, setKind] = useState<Kind>('walk-in');
+  const types: OrderType[] = useOffersDineIn()
+    ? ['DINE_IN', 'PICKUP', 'DELIVERY']
+    : ['PICKUP', 'DELIVERY'];
+  const [picked, setPicked] = useState<OrderType | null>(null);
+  // Until someone picks, the first choice: Dine-in where it's offered, otherwise Pickup.
+  const type = picked && types.includes(picked) ? picked : types[0]!;
   const [phone, setPhone] = useState('');
   const [name, setName] = useState('');
   const [address, setAddress] = useState('');
@@ -59,7 +63,7 @@ export function OrderPane({
   const [riderKeeps, setRiderKeeps] = useState(false);
 
   useEffect(() => {
-    setKind('walk-in');
+    setPicked(null);
     setPhone('');
     setName('');
     setAddress('');
@@ -75,19 +79,17 @@ export function OrderPane({
   );
   const knownName = knownPhone ? known?.[0]?.name : null;
 
-  const delivery = kind === 'delivery';
+  const delivery = type === 'DELIVERY';
   const fee = delivery ? parseCedis(feeText.trim() || '0') : pesewas(0);
   const priced = lines.length ? priceTicket(lines, delivery && fee ? fee : undefined) : null;
   const checkout = (): Checkout => ({
-    source: 'POS',
-    delivery,
+    type,
     phone,
-    name,
+    name: type === 'DINE_IN' ? '' : name,
     address,
     zoneId,
     fee,
     riderKeepsFee: riderKeeps,
-    reference: '',
   });
 
   return (
@@ -100,17 +102,11 @@ export function OrderPane({
           </View>
         ) : (
           <>
-            <View style={styles.titleRow}>
-              <Text style={styles.title}>Order {number}</Text>
-              <Button label="+ Remote order" kind="ghost" size="md" onPress={onRemote} />
-            </View>
+            <Text style={styles.title}>Order {number}</Text>
             <Segmented
-              options={[
-                { value: 'walk-in', label: 'Walk-in' },
-                { value: 'delivery', label: 'Delivery' },
-              ]}
-              value={kind}
-              onChange={setKind}
+              options={types.map((value) => ({ value, label: TYPE_LABELS[value] }))}
+              value={type}
+              onChange={setPicked}
             />
           </>
         )}
@@ -130,9 +126,11 @@ export function OrderPane({
               required={delivery}
             />
             {knownName && <Text style={styles.known}>Known customer: {knownName}</Text>}
+            {type !== 'DINE_IN' && (
+              <Field label="Name" optional value={name} onChangeText={setName} />
+            )}
             {delivery && (
               <>
-                <Field label="Name" optional value={name} onChangeText={setName} />
                 <Field
                   label="Delivery address"
                   required

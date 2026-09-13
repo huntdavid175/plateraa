@@ -270,6 +270,7 @@ export class SyncService {
                 requirePaymentBeforePrep: tenantSettings.requirePaymentBeforePrep,
                 idleLockSeconds: tenantSettings.idleLockSeconds,
                 countPortions: tenantSettings.countPortions,
+                offersDineIn: tenantSettings.offersDineIn,
               })
               .from(tenantSettings)
               .where(changedSince(tenantSettings, cursor)),

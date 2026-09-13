@@ -49,6 +49,8 @@ class OrderSettingsDto extends createZodDto(
   z.object({
     requirePaymentBeforePrep: z.boolean(),
     countPortions: z.boolean(),
+    /** Customers can eat here, so the tablet offers Dine-in beside Pickup and Delivery. */
+    offersDineIn: z.boolean(),
     /** How long an idle tablet waits before it locks, in seconds. */
     idleLockSeconds: z.number().int().min(60).max(1800),
   }),
@@ -84,6 +86,7 @@ class SettingsDto extends createZodDto(
     orders: z.object({
       requirePaymentBeforePrep: z.boolean(),
       countPortions: z.boolean(),
+      offersDineIn: z.boolean(),
       idleLockSeconds: z.number().int(),
     }),
     moolre: z.object({
@@ -123,6 +126,7 @@ export class SettingsService {
         .select({
           requirePaymentBeforePrep: tenantSettings.requirePaymentBeforePrep,
           countPortions: tenantSettings.countPortions,
+          offersDineIn: tenantSettings.offersDineIn,
           idleLockSeconds: tenantSettings.idleLockSeconds,
         })
         .from(tenantSettings);
@@ -144,6 +148,7 @@ export class SettingsService {
         orders: {
           requirePaymentBeforePrep: settings?.requirePaymentBeforePrep ?? true,
           countPortions: settings?.countPortions ?? false,
+          offersDineIn: settings?.offersDineIn ?? false,
           idleLockSeconds: settings?.idleLockSeconds ?? 180,
         },
         moolre: {
@@ -171,18 +176,16 @@ export class SettingsService {
   }
 
   /**
-   * Pay before prep, portion counts and the idle lock. Switching portion counts on gives every
-   * menu item its daily count record, so the tablet's Stock tab can count them.
+   * Pay before prep, portion counts, dine-in and the idle lock. Switching portion counts on gives
+   * every menu item its daily count record, so the tablet's Stock tab can count them.
    */
-  async saveOrderSettings(
-    actor: Actor,
-    input: { requirePaymentBeforePrep: boolean; countPortions: boolean; idleLockSeconds: number },
-  ) {
+  async saveOrderSettings(actor: Actor, input: z.infer<typeof OrderSettingsDto.schema>) {
     await withTenant(this.database.db, actor.tenantId, async (tx) => {
       const [before] = await tx
         .select({
           requirePaymentBeforePrep: tenantSettings.requirePaymentBeforePrep,
           countPortions: tenantSettings.countPortions,
+          offersDineIn: tenantSettings.offersDineIn,
           idleLockSeconds: tenantSettings.idleLockSeconds,
         })
         .from(tenantSettings);

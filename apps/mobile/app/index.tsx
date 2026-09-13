@@ -1,10 +1,9 @@
-import { amountDue, sub, type OrderSource, type Pesewas } from '@plateraa/shared';
+import { amountDue, sub, type Pesewas } from '@plateraa/shared';
 import { useEffect, useMemo, useState } from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 import {
   OPEN_SHIFT_SQL,
   advance,
-  markPaidOnPlatform,
   openDrawer,
   payCash,
   placeOrder,
@@ -12,20 +11,14 @@ import {
   setOnHold,
   updateItems,
 } from '../src/counter/actions';
-import { isPlatform, toDraft, type Checkout } from '../src/counter/checkout';
+import { toDraft, type Checkout } from '../src/counter/checkout';
 import { asksForDrawer } from '../src/counter/drawer';
 import { DrawerScreen } from '../src/counter/DrawerScreen';
 import { DrawerSheet } from '../src/counter/DrawerSheet';
 import { today, useCounter, useMenu, usePayBeforePrep, useQueue } from '../src/counter/hooks';
 import { KitchenScreen } from '../src/counter/KitchenScreen';
 import { laneOf } from '../src/counter/lanes';
-import {
-  PLATFORM_PRICES_SQL,
-  needsChoice,
-  platformPricesOf,
-  type MenuItem,
-  type PlatformPriceRow,
-} from '../src/counter/menu';
+import { needsChoice, type MenuItem } from '../src/counter/menu';
 import { MenuPane } from '../src/counter/MenuPane';
 import { upcomingNumber } from '../src/counter/numbers';
 import { OptionsSheet } from '../src/counter/OptionsSheet';
@@ -34,18 +27,11 @@ import { OrdersScreen } from '../src/counter/OrdersScreen';
 import { PaymentSheet } from '../src/counter/PaymentSheet';
 import { ticketLinesOf, type QueueOrder } from '../src/counter/queue';
 import { QuickOrderSheet } from '../src/counter/QuickOrderSheet';
-import { RemoteOrderPanel } from '../src/counter/RemoteOrderPanel';
 import { SaleDone, type Done } from '../src/counter/SaleDone';
 import { StockScreen } from '../src/counter/StockScreen';
-import {
-  addToTicket,
-  forSource,
-  priceTicket,
-  replaceLine,
-  type TicketLine,
-} from '../src/counter/ticket';
+import { addToTicket, priceTicket, replaceLine, type TicketLine } from '../src/counter/ticket';
 import { TopBar, type CounterTab } from '../src/counter/TopBar';
-import { SOURCE_LABELS, phoneWords } from '../src/counter/words';
+import { phoneWords } from '../src/counter/words';
 import { problemText } from '../src/tablet/api';
 import { newId } from '../src/tablet/ids';
 import { useLocalQuery, useTablet } from '../src/tablet/TabletProvider';
@@ -69,10 +55,8 @@ export default function CounterScreen() {
     `SELECT value FROM meta WHERE key = 'order_number'`,
   );
   const openShift = useLocalQuery<{ id: string }>(OPEN_SHIFT_SQL, [device?.deviceId ?? '']);
-  const platformRows = useLocalQuery<PlatformPriceRow>(PLATFORM_PRICES_SQL);
   const [tab, setTab] = useState<CounterTab>('counter');
   const [lines, setLines] = useState<TicketLine[]>([]);
-  const [remote, setRemote] = useState(false);
   const [editing, setEditing] = useState<QueueOrder | null>(null);
   const [picking, setPicking] = useState<{ item: MenuItem; line?: TicketLine } | null>(null);
   const [charging, setCharging] = useState<Checkout | null>(null);
@@ -94,7 +78,6 @@ export default function CounterScreen() {
     () => new Map((menu ?? []).flatMap((category) => category.items).map((i) => [i.id, i])),
     [menu],
   );
-  const platformPrices = useMemo(() => platformPricesOf(platformRows ?? []), [platformRows]);
   const cooking = useMemo(
     () => (orders ?? []).filter((order) => laneOf(order, payBeforePrep) === 'kitchen'),
     [orders, payBeforePrep],
@@ -134,12 +117,9 @@ export default function CounterScreen() {
   };
   const clear = () => {
     setLines([]);
-    setRemote(false);
     setCharging(null);
     setResetKey((key) => key + 1);
   };
-  /** The ticket at the prices `source` charges: Bolt Food and Chowdeck have their own. */
-  const linesFor = (source: OrderSource) => forSource(lines, source, platformPrices);
 
   const canChange = (line: TicketLine) => {
     const item = itemsById.get(line.itemId);
@@ -168,7 +148,7 @@ export default function CounterScreen() {
 
   const charge = (checkout: Checkout) => {
     try {
-      toDraft(checkout, linesFor(checkout.source), false);
+      toDraft(checkout, lines, false);
       setCharging(checkout);
     } catch (error) {
       fail(error);
@@ -177,14 +157,14 @@ export default function CounterScreen() {
 
   const hold = (checkout: Checkout) =>
     run(async () => {
-      const placed = await placeOrder(counter, toDraft(checkout, linesFor(checkout.source), false));
+      const placed = await placeOrder(counter, toDraft(checkout, lines, false));
       await setOnHold(counter, placed.orderId, true);
       clear();
       say(`${placed.displayNumber} is on hold. Find it under Orders, Held.`);
     });
 
   const paidCash = async (tendered: Pesewas, shiftId: string) => {
-    const placed = await placeOrder(counter, toDraft(charging!, linesFor(charging!.source), false));
+    const placed = await placeOrder(counter, toDraft(charging!, lines, false));
     await payCash(counter, { orderId: placed.orderId, shiftId, amount: placed.due, tendered });
     clear();
     setDone({
@@ -195,36 +175,18 @@ export default function CounterScreen() {
   };
 
   /** Saves the order and its payment link together; the link is texted once the tablet is online. */
-  const withLink = async (checkout: Checkout) => {
-    const draft = toDraft(checkout, linesFor(checkout.source), true);
+  const sentLink = async (phone: string) => {
+    const draft = toDraft({ ...charging!, phone }, lines, true);
     const placed = await placeOrder(counter, draft);
-    const phone = draft.customer!.phone;
-    if (placed.due > 0) await requestLink(counter, placed.orderId, phone);
+    const to = draft.customer!.phone;
+    if (placed.due > 0) await requestLink(counter, placed.orderId, to);
     clear();
     setDone({
       number: placed.displayNumber,
       change: null,
-      message: `Payment link for ${cedis(placed.due)} going to ${phoneWords(phone)}. The order goes to the kitchen once it’s paid.`,
+      message: `Payment link for ${cedis(placed.due)} going to ${phoneWords(to)}. The order goes to the kitchen once it’s paid.`,
     });
   };
-
-  const sentLink = (phone: string) => withLink({ ...charging!, phone });
-
-  const submitRemote = (checkout: Checkout) =>
-    run(async () => {
-      if (!isPlatform(checkout.source)) {
-        await withLink(checkout);
-        return;
-      }
-      const placed = await placeOrder(counter, toDraft(checkout, linesFor(checkout.source), false));
-      await markPaidOnPlatform(counter, { orderId: placed.orderId, amount: placed.due });
-      clear();
-      setDone({
-        number: placed.displayNumber,
-        change: null,
-        message: `Paid on ${SOURCE_LABELS[checkout.source]}. It’s with the kitchen.`,
-      });
-    });
 
   const stepQuick = async (order: QueueOrder) => {
     setStepping(true);
@@ -245,7 +207,6 @@ export default function CounterScreen() {
 
   const startEdit = (order: QueueOrder) => {
     setEditing(order);
-    setRemote(false);
     setLines(ticketLinesOf(order));
     setTab('counter');
   };
@@ -259,14 +220,14 @@ export default function CounterScreen() {
       if (!lines.length) {
         throw new Error('An order needs at least one item. To drop it, cancel the order.');
       }
-      await updateItems(counter, editing.id, forSource(lines, editing.source, platformPrices));
+      await updateItems(counter, editing.id, lines);
       say(`Saved the changes to ${editing.display_number}.`);
       setEditing(null);
       clear();
     });
 
   const charged = charging
-    ? priceTicket(lines, charging.delivery && charging.fee ? charging.fee : undefined)
+    ? priceTicket(lines, charging.type === 'DELIVERY' && charging.fee ? charging.fee : undefined)
     : null;
 
   return (
@@ -283,35 +244,20 @@ export default function CounterScreen() {
             ready={ready}
             onOrder={(order) => setQuickId(order.id)}
           />
-          {remote && !editing ? (
-            <RemoteOrderPanel
-              number={number}
-              lines={lines}
-              onLines={setLines}
-              canChange={canChange}
-              onChangeLine={changeLine}
-              prices={platformPrices}
-              onCancel={() => setRemote(false)}
-              onSubmit={submitRemote}
-              busy={busy}
-            />
-          ) : (
-            <OrderPane
-              number={number}
-              lines={lines}
-              onLines={setLines}
-              canChange={canChange}
-              onChangeLine={changeLine}
-              editing={editing}
-              onStopEditing={stopEdit}
-              onSaveEdit={saveEdit}
-              onRemote={() => setRemote(true)}
-              onCharge={charge}
-              onHold={hold}
-              busy={busy}
-              resetKey={resetKey}
-            />
-          )}
+          <OrderPane
+            number={number}
+            lines={lines}
+            onLines={setLines}
+            canChange={canChange}
+            onChangeLine={changeLine}
+            editing={editing}
+            onStopEditing={stopEdit}
+            onSaveEdit={saveEdit}
+            onCharge={charge}
+            onHold={hold}
+            busy={busy}
+            resetKey={resetKey}
+          />
         </View>
       )}
       {tab === 'orders' && (

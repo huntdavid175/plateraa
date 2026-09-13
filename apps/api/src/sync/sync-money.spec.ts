@@ -47,7 +47,7 @@ describe.skipIf(!hasDatabase())('sync: money, drawer and stock (against Neon)', 
       displayNumber: '010',
       businessDate: today,
       source: 'POS',
-      type: 'WALK_IN',
+      type: 'DINE_IN',
       lines,
       ...extra,
     });

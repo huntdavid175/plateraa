@@ -1,7 +1,7 @@
 import { useRouter } from 'expo-router';
 import { useCallback, useEffect, useState } from 'react';
 import { AppState, ScrollView, StyleSheet, Text, View } from 'react-native';
-import { METHOD_LABELS, SOURCE_LABELS } from '../src/counter/words';
+import { METHOD_LABELS, TYPE_LABELS } from '../src/counter/words';
 import {
   ApiProblem,
   NO_SALES_ACCESS,
@@ -197,12 +197,12 @@ function Figures({
 
       <View style={styles.columns}>
         <View style={[styles.card, styles.column]}>
-          <Label text="Where orders came from" />
-          {day.bySource.length === 0 && <Text style={styles.none}>No orders yet today.</Text>}
-          {day.bySource.map((row) => (
+          <Label text="Dine-in, pickup and delivery" />
+          {day.byType.length === 0 && <Text style={styles.none}>No orders yet today.</Text>}
+          {day.byType.map((row) => (
             <Line
-              key={row.source}
-              label={`${SOURCE_LABELS[row.source]} · ${plural(row.orders, 'order')}`}
+              key={row.type}
+              label={`${TYPE_LABELS[row.type]} · ${plural(row.orders, 'order')}`}
               value={cedis(row.sales)}
             />
           ))}

@@ -47,7 +47,7 @@ describe.skipIf(!hasDatabase())('sync (against Neon)', () => {
         displayNumber: '001',
         businessDate: today,
         source: 'POS',
-        type: 'WALK_IN',
+        type: 'DINE_IN',
         lines,
       },
       staffId,

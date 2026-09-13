@@ -14,6 +14,9 @@ export const VENDOR_TYPES = [
 ] as const;
 export type VendorType = (typeof VENDOR_TYPES)[number];
 
+/** Where people usually sit down to eat: a new business of these types starts with dine-in on. */
+export const DINE_IN_VENDOR_TYPES: readonly VendorType[] = ['CHOP_BAR', 'FAST_FOOD', 'CAFE_BAKERY'];
+
 /**
  * Where an order came from. POS = typed in at the counter. No WhatsApp or Instagram: vendors put
  * their storefront link there, so those customers order on the storefront.

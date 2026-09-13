@@ -34,7 +34,7 @@ const walkIn = {
     displayNumber: '014',
     businessDate: '2026-09-10',
     source: 'POS',
-    type: 'WALK_IN',
+    type: 'DINE_IN',
     lines: [{ lineId: ID.line, itemId: ID.item, quantity: 2, unitPrice: 4500 }],
   },
 } satisfies SyncCommandInput;
@@ -42,7 +42,7 @@ const walkIn = {
 const parse = (value: unknown) => syncCommandSchema.safeParse(value);
 
 describe('sync commands', () => {
-  it('accepts a walk-in cash order and fills defaults', () => {
+  it('accepts a dine-in cash order and fills defaults', () => {
     const result = parse(walkIn);
     expect(result.success).toBe(true);
     if (result.success && result.data.type === 'order.create') {

@@ -24,7 +24,7 @@ export const SYNCED_TABLES = [
     name: 'settings',
     pullKey: 'tenantSettings',
     singletonId: 'tenant',
-    fields: ['requirePaymentBeforePrep', 'idleLockSeconds', 'countPortions'],
+    fields: ['requirePaymentBeforePrep', 'idleLockSeconds', 'countPortions', 'offersDineIn'],
   },
   {
     name: 'staff',
@@ -342,6 +342,16 @@ export const MIGRATIONS: readonly (readonly string[])[] = [
       id TEXT PRIMARY KEY, item_id TEXT, variant_id TEXT, source TEXT, price INTEGER
     )`,
     `CREATE INDEX item_channel_prices_item ON item_channel_prices (item_id)`,
+    `DELETE FROM meta WHERE key = 'cursor'`,
+  ],
+  [
+    // Dine-in, pickup or delivery (13 Sep): the owner's dine-in switch, and walk-ins become
+    // pickups as they did on the server, queued ones too. Forgetting the cursor makes the next
+    // pull a full snapshot, which brings in the switch.
+    `ALTER TABLE settings ADD COLUMN offers_dine_in INTEGER`,
+    `UPDATE orders SET type = 'PICKUP' WHERE type = 'WALK_IN'`,
+    `UPDATE outbox SET payload = replace(payload, '"type":"WALK_IN"', '"type":"PICKUP"')
+      WHERE type = 'order.create'`,
     `DELETE FROM meta WHERE key = 'cursor'`,
   ],
 ];

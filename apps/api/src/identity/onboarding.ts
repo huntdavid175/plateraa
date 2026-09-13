@@ -11,7 +11,7 @@ import {
   withPlatform,
   withTenant,
 } from '@plateraa/db';
-import { ROLES, VENDOR_TYPES } from '@plateraa/shared';
+import { DINE_IN_VENDOR_TYPES, ROLES, VENDOR_TYPES } from '@plateraa/shared';
 import { ApiBearerAuth, ApiCreatedResponse, ApiOkResponse } from '@nestjs/swagger';
 import { createZodDto } from 'nestjs-zod';
 import { ulid } from 'ulid';
@@ -68,7 +68,9 @@ export class OnboardingService {
         .insert(tenants)
         .values({ id: tenantId, slug, name: input.name, vendorType: input.vendorType });
       await tx.insert(locations).values({ id: ulid(), tenantId, name: 'Main', isDefault: true });
-      await tx.insert(tenantSettings).values({ tenantId });
+      await tx
+        .insert(tenantSettings)
+        .values({ tenantId, offersDineIn: DINE_IN_VENDOR_TYPES.includes(input.vendorType) });
       await tx.insert(staffMembers).values({
         id: staffId,
         tenantId,

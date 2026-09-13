@@ -48,7 +48,7 @@ describe.skipIf(!hasDatabase())('kept daily reports (against Neon)', () => {
         displayNumber,
         businessDate: past,
         source: 'POS',
-        type: 'WALK_IN',
+        type: 'DINE_IN',
         lines: [{ lineId: ulid(), itemId, quantity: 1, unitPrice }],
       });
     const cash = (orderId: string, amount: number) =>

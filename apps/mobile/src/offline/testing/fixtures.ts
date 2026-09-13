@@ -109,6 +109,7 @@ export function menuChanges(): PullChanges {
         requirePaymentBeforePrep: true,
         idleLockSeconds: 180,
         countPortions: false,
+        offersDineIn: false,
         deletedAt: null,
       },
     ],
@@ -208,7 +209,7 @@ export function serverOrder(overrides: ServerRow & { id: string }): ServerRow {
     source: 'POS',
     arrivalMethod: 'MANUAL',
     externalReference: null,
-    type: 'WALK_IN',
+    type: 'DINE_IN',
     status: 'CONFIRMED',
     onHold: false,
     customerId: null,
@@ -285,7 +286,7 @@ export const walkIn = (lines: ReturnType<typeof line>[], orderId = ulid()) => ({
   displayNumber: 'A1',
   businessDate: TODAY,
   source: 'POS' as const,
-  type: 'WALK_IN' as const,
+  type: 'DINE_IN' as const,
   lines,
 });
 

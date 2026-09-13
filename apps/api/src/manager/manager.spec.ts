@@ -47,7 +47,7 @@ describe.skipIf(!hasDatabase())('manager money tools (against Neon)', () => {
         displayNumber,
         businessDate: today,
         source: 'POS',
-        type: 'WALK_IN',
+        type: 'DINE_IN',
         lines: [{ lineId: ulid(), itemId, quantity: qty, unitPrice: price }],
       });
     const cash = (orderId: string, amount: number) =>

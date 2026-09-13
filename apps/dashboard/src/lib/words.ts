@@ -28,7 +28,7 @@ export const ROLE_WORDS: Record<Role, string> = {
 
 /** The same words the tablet uses. */
 export const SOURCE_WORDS: Record<OrderSource, string> = {
-  POS: 'Walk-in',
+  POS: 'Counter',
   PHONE: 'Phone',
   STOREFRONT: 'Online',
   BOLT_FOOD: 'Bolt',
@@ -48,10 +48,20 @@ export const STATUS_WORDS: Record<OrderStatus, string> = {
 };
 
 export const TYPE_WORDS: Record<OrderType, string> = {
-  WALK_IN: 'Eat in or take away',
+  DINE_IN: 'Dine-in',
   PICKUP: 'Pickup',
   DELIVERY: 'Delivery',
 };
+
+/**
+ * What kind of order it is, as the tablet says it: "Dine-in", or "Bolt · Pickup" for one that
+ * didn't come in at the counter (older phone orders, and later the platforms' own).
+ */
+export function kindWords(order: { source: OrderSource; type: OrderType }): string {
+  return order.source === 'POS'
+    ? TYPE_WORDS[order.type]
+    : `${SOURCE_WORDS[order.source]} · ${TYPE_WORDS[order.type]}`;
+}
 
 export const METHOD_WORDS: Record<PaymentMethod, string> = {
   CASH: 'Cash',

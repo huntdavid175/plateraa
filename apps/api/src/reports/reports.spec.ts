@@ -72,7 +72,7 @@ describe.skipIf(!hasDatabase())('reports and order lists (against Neon)', () => 
         displayNumber,
         businessDate: today,
         source,
-        type: 'WALK_IN',
+        type: 'DINE_IN',
         lines: [{ lineId: ulid(), itemId, quantity, unitPrice }],
       });
     const cash = (orderId: string, amount: number) =>
@@ -119,6 +119,7 @@ describe.skipIf(!hasDatabase())('reports and order lists (against Neon)', () => 
         { source: 'BOLT_FOOD', orders: 1, sales: 4500 },
       ]),
     );
+    expect(res.body.byType).toEqual([{ type: 'DINE_IN', orders: 3, sales: 14500 }]);
     expect(res.body.byMethod).toEqual(
       expect.arrayContaining([
         { method: 'CASH', amount: 10000 },
@@ -152,6 +153,7 @@ describe.skipIf(!hasDatabase())('reports and order lists (against Neon)', () => 
       { name: 'Sobolo', quantity: 1, sales: 1000 },
     ]);
     expect(res.body.byCategory).toEqual([{ category: 'GAS', amount: 2500 }]);
+    expect(res.body.byType).toEqual([{ type: 'DINE_IN', orders: 3, sales: 14500 }]);
     expect(res.body.staff).toEqual([
       { staffId: vendor.ownerStaffId, name: 'Adwoa', orders: 3, sales: 14500, cash: 10000 },
     ]);
@@ -242,6 +244,8 @@ describe.skipIf(!hasDatabase())('reports and order lists (against Neon)', () => 
 
     expect(await found(`from=${today}&to=${today}`)).toEqual(sorted(ids.a, ids.b, ids.c, ids.d));
     expect(await found('source=BOLT_FOOD')).toEqual([ids.c]);
+    expect(await found('type=DINE_IN')).toEqual(sorted(ids.a, ids.b, ids.c, ids.d));
+    expect(await found('type=DELIVERY')).toEqual([]);
     expect(await found('paid=PAID')).toEqual(sorted(ids.a, ids.c));
     expect(await found('paid=UNPAID')).toEqual([ids.b]);
     expect(await found('paid=REFUND_OWED')).toEqual([ids.d]);

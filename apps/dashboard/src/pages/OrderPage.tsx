@@ -9,7 +9,7 @@ import {
   REVIEW_WORDS,
   SOURCE_WORDS,
   STATUS_WORDS,
-  TYPE_WORDS,
+  kindWords,
   linkWords,
   phoneWords,
 } from '../lib/words';
@@ -64,8 +64,7 @@ function OrderBody({ order }: { order: OrderDetail }) {
             {order.takenBy ? ` · ${order.takenBy}` : ''}
           </p>
           <div className="mt-2 flex flex-wrap gap-1.5">
-            <Tag>{SOURCE_WORDS[order.source]}</Tag>
-            <Tag>{TYPE_WORDS[order.type]}</Tag>
+            <Tag>{kindWords(order)}</Tag>
             <Tag>{STATUS_WORDS[order.status]}</Tag>
             {order.onHold && <Tag>On hold</Tag>}
           </div>

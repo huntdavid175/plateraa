@@ -6,7 +6,7 @@ import { cedis, clock, longDate, shortDate, todayHere } from '../lib/money';
 import type { BackTo } from '../lib/orders';
 import { fetchPeriod, type Period } from '../lib/reports';
 import { useSession } from '../lib/session';
-import { EXPENSE_WORDS, METHOD_WORDS, SOURCE_WORDS } from '../lib/words';
+import { EXPENSE_WORDS, METHOD_WORDS, TYPE_WORDS } from '../lib/words';
 import { Card, ErrorNote, PillFilter, Spinner, cx } from '../ui/controls';
 import { Page } from '../ui/Page';
 
@@ -223,14 +223,14 @@ function Report({ period, back }: { period: Period; back: BackTo }) {
       </Box>
 
       <div className="mb-6 grid gap-6 md:grid-cols-2">
-        <Box title="Where orders came from">
-          {period.bySource.length === 0 && <Empty>No orders.</Empty>}
-          {period.bySource.map((row) => (
+        <Box title="Dine-in, pickup and delivery">
+          {period.byType.length === 0 && <Empty>No orders.</Empty>}
+          {period.byType.map((row) => (
             <Line
-              key={row.source}
-              label={`${SOURCE_WORDS[row.source]} · ${row.orders}`}
+              key={row.type}
+              label={`${TYPE_WORDS[row.type]} · ${row.orders}`}
               value={cedis(row.sales)}
-              to={links.orders({ source: row.source })}
+              to={links.orders({ type: row.type })}
             />
           ))}
         </Box>

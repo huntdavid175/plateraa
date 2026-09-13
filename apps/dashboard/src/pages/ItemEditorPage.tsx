@@ -158,7 +158,7 @@ function toInput(
   const bolt = optionalAmount(form.bolt);
   const chowdeck = optionalAmount(form.chowdeck);
   if (cost === 'bad' || bolt === 'bad' || chowdeck === 'bad') {
-    return { problem: 'Check the cost, Bolt and Chowdeck prices.' };
+    return { problem: 'Check the cost price.' };
   }
 
   const groups = [];
@@ -578,61 +578,33 @@ function Editor({ menu, item }: { menu: Menu; item: MenuItem | undefined }) {
             </div>
           </Section>
 
-          <Section title="Pricing">
-            <div className="space-y-4 p-4">
-              {form.sizes.length === 0 ? (
-                <>
-                  {seesMoney && (
-                    <div>
-                      <FieldLabel htmlFor="item-cost">
-                        Cost price (only you can see this)
-                      </FieldLabel>
-                      <div className="flex items-center gap-3">
-                        <div className="flex-1">
-                          <MoneyInput
-                            id="item-cost"
-                            value={form.cost}
-                            onChange={(value) => update({ cost: value })}
-                          />
-                        </div>
-                        {margin !== null && (
-                          <Badge tone={marginTone(margin)}>{margin}% margin</Badge>
-                        )}
+          {/* Bolt Food and Chowdeck prices are kept but not shown until their APIs connect. */}
+          {seesMoney && (
+            <Section title="Cost and margin">
+              <div className="space-y-4 p-4">
+                {form.sizes.length === 0 ? (
+                  <div>
+                    <FieldLabel htmlFor="item-cost">Cost price (only you can see this)</FieldLabel>
+                    <div className="flex items-center gap-3">
+                      <div className="flex-1">
+                        <MoneyInput
+                          id="item-cost"
+                          value={form.cost}
+                          onChange={(value) => update({ cost: value })}
+                        />
                       </div>
-                    </div>
-                  )}
-                  <div className="grid grid-cols-2 gap-3">
-                    <div>
-                      <MoneyInput
-                        id="item-bolt"
-                        label="Bolt Food price"
-                        value={form.bolt}
-                        placeholder={form.price}
-                        onChange={(value) => update({ bolt: value })}
-                      />
-                      <p className="mt-1 text-xs text-muted">Blank uses the menu price</p>
-                    </div>
-                    <div>
-                      <MoneyInput
-                        id="item-chowdeck"
-                        label="Chowdeck price"
-                        value={form.chowdeck}
-                        placeholder={form.price}
-                        onChange={(value) => update({ chowdeck: value })}
-                      />
-                      <p className="mt-1 text-xs text-muted">Blank uses the menu price</p>
+                      {margin !== null && <Badge tone={marginTone(margin)}>{margin}% margin</Badge>}
                     </div>
                   </div>
-                </>
-              ) : (
-                <SizePrices
-                  sizes={form.sizes}
-                  seesMoney={seesMoney}
-                  onChange={(index, patch) => updateSize(index, patch)}
-                />
-              )}
-            </div>
-          </Section>
+                ) : (
+                  <SizeCosts
+                    sizes={form.sizes}
+                    onChange={(index, patch) => updateSize(index, patch)}
+                  />
+                )}
+              </div>
+            </Section>
+          )}
 
           {item && (
             <div className="pb-8">
@@ -661,21 +633,16 @@ function Editor({ menu, item }: { menu: Menu; item: MenuItem | undefined }) {
   );
 }
 
-/** Cost, Bolt and Chowdeck prices for each size; blank platform prices use the size price. */
-function SizePrices({
+/** What each size costs to make, with its margin. */
+function SizeCosts({
   sizes,
-  seesMoney,
   onChange,
 }: {
   sizes: SizeForm[];
-  seesMoney: boolean;
   onChange: (index: number, patch: Partial<SizeForm>) => void;
 }) {
   return (
     <div className="space-y-3">
-      <p className="text-xs text-muted">
-        Bolt Food and Chowdeck prices for each size. Blank uses the size’s own price.
-      </p>
       {sizes.map((size, index) => {
         const sizePrice = parseAmount(size.price);
         const margin = sizePrice === null ? null : marginOf(sizePrice, parseAmount(size.cost));
@@ -683,34 +650,14 @@ function SizePrices({
           <div key={size.id} className="rounded-xl border border-border p-3">
             <div className="mb-2 flex items-center justify-between gap-2">
               <p className="text-sm font-medium">{size.name || 'Size'}</p>
-              {seesMoney && margin !== null && (
-                <Badge tone={marginTone(margin)}>{margin}% margin</Badge>
-              )}
+              {margin !== null && <Badge tone={marginTone(margin)}>{margin}% margin</Badge>}
             </div>
-            <div className={cx('grid gap-2', seesMoney ? 'grid-cols-3' : 'grid-cols-2')}>
-              {seesMoney && (
-                <MoneyInput
-                  id={`cost-${size.id}`}
-                  label="Cost"
-                  value={size.cost}
-                  onChange={(value) => onChange(index, { cost: value })}
-                />
-              )}
-              <MoneyInput
-                id={`bolt-${size.id}`}
-                label="Bolt"
-                value={size.bolt}
-                placeholder={size.price}
-                onChange={(value) => onChange(index, { bolt: value })}
-              />
-              <MoneyInput
-                id={`chowdeck-${size.id}`}
-                label="Chowdeck"
-                value={size.chowdeck}
-                placeholder={size.price}
-                onChange={(value) => onChange(index, { chowdeck: value })}
-              />
-            </div>
+            <MoneyInput
+              id={`cost-${size.id}`}
+              label="Cost"
+              value={size.cost}
+              onChange={(value) => onChange(index, { cost: value })}
+            />
           </div>
         );
       })}

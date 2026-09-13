@@ -90,6 +90,7 @@ describe('sync engine', () => {
       id: 'tenant',
       require_payment_before_prep: 1,
       count_portions: 0,
+      offers_dine_in: 0,
       idle_lock_seconds: 180,
     });
 

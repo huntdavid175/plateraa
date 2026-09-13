@@ -1,5 +1,5 @@
 import { Controller, Get, Inject, Injectable, NotFoundException } from '@nestjs/common';
-import { eq, staffMembers, tenants, withTenant } from '@plateraa/db';
+import { eq, staffMembers, tenantSettings, tenants, withTenant } from '@plateraa/db';
 import { CAPABILITIES, ROLES, VENDOR_TYPES } from '@plateraa/shared';
 import { ApiBearerAuth, ApiOkResponse } from '@nestjs/swagger';
 import { createZodDto } from 'nestjs-zod';
@@ -13,6 +13,8 @@ class ContextDto extends createZodDto(
     tenantId: z.string(),
     businessName: z.string(),
     vendorType: z.enum(VENDOR_TYPES),
+    /** Customers can eat here, so the dashboard shows dine-in beside pickup and delivery. */
+    offersDineIn: z.boolean(),
     staffId: z.string(),
     displayName: z.string(),
     role: z.enum(ROLES),
@@ -31,10 +33,12 @@ export class MeService {
         .select({
           businessName: tenants.name,
           vendorType: tenants.vendorType,
+          offersDineIn: tenantSettings.offersDineIn,
           displayName: staffMembers.displayName,
         })
         .from(staffMembers)
         .innerJoin(tenants, eq(tenants.id, staffMembers.tenantId))
+        .leftJoin(tenantSettings, eq(tenantSettings.tenantId, tenants.id))
         .where(eq(staffMembers.id, actor.staffId)),
     );
     if (!row) throw new NotFoundException();
@@ -44,6 +48,7 @@ export class MeService {
       role: actor.role,
       capabilities: CAPABILITIES.filter((capability) => actor.capabilities.has(capability)),
       ...row,
+      offersDineIn: row.offersDineIn ?? false,
     };
   }
 }

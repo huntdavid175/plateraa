@@ -27,7 +27,14 @@ import {
   stillToPay,
   type OrderFilter,
 } from './views';
-import { CANCEL_REASONS, SOURCE_LABELS, STATUS_LABELS, linkWords, nextStepLabel } from './words';
+import {
+  CANCEL_REASONS,
+  STATUS_LABELS,
+  TYPE_LABELS,
+  kindLabel,
+  linkWords,
+  nextStepLabel,
+} from './words';
 
 /** A payment link's state is always a sentence; the colour only backs it up. */
 const LINK_COLOURS = {
@@ -36,12 +43,6 @@ const LINK_COLOURS = {
   amber: colors.amberInk,
   red: colors.redInk,
 } as const;
-
-const TYPE_LABELS: Record<OrderType, string> = {
-  WALK_IN: 'Walk-in',
-  PICKUP: 'Pickup',
-  DELIVERY: 'Delivery',
-};
 
 type Tone = 'neutral' | 'good' | 'amber' | 'red' | 'info';
 
@@ -182,10 +183,7 @@ function OrderRow({
   const unpaid = open && stillToPay(order) > 0;
   const refundOwed = refundOwedOf(order) > 0;
   const late = urgency(order.created_at_device, order.prepMinutes, now);
-  const who =
-    order.customer_name ??
-    order.customer_phone ??
-    (order.source === 'POS' ? 'Walk-in' : SOURCE_LABELS[order.source]);
+  const who = order.customer_name ?? order.customer_phone ?? TYPE_LABELS[order.type];
   const summary = order.lines
     .map((line) => `${line.quantity > 1 ? `${line.quantity}× ` : ''}${line.name}`)
     .join(', ');
@@ -207,11 +205,7 @@ function OrderRow({
       <View style={styles.rowBody}>
         <View style={styles.rowTop}>
           <Text style={styles.rowNumber}>{order.display_number}</Text>
-          <Badge
-            label={SOURCE_LABELS[order.source]}
-            tone={order.source === 'POS' ? 'neutral' : 'info'}
-          />
-          {order.type !== 'WALK_IN' && <Badge label={TYPE_LABELS[order.type]} />}
+          <Badge label={kindLabel(order)} tone={order.source === 'POS' ? 'neutral' : 'info'} />
           {unpaid && <Badge label="Unpaid" tone="red" strong />}
           {refundOwed && <Badge label="Refund owed" tone="amber" strong />}
           <View style={styles.grow} />
@@ -312,11 +306,7 @@ function OrderDetail({
       <View style={styles.detailHead}>
         <View style={styles.detailTitle}>
           <Text style={styles.detailNumber}>{order.display_number}</Text>
-          <Badge
-            label={SOURCE_LABELS[order.source]}
-            tone={order.source === 'POS' ? 'neutral' : 'info'}
-          />
-          {order.type !== 'WALK_IN' && <Badge label={TYPE_LABELS[order.type]} />}
+          <Badge label={kindLabel(order)} tone={order.source === 'POS' ? 'neutral' : 'info'} />
           <View style={styles.grow} />
           <Badge
             label={order.on_hold && open ? 'On hold' : STATUS_LABELS[order.status]}

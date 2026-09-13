@@ -13,7 +13,13 @@ import {
   sql,
   type Tx,
 } from '@plateraa/db';
-import type { ExpenseCategory, OrderSource, PaymentMethod } from '@plateraa/shared';
+import {
+  ORDER_TYPES,
+  type ExpenseCategory,
+  type OrderSource,
+  type OrderType,
+  type PaymentMethod,
+} from '@plateraa/shared';
 import { countsAsSale, dueSql } from './business-day';
 
 /**
@@ -46,6 +52,8 @@ export interface DayFigures {
   /** Money in by the hour each order was taken, in the business's timezone. */
   byHour: { hour: number; moneyIn: number }[];
   bySource: { source: OrderSource; orders: number; sales: number }[];
+  /** Dine-in, pickup and delivery, in that order. */
+  byType: { type: OrderType; orders: number; sales: number }[];
   byMethod: { method: PaymentMethod; amount: number }[];
   /** Every item sold, best sellers first. */
   byItem: { name: string; quantity: number; sales: number }[];
@@ -67,6 +75,7 @@ export function emptyDay(): DayFigures {
     purchases: 0,
     byHour: [],
     bySource: [],
+    byType: [],
     byMethod: [],
     byItem: [],
     byCategory: [],
@@ -76,6 +85,23 @@ export function emptyDay(): DayFigures {
 
 /** A Postgres sum (bigint, which arrives as a string) as a number. */
 const n = (value: string | number | null | undefined) => Number(value ?? 0);
+
+/** Adds orders and sales to the entry `matches` finds in `list`, making it if there's none. */
+function tallyInto<T extends { orders: number; sales: number }>(
+  list: T[],
+  matches: (entry: T) => boolean,
+  fresh: () => T,
+  orders: number,
+  sales: number,
+) {
+  let entry = list.find(matches);
+  if (!entry) {
+    entry = fresh();
+    list.push(entry);
+  }
+  entry.orders += orders;
+  entry.sales += sales;
+}
 
 /**
  * Works out the figures for each of `dates` from the orders, payments, refunds and expenses
@@ -97,17 +123,19 @@ export async function workOutDays(
   const spent = and(inArray(expenses.spentOn, dates), isNull(expenses.deletedAt));
   const hourTaken = sql<number>`extract(hour from ${orders.createdAtDevice} at time zone ${timezone})::int`;
 
-  const bySource = await tx
+  // Where the orders came from and how the customers got them, in one pass.
+  const byKind = await tx
     .select({
       date: orders.businessDate,
       source: orders.source,
+      type: orders.type,
       orders: sql<number>`count(*)::int`,
       sales: sql<string>`sum(${dueSql})`,
       unpaid: sql<string>`sum(greatest(${dueSql} - ${orders.amountPaid}, 0))`,
     })
     .from(orders)
     .where(sales)
-    .groupBy(orders.businessDate, orders.source);
+    .groupBy(orders.businessDate, orders.source, orders.type);
 
   const byMethod = await tx
     .select({
@@ -209,12 +237,25 @@ export async function workOutDays(
     .where(and(confirmed, eq(payments.method, 'CASH')))
     .groupBy(orders.businessDate, payments.collectedBy);
 
-  for (const row of bySource) {
+  for (const row of byKind) {
     const d = day(row.date);
     d.orders += row.orders;
     d.sales += n(row.sales);
     d.unpaid += n(row.unpaid);
-    d.bySource.push({ source: row.source, orders: row.orders, sales: n(row.sales) });
+    tallyInto(
+      d.bySource,
+      (entry) => entry.source === row.source,
+      () => ({ source: row.source, orders: 0, sales: 0 }),
+      row.orders,
+      n(row.sales),
+    );
+    tallyInto(
+      d.byType,
+      (entry) => entry.type === row.type,
+      () => ({ type: row.type, orders: 0, sales: 0 }),
+      row.orders,
+      n(row.sales),
+    );
   }
   for (const row of byMethod) {
     day(row.date).byMethod.push({ method: row.method, amount: n(row.amount) });
@@ -271,6 +312,7 @@ export async function workOutDays(
   for (const row of cashBy) staffOf(row.date, row.staffId).cash = n(row.amount);
 
   for (const d of days.values()) {
+    d.byType.sort((a, b) => ORDER_TYPES.indexOf(a.type) - ORDER_TYPES.indexOf(b.type));
     d.byItem.sort((a, b) => b.sales - a.sales);
     d.byCategory.sort((a, b) => b.amount - a.amount);
   }

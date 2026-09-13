@@ -5,7 +5,7 @@ import { colors, font, space } from '../ui/theme';
 import { useNow } from './hooks';
 import { extrasText, type QueueOrder } from './queue';
 import { kitchenSince, minutesSince } from './views';
-import { SOURCE_LABELS, nextStepLabel } from './words';
+import { kindLabel, nextStepLabel } from './words';
 
 /**
  * An order from the kitchen strip under the menu: what's in it, and one button to move it on,
@@ -37,14 +37,7 @@ export function QuickOrderSheet({
         <View style={styles.head}>
           <Text style={styles.number}>{order.display_number}</Text>
           <View style={styles.meta}>
-            <Text style={styles.source}>
-              {SOURCE_LABELS[order.source]}
-              {order.type === 'DELIVERY'
-                ? ' · Delivery'
-                : order.type === 'PICKUP'
-                  ? ' · Pickup'
-                  : ''}
-            </Text>
+            <Text style={styles.source}>{kindLabel(order)}</Text>
             <Text style={styles.minutes}>
               {cooking
                 ? `Cooking for ${minutesSince(kitchenSince(order), now)} min`

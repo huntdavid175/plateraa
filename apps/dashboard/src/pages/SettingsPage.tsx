@@ -8,10 +8,8 @@ import {
   fetchSettings,
   refreshSettings,
   saveBusiness,
-  saveCommissions,
   saveMoolre,
   saveOrderSettings,
-  type Commissions,
   type OrderSettings,
   type Settings,
 } from '../lib/settings';
@@ -19,16 +17,7 @@ import { setDark, useDark } from '../lib/theme';
 import { VENDOR_TYPE_WORDS } from '../lib/words';
 import { fetchZones, refreshZones, removeZone, saveZone, type Zone } from '../lib/zones';
 import { useMe } from '../shell/Shell';
-import {
-  Button,
-  ErrorNote,
-  FieldLabel,
-  Section,
-  Spinner,
-  TextInput,
-  Toggle,
-  cx,
-} from '../ui/controls';
+import { Button, ErrorNote, FieldLabel, Section, Spinner, TextInput, Toggle } from '../ui/controls';
 import { Dialog } from '../ui/Dialog';
 import { Page } from '../ui/Page';
 
@@ -186,6 +175,12 @@ function OrdersSection({ orders }: { orders: OrderSettings }) {
 
   return (
     <Section title="Orders">
+      <SwitchRow
+        title="Dine-in"
+        detail="Customers can eat here. The tablet offers Dine-in beside Pickup and Delivery."
+        on={shown.offersDineIn}
+        onChange={(on) => set({ offersDineIn: on })}
+      />
       <SwitchRow
         title="Pay before prep"
         detail="Orders don’t go to the kitchen until they’re paid. The payment that clears one sends it straight there."
@@ -402,17 +397,13 @@ function SwitchRowPlain({
   );
 }
 
-function commissionWords(commission: Commissions['BOLT_FOOD']): string {
-  const parts = [
-    commission.rateBps !== null ? `${amountText(commission.rateBps).replace(/\.00$/, '')}%` : null,
-    commission.flatAmount !== null ? `${cedis(commission.flatAmount)} an order` : null,
-  ].filter(Boolean);
-  return parts.length ? parts.join(' + ') : 'Not set: sales show as gross';
-}
-
+/**
+ * The vendor's own Moolre account. Bolt Food and Chowdeck commissions are kept on the server but
+ * not shown until their APIs connect.
+ */
 function PaymentsSection({ settings }: { settings: Settings }) {
-  const [dialog, setDialog] = useState<'moolre' | 'commissions' | null>(null);
-  const { moolre, commissions } = settings;
+  const [connecting, setConnecting] = useState(false);
+  const { moolre } = settings;
   return (
     <>
       <Section title="Payments">
@@ -428,31 +419,18 @@ function PaymentsSection({ settings }: { settings: Settings }) {
             )
           }
           action={
-            <Button variant="secondary" small onClick={() => setDialog('moolre')}>
+            <Button variant="secondary" small onClick={() => setConnecting(true)}>
               {moolre.connected ? 'Change' : 'Connect'}
             </Button>
           }
         />
-        <Row
-          label="Bolt Food commission"
-          value={commissionWords(commissions.BOLT_FOOD)}
-          action={
-            <Button variant="secondary" small onClick={() => setDialog('commissions')}>
-              Edit
-            </Button>
-          }
-        />
-        <Row label="Chowdeck commission" value={commissionWords(commissions.CHOWDECK)} />
       </Section>
       {!moolre.connected && (
         <p className="-mt-3 mb-5 px-1 text-xs text-muted">
-          Without a Moolre account, payment links can’t go out, so phone orders can’t be paid.
+          Without a Moolre account, payment links can’t go out, so customers can only pay cash.
         </p>
       )}
-      {dialog === 'moolre' && <MoolreDialog current={moolre} onClose={() => setDialog(null)} />}
-      {dialog === 'commissions' && (
-        <CommissionsDialog current={commissions} onClose={() => setDialog(null)} />
-      )}
+      {connecting && <MoolreDialog current={moolre} onClose={() => setConnecting(false)} />}
     </>
   );
 }
@@ -541,103 +519,6 @@ function MoolreDialog({ current, onClose }: { current: Settings['moolre']; onClo
             Asking Moolre whether it knows this account…
           </p>
         )}
-      </form>
-    </Dialog>
-  );
-}
-
-/** "15" or "12.5" as basis points, "" as null, anything else as undefined (not valid). */
-function percentBps(text: string): number | null | undefined {
-  if (!text.trim()) return null;
-  const bps = parseAmount(text);
-  return bps !== null && bps <= 10_000 ? bps : undefined;
-}
-
-function moneyOrNull(text: string): number | null | undefined {
-  if (!text.trim()) return null;
-  return parseAmount(text) ?? undefined;
-}
-
-function CommissionsDialog({ current, onClose }: { current: Commissions; onClose: () => void }) {
-  const start = (value: number | null, percent: boolean) =>
-    value === null ? '' : percent ? amountText(value).replace(/\.00$/, '') : amountText(value);
-  const [form, setForm] = useState({
-    boltRate: start(current.BOLT_FOOD.rateBps, true),
-    boltFlat: start(current.BOLT_FOOD.flatAmount, false),
-    chowRate: start(current.CHOWDECK.rateBps, true),
-    chowFlat: start(current.CHOWDECK.flatAmount, false),
-  });
-  const parsed = {
-    BOLT_FOOD: { rateBps: percentBps(form.boltRate), flatAmount: moneyOrNull(form.boltFlat) },
-    CHOWDECK: { rateBps: percentBps(form.chowRate), flatAmount: moneyOrNull(form.chowFlat) },
-  };
-  const valid = Object.values(parsed).every(
-    (c) => c.rateBps !== undefined && c.flatAmount !== undefined,
-  );
-  const saving = useMutation({
-    mutationFn: () => saveCommissions(parsed as Commissions),
-    onSuccess: () => {
-      refreshSettings();
-      onClose();
-    },
-  });
-
-  const input = (key: keyof typeof form, label: string, suffix: string) => (
-    <div>
-      <FieldLabel htmlFor={key}>{label}</FieldLabel>
-      <div className="flex h-11 items-center gap-1 rounded-xl border border-border bg-surface px-3 focus-within:border-brand">
-        {suffix === 'GH₵' && <span className="font-mono text-xs text-muted">GH₵</span>}
-        <input
-          id={key}
-          inputMode="decimal"
-          value={form[key]}
-          onChange={(event) => setForm({ ...form, [key]: event.target.value })}
-          className="w-full min-w-0 bg-transparent font-mono text-sm outline-none"
-        />
-        {suffix === '%' && <span className="font-mono text-xs text-muted">%</span>}
-      </div>
-    </div>
-  );
-
-  return (
-    <Dialog title="Platform commissions" onClose={onClose}>
-      <form
-        className="space-y-5"
-        onSubmit={(event) => {
-          event.preventDefault();
-          if (valid) saving.mutate();
-        }}
-      >
-        <p className="text-sm text-muted">
-          What Bolt Food and Chowdeck keep from each order, so profit is right. Leave both blank and
-          their sales show as gross.
-        </p>
-        {(
-          [
-            ['Bolt Food', 'boltRate', 'boltFlat'],
-            ['Chowdeck', 'chowRate', 'chowFlat'],
-          ] as const
-        ).map(([name, rate, flat]) => (
-          <div key={name}>
-            <p className="mb-2 text-sm font-semibold">{name}</p>
-            <div className="grid grid-cols-2 gap-3">
-              {input(rate, 'Percent', '%')}
-              {input(flat, 'Plus per order', 'GH₵')}
-            </div>
-          </div>
-        ))}
-        {!valid && (
-          <p className={cx('text-xs text-amber')}>Check the numbers: a percent is up to 100.</p>
-        )}
-        {saving.error && <ErrorNote>{saving.error.message}</ErrorNote>}
-        <div className="mt-6 flex gap-2">
-          <Button variant="ghost" onClick={onClose}>
-            Cancel
-          </Button>
-          <Button type="submit" full disabled={!valid} busy={saving.isPending}>
-            Save
-          </Button>
-        </div>
       </form>
     </Dialog>
   );

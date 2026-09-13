@@ -10,7 +10,11 @@ export const ORDER_STATUSES = [
 ] as const;
 export type OrderStatus = (typeof ORDER_STATUSES)[number];
 
-export const ORDER_TYPES = ['WALK_IN', 'PICKUP', 'DELIVERY'] as const;
+/**
+ * How the customer gets the food: they eat it here (only where the owner offers dine-in), they
+ * take it away or collect it, or it's delivered. Where the order came from is its source.
+ */
+export const ORDER_TYPES = ['DINE_IN', 'PICKUP', 'DELIVERY'] as const;
 export type OrderType = (typeof ORDER_TYPES)[number];
 
 export const ARRIVAL_METHODS = ['API', 'MANUAL'] as const;

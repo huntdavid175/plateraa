@@ -1,4 +1,5 @@
-import type { PaymentMethod } from '@plateraa/shared';
+import type { OrderSource, PaymentMethod } from '@plateraa/shared';
+import { ORDER_SOURCES } from '@plateraa/shared';
 import { useQuery } from '@tanstack/react-query';
 import { Link, useLocation, useSearchParams } from 'react-router';
 import { cedis, clock, longDate, shortDate, todayHere } from '../lib/money';
@@ -12,17 +13,16 @@ import {
 } from '../lib/orders';
 import { useSession } from '../lib/session';
 import { fetchTeam } from '../lib/team';
-import { METHOD_WORDS, SOURCE_WORDS } from '../lib/words';
+import { METHOD_WORDS, SOURCE_WORDS, kindWords } from '../lib/words';
 import { useMe } from '../shell/Shell';
 import { Badge, Button, Card, ErrorNote, PillFilter, Spinner, Tag } from '../ui/controls';
 import { Page } from '../ui/Page';
 
-const SOURCE_FILTERS = [
+const TYPE_FILTERS = [
   { value: 'ALL', label: 'All' },
-  { value: 'POS', label: 'Walk-in' },
-  { value: 'PHONE', label: 'Phone' },
-  { value: 'BOLT_FOOD', label: 'Bolt' },
-  { value: 'CHOWDECK', label: 'Chowdeck' },
+  { value: 'DINE_IN', label: 'Dine-in' },
+  { value: 'PICKUP', label: 'Pickup' },
+  { value: 'DELIVERY', label: 'Delivery' },
 ] as const;
 
 const PAID_FILTERS = [
@@ -32,7 +32,7 @@ const PAID_FILTERS = [
   { value: 'REFUND_OWED', label: 'Refund owed' },
 ] as const;
 
-type SourceFilter = (typeof SOURCE_FILTERS)[number]['value'];
+type TypeFilter = (typeof TYPE_FILTERS)[number]['value'];
 type PaidFilter = (typeof PAID_FILTERS)[number]['value'];
 
 /** A busy day is a few hundred orders; a longer range shows its latest this many. */
@@ -47,10 +47,11 @@ function oneOf<T extends string>(
 }
 
 /**
- * Orders for a day (`?date=`) or a range of days (`?from=&to=`), filtered by source, payment
- * state, method (`?method=CASH,LINK`), item (`?item=`) or who took them (`?staff=`). Everything
- * lives in the address, so the figures on Today and Reports link straight to the orders behind
- * them, and a filtered list can be shared. The server does the filtering.
+ * Orders for a day (`?date=`) or a range of days (`?from=&to=`), filtered by dine-in, pickup or
+ * delivery, payment state, method (`?method=CASH,LINK`), item (`?item=`), who took them
+ * (`?staff=`) or where they came from (`?source=`). Everything lives in the address, so the
+ * figures on Today and Reports link straight to the orders behind them, and a filtered list can be
+ * shared. The server does the filtering.
  */
 export function OrdersPage() {
   const me = useMe();
@@ -64,11 +65,17 @@ export function OrdersPage() {
   const to = params.get('to');
   const range = from && to ? { from, to } : null;
   const date = params.get('date') ?? here;
-  const source = oneOf(params.get('source'), SOURCE_FILTERS, 'ALL');
+  const type = oneOf(params.get('type'), TYPE_FILTERS, 'ALL');
   const paid = oneOf(params.get('paid'), PAID_FILTERS, 'ALL');
   const method = params.get('method');
   const item = params.get('item');
   const staff = params.get('staff');
+  const sourceParam = params.get('source');
+  const source = ORDER_SOURCES.find((value) => value === sourceParam) as OrderSource | undefined;
+  // Dine-in shows where the owner offers it, or when a link asks for it.
+  const typeFilters = TYPE_FILTERS.filter(
+    (option) => option.value !== 'DINE_IN' || me.offersDineIn || type === 'DINE_IN',
+  );
 
   const change = (patch: Record<string, string | null>) =>
     setParams(
@@ -85,7 +92,8 @@ export function OrdersPage() {
 
   const query: OrdersQuery = {
     ...(range ?? { date }),
-    ...(source !== 'ALL' ? { source } : {}),
+    ...(type !== 'ALL' ? { type } : {}),
+    ...(source ? { source } : {}),
     ...(paid !== 'ALL' ? { paid } : {}),
     ...(method ? { method } : {}),
     ...(item ? { item } : {}),
@@ -107,9 +115,10 @@ export function OrdersPage() {
   const sales = rows.filter((order) => order.status !== 'CANCELLED' && order.status !== 'REFUNDED');
   const salesTotal = sales.reduce((sum, order) => sum + order.amountDue, 0);
   const back: BackTo = { back: `/orders${search}`, label: 'Orders' };
-  const filtered = source !== 'ALL' || paid !== 'ALL' || method || item || staff;
+  const filtered = type !== 'ALL' || source || paid !== 'ALL' || method || item || staff;
 
   const chips = [
+    source && { key: 'source', label: `From ${SOURCE_WORDS[source]}` },
     method && {
       key: 'method',
       label: `Paid by ${method
@@ -157,10 +166,10 @@ export function OrdersPage() {
     >
       <div className="mb-5 flex flex-wrap gap-2">
         <PillFilter
-          label="Where the order came from"
-          options={SOURCE_FILTERS}
-          value={source}
-          onChange={(value: SourceFilter) => change({ source: value === 'ALL' ? null : value })}
+          label="Dine-in, pickup or delivery"
+          options={typeFilters}
+          value={type}
+          onChange={(value: TypeFilter) => change({ type: value === 'ALL' ? null : value })}
         />
         <PillFilter
           label="Paid or not"
@@ -197,7 +206,7 @@ export function OrdersPage() {
         <div className="hidden grid-cols-[1fr_1.5fr_1fr_1fr_1fr] gap-4 border-b border-border px-5 py-3 text-xs font-semibold tracking-wide text-muted uppercase md:grid">
           <span>{range ? 'Day · Number' : 'Time · Number'}</span>
           <span>Items</span>
-          <span>Source</span>
+          <span>Type</span>
           <span>Paid</span>
           <span className="text-right">Amount</span>
         </div>
@@ -270,7 +279,7 @@ function OrderRowLink({
         </div>
         <p className="truncate text-sm">{orderLine(order.items)}</p>
         <div>
-          <Tag>{SOURCE_WORDS[order.source]}</Tag>
+          <Tag>{kindWords(order)}</Tag>
         </div>
         <div>{badge}</div>
         <p className="text-right font-mono text-sm font-semibold">{cedis(order.total)}</p>
@@ -279,7 +288,7 @@ function OrderRowLink({
         <div className="min-w-0 flex-1">
           <div className="mb-0.5 flex items-center gap-2">
             <span className="font-mono text-xs text-muted">{order.displayNumber}</span>
-            <Tag>{SOURCE_WORDS[order.source]}</Tag>
+            <Tag>{kindWords(order)}</Tag>
           </div>
           <p className="truncate text-sm">{orderLine(order.items)}</p>
           <p className="mt-0.5 text-xs text-muted">

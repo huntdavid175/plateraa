@@ -70,6 +70,8 @@ const ordersQuerySchema = z.object({
   from: z.iso.date().optional(),
   to: z.iso.date().optional(),
   source: z.enum(ORDER_SOURCES).optional(),
+  /** Dine-in, pickup or delivery. */
+  type: z.enum(ORDER_TYPES).optional(),
   /** Paid in full, still owed, owed a refund, or cancelled. */
   paid: z.enum(PAID_STATES).optional(),
   /** Paid, at least partly, this way; several separated by commas ("CASH,LINK"). */
@@ -246,6 +248,7 @@ function filtersOf(query: OrdersQuery) {
   const methods = query.method?.split(',') as PaymentMethod[] | undefined;
   return [
     query.source ? eq(orders.source, query.source) : undefined,
+    query.type ? eq(orders.type, query.type) : undefined,
     query.paid ? PAID_SQL[query.paid] : undefined,
     methods
       ? sql`exists (select 1 from ${payments} where ${payments.orderId} = ${orders.id} and ${payments.status} = 'CONFIRMED' and ${payments.deletedAt} is null and ${inArray(payments.method, methods)})`

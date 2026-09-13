@@ -77,6 +77,14 @@ export function useCountPortions(): boolean {
   return rows?.[0]?.on === 1;
 }
 
+/** Whether the owner offers dine-in, so the counter offers it beside Pickup and Delivery. */
+export function useOffersDineIn(): boolean {
+  const rows = useLocalQuery<{ on: number | null }>(
+    'SELECT offers_dine_in AS "on" FROM settings LIMIT 1',
+  );
+  return rows?.[0]?.on === 1;
+}
+
 /** The time now, ticking over every `everyMs`, for the queue's timers. */
 export function useNow(everyMs = 15_000): Date {
   const [now, setNow] = useState(() => new Date());

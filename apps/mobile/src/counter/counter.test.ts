@@ -85,13 +85,13 @@ describe('the menu', () => {
 });
 
 describe('taking orders at the counter', () => {
-  it('takes a walk-in with cash and sends it straight to the kitchen', async () => {
+  it('takes a dine-in order with cash and sends it straight to the kitchen', async () => {
     const { db, counter: at } = await counter();
     expect(await openShiftOf(db, DEVICE_ID)).toBeNull();
     const shiftId = await openDrawer(at, pesewas(10000));
     expect(await openShiftOf(db, DEVICE_ID)).toBe(shiftId);
 
-    const placed = await placeOrder(at, { source: 'POS', type: 'WALK_IN', lines: [jollof(2)] });
+    const placed = await placeOrder(at, { source: 'POS', type: 'DINE_IN', lines: [jollof(2)] });
     expect(placed).toMatchObject({ displayNumber: 'A1', total: 9000, due: 9000 });
     await payCash(at, {
       orderId: placed.orderId,
@@ -166,7 +166,7 @@ describe('taking orders at the counter', () => {
   it('moves orders along with one tap each, and a delivery goes out before it is done', async () => {
     const { db, counter: at } = await counter();
     const shiftId = await openDrawer(at, pesewas(0));
-    const walkIn = await placeOrder(at, { source: 'POS', type: 'WALK_IN', lines: [jollof()] });
+    const walkIn = await placeOrder(at, { source: 'POS', type: 'DINE_IN', lines: [jollof()] });
     await payCash(at, { orderId: walkIn.orderId, shiftId, amount: walkIn.due });
     const statusOf = async (id: string) => (await loadQueue(db, TODAY)).find((o) => o.id === id)!;
 
@@ -193,7 +193,7 @@ describe('taking orders at the counter', () => {
   it('holds, resumes and cancels, leaving a refund owed on a paid order', async () => {
     const { db, counter: at } = await counter();
     const shiftId = await openDrawer(at, pesewas(0));
-    const placed = await placeOrder(at, { source: 'POS', type: 'WALK_IN', lines: [jollof()] });
+    const placed = await placeOrder(at, { source: 'POS', type: 'DINE_IN', lines: [jollof()] });
     await payCash(at, { orderId: placed.orderId, shiftId, amount: placed.due });
 
     await setOnHold(at, placed.orderId, true);

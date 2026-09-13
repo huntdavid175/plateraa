@@ -14,10 +14,12 @@ import {
 import {
   EXPENSE_CATEGORIES,
   ORDER_SOURCES,
+  ORDER_TYPES,
   PAYMENT_METHODS,
   pesewas,
   type ExpenseCategory,
   type OrderSource,
+  type OrderType,
   type PaymentMethod,
 } from '@plateraa/shared';
 import { ApiBearerAuth, ApiOkResponse } from '@nestjs/swagger';
@@ -65,6 +67,10 @@ class PeriodDto extends createZodDto(
     ),
     bySource: z.array(
       z.object({ source: z.enum(ORDER_SOURCES), orders: z.number().int(), sales: money }),
+    ),
+    /** Dine-in, pickup and delivery. */
+    byType: z.array(
+      z.object({ type: z.enum(ORDER_TYPES), orders: z.number().int(), sales: money }),
     ),
     byMethod: z.array(z.object({ method: z.enum(PAYMENT_METHODS), amount: money })),
     /** Best sellers first, up to 20. */
@@ -131,6 +137,7 @@ export class PeriodService {
       }));
 
       const sources = new Map<OrderSource, { orders: number; sales: number }>();
+      const types = new Map<OrderType, { orders: number; sales: number }>();
       const methods = new Map<PaymentMethod, number>();
       const items = new Map<string, { quantity: number; sales: number }>();
       const categories = new Map<ExpenseCategory, number>();
@@ -141,6 +148,12 @@ export class PeriodService {
           entry.orders += row.orders;
           entry.sales += row.sales;
           sources.set(row.source, entry);
+        }
+        for (const row of day.byType) {
+          const entry = types.get(row.type) ?? { orders: 0, sales: 0 };
+          entry.orders += row.orders;
+          entry.sales += row.sales;
+          types.set(row.type, entry);
         }
         for (const row of day.byMethod) tally(methods, row.method, row.amount);
         for (const row of day.byItem) {
@@ -222,6 +235,9 @@ export class PeriodService {
           moneyOut: pesewas(day.moneyOut),
         })),
         bySource: [...sources.entries()].map(([source, entry]) => ({ source, ...entry })),
+        byType: [...types.entries()]
+          .sort(([a], [b]) => ORDER_TYPES.indexOf(a) - ORDER_TYPES.indexOf(b))
+          .map(([type, entry]) => ({ type, ...entry })),
         byMethod: [...methods.entries()].map(([method, amount]) => ({ method, amount })),
         byItem: [...items.entries()]
           .sort(([, a], [, b]) => b.sales - a.sales)

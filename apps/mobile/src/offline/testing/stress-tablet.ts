@@ -264,7 +264,7 @@ export class Till {
         quantity: 1 + Math.floor(this.random() * 3),
       });
     }
-    const placed = await placeOrder(counter, { source: 'POS', type: 'WALK_IN', lines });
+    const placed = await placeOrder(counter, { source: 'POS', type: 'DINE_IN', lines });
     this.commands += 1;
 
     let amountPaid = 0;
@@ -286,7 +286,7 @@ export class Till {
       // Pay before prep sent it to the kitchen; staff tap it on until it's handed over.
       let status: OrderStatus | null = 'PREPARING';
       while (status && status !== 'COMPLETED') {
-        status = await advance(counter, { id: placed.orderId, status, type: 'WALK_IN' });
+        status = await advance(counter, { id: placed.orderId, status, type: 'DINE_IN' });
         if (status) this.commands += 1;
       }
     }
