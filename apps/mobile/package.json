@@ -8,6 +8,7 @@
     "android": "expo start --android",
     "typecheck": "tsc --noEmit && tsc --noEmit -p tsconfig.test.json",
     "test": "vitest run",
+    "stress": "vitest run -c vitest.stress.config.mts",
     "eas-build-post-install": "pnpm --filter \"@plateraa/mobile^...\" build"
   },
   "dependencies": {

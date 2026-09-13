@@ -3,6 +3,6 @@
   "compilerOptions": {
     "types": ["node"]
   },
-  "include": ["src/**/*.test.ts", "src/offline/testing/**/*.ts"],
+  "include": ["src/**/*.test.ts", "src/**/*.stress.ts", "src/offline/testing/**/*.ts"],
   "exclude": ["node_modules"]
 }

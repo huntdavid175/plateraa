@@ -325,13 +325,22 @@ _11 Sep: the server side is built from Moolre's docs (docs.moolre.com; their `/a
 ### 3.3 Receipts & printing
 
 - [ ] ESC/POS receipt printing end to end (58mm, 32 columns): the only receipt in the pilot, so it has to be solid
+  - _13 Sep, user decision: later, once the printer arrives (it's on its way). The Bluetooth module and the receipt builder are ready; the printer setup screen, printing after a sale and reprints aren't built yet._
 - [ ] ~~Digital receipt page and WhatsApp share~~ (_moved to Later releases on 10 Sep_)
 
 ---
 
 ## Phase 4: Hardening → R1a live (Week 4: Thu 1 – Thu 8 Oct)
 
-- [ ] Offline torture script: airplane mode mid-order, kill the app mid-sync, replay a batch twice, 200 queued commands
+- [x] Offline torture script: airplane mode mid-order, kill the app mid-sync, replay a batch twice, 200 queued commands
+  - _13 Sep: `pnpm --filter @plateraa/mobile stress` (see `apps/mobile/AGENTS.md`). The tablet's real sync engine, with SQLite in a file, sells the way the counter does against the real API on the Neon `test` branch, over a connection that fails on purpose. Six scenarios, side by side:_
+    - _a 100-order day with the middle third in airplane mode, the drawer closed at the end;_
+    - _uploads that reach the server but whose answers are lost;_
+    - _the app killed mid-sync, and again before syncing;_
+    - _every upload arriving twice, then the whole day sent again;_
+    - _200 changes queued offline;_
+    - _random trouble (seeded, so a run can be repeated) with two restarts._
+  - _Each must end in step: nothing waiting or refused, every order on the server exactly once and as the counter left it, the tablet showing what the server has, the day summary matching the hand tally, and the drawer's difference zero. **All six passed on the first full run** (about 13 minutes from the laptop, whose API talks to Frankfurt for every query). That covers "zero lost or duplicated orders" and "replaying a sync batch gives the same state" in the R1a definition of done, against the real server; the full day on a real 2–3 GB tablet is still to do._
 - [ ] Measure sync payloads (idle ≤5 KB, first full sync ≤500 KB) and APK size
 - [ ] Performance check on a 2–3 GB budget tablet
 - [ ] Device heartbeat + alerts (outbox age, sync failures, 5xx, job failures)

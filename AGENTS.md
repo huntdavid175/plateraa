@@ -42,8 +42,8 @@ A solo founder (GitHub `huntdavid175`) builds it with an AI agent. Work started 
   - Still open in `plan.md`:
     - tap-through for every figure;
     - raw counts on the tablet;
-    - deploying the dashboard, and adding its address to `TRUSTED_ORIGINS` on Render;
-    - 3.3 receipts.
+    - deploying the dashboard, and adding its address to `TRUSTED_ORIGINS` on Render (not yet: user decision, 13 Sep);
+    - 3.3 receipts (later, once the printer arrives: user decision, 13 Sep).
 - Founder tasks (Moolre, lawyer, printers, domain, Play Console) are Phase 0 in `plan.md`.
 
 ## Working with the user
