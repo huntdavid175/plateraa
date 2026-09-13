@@ -8,9 +8,11 @@ import {
   marginTone,
   refreshMenu,
   setSoldOut,
+  type Menu,
   type MenuItem,
 } from '../lib/menu';
 import { cedis } from '../lib/money';
+import { saveInPlace } from '../lib/save-in-place';
 import { useSession } from '../lib/session';
 import { useMe } from '../shell/Shell';
 import { Badge, ErrorNote, Spinner, cx } from '../ui/controls';
@@ -121,9 +123,17 @@ export function MenuPage() {
 }
 
 function ItemCard({ item, seesMoney }: { item: MenuItem; seesMoney: boolean }) {
+  const { tenantId } = useSession();
   const soldOut = useMutation({
-    mutationFn: () => setSoldOut(item.id, !item.soldOutToday),
-    onSuccess: () => refreshMenu(),
+    mutationFn: (next: boolean) => setSoldOut(item.id, next),
+    // The card changes at once; it goes back if saving fails.
+    ...saveInPlace(['menu', tenantId], (menu: Menu, next: boolean) => ({
+      ...menu,
+      items: menu.items.map((each) =>
+        each.id === item.id ? { ...each, soldOutToday: next } : each,
+      ),
+    })),
+    onSettled: () => refreshMenu(),
   });
   const margin = marginOf(item.price, item.costPrice);
 
@@ -171,14 +181,21 @@ function ItemCard({ item, seesMoney }: { item: MenuItem; seesMoney: boolean }) {
         >
           Edit
         </Link>
+        {/* An action, so it reads as one: "Sold out" alone looked like every item's status. */}
         <button
           type="button"
           disabled={soldOut.isPending}
-          onClick={() => soldOut.mutate()}
-          className={cx('text-xs font-medium', item.soldOutToday ? 'text-green' : 'text-amber')}
+          onClick={() => soldOut.mutate(!item.soldOutToday)}
+          className={cx(
+            'rounded-lg border px-3 py-1.5 text-xs font-semibold transition-colors',
+            item.soldOutToday
+              ? 'border-green/40 text-green'
+              : 'border-border text-muted hover:border-amber hover:text-amber',
+          )}
         >
-          {item.soldOutToday ? 'Back in stock' : 'Sold out'}
+          {item.soldOutToday ? 'Back in stock' : 'Mark sold out'}
         </button>
+        {soldOut.error && <p className="text-right text-xs text-red">{soldOut.error.message}</p>}
       </div>
     </div>
   );

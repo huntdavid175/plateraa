@@ -11,6 +11,7 @@ import { useMemo, useState, type InputHTMLAttributes, type ReactNode } from 'rea
 import { ulid } from 'ulid';
 import { amountText, cedis, parseAmount } from '../lib/money';
 import { PHOTO_SIZES, storePhotoPath } from '../lib/photos';
+import { saveInPlace } from '../lib/save-in-place';
 import { useSession } from '../lib/session';
 import {
   fetchSettings,
@@ -195,9 +196,17 @@ function BusinessSection({ business }: { business: Settings['business'] }) {
 }
 
 function OrdersSection({ orders }: { orders: OrderSettings }) {
-  const saving = useMutation({ mutationFn: saveOrderSettings, onSuccess: refreshSettings });
-  // Show the change straight away; it goes back if saving fails.
-  const shown = saving.isPending && saving.variables ? saving.variables : orders;
+  const { tenantId } = useSession();
+  const saving = useMutation({
+    mutationFn: saveOrderSettings,
+    // Switches move at once and stay put; they go back if saving fails.
+    ...saveInPlace(['settings', tenantId], (settings: Settings, next: OrderSettings) => ({
+      ...settings,
+      orders: next,
+    })),
+    onSettled: refreshSettings,
+  });
+  const shown = orders;
   const set = (patch: Partial<OrderSettings>) => saving.mutate({ ...shown, ...patch });
 
   return (
@@ -277,7 +286,23 @@ function OnlineStoreSection() {
 }
 
 function OnlineStore({ store }: { store: Storefront }) {
-  const saving = useMutation({ mutationFn: saveStorefront, onSuccess: refreshStorefront });
+  const { tenantId } = useSession();
+  const saving = useMutation({
+    mutationFn: saveStorefront,
+    // Switches and the look change at once and stay put; they go back if saving fails. The
+    // phone number waits for the reload, which returns it tidied.
+    ...saveInPlace(['storefront', tenantId], (current: Storefront, next: SaveStorefront) => ({
+      ...current,
+      enabled: next.enabled,
+      takingOrders: next.takingOrders,
+      cashOnPickup: next.cashOnPickup,
+      acceptFirst: next.acceptFirst,
+      theme: next.theme,
+      area: next.area || null,
+      hours: next.hours || null,
+    })),
+    onSettled: refreshStorefront,
+  });
   const saved: SaveStorefront = {
     enabled: store.enabled,
     takingOrders: store.takingOrders,
@@ -288,8 +313,7 @@ function OnlineStore({ store }: { store: Storefront }) {
     phone: store.phone ? phoneWords(store.phone) : '',
     hours: store.hours ?? '',
   };
-  // Switches show the change straight away; it goes back if saving fails.
-  const shown = saving.isPending && saving.variables ? saving.variables : saved;
+  const shown = saved;
   const set = (patch: Partial<SaveStorefront>) => saving.mutate({ ...shown, ...patch });
   const [showQr, setShowQr] = useState(false);
 

@@ -2,6 +2,7 @@ import { pinProblem } from '@plateraa/shared';
 import { useMutation, useQuery } from '@tanstack/react-query';
 import { useState } from 'react';
 import { ago } from '../lib/money';
+import { saveInPlace } from '../lib/save-in-place';
 import { useSession } from '../lib/session';
 import {
   addStaff,
@@ -141,11 +142,20 @@ function StaffRow({
 }
 
 function RevenueCard({ byRole }: { byRole: RevenueByRole }) {
+  const { tenantId } = useSession();
   const saving = useMutation({
     mutationFn: setRevenueVisibility,
-    onSuccess: refreshTeam,
+    // Switches move at once and stay put; they go back if saving fails.
+    ...saveInPlace(
+      ['team', tenantId],
+      (team: Awaited<ReturnType<typeof fetchTeam>>, next: RevenueByRole) => ({
+        ...team,
+        revenueByRole: next,
+      }),
+    ),
+    onSettled: refreshTeam,
   });
-  const shown = saving.isPending && saving.variables ? saving.variables : byRole;
+  const shown = byRole;
   const set = (role: keyof RevenueByRole, on: boolean) => saving.mutate({ ...shown, [role]: on });
 
   return (

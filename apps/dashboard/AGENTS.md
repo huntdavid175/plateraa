@@ -85,7 +85,7 @@ The web dashboard for owners and managers (plan.md §3.1). It uses:
   - Settings (`SettingsPage`):
     - Business (name, type);
     - Appearance (dark mode);
-    - Orders (dine-in, pay before prep, portion counts, idle lock), where toggles save at once;
+    - Orders (dine-in, pay before prep, portion counts, idle lock), where toggles save at once. **Anything that saves the moment it's tapped uses `saveInPlace`** (`lib/save-in-place.ts`, spread into `useMutation` with the reload as `onSettled`): the new value goes into the loaded data at once and back if saving fails, so a switch never flicks back to its old value while it saves (user report, 13 Sep). Used by these switches, Online store, "Who sees sales totals" and the Menu page's "Mark sold out";
     - Online store (plan.md §4.0), for anyone with `storefront.manage` (the owner and managers; `lib/storefront.ts`): the store on or off, its link with Copy and a QR code (`qrcode-generator`, downloadable), taking orders now, cash when they collect, accept first, the look (`STOREFRONT_LOOKS`, each shown as a tiny store page: its page colour, band, card and button), the cover picture and logo, and what its page shows (area, phone, hours). It says when Moolre isn't connected or there are no delivery zones yet;
     - Delivery zones, for anyone with `catalog.manage` (managers too): add, change, switch off the tablet, remove (`lib/zones.ts`).
     - Payments (the Moolre account, with "Check and save").
