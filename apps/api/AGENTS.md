@@ -18,6 +18,10 @@ NestJS 11 (not 12: nestjs-zod 5.5 needs `@nestjs/common` ^11), CommonJS, built w
   - `me.ts`: `GET /api/me/context`, the dashboard's "who am I". It returns the person's name, role and permissions, and the business in `x-tenant-id`.
   - Guards in `identity/guards.ts`: `@Authorized(...capabilities)` (works for tablet PIN sessions and dashboard logins; permissions re-read every request), `@CurrentActor()`, `@CurrentDevice()`, `@CurrentUser()`.
 - `sync/`: `POST /sync/push` and `GET /sync/pull`, authenticated by the **device token** (not a PIN session), so queued sales upload while the screen is locked.
+  - **Tablet health** (`tablet-health.ts`): both routes read `x-outbox-pending` and `x-outbox-oldest`, what the tablet has waiting to upload. `TabletHealth` keeps them on `devices` (`pending_changes`, `oldest_pending_at`), counts uploads since the last finished sync (`pushes_since_sync`) and stamps `last_synced_at` on each pull. Recording it never fails a sync.
+  - A tablet that keeps uploading without finishing a sync while changes wait (`STUCK_PUSHES`, 10) is online but stuck: it's reported to Sentry, at most once an hour per tablet.
+  - `tabletAlerts()` turns a tablet's state into what the owner is told: out of touch for 15 minutes with its drawer open, changes waiting over 10 minutes, stuck, or changes refused in the last day. `GET /api/devices` returns them as `alerts`.
+  - `sync-size.spec.ts` measures a first full sync, an idle sync and one after a sale (gzip on the wire) against the plan's limits.
 - `audit/audit.ts`: `audit.record(tx, …)`. Call it inside the same transaction as every money, price, stock and access change.
 - `payments/` (plan.md §2.5): payment links into each vendor's own Moolre account.
   - `moolre.ts`: `MoolreApi` (create a link, check a payment's status, send an SMS) and `MoolreHttpClient`, behind the `MOOLRE` token so tests can use a pretend Moolre.

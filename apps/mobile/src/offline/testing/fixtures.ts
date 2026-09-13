@@ -5,6 +5,7 @@ import { openLocalDatabase } from '../schema';
 import type { PullChanges, ServerRow } from '../store';
 import {
   TransportError,
+  type OutboxReport,
   type PullResponse,
   type PushOutcome,
   type SyncTransport,
@@ -47,6 +48,9 @@ export const retry = (command: { id: string }): PushOutcome => ({
 export class FakeServer implements SyncTransport {
   readonly pushes: SyncCommandInput[][] = [];
   readonly pulls: (string | null)[] = [];
+  /** What the tablet said it had waiting, with each upload and each pull that got through. */
+  readonly pushReports: (OutboxReport | undefined)[] = [];
+  readonly pullReports: (OutboxReport | undefined)[] = [];
   /** How each pushed command is answered. Like the real server, it stops at a RETRY. */
   answer: (command: SyncCommandInput) => PushOutcome = applied;
   /** What the next pull returns. */
@@ -59,9 +63,10 @@ export class FakeServer implements SyncTransport {
   duringPull: (() => Promise<unknown>) | null = null;
   private cursor = 0;
 
-  async push(commands: SyncCommandInput[]): Promise<PushOutcome[]> {
+  async push(commands: SyncCommandInput[], report?: OutboxReport): Promise<PushOutcome[]> {
     if (this.down) throw new TransportError(this.down, `Server ${this.down}`);
     this.pushes.push(commands);
+    this.pushReports.push(report);
     if (commands.some((command) => this.unreadable.has(command.id))) {
       throw new TransportError('invalid', 'commands.0.payload: Invalid input');
     }
@@ -74,9 +79,10 @@ export class FakeServer implements SyncTransport {
     return outcomes;
   }
 
-  async pull(cursor: string | null): Promise<PullResponse> {
+  async pull(cursor: string | null, report?: OutboxReport): Promise<PullResponse> {
     if (this.down) throw new TransportError(this.down, `Server ${this.down}`);
     this.pulls.push(cursor);
+    this.pullReports.push(report);
     const changes = this.changes;
     this.changes = {};
     const during = this.duringPull;

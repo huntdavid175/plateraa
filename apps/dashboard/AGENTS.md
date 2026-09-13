@@ -47,6 +47,7 @@ The web dashboard for owners and managers (plan.md §3.1). It uses:
 - `lib/money.ts`: `cedis()`, `longDate()`, `hourLabel()`. `lib/words.ts`: plain words for enums.
 - `router.tsx` holds the routes; `pages/` holds the screens.
   - Today (`TodayPage`): the day summary, the refunds-owed banner and recent orders. The date box opens any past day (`/?date=`), without the open drawers; today itself is left to the server's trading day.
+    - Tablet warnings (`devices.manage`): the `alerts` from `GET /api/devices`, checked every minute, worded by `lib/tablet-alerts.ts`. The Staff page's Tablets card shows the same, with each tablet's last finished sync.
   - Orders (`OrdersPage`): a day's orders, filtered by source and by paid or not. The day and the filters live in the address, so a view can be shared. Totals show only with `reports.revenue.view`.
   - Order (`OrderPage`): one order in full. Links to it pass `state: { back, label }`, so "←" returns to where the person came from. It links to the order's customer.
   - Customers (`CustomersPage`, search in `?q=`) and one customer (`CustomerPage`): their orders, first and last order, what they spent (with `reports.revenue.view`), and name and notes to edit (`customers.manage`). `lib/customers.ts`.

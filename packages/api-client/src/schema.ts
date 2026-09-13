@@ -768,8 +768,17 @@ export interface components {
             code: string;
             appVersion: string | null;
             lastSeenAt: string | null;
+            lastSyncedAt: string | null;
+            pendingChanges: number;
+            oldestPendingAt: string | null;
             registeredAt: string;
             signedOut: boolean;
+            alerts: {
+                /** @enum {string} */
+                kind: "OUT_OF_TOUCH" | "STUCK" | "WAITING" | "REFUSED";
+                count: number;
+                since: string | null;
+            }[];
         };
         RosterEntryDto_Output: {
             id: string;

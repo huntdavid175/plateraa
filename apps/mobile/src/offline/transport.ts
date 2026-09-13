@@ -11,10 +11,29 @@ export interface PullResponse {
   changes: PullChanges;
 }
 
+/**
+ * What the tablet has waiting to upload, sent with every sync request so the dashboard can warn
+ * the owner when a tablet stops keeping up.
+ */
+export interface OutboxReport {
+  pending: number;
+  /** When the oldest waiting change was made (ISO), or null when nothing waits. */
+  oldestAt: string | null;
+}
+
 /** How the sync engine talks to the server; tests swap in a fake. */
 export interface SyncTransport {
-  push(commands: SyncCommandInput[]): Promise<PushOutcome[]>;
-  pull(cursor: string | null): Promise<PullResponse>;
+  push(commands: SyncCommandInput[], report?: OutboxReport): Promise<PushOutcome[]>;
+  pull(cursor: string | null, report?: OutboxReport): Promise<PullResponse>;
+}
+
+/** The report as the two headers the server reads (apps/api/src/sync/tablet-health.ts). */
+function reportHeaders(report: OutboxReport | undefined): Record<string, string> {
+  if (!report) return {};
+  return {
+    'x-outbox-pending': String(report.pending),
+    ...(report.oldestAt ? { 'x-outbox-oldest': report.oldestAt } : {}),
+  };
 }
 
 /**
@@ -72,16 +91,21 @@ export function httpTransport(api: ApiClient, timeoutMs = 20_000): SyncTransport
   }
 
   return {
-    async push(commands) {
+    async push(commands, report) {
       const body = await call((signal) =>
-        api.POST('/api/sync/push', { body: { commands } as never, signal }),
+        api.POST('/api/sync/push', {
+          body: { commands } as never,
+          headers: reportHeaders(report),
+          signal,
+        }),
       );
       return body.results as PushOutcome[];
     },
-    async pull(cursor) {
+    async pull(cursor, report) {
       const body = await call((signal) =>
         api.GET('/api/sync/pull', {
           params: { query: cursor === null ? {} : { cursor } },
+          headers: reportHeaders(report),
           signal,
         }),
       );

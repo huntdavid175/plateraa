@@ -6,6 +6,9 @@ import { colors, font, plural, radii, space, text, timeOf } from './theme';
 
 type Tone = 'warning' | 'danger' | 'info';
 
+/** Changes waiting this long get a louder warning: someone should look at the internet. */
+const STALE_MS = 30 * 60_000;
+
 /**
  * Whether the tablet is reaching the server, and what's waiting. Sales are always saved on the
  * tablet first, so being offline is a notice, not an error.
@@ -41,12 +44,22 @@ export function SyncBanner({
     message: string;
     action?: { label: string; onPress: () => void };
   }[] = [];
+  const stale =
+    state.pending > 0 &&
+    state.oldestPendingAt !== null &&
+    Date.now() - Date.parse(state.oldestPendingAt) > STALE_MS;
   if (state.connection === 'signed-out') {
     notices.push({
       tone: 'danger',
       message:
         'This tablet has been signed out, so nothing can upload. An owner or manager needs to register it again.',
       action: { label: 'Register again', onPress: registerAgain },
+    });
+  } else if (stale) {
+    // Shown even where the top bar shows the connection: the owner's figures are missing these.
+    notices.push({
+      tone: 'danger',
+      message: `${plural(state.pending, 'change')} haven't reached the server since ${timeOf(state.oldestPendingAt!)}. Everything is still saved on this tablet. Check the internet connection.`,
     });
   } else if (state.connection === 'offline' && offline) {
     const waiting = state.pending

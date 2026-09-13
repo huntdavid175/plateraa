@@ -17,6 +17,7 @@ import type { Database } from '../sql';
 import {
   TransportError,
   httpTransport,
+  type OutboxReport,
   type PullResponse,
   type PushOutcome,
   type SyncTransport,
@@ -73,13 +74,13 @@ export class FlakyNetwork implements SyncTransport {
     private readonly random: () => number = seededRandom(1),
   ) {}
 
-  async push(commands: SyncCommandInput[]): Promise<PushOutcome[]> {
+  async push(commands: SyncCommandInput[], report?: OutboxReport): Promise<PushOutcome[]> {
     const trouble = this.trouble();
     if (trouble === 'offline') {
       this.stats.offline += 1;
       throw new TransportError('offline', 'No connection');
     }
-    const answers = await this.server.push(commands);
+    const answers = await this.server.push(commands, report);
     this.stats.uploads += 1;
     this.stats.batchSizes.push(commands.length);
     this.delivered.push({ commands, answers });
@@ -94,12 +95,12 @@ export class FlakyNetwork implements SyncTransport {
     return answers;
   }
 
-  async pull(cursor: string | null): Promise<PullResponse> {
+  async pull(cursor: string | null, report?: OutboxReport): Promise<PullResponse> {
     if (this.offline || this.roll('offline')) {
       this.stats.offline += 1;
       throw new TransportError('offline', 'No connection');
     }
-    return this.server.pull(cursor);
+    return this.server.pull(cursor, report);
   }
 
   /** Sends an upload again, straight to the server; notes it if the answers differ. */

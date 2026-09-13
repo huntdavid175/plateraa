@@ -18,7 +18,19 @@ import {
   ApiOkResponse,
   ApiSecurity,
 } from '@nestjs/swagger';
-import { and, asc, devices, eq, isNull, locations, staffMembers, withTenant } from '@plateraa/db';
+import {
+  and,
+  asc,
+  devices,
+  eq,
+  isNull,
+  locations,
+  shifts,
+  sql,
+  staffMembers,
+  syncCommands,
+  withTenant,
+} from '@plateraa/db';
 import { ROLES } from '@plateraa/shared';
 import { createZodDto } from 'nestjs-zod';
 import { ulid } from 'ulid';
@@ -27,6 +39,7 @@ import { recordAudit } from '../audit/audit';
 import { hashToken, newToken } from '../auth/secrets';
 import { DATABASE, type DatabaseHandle } from '../database/database.module';
 import { nullableText } from '../openapi';
+import { TABLET_ALERT_KINDS, tabletAlerts } from '../sync/tablet-health';
 import {
   Authorized,
   CurrentActor,
@@ -46,9 +59,23 @@ class TabletDto extends createZodDto(
     appVersion: nullableText(),
     /** When it last talked to the server. */
     lastSeenAt: nullableText(),
+    /** When it last finished a sync: everything uploaded and the server's changes brought in. */
+    lastSyncedAt: nullableText(),
+    /** Changes it said were waiting to upload, the last time it was in touch. */
+    pendingChanges: z.number().int(),
+    /** When the oldest of those was made, by the tablet's clock. */
+    oldestPendingAt: nullableText(),
     registeredAt: z.string(),
     /** Signed out from the dashboard: it can't sync until it's set up again. */
     signedOut: z.boolean(),
+    /** What the owner should know about it, worst first (see sync/tablet-health.ts). */
+    alerts: z.array(
+      z.object({
+        kind: z.enum(TABLET_ALERT_KINDS),
+        count: z.number().int(),
+        since: z.string().nullable(),
+      }),
+    ),
   }),
 ) {}
 
@@ -150,19 +177,51 @@ export class DevicesService {
     });
   }
 
-  /** The business's tablets, for the dashboard. */
+  /** The business's tablets, for the dashboard, with anything the owner should know. */
   async list(actor: Actor) {
-    const rows = await withTenant(this.database.db, actor.tenantId, (tx) =>
-      tx.select().from(devices).orderBy(asc(devices.code)),
+    const { rows, open, refused } = await withTenant(
+      this.database.db,
+      actor.tenantId,
+      async (tx) => ({
+        rows: await tx.select().from(devices).orderBy(asc(devices.code)),
+        open: await tx
+          .select({ deviceId: shifts.deviceId })
+          .from(shifts)
+          .where(and(eq(shifts.status, 'OPEN'), isNull(shifts.deletedAt))),
+        refused: await tx
+          .select({ deviceId: syncCommands.deviceId, count: sql<number>`count(*)::int` })
+          .from(syncCommands)
+          .where(
+            and(
+              eq(syncCommands.status, 'REJECTED'),
+              sql`${syncCommands.createdAt} > now() - interval '24 hours'`,
+            ),
+          )
+          .groupBy(syncCommands.deviceId),
+      }),
     );
+    const iso = (at: Date | null) => at?.toISOString() ?? null;
     return rows.map((device) => ({
       id: device.id,
       name: device.name,
       code: device.code,
       appVersion: device.appVersion,
-      lastSeenAt: device.lastSeenAt?.toISOString() ?? null,
+      lastSeenAt: iso(device.lastSeenAt),
+      lastSyncedAt: iso(device.lastSyncedAt),
+      pendingChanges: device.pendingChanges,
+      oldestPendingAt: iso(device.oldestPendingAt),
       registeredAt: device.createdAt.toISOString(),
       signedOut: device.revokedAt !== null,
+      alerts: tabletAlerts({
+        signedOut: device.revokedAt !== null,
+        drawerOpen: open.some((shift) => shift.deviceId === device.id),
+        lastSeenAt: device.lastSeenAt,
+        pendingChanges: device.pendingChanges,
+        oldestPendingAt: device.oldestPendingAt,
+        lastSyncedAt: device.lastSyncedAt,
+        pushesSinceSync: device.pushesSinceSync,
+        refused: refused.find((row) => row.deviceId === device.id)?.count ?? 0,
+      }),
     }));
   }
 

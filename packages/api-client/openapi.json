@@ -2101,11 +2101,58 @@
             "type": "string",
             "nullable": true
           },
+          "lastSyncedAt": {
+            "type": "string",
+            "nullable": true
+          },
+          "pendingChanges": {
+            "type": "integer",
+            "minimum": -9007199254740991,
+            "maximum": 9007199254740991
+          },
+          "oldestPendingAt": {
+            "type": "string",
+            "nullable": true
+          },
           "registeredAt": {
             "type": "string"
           },
           "signedOut": {
             "type": "boolean"
+          },
+          "alerts": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "kind": {
+                  "type": "string",
+                  "enum": [
+                    "OUT_OF_TOUCH",
+                    "STUCK",
+                    "WAITING",
+                    "REFUSED"
+                  ]
+                },
+                "count": {
+                  "type": "integer",
+                  "minimum": -9007199254740991,
+                  "maximum": 9007199254740991
+                },
+                "since": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                }
+              },
+              "required": [
+                "kind",
+                "count",
+                "since"
+              ],
+              "additionalProperties": false
+            }
           }
         },
         "required": [
@@ -2114,8 +2161,12 @@
           "code",
           "appVersion",
           "lastSeenAt",
+          "lastSyncedAt",
+          "pendingChanges",
+          "oldestPendingAt",
           "registeredAt",
-          "signedOut"
+          "signedOut",
+          "alerts"
         ],
         "additionalProperties": false
       },

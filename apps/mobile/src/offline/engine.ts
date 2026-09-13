@@ -19,7 +19,12 @@ import {
   type PullChanges,
   type Replay,
 } from './store';
-import { TransportError, type PushOutcome, type SyncTransport } from './transport';
+import {
+  TransportError,
+  type OutboxReport,
+  type PushOutcome,
+  type SyncTransport,
+} from './transport';
 
 export type CommandPayload<T extends SyncCommandType> = Extract<
   SyncCommandInput,
@@ -31,6 +36,8 @@ export interface SyncState {
   connection: 'unknown' | 'online' | 'offline' | 'signed-out';
   /** Changes made on this tablet that the server hasn't taken yet. */
   pending: number;
+  /** When the oldest of those was made, or null when nothing waits. */
+  oldestPendingAt: string | null;
   /** Changes the server refused, waiting under "Needs attention". */
   needsAttention: number;
   /** When the tablet last brought in the server's changes. */
@@ -117,6 +124,7 @@ export class SyncEngine {
   private state: SyncState = {
     connection: 'unknown',
     pending: 0,
+    oldestPendingAt: null,
     needsAttention: 0,
     lastSyncedAt: null,
     syncing: false,
@@ -313,6 +321,7 @@ export class SyncEngine {
     try {
       return await this.transport.push(
         batch.map((row) => commandOf(row) as unknown as SyncCommandInput),
+        await this.outboxReport(),
       );
     } catch (error) {
       if (!(error instanceof TransportError) || error.kind !== 'invalid') throw error;
@@ -388,9 +397,10 @@ export class SyncEngine {
       `SELECT max(seq) AS seq FROM outbox WHERE status = 'APPLIED'`,
     );
 
+    const report = await this.outboxReport();
     let response;
     try {
-      response = await this.transport.pull(cursor);
+      response = await this.transport.pull(cursor, report);
     } catch (error) {
       // A cursor the server can't read: start again from a full snapshot.
       if (error instanceof TransportError && error.kind === 'invalid') {
@@ -483,11 +493,29 @@ export class SyncEngine {
     this.timer = null;
   }
 
-  private async refreshCounts(): Promise<void> {
-    const counts = await this.db.get<{ pending: number | null; refused: number | null }>(
-      `SELECT sum(status = 'PENDING') AS pending, sum(status = 'REJECTED') AS refused FROM outbox`,
+  /** What's waiting to upload, sent with every sync request (see transport.ts). */
+  private async outboxReport(): Promise<OutboxReport> {
+    const row = await this.db.get<{ pending: number; oldest: string | null }>(
+      `SELECT count(*) AS pending, min(device_ts) AS oldest FROM outbox WHERE status = 'PENDING'`,
     );
-    this.setState({ pending: counts?.pending ?? 0, needsAttention: counts?.refused ?? 0 });
+    return { pending: row?.pending ?? 0, oldestAt: row?.oldest ?? null };
+  }
+
+  private async refreshCounts(): Promise<void> {
+    const counts = await this.db.get<{
+      pending: number | null;
+      refused: number | null;
+      oldest: string | null;
+    }>(
+      `SELECT sum(status = 'PENDING') AS pending, sum(status = 'REJECTED') AS refused,
+              min(CASE WHEN status = 'PENDING' THEN device_ts END) AS oldest
+         FROM outbox`,
+    );
+    this.setState({
+      pending: counts?.pending ?? 0,
+      needsAttention: counts?.refused ?? 0,
+      oldestPendingAt: counts?.oldest ?? null,
+    });
   }
 
   private touchData(): void {

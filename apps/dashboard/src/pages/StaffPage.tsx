@@ -16,6 +16,7 @@ import {
   type Tablet,
   type TeamMember,
 } from '../lib/team';
+import { alertTone, tabletAlertWords } from '../lib/tablet-alerts';
 import { ROLE_WORDS } from '../lib/words';
 import { useMe } from '../shell/Shell';
 import {
@@ -214,7 +215,18 @@ function TabletsCard({ tablets }: { tablets: Tablet[] }) {
                 : tablet.lastSeenAt
                   ? `Last online ${ago(tablet.lastSeenAt)}`
                   : 'Not online yet'}
+              {!tablet.signedOut && tablet.lastSyncedAt
+                ? ` · fully synced ${ago(tablet.lastSyncedAt)}`
+                : ''}
             </p>
+            {tablet.alerts.map((alert) => (
+              <p
+                key={alert.kind}
+                className={`mt-1 text-xs font-medium ${alertTone(alert) === 'red' ? 'text-red' : 'text-amber'}`}
+              >
+                {tabletAlertWords(tablet.name, alert)}
+              </p>
+            ))}
           </div>
           {!tablet.signedOut && (
             <Button

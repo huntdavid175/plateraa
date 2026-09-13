@@ -343,8 +343,22 @@ _11 Sep: the server side is built from Moolre's docs (docs.moolre.com; their `/a
     - _random trouble (seeded, so a run can be repeated) with two restarts._
   - _Each must end in step: nothing waiting or refused, every order on the server exactly once and as the counter left it, the tablet showing what the server has, the day summary matching the hand tally, and the drawer's difference zero. **All six passed on the first full run** (about 13 minutes from the laptop, whose API talks to Frankfurt for every query). That covers "zero lost or duplicated orders" and "replaying a sync batch gives the same state" in the R1a definition of done, against the real server; the full day on a real 2–3 GB tablet is still to do._
 - [ ] Measure sync payloads (idle ≤5 KB, first full sync ≤500 KB) and APK size
+  - _13 Sep, sync payloads done (`apps/api/src/sync/sync-size.spec.ts`, run with the API tests). With a chop bar's menu (40 items, 15 with three sizes, shared extras, platform prices) and 25 orders, gzipped as sent:_
+    - _a first full sync is **9.4 KB** (104 KB of JSON), against the 500 KB limit;_
+    - _an idle sync is **206 bytes**, against 5 KB. Every 30 s that's about 24 KB an hour, plus each request's HTTP headers;_
+    - _a sync after one sale is 0.9 KB._
+  - _The test fails if a change pushes them past the limits. APK size is still to measure, at the next EAS build._
 - [ ] Performance check on a 2–3 GB budget tablet
-- [ ] Device heartbeat + alerts (outbox age, sync failures, 5xx, job failures)
+- [x] Device heartbeat + alerts (outbox age, sync failures, 5xx, job failures)
+  - _13 Sep: every sync request from the tablet says how many changes it has waiting and since when (`x-outbox-pending`, `x-outbox-oldest`). The server keeps that on the tablet's record, with when it last finished a sync and how many uploads it has made since (migration 0010)._
+    - _**The owner is told** on the dashboard (Today, checked every minute, and the Staff page's Tablets card) when:_
+      - _a tablet with its drawer open hasn't been in touch for 15 minutes, so its sales aren't in the figures;_
+      - _changes have waited to upload for over 10 minutes;_
+      - _a tablet is online but its changes aren't going through (10 uploads without a finished sync);_
+      - _changes from it were refused in the last day._
+    - _**We're told** through Sentry when a tablet is online but stuck (at most once an hour per tablet). Server errors (5xx) and background-job failures already went to Sentry._
+    - _**At the counter**, the banner warns once changes haven't reached the server for 30 minutes._
+    - _Not done: Sentry on the tablet itself (it needs a new EAS build), so a crash on the tablet isn't reported yet. Not tried on a real tablet yet._
 - [ ] Admin CLI v0: list/suspend tenants, revoke a device, reset a PIN, export the audit log
 - [ ] All items in the **R1a definition of done** below are green
 - [ ] Install at 1–2 vendors; on site for their first day

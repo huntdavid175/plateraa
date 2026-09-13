@@ -12,6 +12,8 @@ import {
   type OrderRow,
 } from '../lib/orders';
 import { fetchDay, type DaySummary } from '../lib/reports';
+import { alertTone, tabletAlertWords } from '../lib/tablet-alerts';
+import { fetchTablets, type Tablet } from '../lib/team';
 import { useSession } from '../lib/session';
 import { SOURCE_WORDS } from '../lib/words';
 import { useMe } from '../shell/Shell';
@@ -35,6 +37,13 @@ export function TodayPage() {
   const seesMoney = me.capabilities.includes('reports.revenue.view');
   const recordsRefunds = me.capabilities.includes('refunds.record');
   const recordsPayouts = me.capabilities.includes('payouts.record');
+  // Is every tablet keeping up? Checked again every minute while Today is open.
+  const tablets = useQuery({
+    queryKey: ['tablets', tenantId],
+    queryFn: fetchTablets,
+    enabled: me.capabilities.includes('devices.manage'),
+    refetchInterval: 60_000,
+  });
   const drawers = useQuery({
     queryKey: ['drawers', tenantId],
     queryFn: fetchDrawers,
@@ -83,6 +92,7 @@ export function TodayPage() {
         </>
       }
     >
+      {tablets.data && <TabletAlerts tablets={tablets.data} />}
       {owed.data && owed.data.length > 0 && <RefundsBanner orders={owed.data} />}
 
       {seesMoney ? (
@@ -118,6 +128,33 @@ export function TodayPage() {
         date={isToday ? null : date}
       />
     </Page>
+  );
+}
+
+/** A tablet that isn't keeping up: its sales may be missing from the figures below. */
+function TabletAlerts({ tablets }: { tablets: Tablet[] }) {
+  const alerts = tablets.flatMap((tablet) =>
+    tablet.alerts.map((alert) => ({ key: `${tablet.id}-${alert.kind}`, tablet, alert })),
+  );
+  if (alerts.length === 0) return null;
+  return (
+    <div className="mb-5 space-y-2">
+      {alerts.map(({ key, tablet, alert }) => (
+        <Link
+          key={key}
+          to="/staff"
+          className={cx(
+            'flex items-start gap-3 rounded-xl border p-4',
+            alertTone(alert) === 'red'
+              ? 'border-red/20 bg-red-bg text-red'
+              : 'border-amber/25 bg-amber-bg text-amber',
+          )}
+        >
+          <span aria-hidden="true">⚠</span>
+          <p className="text-sm font-medium">{tabletAlertWords(tablet.name, alert)}</p>
+        </Link>
+      ))}
+    </div>
   );
 }
 

@@ -412,6 +412,21 @@ describe('sync engine', () => {
     expect(await db.all('SELECT * FROM outbox')).toEqual([]);
   });
 
+  it('tells the server with every sync what is waiting to upload, and since when', async () => {
+    const { server, engine } = await setUp();
+    server.down = 'offline';
+    await engine.record('item.set_sold_out', soldOut(MENU.jollof), STAFF_ID);
+    await engine.record('item.set_sold_out', soldOut(MENU.waakye), STAFF_ID);
+    await engine.syncNow();
+    expect(engine.getState()).toMatchObject({ pending: 2, oldestPendingAt: NOW.toISOString() });
+
+    server.down = null;
+    await engine.syncNow();
+    expect(server.pushReports.at(-1)).toEqual({ pending: 2, oldestAt: NOW.toISOString() });
+    expect(server.pullReports.at(-1)).toEqual({ pending: 0, oldestAt: null });
+    expect(engine.getState()).toMatchObject({ pending: 0, oldestPendingAt: null });
+  });
+
   it('shows the tablet as signed out when its device token stops working', async () => {
     const { server, engine } = await setUp();
     server.down = 'unauthorized';

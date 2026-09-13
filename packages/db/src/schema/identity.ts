@@ -64,6 +64,14 @@ export const devices = pgTable(
     platform: text(),
     appVersion: text(),
     lastSeenAt: timestamp({ withTimezone: true }),
+    /** Changes the tablet said were waiting to upload, sent with each sync request. */
+    pendingChanges: integer().notNull().default(0),
+    /** When the oldest of those was made, by the tablet's clock. Null when nothing waits. */
+    oldestPendingAt: timestamp({ withTimezone: true }),
+    /** When it last finished a sync: everything uploaded and the server's changes brought in. */
+    lastSyncedAt: timestamp({ withTimezone: true }),
+    /** Uploads since that finished sync. Many in a row means it's online but stuck. */
+    pushesSinceSync: integer().notNull().default(0),
     revokedAt: timestamp({ withTimezone: true }),
     ...timestamps(),
   },

@@ -1,12 +1,33 @@
-import { Body, Controller, Get, HttpCode, Module, Post, Query, UseGuards } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Get,
+  HttpCode,
+  Logger,
+  Module,
+  Post,
+  Query,
+  Req,
+  UseGuards,
+} from '@nestjs/common';
 import { ApiOkResponse, ApiSecurity } from '@nestjs/swagger';
 import { syncPushRequestSchema } from '@plateraa/shared';
+import * as Sentry from '@sentry/nestjs';
 import { createZodDto } from 'nestjs-zod';
 import { z } from 'zod';
 import { CurrentDevice, DeviceGuard } from '../identity/guards';
-import type { DeviceContext } from '../identity/request-context';
+import { headerValue, type AppRequest, type DeviceContext } from '../identity/request-context';
 import { PaymentsModule } from '../payments/payments.module';
 import { SyncService } from './sync.service';
+import { TabletHealth, outboxReport } from './tablet-health';
+
+/**
+ * What the tablet says it has waiting, from `x-outbox-pending` and `x-outbox-oldest`. Read off the
+ * request rather than declared, so they stay out of the OpenAPI document: the tablet adds them
+ * itself, and older app versions don't send them.
+ */
+const reportOf = (req: AppRequest) =>
+  outboxReport(headerValue(req, 'x-outbox-pending'), headerValue(req, 'x-outbox-oldest'));
 
 class PushDto extends createZodDto(syncPushRequestSchema) {}
 
@@ -49,25 +70,52 @@ class PullResponseDto extends createZodDto(
 @UseGuards(DeviceGuard)
 @ApiSecurity('device')
 export class SyncController {
-  constructor(private readonly sync: SyncService) {}
+  private readonly logger = new Logger(SyncController.name);
 
+  constructor(
+    private readonly sync: SyncService,
+    private readonly health: TabletHealth,
+  ) {}
+
+  /** Both routes carry what the tablet has waiting to upload (see tablet-health.ts). */
   @Post('push')
   @HttpCode(200)
   @ApiOkResponse({ type: PushResponseDto.Output })
-  async push(@CurrentDevice() device: DeviceContext, @Body() body: PushDto) {
+  async push(
+    @CurrentDevice() device: DeviceContext,
+    @Body() body: PushDto,
+    @Req() req: AppRequest,
+  ) {
+    await this.note(() => this.health.pushed(device, reportOf(req)));
     return { results: await this.sync.push(device, body.commands) };
   }
 
   @Get('pull')
   @ApiOkResponse({ type: PullResponseDto.Output })
-  pull(@CurrentDevice() device: DeviceContext, @Query() query: PullQueryDto) {
-    return this.sync.pull(device, query.cursor);
+  async pull(
+    @CurrentDevice() device: DeviceContext,
+    @Query() query: PullQueryDto,
+    @Req() req: AppRequest,
+  ) {
+    const changes = await this.sync.pull(device, query.cursor);
+    await this.note(() => this.health.synced(device, reportOf(req)));
+    return changes;
+  }
+
+  /** Keeping track of a tablet's health must never stop it syncing. */
+  private async note(work: () => Promise<void>) {
+    try {
+      await work();
+    } catch (error) {
+      this.logger.error('Recording tablet health failed', error as Error);
+      Sentry.captureException(error);
+    }
   }
 }
 
 @Module({
   imports: [PaymentsModule],
   controllers: [SyncController],
-  providers: [SyncService],
+  providers: [SyncService, TabletHealth],
 })
 export class SyncModule {}
