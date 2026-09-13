@@ -5,7 +5,15 @@ export const fetchStorefront = () => call(api.GET('/api/storefront/settings'));
 export type Storefront = Awaited<ReturnType<typeof fetchStorefront>>;
 export type SaveStorefront = Omit<
   Storefront,
-  'url' | 'moolreConnected' | 'deliveryZones' | 'area' | 'phone' | 'hours'
+  | 'url'
+  | 'moolreConnected'
+  | 'deliveryZones'
+  | 'area'
+  | 'phone'
+  | 'hours'
+  | 'coverUrl'
+  | 'logoUrl'
+  | 'photosReady'
 > & { area: string; phone: string; hours: string };
 
 export const saveStorefront = (body: SaveStorefront) =>

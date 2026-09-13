@@ -5,6 +5,7 @@ import { configureApp } from '../app.setup';
 import { AppModule } from '../app.module';
 import { ENV, loadEnv, type Env } from '../config/env';
 import { MOOLRE, type MoolreApi } from '../payments/moolre';
+import { PHOTO_STORE, type PhotoStore } from '../photos/photo-store';
 
 /** Config for tests that never touch the database (the pool connects lazily, so none is opened). */
 export const OFFLINE_TEST_ENV: Env = {
@@ -20,6 +21,7 @@ export const OFFLINE_TEST_ENV: Env = {
   RUN_PAYMENT_LINKS: false,
   RUN_DAILY_REPORTS: false,
   STOREFRONT_URL: 'http://localhost:3001',
+  R2_BUCKET: 'plateraa-photos',
   TRUSTED_ORIGINS: [],
 };
 
@@ -47,15 +49,18 @@ export function testEnv(): Env {
   };
 }
 
-/** The real app, with a pretend Moolre when a test gives one. */
+/** The real app, with a pretend Moolre or photo store when a test gives one. */
 export async function createTestApp(
   env: Env = OFFLINE_TEST_ENV,
-  overrides: { moolre?: MoolreApi } = {},
+  overrides: { moolre?: MoolreApi; photos?: PhotoStore } = {},
 ): Promise<NestExpressApplication> {
   let builder = Test.createTestingModule({ imports: [AppModule] })
     .overrideProvider(ENV)
     .useValue(env);
   if (overrides.moolre) builder = builder.overrideProvider(MOOLRE).useValue(overrides.moolre);
+  if (overrides.photos) {
+    builder = builder.overrideProvider(PHOTO_STORE).useValue(overrides.photos);
+  }
   const moduleRef = await builder.compile();
   const app = moduleRef.createNestApplication<NestExpressApplication>({ bodyParser: false });
   configureApp(app);

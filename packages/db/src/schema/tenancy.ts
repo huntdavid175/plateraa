@@ -58,6 +58,9 @@ export const tenantSettings = pgTable('tenant_settings', {
   storefrontArea: text(),
   storefrontPhone: text(),
   storefrontHours: text(),
+  /** Photo storage names of the store's cover picture and logo (apps/api/src/photos). */
+  storefrontCoverKey: text(),
+  storefrontLogoKey: text(),
   updatedAt: timestamp({ withTimezone: true })
     .notNull()
     .defaultNow()

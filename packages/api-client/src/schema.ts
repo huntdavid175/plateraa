@@ -548,6 +548,38 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/menu/items/{itemId}/photo": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put: operations["PhotosController_setItemPhoto"];
+        post?: never;
+        delete: operations["PhotosController_removeItemPhoto"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/storefront/photos/{which}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put: operations["PhotosController_setStorePhoto"];
+        post?: never;
+        delete: operations["PhotosController_removeStorePhoto"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/settings": {
         parameters: {
             query?: never;
@@ -1617,6 +1649,7 @@ export interface components {
                 name: string;
                 description: string | null;
                 price: number;
+                photoUrl: string | null;
                 costPrice: number | null;
                 prepMinutes: number | null;
                 /** @enum {string} */
@@ -1776,6 +1809,9 @@ export interface components {
         ZoneSavedDto_Output: {
             id: string;
         };
+        PhotoDto_Output: {
+            url: string;
+        };
         SettingsDto_Output: {
             business: {
                 name: string;
@@ -1917,6 +1953,9 @@ export interface components {
             url: string;
             moolreConnected: boolean;
             deliveryZones: number;
+            coverUrl: string | null;
+            logoUrl: string | null;
+            photosReady: boolean;
         };
         SaveStorefrontDto: {
             enabled: boolean;
@@ -1937,6 +1976,8 @@ export interface components {
             hours: string | null;
             /** @enum {string} */
             theme: "orange" | "red" | "green" | "teal" | "blue" | "purple" | "pink";
+            coverUrl: string | null;
+            logoUrl: string | null;
             open: boolean;
             payOnline: boolean;
             cashOnPickup: boolean;
@@ -2888,6 +2929,98 @@ export interface operations {
             header?: never;
             path: {
                 zoneId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    PhotosController_setItemPhoto: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                itemId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "image/webp": string;
+                "image/jpeg": string;
+                "image/png": string;
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PhotoDto_Output"];
+                };
+            };
+        };
+    };
+    PhotosController_removeItemPhoto: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                itemId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    PhotosController_setStorePhoto: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                which: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "image/webp": string;
+                "image/jpeg": string;
+                "image/png": string;
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PhotoDto_Output"];
+                };
+            };
+        };
+    };
+    PhotosController_removeStorePhoto: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                which: string;
             };
             cookie?: never;
         };

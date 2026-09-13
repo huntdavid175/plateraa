@@ -25,9 +25,9 @@ export class ApiError extends Error {
   }
 }
 
-const OFFLINE = "Can't reach Plateraa. Check your internet connection and try again.";
+export const OFFLINE = "Can't reach Plateraa. Check your internet connection and try again.";
 
-function messageOf(body: unknown, status: number): string {
+export function messageOf(body: unknown, status: number): string {
   const message = (body as { message?: unknown } | undefined)?.message;
   if (typeof message === 'string') return message;
   if (Array.isArray(message) && typeof message[0] === 'string') return message[0];

@@ -1481,6 +1481,174 @@
         ]
       }
     },
+    "/api/menu/items/{itemId}/photo": {
+      "put": {
+        "operationId": "PhotosController_setItemPhoto",
+        "parameters": [
+          {
+            "name": "itemId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "image/webp": {
+              "schema": {
+                "type": "string",
+                "format": "binary"
+              }
+            },
+            "image/jpeg": {
+              "schema": {
+                "type": "string",
+                "format": "binary"
+              }
+            },
+            "image/png": {
+              "schema": {
+                "type": "string",
+                "format": "binary"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PhotoDto_Output"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "Photos"
+        ]
+      },
+      "delete": {
+        "operationId": "PhotosController_removeItemPhoto",
+        "parameters": [
+          {
+            "name": "itemId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "Photos"
+        ]
+      }
+    },
+    "/api/storefront/photos/{which}": {
+      "put": {
+        "operationId": "PhotosController_setStorePhoto",
+        "parameters": [
+          {
+            "name": "which",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "image/webp": {
+              "schema": {
+                "type": "string",
+                "format": "binary"
+              }
+            },
+            "image/jpeg": {
+              "schema": {
+                "type": "string",
+                "format": "binary"
+              }
+            },
+            "image/png": {
+              "schema": {
+                "type": "string",
+                "format": "binary"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PhotoDto_Output"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "Photos"
+        ]
+      },
+      "delete": {
+        "operationId": "PhotosController_removeStorePhoto",
+        "parameters": [
+          {
+            "name": "which",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "Photos"
+        ]
+      }
+    },
     "/api/settings": {
       "get": {
         "operationId": "SettingsController_get",
@@ -5871,6 +6039,10 @@
                   "minimum": -9007199254740991,
                   "maximum": 9007199254740991
                 },
+                "photoUrl": {
+                  "type": "string",
+                  "nullable": true
+                },
                 "costPrice": {
                   "type": "integer",
                   "minimum": -9007199254740991,
@@ -6044,6 +6216,7 @@
                 "name",
                 "description",
                 "price",
+                "photoUrl",
                 "costPrice",
                 "prepMinutes",
                 "station",
@@ -6626,6 +6799,18 @@
         },
         "required": [
           "id"
+        ],
+        "additionalProperties": false
+      },
+      "PhotoDto_Output": {
+        "type": "object",
+        "properties": {
+          "url": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "url"
         ],
         "additionalProperties": false
       },
@@ -7288,6 +7473,17 @@
             "type": "integer",
             "minimum": -9007199254740991,
             "maximum": 9007199254740991
+          },
+          "coverUrl": {
+            "type": "string",
+            "nullable": true
+          },
+          "logoUrl": {
+            "type": "string",
+            "nullable": true
+          },
+          "photosReady": {
+            "type": "boolean"
           }
         },
         "required": [
@@ -7301,7 +7497,10 @@
           "hours",
           "url",
           "moolreConnected",
-          "deliveryZones"
+          "deliveryZones",
+          "coverUrl",
+          "logoUrl",
+          "photosReady"
         ],
         "additionalProperties": false
       },
@@ -7388,6 +7587,14 @@
               "purple",
               "pink"
             ]
+          },
+          "coverUrl": {
+            "type": "string",
+            "nullable": true
+          },
+          "logoUrl": {
+            "type": "string",
+            "nullable": true
           },
           "open": {
             "type": "boolean"
@@ -7579,6 +7786,8 @@
           "phone",
           "hours",
           "theme",
+          "coverUrl",
+          "logoUrl",
           "open",
           "payOnline",
           "cashOnPickup",

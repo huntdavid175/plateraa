@@ -10,6 +10,7 @@ import qrcode from 'qrcode-generator';
 import { useMemo, useState, type InputHTMLAttributes, type ReactNode } from 'react';
 import { ulid } from 'ulid';
 import { amountText, cedis, parseAmount } from '../lib/money';
+import { PHOTO_SIZES, storePhotoPath } from '../lib/photos';
 import { useSession } from '../lib/session';
 import {
   fetchSettings,
@@ -43,6 +44,7 @@ import {
 } from '../ui/controls';
 import { Dialog } from '../ui/Dialog';
 import { Page } from '../ui/Page';
+import { PhotoPicker } from '../ui/PhotoPicker';
 
 const IDLE_CHOICES = [60, 180, 300, 600, 900];
 
@@ -322,6 +324,7 @@ function OnlineStore({ store }: { store: Storefront }) {
               onChange={(on) => set({ acceptFirst: on })}
             />
             <ThemeRow theme={shown.theme} onChange={(theme) => set({ theme })} />
+            <StorePhotos store={store} />
             <StoreDetails
               saved={saved}
               busy={saving.isPending}
@@ -414,6 +417,34 @@ function ThemeRow({
           />
         ))}
       </div>
+    </div>
+  );
+}
+
+/** The cover picture across the top of the store's page, and the logo beside its name. */
+function StorePhotos({ store }: { store: Storefront }) {
+  if (!store.photosReady) {
+    return <p className="px-5 py-4 text-xs text-muted">Photos can’t be added just yet.</p>;
+  }
+  return (
+    <div className="space-y-4 px-5 py-4">
+      <PhotoPicker
+        path={storePhotoPath('cover')}
+        url={store.coverUrl}
+        longest={PHOTO_SIZES.cover}
+        shape="wide"
+        label="Cover picture"
+        hint="Across the top of your store’s page. A wide photo works best."
+        onSaved={refreshStorefront}
+      />
+      <PhotoPicker
+        path={storePhotoPath('logo')}
+        url={store.logoUrl}
+        longest={PHOTO_SIZES.logo}
+        label="Logo"
+        hint="Beside your business name. Without one, your initials show."
+        onSaved={refreshStorefront}
+      />
     </div>
   );
 }

@@ -57,6 +57,7 @@ import { z } from 'zod';
 import { DATABASE, type DatabaseHandle } from '../database/database.module';
 import { nullableText } from '../openapi';
 import { PaymentLinks } from '../payments/payment-links.service';
+import { PHOTO_STORE, type PhotoStore } from '../photos/photo-store';
 import { businessToday } from '../reports/business-day';
 import {
   adjustSellableStock,
@@ -84,6 +85,9 @@ class StoreDto extends createZodDto(
     phone: nullableText(),
     hours: nullableText(),
     theme: z.enum(STOREFRONT_THEMES),
+    /** The store's own pictures, set on the dashboard; without them the header is its colour. */
+    coverUrl: nullableText(),
+    logoUrl: nullableText(),
     /** Taking orders right now; otherwise the menu shows but can't be ordered from. */
     open: z.boolean(),
     /** The vendor's Moolre account is connected, so customers can pay online. */
@@ -217,7 +221,12 @@ export class PublicStoreService {
   constructor(
     @Inject(DATABASE) private readonly database: DatabaseHandle,
     private readonly links: PaymentLinks,
+    @Inject(PHOTO_STORE) private readonly photos: PhotoStore,
   ) {}
+
+  private urlOf(key: string | null | undefined) {
+    return key ? this.photos.urlOf(key) : null;
+  }
 
   private get db() {
     return this.database.db;
@@ -276,6 +285,8 @@ export class PublicStoreService {
         phone: settings?.storefrontPhone ?? null,
         hours: settings?.storefrontHours ?? null,
         theme: settings?.storefrontTheme ?? 'orange',
+        coverUrl: this.urlOf(settings?.storefrontCoverKey),
+        logoUrl: this.urlOf(settings?.storefrontLogoKey),
         open: settings?.storefrontTakingOrders ?? false,
         payOnline: Boolean(account),
         cashOnPickup: settings?.storefrontCashOnPickup ?? false,
@@ -320,7 +331,7 @@ export class PublicStoreService {
       name: item.name,
       description: item.description,
       price: item.price,
-      photoUrl: null,
+      photoUrl: this.urlOf(item.photoKey),
       soldOut: item.soldOutOn === today,
       variants: variants
         .filter((variant) => variant.itemId === item.id)

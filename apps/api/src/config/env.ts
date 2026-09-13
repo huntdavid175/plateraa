@@ -55,6 +55,19 @@ const envSchema = z.object({
     .url()
     .default('http://localhost:3001')
     .transform((url) => url.replace(/\/+$/, '')),
+  /**
+   * Cloudflare R2, where menu and store photos are kept. Without these, photos can't be added;
+   * everything else works. The key is an R2 API token with Object Read & Write on the bucket.
+   */
+  R2_ACCOUNT_ID: z.string().min(1).optional(),
+  R2_ACCESS_KEY_ID: z.string().min(1).optional(),
+  R2_SECRET_ACCESS_KEY: z.string().min(1).optional(),
+  R2_BUCKET: z.string().min(1).default('plateraa-photos'),
+  /** The bucket's public address: its r2.dev address, or photos.plateraa.com later. */
+  R2_PUBLIC_URL: z
+    .url()
+    .transform((url) => url.replace(/\/+$/, ''))
+    .optional(),
   /** Comma-separated browser origins allowed to call the auth endpoints (the dashboard). */
   TRUSTED_ORIGINS: z
     .string()

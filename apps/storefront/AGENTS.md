@@ -17,7 +17,7 @@ The online store customers order from (plan.md §4.0): one link per business, `S
 - **The cart** is kept in the browser (`lib/cart.ts`) and priced with `priceOrder` from `@plateraa/shared` for showing; the server prices the order itself. Lines that sold out or changed since they were added must come off before checkout.
 - **Checkout** keeps one `orderId` per visit, so a retry records the order once. Paying online: the page's address is swapped for the order's status page, then the customer goes to Moolre's page, so Back lands on the status page.
 - `app/[slug]/o/[token]/` is the order's status page. It asks Moolre at once when the customer comes back from paying, then looks again every 15 s while the order is open. "Pay" opens a fresh payment page when the last one lapsed.
-- **Photos:** `photoUrl` is null until photo storage is set up, so cards show the item's initials, and there's no cover photo: the header band is the store's colour.
+- **Photos** come from Cloudflare R2's public address (the API gives full URLs: `photoUrl` on items, `coverUrl` and `logoUrl` on the store). They're plain `<img>` tags: the dashboard already made them small, so Next's image optimiser isn't needed. Without a photo a card shows the item's initials; without a cover the header band is the store's colour, and without a logo the store's initials show.
 
 ## Running
 

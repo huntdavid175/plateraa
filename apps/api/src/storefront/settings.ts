@@ -29,6 +29,7 @@ import { DATABASE, type DatabaseHandle } from '../database/database.module';
 import { Authorized, CurrentActor } from '../identity/guards';
 import type { Actor } from '../identity/request-context';
 import { nullableText } from '../openapi';
+import { PHOTO_STORE, type PhotoStore } from '../photos/photo-store';
 
 const switches = {
   /** The store's link works at all. */
@@ -64,6 +65,11 @@ class StorefrontSettingsDto extends createZodDto(
     moolreConnected: z.boolean(),
     /** Delivery is offered online only where there are zones to deliver to. */
     deliveryZones: z.number().int(),
+    /** The store's cover picture and logo (PUT /api/storefront/photos/cover or logo). */
+    coverUrl: nullableText(),
+    logoUrl: nullableText(),
+    /** Whether photos can be added at all: photo storage is set up on the server. */
+    photosReady: z.boolean(),
   }),
 ) {}
 
@@ -76,6 +82,7 @@ export class StorefrontSettingsService {
   constructor(
     @Inject(DATABASE) private readonly database: DatabaseHandle,
     @Inject(ENV) private readonly env: Env,
+    @Inject(PHOTO_STORE) private readonly photos: PhotoStore,
   ) {}
 
   async settings(actor: Actor) {
@@ -99,6 +106,11 @@ export class StorefrontSettingsService {
         url: `${this.env.STOREFRONT_URL}/${tenant!.slug}`,
         moolreConnected: Boolean(account),
         deliveryZones: zones?.count ?? 0,
+        coverUrl: settings?.storefrontCoverKey
+          ? this.photos.urlOf(settings.storefrontCoverKey)
+          : null,
+        logoUrl: settings?.storefrontLogoKey ? this.photos.urlOf(settings.storefrontLogoKey) : null,
+        photosReady: this.photos.ready,
       };
     });
   }

@@ -43,6 +43,8 @@ import { DATABASE, type DatabaseHandle } from '../database/database.module';
 import { Authorized, CurrentActor } from '../identity/guards';
 import type { Actor } from '../identity/request-context';
 import { nullableText } from '../openapi';
+import { PHOTO_STORE, type PhotoStore } from '../photos/photo-store';
+import { PhotosModule } from '../photos/photos';
 import { businessToday } from '../reports/business-day';
 import { ZonesController, ZonesService } from './zones';
 
@@ -129,6 +131,8 @@ class MenuDto extends createZodDto(
         name: z.string(),
         description: nullableText(),
         price: money,
+        /** Set on the item editor; shown on the online store. */
+        photoUrl: nullableText(),
         /** Null for people who may not see margins. */
         costPrice: money.nullable(),
         prepMinutes: z.number().int().nullable(),
@@ -195,7 +199,10 @@ class StarterDoneDto extends createZodDto(z.object({ items: z.number().int() }))
  */
 @Injectable()
 export class MenuService {
-  constructor(@Inject(DATABASE) private readonly database: DatabaseHandle) {}
+  constructor(
+    @Inject(DATABASE) private readonly database: DatabaseHandle,
+    @Inject(PHOTO_STORE) private readonly photos: PhotoStore,
+  ) {}
 
   async menu(actor: Actor) {
     const seesCost = actor.capabilities.has('reports.revenue.view');
@@ -257,6 +264,7 @@ export class MenuService {
           name: item.name,
           description: item.description,
           price: item.price,
+          photoUrl: item.photoKey ? this.photos.urlOf(item.photoKey) : null,
           costPrice: seesCost ? item.costPrice : null,
           prepMinutes: item.prepMinutes,
           station: item.station,
@@ -837,5 +845,9 @@ export class MenuController {
   }
 }
 
-@Module({ controllers: [MenuController, ZonesController], providers: [MenuService, ZonesService] })
+@Module({
+  imports: [PhotosModule],
+  controllers: [MenuController, ZonesController],
+  providers: [MenuService, ZonesService],
+})
 export class MenuModule {}

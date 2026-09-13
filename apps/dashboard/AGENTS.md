@@ -56,6 +56,8 @@ The web dashboard for owners and managers (plan.md §3.1). It uses:
   - `ItemEditorPage` (`/menu/items/new`, `/menu/items/:itemId`): the design's full-screen editor.
     - It keeps a text form (`ItemForm`) and turns it into the API's item with `toInput()`, which also finds the first thing to fix.
     - A new item, size, group or option gets its `ulid()` in the browser.
+    - A saved item has a photo (`ui/PhotoPicker`), saved on its own, apart from Save.
+  - **Photos** (`lib/photos.ts`): the browser shrinks each picture on a canvas (WebP, or JPEG where the browser can't make WebP; 800 px for items, 1600 px for the cover, 400 px for the logo) and sends it as the request body with a plain `fetch`, since the typed client only sends JSON.
   - Refunds (`RefundsPage`): orders owed money back, each with "Record refund given".
   - `money-dialogs.tsx`: the dialogs for recording a refund, applying a discount (previewed with `priceOrder`, as the server prices it) and recording a payout.
     - Each dialog makes its id with `ulid()` when it opens, so pressing Save again after a lost reply records it once.
@@ -84,7 +86,7 @@ The web dashboard for owners and managers (plan.md §3.1). It uses:
     - Business (name, type);
     - Appearance (dark mode);
     - Orders (dine-in, pay before prep, portion counts, idle lock), where toggles save at once;
-    - Online store (plan.md §4.0), for anyone with `storefront.manage` (the owner and managers; `lib/storefront.ts`): the store on or off, its link with Copy and a QR code (`qrcode-generator`, downloadable), taking orders now, cash when they collect, accept first, the colour (`STOREFRONT_THEMES` swatches) and what its page shows (area, phone, hours). It says when Moolre isn't connected or there are no delivery zones yet;
+    - Online store (plan.md §4.0), for anyone with `storefront.manage` (the owner and managers; `lib/storefront.ts`): the store on or off, its link with Copy and a QR code (`qrcode-generator`, downloadable), taking orders now, cash when they collect, accept first, the colour (`STOREFRONT_THEMES` swatches), the cover picture and logo, and what its page shows (area, phone, hours). It says when Moolre isn't connected or there are no delivery zones yet;
     - Delivery zones, for anyone with `catalog.manage` (managers too): add, change, switch off the tablet, remove (`lib/zones.ts`).
     - Payments (the Moolre account, with "Check and save").
   - **Bolt Food and Chowdeck are hidden** (user decision, 13 Sep) until their APIs connect: no commissions in Settings, and no platform prices in the item editor, whose "Cost and margin" section now shows only with `reports.revenue.view`. The editor still sends the prices it loaded, so none are lost.

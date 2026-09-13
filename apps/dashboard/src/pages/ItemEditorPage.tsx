@@ -18,8 +18,10 @@ import {
   type MenuItem,
 } from '../lib/menu';
 import { amountText, parseAmount } from '../lib/money';
+import { PHOTO_SIZES, itemPhotoPath } from '../lib/photos';
 import { useSession } from '../lib/session';
 import { useMe } from '../shell/Shell';
+import { PhotoPicker } from '../ui/PhotoPicker';
 import {
   Badge,
   Button,
@@ -314,6 +316,18 @@ function Editor({ menu, item }: { menu: Menu; item: MenuItem | undefined }) {
 
           <Section title="Basic info">
             <div className="space-y-4 p-4">
+              {item ? (
+                <PhotoPicker
+                  path={itemPhotoPath(item.id)}
+                  url={item.photoUrl}
+                  longest={PHOTO_SIZES.item}
+                  label="Photo"
+                  hint="Shown on your online store. The food itself, in good light."
+                  onSaved={() => void refreshMenu()}
+                />
+              ) : (
+                <p className="text-xs text-muted">You can add a photo once the item is saved.</p>
+              )}
               <div>
                 <FieldLabel htmlFor="item-name">Item name</FieldLabel>
                 <TextInput

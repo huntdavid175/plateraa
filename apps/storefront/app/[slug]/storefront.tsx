@@ -190,16 +190,41 @@ function StoreScreen({
           <div className="mx-auto max-w-[430px] lg:max-w-none">
             <header className="border-b border-border bg-card">
               <div className="relative h-32 overflow-hidden bg-brand-tint lg:h-40">
+                {store.coverUrl && (
+                  <>
+                    <img
+                      src={store.coverUrl}
+                      alt=""
+                      className="absolute inset-0 h-full w-full object-cover"
+                    />
+                    {/* Keeps the name readable on any photo. */}
+                    <div className="absolute inset-0 bg-linear-to-t from-black/65 via-black/15 to-transparent" />
+                  </>
+                )}
                 <DarkToggle className="absolute top-3 right-3 bg-card/70 hover:bg-card" />
                 <div className="absolute right-4 bottom-3 left-4 flex items-end gap-3">
-                  <div className="flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-xl bg-brand text-base font-bold text-white shadow-sm">
-                    {initialsOf(store.name)}
-                  </div>
+                  {store.logoUrl ? (
+                    <img
+                      src={store.logoUrl}
+                      alt=""
+                      className="h-12 w-12 flex-shrink-0 rounded-xl bg-card object-cover shadow-sm"
+                    />
+                  ) : (
+                    <div className="flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-xl bg-brand text-base font-bold text-white shadow-sm">
+                      {initialsOf(store.name)}
+                    </div>
+                  )}
                   <div className="min-w-0">
-                    <h1 className="truncate text-lg leading-tight font-semibold text-ink">
+                    <h1
+                      className={`truncate text-lg leading-tight font-semibold ${store.coverUrl ? 'text-white' : 'text-ink'}`}
+                    >
                       {store.name}
                     </h1>
-                    {store.area && <p className="text-xs text-muted">{store.area}</p>}
+                    {store.area && (
+                      <p className={`text-xs ${store.coverUrl ? 'text-white/85' : 'text-muted'}`}>
+                        {store.area}
+                      </p>
+                    )}
                   </div>
                 </div>
               </div>

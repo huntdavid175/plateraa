@@ -5,6 +5,7 @@ import compression from 'compression';
 import { AUTH, type Auth } from './auth/auth.factory';
 import { ENV, type Env } from './config/env';
 import { buildOpenApiDocument } from './openapi';
+import { PHOTO_TYPES } from './photos/photo-store';
 
 /** Shared by main.ts and the tests, so both run exactly the same app. */
 export function configureApp(app: NestExpressApplication): void {
@@ -25,6 +26,8 @@ export function configureApp(app: NestExpressApplication): void {
   // Better Auth reads the raw request body, so it's mounted before any JSON parsing.
   app.getHttpAdapter().getInstance().all('/api/auth/*splat', toNodeHandler(auth));
   app.useBodyParser('json', { limit: '1mb' });
+  // Photos arrive as the picture itself, already made small in the dashboard (photos/photos.ts).
+  app.useBodyParser('raw', { type: PHOTO_TYPES, limit: '2mb' });
 
   app.setGlobalPrefix('api');
   app.enableShutdownHooks();
