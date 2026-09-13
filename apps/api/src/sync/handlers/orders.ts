@@ -79,7 +79,7 @@ interface PricedLines {
  * Discounts only come from a manager on the dashboard, so `discount` is whatever the order
  * already carries.
  */
-async function priceLines(
+export async function priceLines(
   ctx: HandlerContext,
   input: {
     orderId: string;

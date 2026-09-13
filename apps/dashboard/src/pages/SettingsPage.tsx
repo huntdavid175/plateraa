@@ -1,6 +1,13 @@
-import { VENDOR_TYPES, type VendorType } from '@plateraa/shared';
+import {
+  STOREFRONT_THEMES,
+  STOREFRONT_THEME_COLOURS,
+  VENDOR_TYPES,
+  type StorefrontTheme,
+  type VendorType,
+} from '@plateraa/shared';
 import { useMutation, useQuery } from '@tanstack/react-query';
-import { useState, type InputHTMLAttributes, type ReactNode } from 'react';
+import qrcode from 'qrcode-generator';
+import { useMemo, useState, type InputHTMLAttributes, type ReactNode } from 'react';
 import { ulid } from 'ulid';
 import { amountText, cedis, parseAmount } from '../lib/money';
 import { useSession } from '../lib/session';
@@ -13,11 +20,27 @@ import {
   type OrderSettings,
   type Settings,
 } from '../lib/settings';
+import {
+  fetchStorefront,
+  refreshStorefront,
+  saveStorefront,
+  type SaveStorefront,
+  type Storefront,
+} from '../lib/storefront';
 import { setDark, useDark } from '../lib/theme';
-import { VENDOR_TYPE_WORDS } from '../lib/words';
+import { VENDOR_TYPE_WORDS, phoneWords } from '../lib/words';
 import { fetchZones, refreshZones, removeZone, saveZone, type Zone } from '../lib/zones';
 import { useMe } from '../shell/Shell';
-import { Button, ErrorNote, FieldLabel, Section, Spinner, TextInput, Toggle } from '../ui/controls';
+import {
+  Button,
+  ErrorNote,
+  FieldLabel,
+  Section,
+  Spinner,
+  TextInput,
+  Toggle,
+  cx,
+} from '../ui/controls';
 import { Dialog } from '../ui/Dialog';
 import { Page } from '../ui/Page';
 
@@ -28,6 +51,7 @@ export function SettingsPage() {
   const { tenantId } = useSession();
   const isOwner = me.capabilities.includes('settings.manage');
   const setsUpMenu = me.capabilities.includes('catalog.manage');
+  const runsStore = me.capabilities.includes('storefront.manage');
   const settings = useQuery({
     queryKey: ['settings', tenantId],
     queryFn: fetchSettings,
@@ -55,6 +79,7 @@ export function SettingsPage() {
       </Section>
 
       {settings.data && <OrdersSection orders={settings.data.orders} />}
+      {runsStore && <OnlineStoreSection />}
       {setsUpMenu && <DeliverySection />}
       {settings.data && <PaymentsSection settings={settings.data} />}
       {!isOwner && (
@@ -224,6 +249,271 @@ function OrdersSection({ orders }: { orders: OrderSettings }) {
   );
 }
 
+/**
+ * The online store (plan.md §4.0), for the owner and managers: its link and QR code to share, its
+ * switches, its colour, and what its page says about the business.
+ */
+function OnlineStoreSection() {
+  const { tenantId } = useSession();
+  const store = useQuery({ queryKey: ['storefront', tenantId], queryFn: fetchStorefront });
+  if (!store.data) {
+    return (
+      <Section title="Online store">
+        {store.isError ? (
+          <div className="p-4">
+            <ErrorNote>{store.error.message}</ErrorNote>
+          </div>
+        ) : (
+          <div className="flex justify-center py-6">
+            <Spinner />
+          </div>
+        )}
+      </Section>
+    );
+  }
+  return <OnlineStore store={store.data} />;
+}
+
+function OnlineStore({ store }: { store: Storefront }) {
+  const saving = useMutation({ mutationFn: saveStorefront, onSuccess: refreshStorefront });
+  const saved: SaveStorefront = {
+    enabled: store.enabled,
+    takingOrders: store.takingOrders,
+    cashOnPickup: store.cashOnPickup,
+    acceptFirst: store.acceptFirst,
+    theme: store.theme,
+    area: store.area ?? '',
+    phone: store.phone ? phoneWords(store.phone) : '',
+    hours: store.hours ?? '',
+  };
+  // Switches show the change straight away; it goes back if saving fails.
+  const shown = saving.isPending && saving.variables ? saving.variables : saved;
+  const set = (patch: Partial<SaveStorefront>) => saving.mutate({ ...shown, ...patch });
+  const [showQr, setShowQr] = useState(false);
+
+  return (
+    <>
+      <Section title="Online store">
+        <SwitchRow
+          title="Online store"
+          detail="Customers order and pay from your own link. Share it on WhatsApp and Instagram."
+          on={shown.enabled}
+          onChange={(on) => set({ enabled: on })}
+        />
+        {shown.enabled && (
+          <>
+            <StoreLink url={store.url} onQr={() => setShowQr(true)} />
+            <SwitchRow
+              title="Taking orders now"
+              detail="Switch it off when you’re closed or too busy. The menu still shows, but nobody can order."
+              on={shown.takingOrders}
+              onChange={(on) => set({ takingOrders: on })}
+            />
+            <SwitchRow
+              title="Cash when they collect"
+              detail="Customers picking up may pay you in cash when they come. Their order is cooked before it’s paid."
+              on={shown.cashOnPickup}
+              onChange={(on) => set({ cashOnPickup: on })}
+            />
+            <SwitchRow
+              title="Accept orders first"
+              detail="Online orders wait on the tablet until someone taps Accept. When it’s off, a paid order goes straight to the kitchen."
+              on={shown.acceptFirst}
+              onChange={(on) => set({ acceptFirst: on })}
+            />
+            <ThemeRow theme={shown.theme} onChange={(theme) => set({ theme })} />
+            <StoreDetails
+              saved={saved}
+              busy={saving.isPending}
+              onSave={(details) => saving.mutate({ ...shown, ...details })}
+            />
+          </>
+        )}
+        {saving.error && (
+          <div className="p-4">
+            <ErrorNote>{saving.error.message}</ErrorNote>
+          </div>
+        )}
+      </Section>
+      {shown.enabled && (!store.moolreConnected || store.deliveryZones === 0) && (
+        <div className="-mt-3 mb-5 space-y-1 px-1 text-xs text-muted">
+          {!store.moolreConnected && (
+            <p className="text-amber">
+              {shown.cashOnPickup
+                ? 'Until the owner connects the Moolre account, customers can only pay cash when they collect.'
+                : 'Until the owner connects the Moolre account, nobody can pay, so the store can’t take orders.'}
+            </p>
+          )}
+          {store.deliveryZones === 0 && (
+            <p>Delivery shows on the store once you add delivery zones.</p>
+          )}
+        </div>
+      )}
+      {showQr && <QrDialog url={store.url} onClose={() => setShowQr(false)} />}
+    </>
+  );
+}
+
+function StoreLink({ url, onQr }: { url: string; onQr: () => void }) {
+  const [copied, setCopied] = useState(false);
+  const copy = () => {
+    void navigator.clipboard.writeText(url).then(() => {
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    });
+  };
+  return (
+    <div className="flex flex-wrap items-center gap-3 px-5 py-4">
+      <div className="min-w-0 flex-1">
+        <p className="text-sm font-medium">Your store’s link</p>
+        <a
+          href={url}
+          target="_blank"
+          rel="noreferrer"
+          className="mt-0.5 block truncate font-mono text-xs text-brand"
+        >
+          {url}
+        </a>
+      </div>
+      <Button variant="secondary" small onClick={copy}>
+        {copied ? 'Copied' : 'Copy'}
+      </Button>
+      <Button variant="secondary" small onClick={onQr}>
+        QR code
+      </Button>
+    </div>
+  );
+}
+
+function ThemeRow({
+  theme,
+  onChange,
+}: {
+  theme: StorefrontTheme;
+  onChange: (theme: StorefrontTheme) => void;
+}) {
+  return (
+    <div className="px-5 py-4">
+      <p className="text-sm font-medium">Colour</p>
+      <p className="mt-0.5 text-xs text-muted">For the buttons on your store’s page.</p>
+      <div className="mt-3 flex flex-wrap gap-3" role="radiogroup" aria-label="Store colour">
+        {STOREFRONT_THEMES.map((key) => (
+          <button
+            key={key}
+            type="button"
+            role="radio"
+            aria-checked={theme === key}
+            aria-label={STOREFRONT_THEME_COLOURS[key].name}
+            title={STOREFRONT_THEME_COLOURS[key].name}
+            onClick={() => onChange(key)}
+            className={cx(
+              'h-9 w-9 rounded-full transition',
+              theme === key && 'ring-2 ring-text ring-offset-2 ring-offset-surface',
+            )}
+            style={{ backgroundColor: STOREFRONT_THEME_COLOURS[key].brand }}
+          />
+        ))}
+      </div>
+    </div>
+  );
+}
+
+/** What the store's page says about the business. Blank means it isn't shown. */
+function StoreDetails({
+  saved,
+  busy,
+  onSave,
+}: {
+  saved: SaveStorefront;
+  busy: boolean;
+  onSave: (details: Pick<SaveStorefront, 'area' | 'phone' | 'hours'>) => void;
+}) {
+  const [area, setArea] = useState(saved.area);
+  const [phone, setPhone] = useState(saved.phone);
+  const [hours, setHours] = useState(saved.hours);
+  const changed = area !== saved.area || phone !== saved.phone || hours !== saved.hours;
+  return (
+    <div className="space-y-4 px-5 py-4">
+      <p className="text-sm font-medium">On your store’s page</p>
+      <div>
+        <FieldLabel htmlFor="store-area">Area</FieldLabel>
+        <TextInput
+          id="store-area"
+          maxLength={80}
+          placeholder="e.g. Osu, Accra"
+          value={area}
+          onChange={(event) => setArea(event.target.value)}
+        />
+      </div>
+      <div>
+        <FieldLabel htmlFor="store-phone">Phone for customers</FieldLabel>
+        <TextInput
+          id="store-phone"
+          inputMode="tel"
+          maxLength={20}
+          placeholder="024 000 0000"
+          value={phone}
+          onChange={(event) => setPhone(event.target.value)}
+        />
+      </div>
+      <div>
+        <FieldLabel htmlFor="store-hours">Opening hours</FieldLabel>
+        <TextInput
+          id="store-hours"
+          maxLength={120}
+          placeholder="e.g. Mon–Sat 7am–9pm"
+          value={hours}
+          onChange={(event) => setHours(event.target.value)}
+        />
+      </div>
+      {changed && (
+        <Button
+          small
+          busy={busy}
+          onClick={() => onSave({ area: area.trim(), phone: phone.trim(), hours: hours.trim() })}
+        >
+          Save
+        </Button>
+      )}
+    </div>
+  );
+}
+
+/** The store's link as a QR code: to print for the counter, or put on a post. */
+function QrDialog({ url, onClose }: { url: string; onClose: () => void }) {
+  const qr = useMemo(() => {
+    const code = qrcode(0, 'M');
+    code.addData(url);
+    code.make();
+    return code;
+  }, [url]);
+  return (
+    <Dialog title="Your store’s QR code" onClose={onClose}>
+      <p className="text-sm text-muted">
+        Print it for the counter, or put it on your posts. Scanning it opens your store.
+      </p>
+      <div
+        className="mx-auto my-5 w-56 rounded-xl bg-white p-3"
+        // The library's own SVG, made from the store's link.
+        dangerouslySetInnerHTML={{ __html: qr.createSvgTag({ margin: 0, scalable: true }) }}
+      />
+      <p className="text-center font-mono text-xs break-all text-muted">{url}</p>
+      <div className="mt-6 flex gap-2">
+        <Button variant="ghost" onClick={onClose}>
+          Close
+        </Button>
+        <a
+          href={qr.createDataURL(10, 4)}
+          download="store-qr-code.gif"
+          className="inline-flex h-11 flex-1 items-center justify-center rounded-xl bg-brand px-4 text-sm font-semibold text-brand-fg"
+        >
+          Download
+        </a>
+      </div>
+    </Dialog>
+  );
+}
+
 /** Delivery zones: the tablet fills in a zone's fee when it's picked for a delivery. */
 function DeliverySection() {
   const { tenantId } = useSession();
@@ -291,6 +581,7 @@ function ZoneDialog({ zone, onClose }: { zone: Zone | null; onClose: () => void 
   const ready = name.trim().length > 0 && fee !== null;
   const done = () => {
     refreshZones();
+    refreshStorefront();
     onClose();
   };
   const saving = useMutation({
@@ -455,6 +746,7 @@ function MoolreDialog({ current, onClose }: { current: Settings['moolre']; onClo
       }),
     onSuccess: () => {
       refreshSettings();
+      refreshStorefront();
       onClose();
     },
   });

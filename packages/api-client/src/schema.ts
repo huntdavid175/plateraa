@@ -708,6 +708,102 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/storefront/settings": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["StorefrontSettingsController_get"];
+        put: operations["StorefrontSettingsController_save"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/public/stores/{slug}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["PublicStoreController_getStore"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/public/stores/{slug}/orders": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["PublicStoreController_place"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/public/orders/{token}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["PublicStoreController_track"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/public/orders/{token}/pay": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["PublicStoreController_pay"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/public/orders/{token}/check": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["PublicStoreController_check"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
 }
 export type webhooks = Record<string, never>;
 export interface components {
@@ -744,7 +840,7 @@ export interface components {
             displayName: string;
             /** @enum {string} */
             role: "OWNER" | "MANAGER" | "STAFF" | "RIDER";
-            capabilities: ("orders.take" | "orders.cancel" | "payments.record" | "shift.operate" | "shift.own_cash.view" | "stock.count" | "deliveries.update" | "refunds.record" | "payouts.record" | "discounts.apply" | "catalog.manage" | "staff.manage" | "expenses.manage" | "devices.manage" | "customers.manage" | "settings.manage" | "reports.revenue.view")[];
+            capabilities: ("orders.take" | "orders.cancel" | "payments.record" | "shift.operate" | "shift.own_cash.view" | "stock.count" | "deliveries.update" | "refunds.record" | "payouts.record" | "discounts.apply" | "catalog.manage" | "staff.manage" | "expenses.manage" | "devices.manage" | "customers.manage" | "storefront.manage" | "settings.manage" | "reports.revenue.view")[];
         };
         RegisterDeviceDto: {
             /** Format: ulid */
@@ -803,7 +899,7 @@ export interface components {
                 /** @enum {string} */
                 role: "OWNER" | "MANAGER" | "STAFF" | "RIDER";
             };
-            capabilities: ("orders.take" | "orders.cancel" | "payments.record" | "shift.operate" | "shift.own_cash.view" | "stock.count" | "deliveries.update" | "refunds.record" | "payouts.record" | "discounts.apply" | "catalog.manage" | "staff.manage" | "expenses.manage" | "devices.manage" | "customers.manage" | "settings.manage" | "reports.revenue.view")[];
+            capabilities: ("orders.take" | "orders.cancel" | "payments.record" | "shift.operate" | "shift.own_cash.view" | "stock.count" | "deliveries.update" | "refunds.record" | "payouts.record" | "discounts.apply" | "catalog.manage" | "staff.manage" | "expenses.manage" | "devices.manage" | "customers.manage" | "storefront.manage" | "settings.manage" | "reports.revenue.view")[];
         };
         TeamDto_Output: {
             staff: {
@@ -1807,6 +1903,144 @@ export interface components {
         CountedDto_Output: {
             onHand: number;
             difference: number;
+        };
+        StorefrontSettingsDto_Output: {
+            enabled: boolean;
+            takingOrders: boolean;
+            cashOnPickup: boolean;
+            acceptFirst: boolean;
+            /** @enum {string} */
+            theme: "orange" | "red" | "green" | "teal" | "blue" | "purple" | "pink";
+            area: string | null;
+            phone: string | null;
+            hours: string | null;
+            url: string;
+            moolreConnected: boolean;
+            deliveryZones: number;
+        };
+        SaveStorefrontDto: {
+            enabled: boolean;
+            takingOrders: boolean;
+            cashOnPickup: boolean;
+            acceptFirst: boolean;
+            /** @enum {string} */
+            theme: "orange" | "red" | "green" | "teal" | "blue" | "purple" | "pink";
+            area: string;
+            phone: string;
+            hours: string;
+        };
+        StoreDto_Output: {
+            slug: string;
+            name: string;
+            area: string | null;
+            phone: string | null;
+            hours: string | null;
+            /** @enum {string} */
+            theme: "orange" | "red" | "green" | "teal" | "blue" | "purple" | "pink";
+            open: boolean;
+            payOnline: boolean;
+            cashOnPickup: boolean;
+            zones: {
+                id: string;
+                name: string;
+                fee: number;
+            }[];
+            categories: {
+                id: string;
+                name: string;
+            }[];
+            items: {
+                id: string;
+                categoryId: string | null;
+                name: string;
+                description: string | null;
+                price: number;
+                photoUrl: string | null;
+                soldOut: boolean;
+                variants: {
+                    id: string;
+                    name: string;
+                    price: number;
+                }[];
+                groups: {
+                    id: string;
+                    name: string;
+                    minSelect: number;
+                    maxSelect: number | null;
+                    options: {
+                        id: string;
+                        name: string;
+                        priceDelta: number;
+                    }[];
+                }[];
+            }[];
+        };
+        PlaceOrderDto: {
+            /** Format: ulid */
+            orderId: string;
+            /** @enum {string} */
+            type: "PICKUP" | "DELIVERY";
+            lines: {
+                /** Format: ulid */
+                itemId: string;
+                /** Format: ulid */
+                variantId?: string;
+                quantity: number;
+                /** @default [] */
+                optionIds: string[];
+                note?: string;
+            }[];
+            customer: {
+                name: string;
+                phone: string;
+            };
+            delivery?: {
+                /** Format: ulid */
+                zoneId: string;
+                address: string;
+            };
+            note?: string;
+            /** @enum {string} */
+            payment: "ONLINE" | "CASH";
+        };
+        PlacedDto_Output: {
+            token: string;
+            number: string;
+            payUrl: string | null;
+            payProblem: string | null;
+        };
+        TrackedDto_Output: {
+            number: string;
+            storeSlug: string;
+            storeName: string;
+            storePhone: string | null;
+            /** @enum {string} */
+            theme: "orange" | "red" | "green" | "teal" | "blue" | "purple" | "pink";
+            /** @enum {string} */
+            type: "DINE_IN" | "PICKUP" | "DELIVERY";
+            /** @enum {string} */
+            status: "NEW" | "CONFIRMED" | "PREPARING" | "READY" | "OUT_FOR_DELIVERY" | "COMPLETED" | "CANCELLED" | "REFUNDED";
+            acceptsFirst: boolean;
+            payOnCollection: boolean;
+            total: number;
+            deliveryFee: number;
+            amountDue: number;
+            amountPaid: number;
+            deliveryAddress: string | null;
+            lines: {
+                name: string;
+                variantName: string | null;
+                extras: string[];
+                quantity: number;
+                lineTotal: number;
+            }[];
+            linkStatus: string | null;
+            payUrl: string | null;
+            placedAt: string;
+        };
+        PayDto_Output: {
+            payUrl: string | null;
+            payProblem: string | null;
         };
     };
     responses: never;
@@ -2941,6 +3175,155 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["CountedDto_Output"];
+                };
+            };
+        };
+    };
+    StorefrontSettingsController_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["StorefrontSettingsDto_Output"];
+                };
+            };
+        };
+    };
+    StorefrontSettingsController_save: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["SaveStorefrontDto"];
+            };
+        };
+        responses: {
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    PublicStoreController_getStore: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                slug: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["StoreDto_Output"];
+                };
+            };
+        };
+    };
+    PublicStoreController_place: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                slug: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["PlaceOrderDto"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PlacedDto_Output"];
+                };
+            };
+        };
+    };
+    PublicStoreController_track: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                token: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["TrackedDto_Output"];
+                };
+            };
+        };
+    };
+    PublicStoreController_pay: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                token: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PayDto_Output"];
+                };
+            };
+        };
+    };
+    PublicStoreController_check: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                token: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["TrackedDto_Output"];
                 };
             };
         };

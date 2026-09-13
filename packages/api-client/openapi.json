@@ -1913,6 +1913,219 @@
           "Expenses"
         ]
       }
+    },
+    "/api/storefront/settings": {
+      "get": {
+        "operationId": "StorefrontSettingsController_get",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StorefrontSettingsDto_Output"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "StorefrontSettings"
+        ]
+      },
+      "put": {
+        "operationId": "StorefrontSettingsController_save",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SaveStorefrontDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "204": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "StorefrontSettings"
+        ]
+      }
+    },
+    "/api/public/stores/{slug}": {
+      "get": {
+        "operationId": "PublicStoreController_getStore",
+        "parameters": [
+          {
+            "name": "slug",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StoreDto_Output"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "PublicStore"
+        ]
+      }
+    },
+    "/api/public/stores/{slug}/orders": {
+      "post": {
+        "operationId": "PublicStoreController_place",
+        "parameters": [
+          {
+            "name": "slug",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PlaceOrderDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PlacedDto_Output"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "PublicStore"
+        ]
+      }
+    },
+    "/api/public/orders/{token}": {
+      "get": {
+        "operationId": "PublicStoreController_track",
+        "parameters": [
+          {
+            "name": "token",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TrackedDto_Output"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "PublicStore"
+        ]
+      }
+    },
+    "/api/public/orders/{token}/pay": {
+      "post": {
+        "operationId": "PublicStoreController_pay",
+        "parameters": [
+          {
+            "name": "token",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PayDto_Output"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "PublicStore"
+        ]
+      }
+    },
+    "/api/public/orders/{token}/check": {
+      "post": {
+        "operationId": "PublicStoreController_check",
+        "parameters": [
+          {
+            "name": "token",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TrackedDto_Output"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "PublicStore"
+        ]
+      }
     }
   },
   "info": {
@@ -2091,6 +2304,7 @@
                 "expenses.manage",
                 "devices.manage",
                 "customers.manage",
+                "storefront.manage",
                 "settings.manage",
                 "reports.revenue.view"
               ]
@@ -2374,6 +2588,7 @@
                 "expenses.manage",
                 "devices.manage",
                 "customers.manage",
+                "storefront.manage",
                 "settings.manage",
                 "reports.revenue.view"
               ]
@@ -7021,6 +7236,667 @@
         "required": [
           "onHand",
           "difference"
+        ],
+        "additionalProperties": false
+      },
+      "StorefrontSettingsDto_Output": {
+        "type": "object",
+        "properties": {
+          "enabled": {
+            "type": "boolean"
+          },
+          "takingOrders": {
+            "type": "boolean"
+          },
+          "cashOnPickup": {
+            "type": "boolean"
+          },
+          "acceptFirst": {
+            "type": "boolean"
+          },
+          "theme": {
+            "type": "string",
+            "enum": [
+              "orange",
+              "red",
+              "green",
+              "teal",
+              "blue",
+              "purple",
+              "pink"
+            ]
+          },
+          "area": {
+            "type": "string",
+            "nullable": true
+          },
+          "phone": {
+            "type": "string",
+            "nullable": true
+          },
+          "hours": {
+            "type": "string",
+            "nullable": true
+          },
+          "url": {
+            "type": "string"
+          },
+          "moolreConnected": {
+            "type": "boolean"
+          },
+          "deliveryZones": {
+            "type": "integer",
+            "minimum": -9007199254740991,
+            "maximum": 9007199254740991
+          }
+        },
+        "required": [
+          "enabled",
+          "takingOrders",
+          "cashOnPickup",
+          "acceptFirst",
+          "theme",
+          "area",
+          "phone",
+          "hours",
+          "url",
+          "moolreConnected",
+          "deliveryZones"
+        ],
+        "additionalProperties": false
+      },
+      "SaveStorefrontDto": {
+        "type": "object",
+        "properties": {
+          "enabled": {
+            "type": "boolean"
+          },
+          "takingOrders": {
+            "type": "boolean"
+          },
+          "cashOnPickup": {
+            "type": "boolean"
+          },
+          "acceptFirst": {
+            "type": "boolean"
+          },
+          "theme": {
+            "type": "string",
+            "enum": [
+              "orange",
+              "red",
+              "green",
+              "teal",
+              "blue",
+              "purple",
+              "pink"
+            ]
+          },
+          "area": {
+            "type": "string",
+            "maxLength": 80
+          },
+          "phone": {
+            "type": "string",
+            "maxLength": 20
+          },
+          "hours": {
+            "type": "string",
+            "maxLength": 120
+          }
+        },
+        "required": [
+          "enabled",
+          "takingOrders",
+          "cashOnPickup",
+          "acceptFirst",
+          "theme",
+          "area",
+          "phone",
+          "hours"
+        ]
+      },
+      "StoreDto_Output": {
+        "type": "object",
+        "properties": {
+          "slug": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "area": {
+            "type": "string",
+            "nullable": true
+          },
+          "phone": {
+            "type": "string",
+            "nullable": true
+          },
+          "hours": {
+            "type": "string",
+            "nullable": true
+          },
+          "theme": {
+            "type": "string",
+            "enum": [
+              "orange",
+              "red",
+              "green",
+              "teal",
+              "blue",
+              "purple",
+              "pink"
+            ]
+          },
+          "open": {
+            "type": "boolean"
+          },
+          "payOnline": {
+            "type": "boolean"
+          },
+          "cashOnPickup": {
+            "type": "boolean"
+          },
+          "zones": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "id": {
+                  "type": "string"
+                },
+                "name": {
+                  "type": "string"
+                },
+                "fee": {
+                  "type": "integer",
+                  "minimum": -9007199254740991,
+                  "maximum": 9007199254740991
+                }
+              },
+              "required": [
+                "id",
+                "name",
+                "fee"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "categories": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "id": {
+                  "type": "string"
+                },
+                "name": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "id",
+                "name"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "items": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "id": {
+                  "type": "string"
+                },
+                "categoryId": {
+                  "type": "string",
+                  "nullable": true
+                },
+                "name": {
+                  "type": "string"
+                },
+                "description": {
+                  "type": "string",
+                  "nullable": true
+                },
+                "price": {
+                  "type": "integer",
+                  "minimum": -9007199254740991,
+                  "maximum": 9007199254740991
+                },
+                "photoUrl": {
+                  "type": "string",
+                  "nullable": true
+                },
+                "soldOut": {
+                  "type": "boolean"
+                },
+                "variants": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "id": {
+                        "type": "string"
+                      },
+                      "name": {
+                        "type": "string"
+                      },
+                      "price": {
+                        "type": "integer",
+                        "minimum": -9007199254740991,
+                        "maximum": 9007199254740991
+                      }
+                    },
+                    "required": [
+                      "id",
+                      "name",
+                      "price"
+                    ],
+                    "additionalProperties": false
+                  }
+                },
+                "groups": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "id": {
+                        "type": "string"
+                      },
+                      "name": {
+                        "type": "string"
+                      },
+                      "minSelect": {
+                        "type": "integer",
+                        "minimum": -9007199254740991,
+                        "maximum": 9007199254740991
+                      },
+                      "maxSelect": {
+                        "type": "integer",
+                        "minimum": -9007199254740991,
+                        "maximum": 9007199254740991,
+                        "nullable": true
+                      },
+                      "options": {
+                        "type": "array",
+                        "items": {
+                          "type": "object",
+                          "properties": {
+                            "id": {
+                              "type": "string"
+                            },
+                            "name": {
+                              "type": "string"
+                            },
+                            "priceDelta": {
+                              "type": "integer",
+                              "minimum": -9007199254740991,
+                              "maximum": 9007199254740991
+                            }
+                          },
+                          "required": [
+                            "id",
+                            "name",
+                            "priceDelta"
+                          ],
+                          "additionalProperties": false
+                        }
+                      }
+                    },
+                    "required": [
+                      "id",
+                      "name",
+                      "minSelect",
+                      "maxSelect",
+                      "options"
+                    ],
+                    "additionalProperties": false
+                  }
+                }
+              },
+              "required": [
+                "id",
+                "categoryId",
+                "name",
+                "description",
+                "price",
+                "photoUrl",
+                "soldOut",
+                "variants",
+                "groups"
+              ],
+              "additionalProperties": false
+            }
+          }
+        },
+        "required": [
+          "slug",
+          "name",
+          "area",
+          "phone",
+          "hours",
+          "theme",
+          "open",
+          "payOnline",
+          "cashOnPickup",
+          "zones",
+          "categories",
+          "items"
+        ],
+        "additionalProperties": false
+      },
+      "PlaceOrderDto": {
+        "type": "object",
+        "properties": {
+          "orderId": {
+            "type": "string",
+            "format": "ulid",
+            "pattern": "^[0-7][0-9A-HJKMNP-TV-Za-hjkmnp-tv-z]{25}$"
+          },
+          "type": {
+            "type": "string",
+            "enum": [
+              "PICKUP",
+              "DELIVERY"
+            ]
+          },
+          "lines": {
+            "minItems": 1,
+            "maxItems": 40,
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "itemId": {
+                  "type": "string",
+                  "format": "ulid",
+                  "pattern": "^[0-7][0-9A-HJKMNP-TV-Za-hjkmnp-tv-z]{25}$"
+                },
+                "variantId": {
+                  "type": "string",
+                  "format": "ulid",
+                  "pattern": "^[0-7][0-9A-HJKMNP-TV-Za-hjkmnp-tv-z]{25}$"
+                },
+                "quantity": {
+                  "type": "integer",
+                  "minimum": 1,
+                  "maximum": 50
+                },
+                "optionIds": {
+                  "default": [],
+                  "maxItems": 30,
+                  "type": "array",
+                  "items": {
+                    "type": "string",
+                    "format": "ulid",
+                    "pattern": "^[0-7][0-9A-HJKMNP-TV-Za-hjkmnp-tv-z]{25}$"
+                  }
+                },
+                "note": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 200
+                }
+              },
+              "required": [
+                "itemId",
+                "quantity"
+              ]
+            }
+          },
+          "customer": {
+            "type": "object",
+            "properties": {
+              "name": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 80
+              },
+              "phone": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "name",
+              "phone"
+            ]
+          },
+          "delivery": {
+            "type": "object",
+            "properties": {
+              "zoneId": {
+                "type": "string",
+                "format": "ulid",
+                "pattern": "^[0-7][0-9A-HJKMNP-TV-Za-hjkmnp-tv-z]{25}$"
+              },
+              "address": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 300
+              }
+            },
+            "required": [
+              "zoneId",
+              "address"
+            ]
+          },
+          "note": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 300
+          },
+          "payment": {
+            "type": "string",
+            "enum": [
+              "ONLINE",
+              "CASH"
+            ]
+          }
+        },
+        "required": [
+          "orderId",
+          "type",
+          "lines",
+          "customer",
+          "payment"
+        ]
+      },
+      "PlacedDto_Output": {
+        "type": "object",
+        "properties": {
+          "token": {
+            "type": "string"
+          },
+          "number": {
+            "type": "string"
+          },
+          "payUrl": {
+            "type": "string",
+            "nullable": true
+          },
+          "payProblem": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "required": [
+          "token",
+          "number",
+          "payUrl",
+          "payProblem"
+        ],
+        "additionalProperties": false
+      },
+      "TrackedDto_Output": {
+        "type": "object",
+        "properties": {
+          "number": {
+            "type": "string"
+          },
+          "storeSlug": {
+            "type": "string"
+          },
+          "storeName": {
+            "type": "string"
+          },
+          "storePhone": {
+            "type": "string",
+            "nullable": true
+          },
+          "theme": {
+            "type": "string",
+            "enum": [
+              "orange",
+              "red",
+              "green",
+              "teal",
+              "blue",
+              "purple",
+              "pink"
+            ]
+          },
+          "type": {
+            "type": "string",
+            "enum": [
+              "DINE_IN",
+              "PICKUP",
+              "DELIVERY"
+            ]
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "NEW",
+              "CONFIRMED",
+              "PREPARING",
+              "READY",
+              "OUT_FOR_DELIVERY",
+              "COMPLETED",
+              "CANCELLED",
+              "REFUNDED"
+            ]
+          },
+          "acceptsFirst": {
+            "type": "boolean"
+          },
+          "payOnCollection": {
+            "type": "boolean"
+          },
+          "total": {
+            "type": "integer",
+            "minimum": -9007199254740991,
+            "maximum": 9007199254740991
+          },
+          "deliveryFee": {
+            "type": "integer",
+            "minimum": -9007199254740991,
+            "maximum": 9007199254740991
+          },
+          "amountDue": {
+            "type": "integer",
+            "minimum": -9007199254740991,
+            "maximum": 9007199254740991
+          },
+          "amountPaid": {
+            "type": "integer",
+            "minimum": -9007199254740991,
+            "maximum": 9007199254740991
+          },
+          "deliveryAddress": {
+            "type": "string",
+            "nullable": true
+          },
+          "lines": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "name": {
+                  "type": "string"
+                },
+                "variantName": {
+                  "type": "string",
+                  "nullable": true
+                },
+                "extras": {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  }
+                },
+                "quantity": {
+                  "type": "integer",
+                  "minimum": -9007199254740991,
+                  "maximum": 9007199254740991
+                },
+                "lineTotal": {
+                  "type": "integer",
+                  "minimum": -9007199254740991,
+                  "maximum": 9007199254740991
+                }
+              },
+              "required": [
+                "name",
+                "variantName",
+                "extras",
+                "quantity",
+                "lineTotal"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "linkStatus": {
+            "type": "string",
+            "nullable": true
+          },
+          "payUrl": {
+            "type": "string",
+            "nullable": true
+          },
+          "placedAt": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "number",
+          "storeSlug",
+          "storeName",
+          "storePhone",
+          "theme",
+          "type",
+          "status",
+          "acceptsFirst",
+          "payOnCollection",
+          "total",
+          "deliveryFee",
+          "amountDue",
+          "amountPaid",
+          "deliveryAddress",
+          "lines",
+          "linkStatus",
+          "payUrl",
+          "placedAt"
+        ],
+        "additionalProperties": false
+      },
+      "PayDto_Output": {
+        "type": "object",
+        "properties": {
+          "payUrl": {
+            "type": "string",
+            "nullable": true
+          },
+          "payProblem": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "required": [
+          "payUrl",
+          "payProblem"
         ],
         "additionalProperties": false
       }

@@ -15,6 +15,7 @@
     "@plateraa/api-client": "workspace:*",
     "@plateraa/shared": "workspace:*",
     "@tanstack/react-query": "5.102.8",
+    "qrcode-generator": "2.0.4",
     "react": "19.2.3",
     "react-dom": "19.2.3",
     "react-is": "19.2.3",

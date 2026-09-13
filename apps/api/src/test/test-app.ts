@@ -19,6 +19,7 @@ export const OFFLINE_TEST_ENV: Env = {
   PAYMENT_LINK_MINUTES: 60,
   RUN_PAYMENT_LINKS: false,
   RUN_DAILY_REPORTS: false,
+  STOREFRONT_URL: 'http://localhost:3001',
   TRUSTED_ORIGINS: [],
 };
 

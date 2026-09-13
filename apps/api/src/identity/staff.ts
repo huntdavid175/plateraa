@@ -143,7 +143,8 @@ export class StaffService {
           seesRevenue: staffMembers.revenueVisibilityOverride,
         })
         .from(staffMembers)
-        .where(isNull(staffMembers.deletedAt));
+        // The "Online store" member isn't a person, so it isn't on the team.
+        .where(and(isNull(staffMembers.deletedAt), eq(staffMembers.system, false)));
       const [settings] = await tx
         .select({ byRole: tenantSettings.revenueVisibilityByRole })
         .from(tenantSettings);

@@ -10,19 +10,24 @@ export interface TenantInfo {
   requirePaymentBeforePrep: boolean;
 }
 
+/** Where a change happened: a registered tablet, or (no id) the online store. */
+export type HandlerDevice = Omit<DeviceContext, 'id'> & { id: string | null };
+
 /** What shared helpers need from any command's context. */
 export interface HandlerContext {
   tx: Tx;
-  device: DeviceContext;
+  device: HandlerDevice;
   tenant: TenantInfo;
   /** Who did it: the staff member on the command, who may differ from whoever is syncing. */
   staff: ResolvedStaff;
   command: { deviceTs: string };
 }
 
+/** A command from a tablet: always a registered one. */
 export interface CommandContext<
   T extends SyncCommandType = SyncCommandType,
 > extends HandlerContext {
+  device: DeviceContext;
   command: SyncCommandOf<T>;
 }
 

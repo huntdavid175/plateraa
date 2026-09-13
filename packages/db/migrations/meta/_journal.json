@@ -85,6 +85,13 @@
       "when": 1789309706707,
       "tag": "0011_dine_in",
       "breakpoints": true
+    },
+    {
+      "idx": 12,
+      "version": "7",
+      "when": 1789325203949,
+      "tag": "0012_storefront",
+      "breakpoints": true
     }
   ]
 }

@@ -44,6 +44,10 @@ export const orders = pgTable(
     type: orderType().notNull(),
     status: orderStatus().notNull(),
     onHold: boolean().notNull().default(false),
+    /** An online order paid in cash when it's collected: cooked first, whatever pay before prep says. */
+    payOnCollection: boolean().notNull().default(false),
+    /** Online orders: the unguessable key to the customer's status page. */
+    trackToken: text().unique(),
     customerId: text().references(() => customers.id),
     deliveryAddress: text(),
     deliveryZoneId: text().references(() => deliveryZones.id),

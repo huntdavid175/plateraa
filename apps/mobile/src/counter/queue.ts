@@ -64,6 +64,7 @@ export async function loadQueue(db: Sql, businessDate: string): Promise<QueueOrd
   const orders = await db.all<Omit<QueueOrder, 'lines' | 'prepMinutes' | 'link'>>(
     `SELECT o.id, o.display_number, o.source, o.type, o.status, o.on_hold, o.total, o.subtotal,
             o.discount, o.delivery_fee, o.delivery_fee_collected_by, o.amount_paid,
+            o.pay_on_collection,
             o.business_date, o.delivery_address, o.external_reference, o.note, o.cancel_reason,
             o.created_at_device, c.phone AS customer_phone, c.name AS customer_name,
             (SELECT max(p.created_at_device) FROM payments p

@@ -50,6 +50,11 @@ const envSchema = z.object({
    * in any missing day themselves when they're read, so this only makes them quicker to open.
    */
   RUN_DAILY_REPORTS: z.stringbool().default(false),
+  /** The storefront's address, for the store link and QR code owners share (no trailing slash). */
+  STOREFRONT_URL: z
+    .url()
+    .default('http://localhost:3001')
+    .transform((url) => url.replace(/\/+$/, '')),
   /** Comma-separated browser origins allowed to call the auth endpoints (the dashboard). */
   TRUSTED_ORIGINS: z
     .string()

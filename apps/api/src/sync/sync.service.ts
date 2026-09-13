@@ -245,6 +245,8 @@ export class SyncService {
         const { costPrice: _itemCost, ...itemColumns } = getTableColumns(items);
         const { costPrice: _variantCost, ...variantColumns } = getTableColumns(itemVariants);
         const { costPrice: _lineCost, ...orderItemColumns } = getTableColumns(orderItems);
+        // The customer's key to an online order's status page stays with the customer.
+        const { trackToken: _trackToken, ...orderColumns } = getTableColumns(orders);
 
         const firstSync = !cursor;
         const orderScope = firstSync
@@ -311,7 +313,7 @@ export class SyncService {
             customers: await tx.select().from(customers).where(changedSince(customers, cursor)),
             stockItems: await tx.select().from(stockItems).where(changedSince(stockItems, cursor)),
             orders: await tx
-              .select()
+              .select(orderColumns)
               .from(orders)
               .where(and(changedSince(orders, cursor), orderScope)),
             orderItems: await tx

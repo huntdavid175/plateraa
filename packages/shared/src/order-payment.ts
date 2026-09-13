@@ -8,6 +8,8 @@ export interface PayableOrder {
   deliveryFee: Pesewas;
   deliveryFeeCollectedBy: DeliveryFeeCollector | null;
   amountPaid: Pesewas;
+  /** An online order paid in cash when it's collected: cooked first, whatever pay before prep says. */
+  payOnCollection?: boolean;
 }
 
 /** What the vendor collects on an order: the total, less the delivery fee when the rider kept it. */
@@ -25,11 +27,13 @@ export function isFullyPaid(order: Omit<PayableOrder, 'status'>): boolean {
 
 /**
  * Pay before prep (a vendor setting, on by default): an order doesn't go to the kitchen until
- * it's fully paid. Until then it waits as "awaiting payment" and stays off the prep queue.
+ * it's fully paid. Until then it waits as "awaiting payment" and stays off the prep queue. An
+ * online order the customer pays for when they collect it is the exception: it's cooked first.
  */
 export function isAwaitingPayment(order: PayableOrder, requirePaymentBeforePrep: boolean): boolean {
   return (
     requirePaymentBeforePrep &&
+    !order.payOnCollection &&
     (order.status === 'NEW' || order.status === 'CONFIRMED') &&
     !isFullyPaid(order)
   );

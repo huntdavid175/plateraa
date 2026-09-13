@@ -302,6 +302,60 @@ export class PaymentLinks implements OnApplicationBootstrap, OnApplicationShutdo
     }
   }
 
+  /**
+   * Makes the Moolre link for an online customer, who is sent straight to it: no text message.
+   * The link was saved QUEUED with `checkedAt` set, so the background sender leaves it alone
+   * while this runs. If Moolre can't be reached it stays QUEUED, and the sender texts it later.
+   * The failure words are for the customer; the link keeps the staff-facing reason.
+   */
+  async openForCustomer(
+    tenantId: string,
+    linkId: string,
+  ): Promise<{ url: string } | { failure: string }> {
+    const { link, account } = await withTenant(this.db, tenantId, async (tx) => {
+      const [found] = await tx.select().from(paymentLinks).where(eq(paymentLinks.id, linkId));
+      const [moolre] = await tx.select().from(moolreAccounts);
+      return { link: found, account: moolre };
+    });
+    if (!link) return { failure: "The payment couldn't be started. Try again." };
+
+    try {
+      const created = await this.moolre.createLink(this.credentials(account), {
+        reference: link.id,
+        amount: link.amount,
+        callbackUrl: this.callbackUrl(),
+        expiresInMinutes: this.env.PAYMENT_LINK_MINUTES,
+      });
+      const sentAt = new Date();
+      await withTenant(this.db, tenantId, (tx) =>
+        tx
+          .update(paymentLinks)
+          .set({
+            url: created.url,
+            providerReference: created.reference,
+            status: 'SENT',
+            failure: null,
+            sentAt,
+            expiresAt: new Date(sentAt.getTime() + this.env.PAYMENT_LINK_MINUTES * 60_000),
+          })
+          .where(and(eq(paymentLinks.id, link.id), eq(paymentLinks.status, 'QUEUED'))),
+      );
+      return { url: created.url };
+    } catch (error) {
+      if (error instanceof MoolreError && error.retryable) {
+        return { failure: "The payment page couldn't be opened just now. Try again in a minute." };
+      }
+      if (!(error instanceof MoolreError)) this.report(`Payment link ${link.id} failed`, error);
+      await withTenant(this.db, tenantId, (tx) =>
+        tx
+          .update(paymentLinks)
+          .set({ status: 'FAILED', failure: failureWords(error) })
+          .where(and(eq(paymentLinks.id, link.id), eq(paymentLinks.status, 'QUEUED'))),
+      );
+      return { failure: "The store can't take payments online right now. Call the store." };
+    }
+  }
+
   private async checkOpen(): Promise<void> {
     const open = await withPlatform(this.db, (tx) =>
       tx
@@ -391,8 +445,9 @@ export class PaymentLinks implements OnApplicationBootstrap, OnApplicationShutdo
       const ctx: HandlerContext = {
         tx,
         tenant: await tenantInfo(tx, tenantId),
+        // No tablet for an online order's link.
         device: {
-          id: (link.deviceId ?? order.deviceId)!,
+          id: link.deviceId ?? order.deviceId,
           tenantId,
           locationId: order.locationId,
           code: '',

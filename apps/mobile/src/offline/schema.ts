@@ -102,6 +102,7 @@ export const SYNCED_TABLES = [
       'type',
       'status',
       'onHold',
+      'payOnCollection',
       'customerId',
       'deliveryAddress',
       'deliveryZoneId',
@@ -352,6 +353,12 @@ export const MIGRATIONS: readonly (readonly string[])[] = [
     `UPDATE orders SET type = 'PICKUP' WHERE type = 'WALK_IN'`,
     `UPDATE outbox SET payload = replace(payload, '"type":"WALK_IN"', '"type":"PICKUP"')
       WHERE type = 'order.create'`,
+    `DELETE FROM meta WHERE key = 'cursor'`,
+  ],
+  [
+    // Online orders (plan.md §4.0): one paid in cash when it's collected is cooked before it's
+    // paid. Forgetting the cursor brings the flag in for online orders already on the tablet.
+    `ALTER TABLE orders ADD COLUMN pay_on_collection INTEGER`,
     `DELETE FROM meta WHERE key = 'cursor'`,
   ],
 ];

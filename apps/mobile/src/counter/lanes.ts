@@ -18,11 +18,14 @@ export interface LaneOrder {
   delivery_fee: Pesewas;
   delivery_fee_collected_by: DeliveryFeeCollector | null;
   amount_paid: Pesewas;
+  /** An online order paid in cash when collected (1): cooked before it's paid. */
+  pay_on_collection?: number | null;
 }
 
 /**
  * Pay before prep (on by default): an unpaid order waits under "Awaiting payment" and never
- * reaches the kitchen. With it off, a new order goes straight to the kitchen lane.
+ * reaches the kitchen. With it off, a new order goes straight to the kitchen lane. An online
+ * order paid in cash when collected goes to the kitchen either way.
  */
 export function laneOf(order: LaneOrder, requirePaymentBeforePrep: boolean): Lane {
   if (!isActive(order.status)) return 'done';
@@ -33,6 +36,7 @@ export function laneOf(order: LaneOrder, requirePaymentBeforePrep: boolean): Lan
     deliveryFee: order.delivery_fee,
     deliveryFeeCollectedBy: order.delivery_fee_collected_by,
     amountPaid: order.amount_paid,
+    payOnCollection: order.pay_on_collection === 1,
   };
   if (isAwaitingPayment(payable, requirePaymentBeforePrep)) return 'awaiting-payment';
   if (order.status === 'READY' || order.status === 'OUT_FOR_DELIVERY') return 'ready';

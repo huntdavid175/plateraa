@@ -3,7 +3,7 @@ import { useState } from 'react';
 import { Modal, Pressable, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import type { SyncState } from '../offline/engine';
-import { useEngineState, useTablet } from '../tablet/TabletProvider';
+import { useEngineState, useLocalQuery, useTablet } from '../tablet/TabletProvider';
 import { saveAppearance } from '../ui/appearance';
 import { Badge } from '../ui/controls';
 import { colors, font, getScheme, plural, radii, space, text, themedStyles } from '../ui/theme';
@@ -48,6 +48,11 @@ export function TopBar({ tab, onTab }: { tab: CounterTab; onTab: (tab: CounterTa
   // The menu drops from under this bar, which sits below the tablet's status bar.
   const insets = useSafeAreaInsets();
   const connection = connectionOf(state);
+  // Online orders the store asks staff to accept before the kitchen starts.
+  const toAccept =
+    useLocalQuery<{ count: number }>(
+      `SELECT count(*) AS count FROM orders WHERE source = 'STOREFRONT' AND status = 'NEW'`,
+    )?.[0]?.count ?? 0;
   const canAddStaff = staff?.capabilities.has('staff.manage') ?? false;
   const runsDrawer = staff?.capabilities.has('shift.operate') ?? false;
   const countsStock = staff?.capabilities.has('stock.count') ?? false;
@@ -89,6 +94,11 @@ export function TopBar({ tab, onTab }: { tab: CounterTab; onTab: (tab: CounterTa
         {state && state.needsAttention > 0 && (
           <Pressable accessibilityRole="button" onPress={() => go('/attention')}>
             <Badge label={`${plural(state.needsAttention, 'change')} refused`} tone="red" />
+          </Pressable>
+        )}
+        {toAccept > 0 && (
+          <Pressable accessibilityRole="button" onPress={() => onTab('orders')}>
+            <Badge label={`${plural(toAccept, 'online order')} to accept`} tone="amber" />
           </Pressable>
         )}
         <View style={styles.status}>

@@ -1,4 +1,4 @@
-import type { RevenueVisibility } from '@plateraa/shared';
+import type { RevenueVisibility, StorefrontTheme } from '@plateraa/shared';
 import { sql } from 'drizzle-orm';
 import {
   boolean,
@@ -46,6 +46,18 @@ export const tenantSettings = pgTable('tenant_settings', {
   countPortions: boolean().notNull().default(false),
   /** Customers can eat here, so the tablet offers Dine-in beside Pickup and Delivery. */
   offersDineIn: boolean().notNull().default(false),
+  /** The online store (plan.md §4.0): on at all, and taking orders right now. */
+  storefrontEnabled: boolean().notNull().default(false),
+  storefrontTakingOrders: boolean().notNull().default(true),
+  /** Online customers may pay cash when they collect. */
+  storefrontCashOnPickup: boolean().notNull().default(false),
+  /** Online orders wait for staff to tap Accept, paid or not, before the kitchen starts. */
+  storefrontAcceptFirst: boolean().notNull().default(false),
+  storefrontTheme: text().$type<StorefrontTheme>().notNull().default('orange'),
+  /** On the store's page: where it is, a number to call, and when it's open. */
+  storefrontArea: text(),
+  storefrontPhone: text(),
+  storefrontHours: text(),
   updatedAt: timestamp({ withTimezone: true })
     .notNull()
     .defaultNow()

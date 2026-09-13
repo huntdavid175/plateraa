@@ -15,6 +15,7 @@ import { OrdersModule } from './orders/orders.module';
 import { PaymentsModule } from './payments/payments.module';
 import { ReportsModule } from './reports/reports.module';
 import { SettingsModule } from './settings/settings.module';
+import { StorefrontModule } from './storefront/storefront.module';
 import { SyncModule } from './sync/sync.module';
 
 @Module({
@@ -33,6 +34,7 @@ import { SyncModule } from './sync/sync.module';
     MenuModule,
     SettingsModule,
     ExpensesModule,
+    StorefrontModule,
   ],
   controllers: [HealthController],
   providers: [

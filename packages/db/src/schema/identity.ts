@@ -1,3 +1,4 @@
+import { sql } from 'drizzle-orm';
 import {
   boolean,
   index,
@@ -36,11 +37,20 @@ export const staffMembers = pgTable(
     /** Encrypted secret for offline approval codes (Owner/Manager only). */
     approvalSecret: text(),
     active: boolean().notNull().default(true),
+    /**
+     * The "Online store" member that online orders, their links and payments are recorded under.
+     * Never active, so it can't sign in or unlock a tablet, and it isn't listed as staff.
+     */
+    system: boolean().notNull().default(false),
     ...timestamps(),
     ...syncColumns(),
   },
   (t) => [
     uniqueIndex('staff_members_one_per_user_per_tenant').on(t.tenantId, t.userId),
+    // One "Online store" member per business, even when two first online orders race.
+    uniqueIndex('staff_members_one_system_per_tenant')
+      .on(t.tenantId)
+      .where(sql`${t.system}`),
     index('staff_members_sync').on(t.tenantId, t.syncXid),
   ],
 );

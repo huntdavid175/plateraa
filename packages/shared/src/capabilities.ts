@@ -17,6 +17,7 @@ export const CAPABILITIES = [
   'expenses.manage',
   'devices.manage',
   'customers.manage', // dashboard: change a customer's name and notes
+  'storefront.manage', // dashboard: the online store's switches, colour and details
   'settings.manage',
   'reports.revenue.view', // any aggregate money figure: sales totals, profit, margins
 ] as const;
