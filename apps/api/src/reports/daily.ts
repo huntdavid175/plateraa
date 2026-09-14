@@ -30,7 +30,7 @@ import { businessToday } from './business-day';
 import { workOutDays, type DayFigures } from './figures';
 
 /** The shape of `DayFigures`. Bump it when that changes, and every stored day is worked out again. */
-export const REPORT_VERSION = 2;
+export const REPORT_VERSION = 3;
 
 const DAY_MS = 86_400_000;
 const HOUR_MS = 3_600_000;

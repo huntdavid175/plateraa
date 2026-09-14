@@ -45,8 +45,11 @@ class DaySummaryDto extends createZodDto(
     left: money,
     /** moneyIn + platformOwed − commissionEstimate − moneyOut. */
     profit: money,
-    /** Money in by the hour each order was taken, in the business's timezone. */
-    byHour: z.array(z.object({ hour: z.number().int(), moneyIn: money })),
+    /**
+     * By the hour each order was taken, in the business's timezone: orders that count as sales
+     * (the busy hours), and the money in on them.
+     */
+    byHour: z.array(z.object({ hour: z.number().int(), orders: z.number().int(), moneyIn: money })),
     bySource: z.array(
       z.object({ source: z.enum(ORDER_SOURCES), orders: z.number().int(), sales: money }),
     ),

@@ -1,10 +1,10 @@
 import { useQuery } from '@tanstack/react-query';
-import type { ReactNode } from 'react';
+import { Suspense, lazy, type ReactNode } from 'react';
 import { Link, useLocation, useSearchParams } from 'react-router';
 import { lastMonth, shiftDays } from '../lib/expenses';
-import { cedis, clock, longDate, shortDate, todayHere } from '../lib/money';
+import { cedis, clock, hourRange, longDate, shortDate, todayHere } from '../lib/money';
 import type { BackTo } from '../lib/orders';
-import { fetchPeriod, type Period } from '../lib/reports';
+import { busiestHour, fetchPeriod, type Period } from '../lib/reports';
 import { useSession } from '../lib/session';
 import { EXPENSE_WORDS, METHOD_WORDS, TYPE_WORDS } from '../lib/words';
 import { Card, ErrorNote, PillFilter, Spinner, cx } from '../ui/controls';
@@ -17,6 +17,8 @@ const RANGES = [
   { value: 'pick', label: 'Pick days' },
 ] as const;
 type Range = (typeof RANGES)[number]['value'];
+
+const OrdersByHourChart = lazy(() => import('./OrdersByHourChart'));
 
 /** The most the API reports on at once. */
 const MAX_DAYS = 92;
@@ -124,6 +126,7 @@ function linksFor(period: Period) {
 function Report({ period, back }: { period: Period; back: BackTo }) {
   const { totals } = period;
   const links = linksFor(period);
+  const busiest = busiestHour(period.byHour);
   return (
     <>
       <div className="mb-6 grid grid-cols-2 gap-3 md:grid-cols-4">
@@ -193,6 +196,22 @@ function Report({ period, back }: { period: Period; back: BackTo }) {
           ))}
         </Box>
       </div>
+
+      <Box title="Busy hours" className="mb-6">
+        {busiest ? (
+          <div className="p-5">
+            <p className="mb-4 text-sm text-muted">
+              Busiest {hourRange(busiest.hour)}, with{' '}
+              {busiest.orders === 1 ? '1 order' : `${busiest.orders} orders`} over these days.
+            </p>
+            <Suspense fallback={<div className="h-[150px]" />}>
+              <OrdersByHourChart byHour={period.byHour} />
+            </Suspense>
+          </div>
+        ) : (
+          <Empty>No orders on these days.</Empty>
+        )}
+      </Box>
 
       <Box title="Day by day" className="mb-6">
         <div className="hidden grid-cols-[1.5fr_1fr_1fr_1fr_1fr] gap-4 border-b border-border px-5 py-3 text-xs font-semibold tracking-wide text-muted uppercase md:grid">

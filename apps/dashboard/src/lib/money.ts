@@ -68,3 +68,8 @@ export function hourLabel(hour: number): string {
   const twelve = hour % 12 === 0 ? 12 : hour % 12;
   return `${twelve}${hour < 12 ? 'am' : 'pm'}`;
 }
+
+/** The hour starting at 0–23 as "12pm–1pm". */
+export function hourRange(hour: number): string {
+  return `${hourLabel(hour)}–${hourLabel((hour + 1) % 24)}`;
+}

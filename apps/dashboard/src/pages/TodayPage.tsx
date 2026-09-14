@@ -3,7 +3,7 @@ import { useQuery } from '@tanstack/react-query';
 import { Suspense, lazy, useState, type ReactNode } from 'react';
 import { Link, useSearchParams } from 'react-router';
 import { fetchDrawers, type Drawer } from '../lib/manager';
-import { cedis, clock, longDate, shortDate, todayHere } from '../lib/money';
+import { cedis, clock, hourRange, longDate, shortDate, todayHere } from '../lib/money';
 import {
   fetchOrders,
   fetchRefundsOwed,
@@ -12,7 +12,7 @@ import {
   type BackTo,
   type OrderRow,
 } from '../lib/orders';
-import { fetchDay, type DaySummary } from '../lib/reports';
+import { busiestHour, fetchDay, type DaySummary } from '../lib/reports';
 import { alertTone, tabletAlertWords } from '../lib/tablet-alerts';
 import { fetchTablets, type Tablet } from '../lib/team';
 import { useSession } from '../lib/session';
@@ -22,7 +22,7 @@ import { Badge, Button, Card, ErrorNote, Spinner, Tag, cx } from '../ui/controls
 import { Page } from '../ui/Page';
 import { PayoutDialog } from './money-dialogs';
 
-const MoneyInChart = lazy(() => import('./MoneyInChart'));
+const OrdersByHourChart = lazy(() => import('./OrdersByHourChart'));
 
 /** Today, or any past day picked with `?date=` (so a day can be shared). */
 export function TodayPage() {
@@ -235,6 +235,7 @@ function Figures({
   const orders = (filters: Record<string, string>) =>
     `/orders?${new URLSearchParams({ date: day.date, ...filters })}`;
   const oneDay = new URLSearchParams({ range: 'pick', from: day.date, to: day.date });
+  const busiest = busiestHour(day.byHour);
   return (
     <>
       <div className="mb-6 grid grid-cols-2 gap-3 md:grid-cols-4">
@@ -276,20 +277,21 @@ function Figures({
       </div>
 
       <Card className="mb-6 p-5">
-        <div className="mb-4">
-          <p className="text-xs font-medium tracking-wide text-muted uppercase">
-            {isToday ? 'Money in today' : 'Money in'}
-          </p>
-          <p className="mt-1 font-mono text-2xl font-semibold">{cedis(day.moneyIn)}</p>
-        </div>
-        {day.byHour.length === 0 ? (
-          <p className="py-8 text-center text-sm text-muted">
-            {isToday ? 'No money in yet today.' : 'No money in on this day.'}
-          </p>
+        <p className="text-xs font-medium tracking-wide text-muted uppercase">Orders by hour</p>
+        {busiest ? (
+          <>
+            <p className="mt-1 text-2xl font-semibold">{hourRange(busiest.hour)}</p>
+            <p className="mt-0.5 mb-4 text-xs text-muted">
+              Busiest hour · {busiest.orders === 1 ? '1 order' : `${busiest.orders} orders`}
+            </p>
+            <Suspense fallback={<div className="h-[150px]" />}>
+              <OrdersByHourChart byHour={day.byHour} />
+            </Suspense>
+          </>
         ) : (
-          <Suspense fallback={<div className="h-[150px]" />}>
-            <MoneyInChart byHour={day.byHour} />
-          </Suspense>
+          <p className="py-8 text-center text-sm text-muted">
+            {isToday ? 'No orders yet today.' : 'No orders on this day.'}
+          </p>
         )}
       </Card>
 

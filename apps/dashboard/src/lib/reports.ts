@@ -12,3 +12,10 @@ export const fetchPeriod = (from: string, to: string) =>
   call(api.GET('/api/reports/period', { params: { query: { from, to } } }));
 
 export type Period = Awaited<ReturnType<typeof fetchPeriod>>;
+
+/** The hour with the most orders (the earlier one on a tie), or null when there were none. */
+export function busiestHour<T extends { hour: number; orders: number }>(byHour: T[]): T | null {
+  let best: T | null = null;
+  for (const row of byHour) if (row.orders > (best?.orders ?? 0)) best = row;
+  return best;
+}

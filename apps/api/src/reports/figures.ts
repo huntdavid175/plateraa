@@ -49,8 +49,11 @@ export interface DayFigures {
   expenses: number;
   /** Expenses that bought stock. */
   purchases: number;
-  /** Money in by the hour each order was taken, in the business's timezone. */
-  byHour: { hour: number; moneyIn: number }[];
+  /**
+   * By the hour each order was taken, in the business's timezone: how many orders counted as
+   * sales (what shows the busy hours), and the money in on them.
+   */
+  byHour: { hour: number; orders: number; moneyIn: number }[];
   bySource: { source: OrderSource; orders: number; sales: number }[];
   /** Dine-in, pickup and delivery, in that order. */
   byType: { type: OrderType; orders: number; sales: number }[];
@@ -149,6 +152,16 @@ export async function workOutDays(
     .groupBy(orders.businessDate, payments.method);
 
   // Grouped by position: the hour's expression carries the timezone as a parameter.
+  const takenByHour = await tx
+    .select({
+      date: orders.businessDate,
+      hour: hourTaken,
+      orders: sql<number>`count(*)::int`,
+    })
+    .from(orders)
+    .where(sales)
+    .groupBy(sql`1, 2`);
+
   const collectedByHour = await tx
     .select({
       date: orders.businessDate,
@@ -261,19 +274,22 @@ export async function workOutDays(
     day(row.date).byMethod.push({ method: row.method, amount: n(row.amount) });
   }
 
-  const hours = new Map<string, Map<number, number>>();
-  const addHour = (date: string, hour: number, amount: number) => {
-    const ofDay = hours.get(date) ?? new Map<number, number>();
-    ofDay.set(hour, (ofDay.get(hour) ?? 0) + amount);
+  const hours = new Map<string, Map<number, { orders: number; moneyIn: number }>>();
+  const hourOf = (date: string, hour: number) => {
+    const ofDay = hours.get(date) ?? new Map<number, { orders: number; moneyIn: number }>();
     hours.set(date, ofDay);
+    const entry = ofDay.get(hour) ?? { orders: 0, moneyIn: 0 };
+    ofDay.set(hour, entry);
+    return entry;
   };
-  for (const row of collectedByHour) addHour(row.date, row.hour, n(row.amount));
-  for (const row of refundedByHour) addHour(row.date, row.hour, -n(row.amount));
+  for (const row of takenByHour) hourOf(row.date, row.hour).orders += row.orders;
+  for (const row of collectedByHour) hourOf(row.date, row.hour).moneyIn += n(row.amount);
+  for (const row of refundedByHour) hourOf(row.date, row.hour).moneyIn -= n(row.amount);
   for (const [date, ofDay] of hours) {
     const d = day(date);
     d.byHour = [...ofDay.entries()]
       .sort(([a], [b]) => a - b)
-      .map(([hour, moneyIn]) => ({ hour, moneyIn }));
+      .map(([hour, entry]) => ({ hour, ...entry }));
     d.moneyIn = d.byHour.reduce((sum, hour) => sum + hour.moneyIn, 0);
   }
 

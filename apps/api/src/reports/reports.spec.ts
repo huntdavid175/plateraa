@@ -126,8 +126,11 @@ describe.skipIf(!hasDatabase())('reports and order lists (against Neon)', () => 
         { method: 'PLATFORM', amount: 4500 },
       ]),
     );
-    const byHour = res.body.byHour as { moneyIn: number }[];
+    const byHour = res.body.byHour as { hour: number; orders: number; moneyIn: number }[];
     expect(byHour.reduce((sum, hour) => sum + hour.moneyIn, 0)).toBe(10000);
+    // The busy hours count the same orders as the day: D was cancelled.
+    expect(byHour.reduce((sum, hour) => sum + hour.orders, 0)).toBe(3);
+    expect(byHour.every(({ hour }) => hour >= 0 && hour <= 23)).toBe(true);
   });
 
   it('adds up a range of days: best sellers, staff, expenses and profit and loss', async () => {
@@ -154,6 +157,9 @@ describe.skipIf(!hasDatabase())('reports and order lists (against Neon)', () => 
     ]);
     expect(res.body.byCategory).toEqual([{ category: 'GAS', amount: 2500 }]);
     expect(res.body.byType).toEqual([{ type: 'DINE_IN', orders: 3, sales: 14500 }]);
+    const byHour = res.body.byHour as { hour: number; orders: number }[];
+    expect(byHour.reduce((sum, hour) => sum + hour.orders, 0)).toBe(3);
+    expect(byHour.every(({ orders }) => orders > 0)).toBe(true);
     expect(res.body.staff).toEqual([
       { staffId: vendor.ownerStaffId, name: 'Adwoa', orders: 3, sales: 14500, cash: 10000 },
     ]);

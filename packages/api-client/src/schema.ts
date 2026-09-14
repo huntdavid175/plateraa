@@ -1503,6 +1503,7 @@ export interface components {
             profit: number;
             byHour: {
                 hour: number;
+                orders: number;
                 moneyIn: number;
             }[];
             bySource: {
@@ -1544,6 +1545,10 @@ export interface components {
                 sales: number;
                 moneyIn: number;
                 moneyOut: number;
+            }[];
+            byHour: {
+                hour: number;
+                orders: number;
             }[];
             bySource: {
                 /** @enum {string} */

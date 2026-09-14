@@ -5254,6 +5254,11 @@
                   "minimum": -9007199254740991,
                   "maximum": 9007199254740991
                 },
+                "orders": {
+                  "type": "integer",
+                  "minimum": -9007199254740991,
+                  "maximum": 9007199254740991
+                },
                 "moneyIn": {
                   "type": "integer",
                   "minimum": -9007199254740991,
@@ -5262,6 +5267,7 @@
               },
               "required": [
                 "hour",
+                "orders",
                 "moneyIn"
               ],
               "additionalProperties": false
@@ -5493,6 +5499,29 @@
                 "sales",
                 "moneyIn",
                 "moneyOut"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "byHour": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "hour": {
+                  "type": "integer",
+                  "minimum": -9007199254740991,
+                  "maximum": 9007199254740991
+                },
+                "orders": {
+                  "type": "integer",
+                  "minimum": -9007199254740991,
+                  "maximum": 9007199254740991
+                }
+              },
+              "required": [
+                "hour",
+                "orders"
               ],
               "additionalProperties": false
             }
@@ -5744,6 +5773,7 @@
           "to",
           "totals",
           "byDay",
+          "byHour",
           "bySource",
           "byType",
           "byMethod",

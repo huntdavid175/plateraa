@@ -46,7 +46,7 @@ The web dashboard for owners and managers (plan.md §3.1). It uses:
 - `lib/orders.ts`, `lib/reports.ts`: fetchers, with row types taken from the generated client, and `paymentState()` (Paid / Unpaid / Refund owed / Cancelled).
 - `lib/money.ts`: `cedis()`, `longDate()`, `hourLabel()`. `lib/words.ts`: plain words for enums.
 - `router.tsx` holds the routes; `pages/` holds the screens.
-  - Today (`TodayPage`): the day summary, the refunds-owed banner and recent orders. The date box opens any past day (`/?date=`), without the open drawers; today itself is left to the server's trading day.
+  - Today (`TodayPage`): the day summary, orders by hour with the busiest hour (14 Sep; it was money in adding up), the refunds-owed banner and recent orders. The date box opens any past day (`/?date=`), without the open drawers; today itself is left to the server's trading day.
     - Tablet warnings (`devices.manage`): the `alerts` from `GET /api/devices`, checked every minute, worded by `lib/tablet-alerts.ts`. The Staff page's Tablets card shows the same, with each tablet's last finished sync.
   - Orders (`OrdersPage`): a day's orders (`?date=`) or a range's (`?from=&to=`), filtered by source and by paid or not, and by `method`, `item` or `staff` when a figure links there (shown as removable chips). Everything lives in the address, so a view can be shared; the server does the filtering. Totals show only with `reports.revenue.view`.
   - **Every figure links to its rows**: Today's and Reports' figures open these Orders and Expenses views for their days (`linksFor` in `ReportsPage`).
@@ -77,6 +77,7 @@ The web dashboard for owners and managers (plan.md §3.1). It uses:
     - the Tablets card, with sign out.
   - Reports (`ReportsPage`, needs `reports.revenue.view`): the last 7 days, this month, last month, or "Pick days" (up to 92), kept in the address (`?range=pick&from=&to=`). It shows:
     - totals and a profit-and-loss;
+    - busy hours: the orders taken in each hour, added up over the days;
     - day by day, where each day opens its orders;
     - by source and by payment method;
     - best sellers and expenses by kind;
@@ -94,7 +95,7 @@ The web dashboard for owners and managers (plan.md §3.1). It uses:
   - **Dine-in, pickup and delivery** replace "where the order came from": Today's cards, Reports' "Dine-in, pickup and delivery" box and the Orders filter (`?type=`), with Dine-in only where the owner offers it (`me.offersDineIn`). Orders are worded by `kindWords` ("Dine-in", or "Bolt · Pickup" for one from elsewhere); `?source=` still works as a removable chip.
     - Managers see Appearance, the business name and Delivery zones.
   - The rest are placeholders until their slices.
-- **Keep the first screen light on mobile data.** Big libraries load lazily: the recharts chart is `pages/MoneyInChart.tsx`, loaded with `lazy()`.
+- **Keep the first screen light on mobile data.** Big libraries load lazily: the recharts chart is `pages/OrdersByHourChart.tsx` (Today and Reports), loaded with `lazy()`. Anything the pages need beside it, like `busiestHour`, lives in `lib/`, so importing it doesn't pull the chart in.
 
 ## Rules
 

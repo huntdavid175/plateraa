@@ -65,6 +65,11 @@ class PeriodDto extends createZodDto(
         moneyOut: money,
       }),
     ),
+    /**
+     * The busy hours: orders taken in each hour of the day (in the business's timezone), added
+     * up over the days. Only hours with orders, earliest first.
+     */
+    byHour: z.array(z.object({ hour: z.number().int(), orders: z.number().int() })),
     bySource: z.array(
       z.object({ source: z.enum(ORDER_SOURCES), orders: z.number().int(), sales: money }),
     ),
@@ -136,6 +141,7 @@ export class PeriodService {
         day: days.get(date) ?? emptyDay(),
       }));
 
+      const hours = new Map<number, number>();
       const sources = new Map<OrderSource, { orders: number; sales: number }>();
       const types = new Map<OrderType, { orders: number; sales: number }>();
       const methods = new Map<PaymentMethod, number>();
@@ -143,6 +149,7 @@ export class PeriodService {
       const categories = new Map<ExpenseCategory, number>();
       const staff = new Map<string, { orders: number; sales: number; cash: number }>();
       for (const { day } of figures) {
+        for (const row of day.byHour) if (row.orders > 0) tally(hours, row.hour, row.orders);
         for (const row of day.bySource) {
           const entry = sources.get(row.source) ?? { orders: 0, sales: 0 };
           entry.orders += row.orders;
@@ -234,6 +241,9 @@ export class PeriodService {
           moneyIn: pesewas(day.moneyIn),
           moneyOut: pesewas(day.moneyOut),
         })),
+        byHour: [...hours.entries()]
+          .sort(([a], [b]) => a - b)
+          .map(([hour, orders]) => ({ hour, orders })),
         bySource: [...sources.entries()].map(([source, entry]) => ({ source, ...entry })),
         byType: [...types.entries()]
           .sort(([a], [b]) => ORDER_TYPES.indexOf(a) - ORDER_TYPES.indexOf(b))

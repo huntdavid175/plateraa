@@ -321,6 +321,7 @@ _11 Sep: the server side is built from Moolre's docs (docs.moolre.com; their `/a
     - _**profit:** money in + what the platforms owe − their estimated commission − money out._
   - _Also split by source and payment method, and money in by the hour, which drives the chart. The tablet's owner summary will use the same endpoint._
   - _13 Sep: Today opens any past day too (the date box, or `/?date=`), with that day's figures and orders. Reports has "Pick days" for any range up to 92 days, and the range stays in the address so a report can be shared._
+  - _14 Sep (user request): Today's chart shows **orders by hour**, one bar per hour with the busiest in full colour, instead of money in adding up through the day (it could only ever rise). Each hour of `byHour` now carries its orders (those that count as sales, by the hour taken), so `REPORT_VERSION` went to 3. Reports gained a "Busy hours" box: the period's `byHour`, the orders in each hour added up over the days._
 - [x] Sales by channel, by item, by payment method
   - _12 Sep: the dashboard's Reports page (`GET /api/reports/period?from=&to=`, up to 92 days, `reports.revenue.view`). It uses the day summary's definitions and offers the last 7 days, this month or last month. It shows the totals, day by day, by source, by payment method, and the 20 best sellers._
 - [x] Expenses report, simple P&L (money in − purchases − expenses)
