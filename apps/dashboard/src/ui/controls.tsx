@@ -206,6 +206,31 @@ export function Section({ title, children }: { title: string; children: ReactNod
   );
 }
 
+/** A switch with its title and a line of detail, as a row in a Section's card. */
+export function SwitchRow({
+  title,
+  detail,
+  on,
+  onChange,
+  disabled,
+}: {
+  title: string;
+  detail: string;
+  on: boolean;
+  onChange: (on: boolean) => void;
+  disabled?: boolean;
+}) {
+  return (
+    <div className="flex items-center justify-between gap-4 px-5 py-4">
+      <div className="flex-1">
+        <p className="text-sm font-medium">{title}</p>
+        <p className="mt-0.5 text-xs text-muted">{detail}</p>
+      </div>
+      <Toggle on={on} onChange={onChange} label={title} disabled={disabled} />
+    </div>
+  );
+}
+
 /** A red box for something that went wrong, in words the owner can act on. */
 export function ErrorNote({ children }: { children: ReactNode }) {
   return (

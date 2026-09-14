@@ -29,7 +29,7 @@ A solo founder (GitHub `huntdavid175`) builds it with an AI agent. Work started 
   - The rest of Phase 2 (12 Sep): "not synced yet" labels, refund owed, and the restyled screens.
 - **Done (13 Sep, tablet):** Dine-in / Pickup / Delivery, dark mode, Remove on each order line, the item sheet for any item with extras, and screens clear of the status bar. All tried on the tablet and working.
 - **The online store (13 Sep, plan.md §4.0),** moved up to before the pilot:
-  - the data and public API (`apps/api/src/storefront`), online orders on the tablet (numbered W1, W2, …, with "N online orders to accept" in the top bar), and Settings → Online store on the dashboard;
+  - the data and public API (`apps/api/src/storefront`), online orders on the tablet (numbered W1, W2, …, with "N online orders to accept" in the top bar), and the dashboard's Online store page (its own sidebar entry since 14 Sep; it was in Settings);
   - the storefront pages to the user's Figma Make design (`apps/storefront`), live on Vercel at `https://plateraa-storefront-bvos.vercel.app`, with `STOREFRONT_URL` on Render pointing there;
   - photos: one per menu item, plus the store's cover picture and logo, kept in Cloudflare R2 (`apps/api/src/photos`);
   - nine store looks (`STOREFRONT_LOOKS` in `@plateraa/shared`): the owner picks the page colour, and the top band, text and buttons follow it, in light and dark, with every look's contrast checked by a test.
@@ -42,7 +42,8 @@ A solo founder (GitHub `huntdavid175`) builds it with an AI agent. Work started 
     - refunds, payouts and discounts;
     - Menu and the item editor, with a photo per item ("Mark sold out" on each card; Bolt Food and Chowdeck prices hidden since 13 Sep, kept on the server);
     - Staff and tablets;
-    - Settings, including a live Moolre check, delivery zones and the Online store;
+    - Online store (its own page since 14 Sep);
+    - Settings, including a live Moolre check, delivery zones and the Setup guide (moved out of the sidebar on 14 Sep);
     - Expenses and Stock;
     - Reports.
   - 13 Sep: delivery zones (in Settings), Today for any past day, "Pick days" on Reports, and finished days' figures kept in `daily_reports` (not pg-boss: see `apps/api/AGENTS.md`). Then the Customers pages (new capability `customers.manage`), and no more scrollbars that shift the page. Switches that save the moment they're tapped use `saveInPlace`, so they never flick back to the old value while saving (see `apps/dashboard/AGENTS.md`).

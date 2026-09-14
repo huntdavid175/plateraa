@@ -58,6 +58,7 @@ The web dashboard for owners and managers (plan.md §3.1). It uses:
     - A new item, size, group or option gets its `ulid()` in the browser.
     - A saved item has a photo (`ui/PhotoPicker`), saved on its own, apart from Save.
   - **Photos** (`lib/photos.ts`): the browser shrinks each picture on a canvas (WebP, or JPEG where the browser can't make WebP; 800 px for items, 1600 px for the cover, 400 px for the logo) and sends it as the request body with a plain `fetch`, since the typed client only sends JSON.
+  - Online store (`OnlineStorePage`, `/store`, plan.md §4.0): its own sidebar entry since 14 Sep (user request; it was in Settings), for anyone with `storefront.manage` (the owner and managers; `lib/storefront.ts`). "Your store": on or off, its link with Copy and a QR code (`qrcode-generator`, downloadable), taking orders now. "Online orders": cash when they collect, accept first. "Look": the page colour (`STOREFRONT_LOOKS`, each shown as a tiny store page: its page colour, band, card and button), the cover picture and logo. "On your store's page": area, phone, hours. It says when Moolre isn't connected or there are no delivery zones yet, linking to Settings, where both stay.
   - Refunds (`RefundsPage`): orders owed money back, each with "Record refund given".
   - `money-dialogs.tsx`: the dialogs for recording a refund, applying a discount (previewed with `priceOrder`, as the server prices it) and recording a payout.
     - Each dialog makes its id with `ulid()` when it opens, so pressing Save again after a lost reply records it once.
@@ -69,7 +70,7 @@ The web dashboard for owners and managers (plan.md §3.1). It uses:
     - the starter menu is saved in one call (`lib/onboarding.ts` turns a template and its prices into it);
     - PINs are never shown back;
     - Moolre uses the Settings check.
-    - The sidebar's "Setup guide" (owners) reopens it at the menu step.
+    - Settings → Setup guide (owners) reopens it at the menu step; closing or finishing it goes back to Settings (the link passes `state: { back }`).
   - Staff (`StaffPage`):
     - the team, with Add and Edit dialogs (PINs typed twice and checked with `pinProblem`, never shown);
     - the owner's "Who sees sales totals" switches;
@@ -86,9 +87,9 @@ The web dashboard for owners and managers (plan.md §3.1). It uses:
     - Business (name, type);
     - Appearance (dark mode);
     - Orders (dine-in, pay before prep, portion counts, idle lock), where toggles save at once. **Anything that saves the moment it's tapped uses `saveInPlace`** (`lib/save-in-place.ts`, spread into `useMutation` with the reload as `onSettled`): the new value goes into the loaded data at once and back if saving fails, so a switch never flicks back to its old value while it saves (user report, 13 Sep). Used by these switches, Online store, "Who sees sales totals" and the Menu page's "Mark sold out";
-    - Online store (plan.md §4.0), for anyone with `storefront.manage` (the owner and managers; `lib/storefront.ts`): the store on or off, its link with Copy and a QR code (`qrcode-generator`, downloadable), taking orders now, cash when they collect, accept first, the look (`STOREFRONT_LOOKS`, each shown as a tiny store page: its page colour, band, card and button), the cover picture and logo, and what its page shows (area, phone, hours). It says when Moolre isn't connected or there are no delivery zones yet;
     - Delivery zones, for anyone with `catalog.manage` (managers too): add, change, switch off the tablet, remove (`lib/zones.ts`).
     - Payments (the Moolre account, with "Check and save").
+    - Setup guide (owners): reopens the onboarding at the menu step.
   - **Bolt Food and Chowdeck are hidden** (user decision, 13 Sep) until their APIs connect: no commissions in Settings, and no platform prices in the item editor, whose "Cost and margin" section now shows only with `reports.revenue.view`. The editor still sends the prices it loaded, so none are lost.
   - **Dine-in, pickup and delivery** replace "where the order came from": Today's cards, Reports' "Dine-in, pickup and delivery" box and the Orders filter (`?type=`), with Dine-in only where the owner offers it (`me.offersDineIn`). Orders are worded by `kindWords` ("Dine-in", or "Bolt · Pickup" for one from elsewhere); `?source=` still works as a removable chip.
     - Managers see Appearance, the business name and Delivery zones.

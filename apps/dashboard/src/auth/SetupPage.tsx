@@ -1,7 +1,7 @@
 import { MENU_TEMPLATES, VENDOR_TYPES, pinProblem, type VendorType } from '@plateraa/shared';
 import { useMutation, useQuery } from '@tanstack/react-query';
 import { useMemo, useState, type ReactNode } from 'react';
-import { Navigate, useNavigate } from 'react-router';
+import { Navigate, useLocation, useNavigate } from 'react-router';
 import { fetchMenu } from '../lib/menu';
 import { parseAmount } from '../lib/money';
 import {
@@ -24,11 +24,12 @@ const BLANK: VendorType = 'OTHER';
 /**
  * Setting up a business from a phone (plan.md §3.1), to the design: name, type, a starter menu,
  * its prices, PINs, the owner's own Moolre account, then the tablet. Opened with a business
- * already chosen (the "Setup guide"), it starts at the menu.
+ * already chosen (Settings → Setup guide), it starts at the menu.
  */
 export default function SetupPage() {
   const { token, tenantId } = useSession();
   const navigate = useNavigate();
+  const location = useLocation();
   const context = useContextQuery();
   const [startedWithBusiness] = useState(() => tenantId !== null);
   const [step, setStep] = useState(startedWithBusiness ? 3 : 1);
@@ -51,7 +52,9 @@ export default function SetupPage() {
   // goes to the menu choice, which knows whether a menu is already there.
   const back =
     step === 2 ? () => setStep(1) : step > 3 ? () => setStep(step === 5 ? 3 : step - 1) : undefined;
-  const done = () => navigate('/', { replace: true });
+  // Opened from Settings (the "Setup guide"), closing it goes back there.
+  const from: unknown = (location.state as { back?: unknown } | null)?.back;
+  const done = () => navigate(typeof from === 'string' ? from : '/', { replace: true });
 
   return (
     <div className="mx-auto flex min-h-full max-w-[390px] flex-col bg-bg">

@@ -17,9 +17,9 @@ import {
   OrdersIcon,
   RefundIcon,
   SettingsIcon,
-  SetupIcon,
   SignOutIcon,
   StaffIcon,
+  StoreIcon,
   WalletIcon,
 } from '../ui/icons';
 import { Centered } from '../ui/Page';
@@ -27,6 +27,8 @@ import { Centered } from '../ui/Page';
 interface NavItem {
   to: string;
   label: string;
+  /** A shorter label for the phone's bottom bar, where five share the width. */
+  short?: string;
   Icon: ComponentType<{ size?: number }>;
   /** Hidden from people without this permission (the server refuses them anyway). */
   needs?: Capability;
@@ -37,13 +39,19 @@ const NAV: NavItem[] = [
   { to: '/orders', label: 'Orders', Icon: OrdersIcon },
   { to: '/customers', label: 'Customers', Icon: CustomersIcon },
   { to: '/menu', label: 'Menu', Icon: MenuIcon, needs: 'catalog.manage' },
+  {
+    to: '/store',
+    label: 'Online store',
+    short: 'Store',
+    Icon: StoreIcon,
+    needs: 'storefront.manage',
+  },
   { to: '/staff', label: 'Staff', Icon: StaffIcon, needs: 'staff.manage' },
   { to: '/refunds', label: 'Refunds', Icon: RefundIcon, needs: 'refunds.record' },
   { to: '/reports', label: 'Reports', Icon: ChartIcon, needs: 'reports.revenue.view' },
   { to: '/expenses', label: 'Expenses', Icon: WalletIcon, needs: 'expenses.manage' },
   { to: '/stock', label: 'Stock', Icon: BoxIcon, needs: 'catalog.manage' },
   { to: '/settings', label: 'Settings', Icon: SettingsIcon },
-  { to: '/setup', label: 'Setup guide', Icon: SetupIcon, needs: 'settings.manage' },
 ];
 
 /** The phone's bottom bar fits five; the rest go under "More". */
@@ -261,7 +269,7 @@ function PhoneHeader({ me, overflow }: { me: Me; overflow: NavItem[] }) {
 function BottomBar({ nav }: { nav: NavItem[] }) {
   return (
     <nav className="fixed inset-x-0 bottom-0 z-40 flex border-t border-border bg-surface pb-[env(safe-area-inset-bottom)] md:hidden">
-      {nav.map(({ to, label, Icon }) => (
+      {nav.map(({ to, label, short, Icon }) => (
         <NavLink
           key={to}
           to={to}
@@ -274,7 +282,7 @@ function BottomBar({ nav }: { nav: NavItem[] }) {
           }
         >
           <Icon size={20} />
-          {label}
+          {short ?? label}
         </NavLink>
       ))}
     </nav>
