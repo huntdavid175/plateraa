@@ -60,13 +60,17 @@ export function useDrawer(): DrawerState | null {
   return useLoaded((db) => loadDrawer(db, deviceId));
 }
 
-/** The business's pay-before-prep setting: on unless the owner turned it off. */
+export const PAY_BEFORE_PREP_SQL =
+  'SELECT require_payment_before_prep AS "on" FROM settings LIMIT 1';
+
+/** Pay before prep is on unless the owner turned it off. */
+export const payBeforePrepOf = (on: number | null | undefined): boolean =>
+  on === null || on === undefined ? true : on === 1;
+
+/** The business's pay-before-prep setting. */
 export function usePayBeforePrep(): boolean {
-  const rows = useLocalQuery<{ on: number | null }>(
-    'SELECT require_payment_before_prep AS "on" FROM settings LIMIT 1',
-  );
-  const on = rows?.[0]?.on;
-  return on === null || on === undefined ? true : on === 1;
+  const rows = useLocalQuery<{ on: number | null }>(PAY_BEFORE_PREP_SQL);
+  return payBeforePrepOf(rows?.[0]?.on);
 }
 
 /** Whether the owner switched on morning portion counts (off unless they did). */

@@ -8,6 +8,7 @@ import { Stack } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import { ActivityIndicator, Text, View } from 'react-native';
 import { SafeAreaProvider, useSafeAreaInsets } from 'react-native-safe-area-context';
+import { OrderAlerts } from '../src/counter/OrderAlerts';
 import { IdleLock } from '../src/tablet/IdleLock';
 import { TabletProvider, useTablet } from '../src/tablet/TabletProvider';
 import { loadAppearance } from '../src/ui/appearance';
@@ -46,6 +47,8 @@ function Root() {
       <StatusBar style={scheme === 'dark' ? 'light' : 'dark'} />
       {/* A new look draws every screen afresh; the tablet stays unlocked and keeps syncing. */}
       <Screens key={scheme} />
+      {/* Above every screen, the lock screen too, and kept through a change of look. */}
+      <OrderAlerts />
     </TabletProvider>
   );
 }

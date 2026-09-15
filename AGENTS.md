@@ -33,7 +33,8 @@ A solo founder (GitHub `huntdavid175`) builds it with an AI agent. Work started 
   - the storefront pages to the user's Figma Make design (`apps/storefront`), live on Vercel at `https://plateraa-storefront-bvos.vercel.app`, with `STOREFRONT_URL` on Render pointing there;
   - photos: one per menu item, plus the store's cover picture and logo, kept in Cloudflare R2 (`apps/api/src/photos`);
   - nine store looks (`STOREFRONT_LOOKS` in `@plateraa/shared`): the owner picks the page colour, and the top band, text and buttons follow it, in light and dark, with every look's contrast checked by a test.
-  - Still open: the order sound on the tablet (needs an EAS build), trying Accept on the tablet, and a real order placed from a phone.
+  - 15 Sep: the tablet rings a chime and shows a note for each new online order, and notes each payment link texted, paid or failed (`apps/mobile/AGENTS.md`, Alerts).
+  - Still open: trying the chime (needs the EAS build of 15 Sep) and Accept on the tablet, and a real order placed from a phone.
 - **Phase 3.1–3.2, the dashboard** (12 Sep), built slice by slice to the user's Figma Make design. See `apps/dashboard/AGENTS.md`.
   - Pages:
     - sign-in, sign-up and the 7-step onboarding;
