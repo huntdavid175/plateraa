@@ -55,9 +55,7 @@ export function Centered({
     <div className="flex min-h-full items-center justify-center px-5 py-10">
       <div className="w-full max-w-sm">
         <div className="mb-8 flex items-center gap-2.5">
-          <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-brand text-base font-bold text-white">
-            P
-          </div>
+          <img src="/logo.png" alt="" className="h-9 w-9" />
           <span className="text-lg font-semibold">Plateraa</span>
         </div>
         <h1 className="text-2xl font-bold">{title}</h1>

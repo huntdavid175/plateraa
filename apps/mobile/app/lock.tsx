@@ -1,7 +1,8 @@
 import type { Role } from '@plateraa/shared';
 import { Link } from 'expo-router';
 import { useState } from 'react';
-import { ActivityIndicator, Pressable, ScrollView, Text, View } from 'react-native';
+import { ActivityIndicator, Image, Pressable, ScrollView, Text, View } from 'react-native';
+import logo from '../assets/logo.png';
 import PlateraaCrypto from '../modules/plateraa-crypto/src/PlateraaCryptoModule';
 import { checkPin, pinMessage } from '../src/tablet/pin-guard';
 import { useLocalQuery, useTablet } from '../src/tablet/TabletProvider';
@@ -65,7 +66,10 @@ export default function LockScreen() {
   return (
     <View style={styles.screen}>
       <View style={styles.people}>
-        <Text style={styles.business}>{device?.businessName}</Text>
+        <View style={styles.brand}>
+          <Image source={logo} style={styles.logo} />
+          <Text style={styles.business}>{device?.businessName}</Text>
+        </View>
         <Text style={styles.title}>Who's at the counter?</Text>
         {people === null ? (
           <ActivityIndicator color={colors.brand} />
@@ -141,6 +145,8 @@ const styles = themedStyles(() => ({
   },
   people: { flex: 1, gap: space.md, paddingTop: space.sm },
   grow: { flex: 1 },
+  brand: { flexDirection: 'row', alignItems: 'center', gap: space.sm },
+  logo: { width: 28, height: 28 },
   business: { fontFamily: font.medium, fontSize: text.small, color: colors.muted },
   title: { fontFamily: font.semibold, fontSize: text.title, color: colors.ink },
   tiles: { flexDirection: 'row', flexWrap: 'wrap', gap: 12 },

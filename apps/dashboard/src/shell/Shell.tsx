@@ -174,9 +174,7 @@ function BusinessBlock({ me }: { me: Me }) {
   return (
     <div>
       <div className="flex items-center gap-2.5">
-        <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-brand text-sm font-bold text-white">
-          P
-        </div>
+        <img src="/logo.png" alt="" className="h-8 w-8 shrink-0" />
         <div className="min-w-0">
           <div className="truncate text-sm font-semibold">{me.businessName}</div>
           <div className="text-xs text-muted">{VENDOR_TYPE_WORDS[me.vendorType]}</div>
@@ -207,9 +205,7 @@ function PhoneHeader({ me, overflow }: { me: Me; overflow: NavItem[] }) {
     <>
       <header className="flex items-center justify-between border-b border-border bg-surface px-4 py-3 md:hidden">
         <div className="flex min-w-0 items-center gap-2.5">
-          <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-brand text-xs font-bold text-white">
-            P
-          </div>
+          <img src="/logo.png" alt="" className="h-7 w-7 shrink-0" />
           <span className="truncate text-sm font-semibold">{me.businessName}</span>
         </div>
         <button

@@ -1,6 +1,7 @@
 import { pinProblem } from '@plateraa/shared';
 import { useState } from 'react';
-import { ScrollView, Text, View } from 'react-native';
+import { Image, ScrollView, Text, View } from 'react-native';
+import logo from '../assets/logo.png';
 import type { SyncEngine } from '../src/offline/engine';
 import { resetLocalData } from '../src/offline/schema';
 import { ownerApi, problemText, signIn, type Business } from '../src/tablet/api';
@@ -135,6 +136,7 @@ export default function RegisterScreen() {
   return (
     <ScrollView contentContainerStyle={styles.screen} keyboardShouldPersistTaps="handled">
       <View style={styles.intro}>
+        <Image source={logo} style={styles.logo} />
         <Text style={styles.title}>Set up this tablet</Text>
         <Text style={styles.body}>
           An owner or manager does this once. After that, staff unlock the tablet with their own
@@ -254,6 +256,7 @@ const styles = themedStyles(() => ({
     backgroundColor: colors.ground,
   },
   intro: { flex: 1, gap: space.md, paddingTop: space.lg },
+  logo: { width: 56, height: 56 },
   title: { fontFamily: font.semibold, fontSize: text.title, color: colors.ink },
   body: { fontFamily: font.regular, fontSize: text.body, lineHeight: 26, color: colors.muted },
   card: {

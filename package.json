@@ -12,7 +12,8 @@
     "test": "turbo run test",
     "lint": "eslint .",
     "format": "prettier --write .",
-    "format:check": "prettier --check ."
+    "format:check": "prettier --check .",
+    "brand:assets": "node scripts/brand-assets.mjs"
   },
   "devDependencies": {
     "@eslint/js": "10.0.1",
@@ -21,6 +22,7 @@
     "eslint-config-prettier": "10.1.8",
     "globals": "17.12.0",
     "prettier": "3.9.6",
+    "sharp": "0.35.4",
     "turbo": "2.10.12",
     "typescript": "6.0.3",
     "typescript-eslint": "8.70.0"

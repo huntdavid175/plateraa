@@ -62,6 +62,11 @@ The counter app. It runs on the vendor's own budget Android tablet (8–10", **l
   - Switching draws the screens afresh (`<Screens key={scheme}>` in `app/_layout.tsx`), so an order half typed in is cleared; the tablet stays unlocked and keeps syncing.
 - Every screen uses this look. The lock screen (and `PinPad`), setup, add staff, "Needs attention", the sync banner and Tablet check were brought in line on 12 Sep, and the old colour names and `radius` are gone from `theme.ts`.
 - The Figma design's WhatsApp/Instagram sources, "Save as unpaid" and receipts are left out on purpose: see the settled decisions in the root AGENTS.md.
+- **Logo and icons** (15 Sep), all made by `pnpm brand:assets` from `public/images/logo.png` at the repo root, so don't edit them by hand:
+  - `icon.png` (1024, edge to edge), and Android's adaptive icon: `android-icon-foreground.png` (the white P, sized so round launchers don't cut it), `android-icon-background.png` and `adaptiveIcon.backgroundColor` (`#FC5102`), and `android-icon-monochrome.png` for themed icons.
+  - The splash (`expo-splash-screen` plugin in `app.json`): `splash-icon.png` at 160 dp on the warm grey, or the dark ground in dark mode.
+  - `logo.png` (256) in the app: beside the business name on the lock screen, and above "Set up this tablet".
+  - Icons and the splash are native: they change only with a new EAS build.
 - The design file is `assets/design/Design Plateraa POS Screen.make`. The UI guideline skill used for the redesign is `.claude/skills/airbnb-ui` (installed as-is, so Prettier skips it).
 
 ## App (`app/`, `src/tablet`, `src/ui`)

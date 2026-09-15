@@ -177,7 +177,8 @@ export function Message({
   title,
   children,
 }: {
-  icon: string;
+  /** An emoji, or a picture such as Plateraa's logo. */
+  icon: ReactNode;
   title: string;
   children?: ReactNode;
 }) {
