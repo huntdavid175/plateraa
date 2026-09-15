@@ -167,6 +167,7 @@ export const SYNCED_TABLES = [
     fields: [
       'id',
       'orderId',
+      'deviceId',
       'status',
       'amount',
       'phone',
@@ -359,6 +360,12 @@ export const MIGRATIONS: readonly (readonly string[])[] = [
     // Online orders (plan.md §4.0): one paid in cash when it's collected is cooked before it's
     // paid. Forgetting the cursor brings the flag in for online orders already on the tablet.
     `ALTER TABLE orders ADD COLUMN pay_on_collection INTEGER`,
+    `DELETE FROM meta WHERE key = 'cursor'`,
+  ],
+  [
+    // Which tablet asked for each payment link (15 Sep), so the counter's notes follow the links
+    // it sent, on any order. Forgetting the cursor brings it in for links already on the tablet.
+    `ALTER TABLE payment_links ADD COLUMN device_id TEXT`,
     `DELETE FROM meta WHERE key = 'cursor'`,
   ],
 ];

@@ -451,4 +451,46 @@ describe('sync engine', () => {
     expect(server.pulls).toHaveLength(4);
     engine.stop();
   });
+
+  it('checks back every 3 seconds while waiting on the server, then every 30 again', async () => {
+    const { server, engine } = await setUp();
+    vi.useFakeTimers();
+    engine.start();
+    await vi.advanceTimersByTimeAsync(0);
+    expect(server.pulls).toHaveLength(2);
+
+    let arrived = false;
+    await engine.record('item.set_sold_out', soldOut(MENU.jollof), STAFF_ID);
+    engine.followUp(async () => arrived);
+    await vi.advanceTimersByTimeAsync(300);
+    expect(server.pulls).toHaveLength(3);
+    await vi.advanceTimersByTimeAsync(3_000);
+    expect(server.pulls).toHaveLength(4);
+
+    arrived = true;
+    await vi.advanceTimersByTimeAsync(3_000);
+    expect(server.pulls).toHaveLength(5);
+    await vi.advanceTimersByTimeAsync(3_000);
+    expect(server.pulls).toHaveLength(5);
+    await vi.advanceTimersByTimeAsync(27_000);
+    expect(server.pulls).toHaveLength(6);
+    engine.stop();
+  });
+
+  it('stops checking back quickly after a minute, even if nothing arrived', async () => {
+    const { server, engine } = await setUp();
+    vi.useFakeTimers();
+    engine.start();
+    await vi.advanceTimersByTimeAsync(0);
+
+    engine.followUp(async () => false);
+    await engine.syncNow();
+    await vi.advanceTimersByTimeAsync(60_000);
+    const pulls = server.pulls.length;
+    await vi.advanceTimersByTimeAsync(3_000);
+    expect(server.pulls).toHaveLength(pulls);
+    await vi.advanceTimersByTimeAsync(27_000);
+    expect(server.pulls).toHaveLength(pulls + 1);
+    engine.stop();
+  });
 });

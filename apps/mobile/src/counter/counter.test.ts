@@ -136,8 +136,15 @@ describe('taking orders at the counter', () => {
 
     const [order] = await loadQueue(db, TODAY);
     expect(order!.link).toMatchObject({ status: 'QUEUED', phone: '+233241234567' });
-    expect(linkWords(order!.link!)).toEqual({
+    // Kept with the link, so its notes follow this tablet whichever order it's for.
+    expect(await db.get('SELECT device_id FROM payment_links')).toEqual({ device_id: DEVICE_ID });
+    expect(linkWords(order!.link!, false)).toEqual({
       text: 'Payment link to 024 123 4567 goes out as soon as the tablet is online.',
+      tone: 'info',
+    });
+    // Online, the server texts it within seconds of the upload.
+    expect(linkWords(order!.link!, true)).toEqual({
+      text: 'Sending the payment link to 024 123 4567…',
       tone: 'info',
     });
     // A second link while one is open would let the customer pay twice.
@@ -145,7 +152,7 @@ describe('taking orders at the counter', () => {
       code: 'LINK_ALREADY_OPEN',
     });
     expect(
-      linkWords({ status: 'FAILED', phone: '+233241234567', failure: 'Moolre said: no.' }),
+      linkWords({ status: 'FAILED', phone: '+233241234567', failure: 'Moolre said: no.' }, true),
     ).toEqual({ text: "The payment link didn't go. Moolre said: no.", tone: 'red' });
     expect(phoneWords('+233501234567')).toBe('050 123 4567');
   });

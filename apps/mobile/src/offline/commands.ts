@@ -435,7 +435,7 @@ const HANDLERS: LocalHandlers = {
     recordPayment(ctx, ctx.command.payload, { method: 'PLATFORM', tendered: null, shift_id: null }),
 
   /** Saved at once, even offline; the server makes the link and texts it once this reaches it. */
-  'payment.request_link': async ({ writer, command }) => {
+  'payment.request_link': async ({ writer, command, deviceId }) => {
     const p = command.payload;
     const order = await loadOrder(writer.tx, p.orderId);
     if (order.status === 'CANCELLED' || order.status === 'REFUNDED') {
@@ -457,6 +457,7 @@ const HANDLERS: LocalHandlers = {
     await writer.put('payment_links', {
       id: p.linkId,
       order_id: order.id,
+      device_id: deviceId,
       status: 'QUEUED',
       amount: owed,
       phone: p.phone,

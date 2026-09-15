@@ -2,6 +2,7 @@ import { canEditItems, refundOwed, type OrderStatus, type OrderType } from '@pla
 import { useMemo, useState } from 'react';
 import { Pressable, ScrollView, Text, View } from 'react-native';
 import { problemText } from '../tablet/api';
+import { useEngineState } from '../tablet/TabletProvider';
 import { Button } from '../ui/Button';
 import { Badge, Chip } from '../ui/controls';
 import { Field, Label } from '../ui/Field';
@@ -279,7 +280,8 @@ function OrderDetail({
   // One open link at a time: a new one once the last has failed or expired.
   const linkOpen = order.link?.status === 'QUEUED' || order.link?.status === 'SENT';
   const canSendLink = open && toPay > 0 && !platform && !!order.customer_phone && !linkOpen;
-  const link = order.link ? linkWords(order.link) : null;
+  const online = useEngineState(counter.engine)?.connection === 'online';
+  const link = order.link ? linkWords(order.link, online) : null;
 
   const run = async (task: () => Promise<unknown>) => {
     setBusy(true);

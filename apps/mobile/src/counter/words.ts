@@ -97,16 +97,20 @@ export function phoneWords(phone: string): string {
   return `${national.slice(0, 3)} ${national.slice(3, 6)} ${national.slice(6)}`;
 }
 
-/** A payment link's state, in words, with the colour that goes with it. */
-export function linkWords(link: {
-  status: PaymentLinkStatus;
-  phone: string;
-  failure: string | null;
-}): { text: string; tone: 'info' | 'good' | 'amber' | 'red' } {
+/**
+ * A payment link's state, in words, with the colour that goes with it. `online`: whether the
+ * tablet can reach the server, so a link not texted yet is either on its way or waiting.
+ */
+export function linkWords(
+  link: { status: PaymentLinkStatus; phone: string; failure: string | null },
+  online: boolean,
+): { text: string; tone: 'info' | 'good' | 'amber' | 'red' } {
   switch (link.status) {
     case 'QUEUED':
       return {
-        text: `Payment link to ${phoneWords(link.phone)} goes out as soon as the tablet is online.`,
+        text: online
+          ? `Sending the payment link to ${phoneWords(link.phone)}…`
+          : `Payment link to ${phoneWords(link.phone)} goes out as soon as the tablet is online.`,
         tone: 'info',
       };
     case 'SENT':

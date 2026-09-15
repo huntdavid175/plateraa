@@ -83,6 +83,15 @@ const FIRST_BACKOFF_MS = 2_000;
 const MAX_BACKOFF_MS = 60_000;
 /** While the server can't be reached, a new change still tries it, but not more often than this. */
 const RETRY_WHILE_FAILING_MS = 5_000;
+/** While waiting on something the server does just after an upload, it checks back this often… */
+const FOLLOW_UP_EVERY_MS = 3_000;
+/** …for this long at most. */
+const FOLLOW_UP_FOR_MS = 60_000;
+
+interface FollowUp {
+  done: (db: Database) => Promise<boolean>;
+  until: number;
+}
 
 /** The server asked for part of an upload to be sent again later. */
 class RetryLater extends Error {
@@ -138,6 +147,7 @@ export class SyncEngine {
   private timer: ReturnType<typeof setTimeout> | null = null;
   private failures = 0;
   private lastAttemptAt = 0;
+  private followUps: FollowUp[] = [];
 
   constructor(options: SyncEngineOptions) {
     this.db = options.db;
@@ -263,6 +273,15 @@ export class SyncEngine {
   }
 
   /**
+   * Checks back with the server every 3 s rather than every 30 s until `done` says what's awaited
+   * has arrived, for a minute at most. For work the server does just after an upload, such as
+   * texting a payment link, so the counter sees how it went in seconds. Call it after `record`.
+   */
+  followUp(done: (db: Database) => Promise<boolean>): void {
+    this.followUps.push({ done, until: Date.now() + FOLLOW_UP_FOR_MS });
+  }
+
+  /**
    * Uploads what's waiting, then brings in the server's changes. Never throws: how it went is in
    * the state. If a sync is already running, it runs once more when that one finishes.
    */
@@ -300,6 +319,7 @@ export class SyncEngine {
         this.onError(error);
       }
     } finally {
+      await this.settleFollowUps();
       await this.refreshCounts();
       this.setState({ syncing: false });
     }
@@ -476,8 +496,23 @@ export class SyncEngine {
       const backoff = Math.min(MAX_BACKOFF_MS, FIRST_BACKOFF_MS * 2 ** (this.failures - 1));
       this.setTimer(backoff * (0.8 + Math.random() * 0.4));
     } else if (this.foreground) {
-      this.setTimer(this.pullEveryMs);
+      this.setTimer(this.followUps.length ? FOLLOW_UP_EVERY_MS : this.pullEveryMs);
     }
+  }
+
+  /** Drops the follow-ups whose wait is over: what they awaited arrived, or their minute is up. */
+  private async settleFollowUps(): Promise<void> {
+    const over = new Set<FollowUp>();
+    for (const followUp of this.followUps) {
+      try {
+        if (Date.now() >= followUp.until || (await followUp.done(this.db))) over.add(followUp);
+      } catch (error) {
+        over.add(followUp);
+        this.onError(error);
+      }
+    }
+    // Filtered rather than replaced: one may have been added while these were being read.
+    this.followUps = this.followUps.filter((followUp) => !over.has(followUp));
   }
 
   private setTimer(delay: number): void {

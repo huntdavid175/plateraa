@@ -18,6 +18,8 @@ export interface WatchedOrder extends LaneOrder {
 export interface WatchedLink {
   id: string;
   order_id: string;
+  /** The tablet that asked for it; null for the online store's own. */
+  device_id: string | null;
   status: PaymentLinkStatus;
   phone: string;
   failure: string | null;
@@ -78,7 +80,9 @@ export function listen(
   for (const link of links) {
     const was = heard.links.get(link.id);
     const order = byId.get(link.order_id);
-    if (!was || was === link.status || !order || order.device_id !== context.deviceId) continue;
+    // Links this tablet asked for, on any order: an online one, or one placed before the tablet
+    // was set up again.
+    if (!was || was === link.status || !order || link.device_id !== context.deviceId) continue;
     const alert = linkChanged(link, order.display_number);
     if (alert) alerts.push(alert);
   }

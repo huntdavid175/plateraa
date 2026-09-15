@@ -25,6 +25,7 @@ const link = (extra: Partial<WatchedLink> = {}): WatchedLink => ({
   id: 'l1',
   order_id: 'a1',
   status: 'QUEUED',
+  device_id: HERE,
   phone: '+233241234567',
   failure: null,
   ...extra,
@@ -123,13 +124,23 @@ describe('payment links from this tablet', () => {
     ]);
   });
 
-  it("leaves other tablets' links, and the store's own, alone", () => {
-    const theirs = { ...mine, device_id: 'tablet-b' };
-    const online = order({ id: 'a1' });
-    for (const other of [theirs, online]) {
+  it('notes a link it sent on any order: an online one, or one from before it was set up again', () => {
+    const online = order({ id: 'a1', display_number: 'W1' });
+    const older = { ...mine, device_id: 'old-registration' };
+    for (const other of [online, older]) {
       const heard = after(
         { orders: [other], links: [link()] },
         { orders: [other], links: [link({ status: 'SENT' })] },
+      );
+      expect(heard.alerts).toHaveLength(1);
+    }
+  });
+
+  it("leaves another tablet's links, and the online store's own, alone", () => {
+    for (const from of ['tablet-b', null]) {
+      const heard = after(
+        { orders: [mine], links: [link({ device_id: from })] },
+        { orders: [mine], links: [link({ device_id: from, status: 'SENT' })] },
       );
       expect(heard.alerts).toEqual([]);
     }

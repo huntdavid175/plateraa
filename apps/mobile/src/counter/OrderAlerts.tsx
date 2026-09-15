@@ -13,7 +13,7 @@ const ORDERS_SQL = `SELECT o.id, o.display_number, o.source, o.type, o.device_id
        o.total, o.delivery_fee, o.delivery_fee_collected_by, o.amount_paid, o.pay_on_collection
   FROM orders o WHERE ${OPEN_OR_TODAY}`;
 
-const LINKS_SQL = `SELECT l.id, l.order_id, l.status, l.phone, l.failure
+const LINKS_SQL = `SELECT l.id, l.order_id, l.device_id, l.status, l.phone, l.failure
   FROM payment_links l JOIN orders o ON o.id = l.order_id WHERE ${OPEN_OR_TODAY}`;
 
 /** How long a note stays up, unless tapped away. */
