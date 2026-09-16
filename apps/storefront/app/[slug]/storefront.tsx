@@ -2,7 +2,7 @@
 
 import { normalizeGhanaPhone } from '@plateraa/shared';
 import { useRouter } from 'next/navigation';
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { ulid } from 'ulid';
 import {
   ArrowLeft,
@@ -23,6 +23,7 @@ import {
   type CartLine,
   type PricedLine,
 } from '../../lib/cart';
+import { useMenuNav } from '../../lib/menu-nav';
 import { ghs } from '../../lib/money';
 import { phoneWords } from '../../lib/words';
 import { placeOrder } from '../actions';
@@ -176,12 +177,8 @@ function StoreScreen({
       ? [...listed, { id: 'more', name: listed.length ? 'More' : 'Menu', items: others }]
       : listed;
   }, [store]);
-  const [active, setActive] = useState(sections[0]?.id ?? '');
-  const refs = useRef<Record<string, HTMLElement | null>>({});
-  const jump = (id: string) => {
-    setActive(id);
-    refs.current[id]?.scrollIntoView({ behavior: 'smooth', block: 'start' });
-  };
+  const ids = useMemo(() => sections.map((section) => section.id), [sections]);
+  const menu = useMenuNav(ids);
 
   return (
     <div className="min-h-screen">
@@ -263,15 +260,25 @@ function StoreScreen({
             </header>
 
             {sections.length > 1 && (
-              <nav className="sticky top-0 z-10 border-b border-border bg-card px-4 py-3">
-                <div className="scrollbar-hide flex gap-2 overflow-x-auto">
+              <nav
+                ref={menu.navRef}
+                className="sticky top-0 z-10 border-b border-border bg-card px-4 py-3"
+              >
+                <div
+                  ref={menu.stripRef}
+                  className="scrollbar-hide flex gap-2 overflow-x-auto scroll-smooth"
+                >
                   {sections.map((section) => (
                     <button
                       key={section.id}
+                      ref={(element) => {
+                        menu.pills.current[section.id] = element;
+                      }}
                       type="button"
-                      onClick={() => jump(section.id)}
-                      className={`flex-shrink-0 rounded-full border px-4 py-1.5 text-sm font-medium whitespace-nowrap transition-all ${
-                        active === section.id
+                      onClick={() => menu.jump(section.id)}
+                      aria-current={menu.active === section.id ? 'true' : undefined}
+                      className={`flex-shrink-0 rounded-full border px-4 py-1.5 text-sm font-medium whitespace-nowrap transition-colors duration-200 ${
+                        menu.active === section.id
                           ? 'border-brand bg-brand text-on-brand'
                           : 'border-border bg-tile text-muted'
                       }`}
@@ -293,7 +300,7 @@ function StoreScreen({
                 <section
                   key={section.id}
                   ref={(element) => {
-                    refs.current[section.id] = element;
+                    menu.sections.current[section.id] = element;
                   }}
                   className="scroll-mt-16 px-4 pt-5"
                 >
