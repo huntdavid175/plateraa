@@ -1,6 +1,6 @@
 import { useRouter } from 'expo-router';
 import { useState, type ReactElement } from 'react';
-import { Modal, Pressable, Text, View } from 'react-native';
+import { Alert, Modal, Pressable, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useEngineState, useLocalQuery, useTablet } from '../tablet/TabletProvider';
 import { saveAppearance } from '../ui/appearance';
@@ -72,12 +72,23 @@ export function NavBar({ tab, onTab }: { tab: CounterTab; onTab: (tab: CounterTa
     router.push(path);
   };
 
+  /** The name sits next to the tabs, so a mis-tap shouldn't throw someone off the till. */
+  const askToLock = () =>
+    Alert.alert(
+      'Lock the tablet?',
+      'Whoever uses it next types their PIN. An order being typed in is cleared; saved orders are safe.',
+      [
+        { text: 'Stay on', style: 'cancel' },
+        { text: 'Lock', onPress: lock },
+      ],
+    );
+
   return (
     <View style={styles.bar} accessibilityRole="tablist">
       <Pressable
         accessibilityRole="button"
-        accessibilityLabel={`${staff?.displayName ?? ''}, tap to lock`}
-        onPress={lock}
+        accessibilityLabel={`${staff?.displayName ?? ''}, tap to lock the tablet`}
+        onPress={askToLock}
         style={({ pressed }) => [styles.item, pressed && styles.pressed]}
       >
         <View style={styles.avatar}>
