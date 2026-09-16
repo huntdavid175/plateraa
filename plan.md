@@ -194,6 +194,7 @@ _11 Sep: built (`apps/mobile/src/counter`; the counter screen is `app/index.tsx`
   - _16 Sep, user request: the customer's number is typed in the payment sheet, under Payment link, instead of in the order column, which it crowded. A delivery still asks in the column, beside the address, for the rider. Not tried on the tablet yet._
 - [x] Phone order entry (typed in like a walk-in, caller's number required, paid only by a payment link sent to that number) and hand-typed Bolt/Chowdeck orders: source, pickup/delivery, address + zone → fee (_delivery with zones not tried yet: the test business has no zones_)
 - [x] Inbox sorted by urgency; unpaid orders sit in an "awaiting payment" list and don't reach the prep queue while pay-before-prep is on
+  - _16 Sep, user request: Orders has its own Unpaid tab, so Active holds only orders that are paid for and on their way; Held, Completed and Cancelled are unchanged. Not tried on the tablet yet._
 - [x] Prep queue: readable from 2 m, amber/red timers, tap to advance, optional Kitchen/Drinks split (_amber at the prep time, red at half as long again; "from 2 m" not measured yet_)
 - [x] Hold / resume / edit before prep / cancel with a reason (anyone can cancel a paid order; it then shows "refund owed" until a manager records the refund)
 - [x] Payments: walk-ins by cash or payment link; phone orders by payment link only; Bolt/Chowdeck as paid via platform (links: §2.5) (_cash and "paid on Bolt/Chowdeck" work; links can be chosen, and go out once §2.5 is done_)

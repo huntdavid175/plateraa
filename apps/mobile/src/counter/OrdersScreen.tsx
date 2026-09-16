@@ -24,6 +24,7 @@ import {
   ORDER_FILTERS,
   byUrgency,
   filterOf,
+  isOpenFilter,
   minutesSince,
   stillToPay,
   type OrderFilter,
@@ -46,6 +47,15 @@ const LINK_COLOURS = themed(() => ({
 }));
 
 type Tone = 'neutral' | 'good' | 'amber' | 'red' | 'info';
+
+/** What an empty tab says, so it's clear which list is empty. */
+const EMPTY: Record<OrderFilter, string> = {
+  unpaid: 'Nothing waiting to be paid.',
+  active: 'Nothing on the go.',
+  held: 'Nothing on hold.',
+  completed: 'Nothing finished yet today.',
+  cancelled: 'Nothing cancelled today.',
+};
 
 function statusTone(status: OrderStatus): Tone {
   if (status === 'READY' || status === 'OUT_FOR_DELIVERY') return 'good';
@@ -74,8 +84,9 @@ const refundOwedOf = (order: QueueOrder) =>
   );
 
 /**
- * Every order today, most urgent first: late and unpaid, then unpaid, then the rest. The list on
- * the left, the chosen order and what can be done with it on the right.
+ * Every order today under its own tab — Unpaid, Active, Held, Completed, Cancelled — most
+ * urgent first within each. The list on the left, the chosen order and what can be done with it
+ * on the right.
  */
 export function OrdersScreen({
   orders,
@@ -93,7 +104,10 @@ export function OrdersScreen({
   const [selectedId, setSelectedId] = useState<string | null>(null);
 
   const counts = useMemo(() => {
-    const totals: Record<OrderFilter, number> = { active: 0, held: 0, completed: 0, cancelled: 0 };
+    const totals = Object.fromEntries(ORDER_FILTERS.map((option) => [option.value, 0])) as Record<
+      OrderFilter,
+      number
+    >;
     for (const order of orders ?? []) totals[filterOf(order)] += 1;
     return totals;
   }, [orders]);
@@ -113,7 +127,13 @@ export function OrdersScreen({
   return (
     <View style={styles.screen}>
       <View style={styles.list}>
-        <View style={styles.filters} accessibilityRole="tablist">
+        <ScrollView
+          horizontal
+          showsHorizontalScrollIndicator={false}
+          style={styles.filterBar}
+          contentContainerStyle={styles.filters}
+          accessibilityRole="tablist"
+        >
           {ORDER_FILTERS.map((option) => {
             const on = option.value === filter;
             return (
@@ -133,10 +153,10 @@ export function OrdersScreen({
               </Pressable>
             );
           })}
-        </View>
+        </ScrollView>
         <ScrollView contentContainerStyle={styles.rows}>
           {shown.length === 0 ? (
-            <Text style={styles.empty}>No orders here.</Text>
+            <Text style={styles.empty}>{EMPTY[filter]}</Text>
           ) : (
             shown.map((order) => (
               <OrderRow
@@ -180,7 +200,7 @@ function OrderRow({
   selected: boolean;
   onPress: () => void;
 }) {
-  const open = filterOf(order) === 'active' || filterOf(order) === 'held';
+  const open = isOpenFilter(filterOf(order));
   const unpaid = open && stillToPay(order) > 0;
   const refundOwed = refundOwedOf(order) > 0;
   const late = urgency(order.created_at_device, order.prepMinutes, now);
@@ -571,14 +591,9 @@ const styles = themedStyles(() => ({
   },
   grow: { flex: 1 },
   list: { flex: 58, borderRightWidth: 1, borderRightColor: colors.line },
-  filters: {
-    flexDirection: 'row',
-    gap: space.xs,
-    paddingHorizontal: space.lg,
-    paddingTop: 14,
-    borderBottomWidth: 1,
-    borderBottomColor: colors.line,
-  },
+  /** The tabs scroll sideways, so five of them still fit on an 8" tablet. */
+  filterBar: { flexGrow: 0, borderBottomWidth: 1, borderBottomColor: colors.line },
+  filters: { flexDirection: 'row', gap: space.xs, paddingHorizontal: space.md, paddingTop: 14 },
   filter: {
     minHeight: 48,
     flexDirection: 'row',

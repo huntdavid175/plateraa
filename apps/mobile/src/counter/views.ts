@@ -1,21 +1,16 @@
 import { amountDue, sub, type Pesewas } from '@plateraa/shared';
 import { urgency, type LaneOrder } from './lanes';
 
-/** The Orders screen's filters. */
-export type OrderFilter = 'active' | 'held' | 'completed' | 'cancelled';
+/** The Orders screen's tabs. */
+export type OrderFilter = 'unpaid' | 'active' | 'held' | 'completed' | 'cancelled';
 
 export const ORDER_FILTERS: readonly { value: OrderFilter; label: string }[] = [
+  { value: 'unpaid', label: 'Unpaid' },
   { value: 'active', label: 'Active' },
   { value: 'held', label: 'Held' },
   { value: 'completed', label: 'Completed' },
   { value: 'cancelled', label: 'Cancelled' },
 ];
-
-export function filterOf(order: Pick<LaneOrder, 'status' | 'on_hold'>): OrderFilter {
-  if (order.status === 'CANCELLED') return 'cancelled';
-  if (order.status === 'COMPLETED' || order.status === 'REFUNDED') return 'completed';
-  return order.on_hold ? 'held' : 'active';
-}
 
 /** What's still to be paid on an order: the total less anything paid (and a fee the rider kept). */
 export function stillToPay(order: LaneOrder): Pesewas {
@@ -27,6 +22,21 @@ export function stillToPay(order: LaneOrder): Pesewas {
     }),
     order.amount_paid,
   );
+}
+
+/** The tabs holding orders that are still going: what the counter is working on today. */
+export const isOpenFilter = (filter: OrderFilter) =>
+  filter === 'unpaid' || filter === 'active' || filter === 'held';
+
+/**
+ * Which tab an order belongs to. An order still owing money has its own tab (16 Sep, user
+ * request), so Active is what has been paid for and is on its way.
+ */
+export function filterOf(order: LaneOrder): OrderFilter {
+  if (order.status === 'CANCELLED') return 'cancelled';
+  if (order.status === 'COMPLETED' || order.status === 'REFUNDED') return 'completed';
+  if (order.on_hold) return 'held';
+  return stillToPay(order) > 0 ? 'unpaid' : 'active';
 }
 
 /** Kitchen time runs from when the order was paid for (pay before prep), or from when it came in. */

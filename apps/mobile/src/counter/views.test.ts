@@ -44,11 +44,32 @@ describe('the Orders screen', () => {
     ]);
   });
 
-  it('sorts orders into Active, Held, Completed and Cancelled', () => {
-    expect(filterOf({ status: 'PREPARING', on_hold: 0 })).toBe('active');
-    expect(filterOf({ status: 'CONFIRMED', on_hold: 1 })).toBe('held');
-    expect(filterOf({ status: 'COMPLETED', on_hold: 0 })).toBe('completed');
-    expect(filterOf({ status: 'CANCELLED', on_hold: 1 })).toBe('cancelled');
+  it('sorts orders into Unpaid, Active, Held, Completed and Cancelled', () => {
+    expect(filterOf(order('a', 1, { status: 'PREPARING' }))).toBe('active');
+    expect(filterOf(order('b', 1, { status: 'CONFIRMED', on_hold: 1 }))).toBe('held');
+    expect(filterOf(order('c', 1, { status: 'COMPLETED' }))).toBe('completed');
+    expect(filterOf(order('d', 1, { status: 'CANCELLED', on_hold: 1 }))).toBe('cancelled');
+  });
+
+  it('gives an order still owing money its own tab, whatever the kitchen is doing', () => {
+    const unpaid = { amount_paid: pesewas(0) };
+    expect(filterOf(order('a', 1, { ...unpaid, status: 'CONFIRMED' }))).toBe('unpaid');
+    expect(filterOf(order('b', 1, { ...unpaid, status: 'PREPARING' }))).toBe('unpaid');
+    // Part-paid still owes; held and finished orders stay under their own tabs.
+    expect(filterOf(order('c', 1, { amount_paid: pesewas(1000) }))).toBe('unpaid');
+    expect(filterOf(order('d', 1, { ...unpaid, on_hold: 1 }))).toBe('held');
+    expect(filterOf(order('e', 1, { ...unpaid, status: 'CANCELLED' }))).toBe('cancelled');
+    // A delivery fee the rider keeps isn't ours to collect.
+    expect(
+      filterOf(
+        order('f', 1, {
+          total: pesewas(6000),
+          delivery_fee: pesewas(1500),
+          delivery_fee_collected_by: 'RIDER',
+          amount_paid: pesewas(4500),
+        }),
+      ),
+    ).toBe('active');
   });
 
   it('works out what is still to pay, leaving out a fee the rider kept', () => {

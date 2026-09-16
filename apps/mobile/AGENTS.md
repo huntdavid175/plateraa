@@ -51,7 +51,7 @@ The counter app. It runs on the vendor's own budget Android tablet (8–10", **l
   - The ticket keeps menu prices.
   - `forSource()` in `ticket.ts` re-prices it for the chosen source, and it's used for every draft, for edits to a platform order, and for what `RemoteOrderPanel` shows.
   - `PLATFORM_PRICES_SQL` / `platformPricesOf()` in `menu.ts` load the prices.
-- `checkout.ts` checks an order before it's saved (who must give a number, delivery details); `views.ts` sorts the Orders screen by urgency.
+- `checkout.ts` checks an order before it's saved (who must give a number, delivery details); `views.ts` sorts the Orders screen by urgency and says which tab an order is in (`filterOf`): Unpaid, Active, Held, Completed, Cancelled. An order still owing money has its own tab (16 Sep, user request), so Active holds only what is paid for and on its way; the tabs scroll sideways so five of them fit on an 8" tablet.
 - **Today's sales** (`app/today.tsx`, from the More menu): the owner's day summary at the counter. The person types their PIN again; `daySummaryAtCounter` in `src/tablet/api.ts` opens a 15-minute server session (`POST /api/sessions/pin`, shared with Add staff) and fetches `GET /api/reports/day`. The server decides who may see it (`reports.revenue.view`, per role and per person; the tablet's own `resolveCapabilities` only knows roles). The figures stay in the screen's state only: never in SQLite, and cleared on lock, backgrounding, "Done" or when the session expires.
 
 ## Look (`src/ui`)
