@@ -1,5 +1,5 @@
 import { parseCedis, pesewas, type OrderType, type Pesewas } from '@plateraa/shared';
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { ScrollView, Text, View } from 'react-native';
 import { useLocalQuery } from '../tablet/TabletProvider';
 import { Button } from '../ui/Button';
@@ -62,6 +62,21 @@ export function OrderPane({
   const [zoneId, setZoneId] = useState<string | null>(null);
   const [feeText, setFeeText] = useState('');
   const [riderKeeps, setRiderKeeps] = useState(false);
+  const body = useRef<ScrollView>(null);
+  const lineCount = useRef(lines.length);
+  const showNewest = useRef(false);
+
+  /**
+   * A new line goes on the end, where a full ticket hides it. Scrolling down to it is what tells
+   * the person at the counter the tap landed. Only a line that wasn't there before: tapping + on
+   * a line already on the ticket, or the same item twice, raises a quantity in place, and the
+   * ticket would jump away from what they were looking at for nothing. The scroll waits on the
+   * content size, since the new line has no height yet while the effect runs.
+   */
+  useEffect(() => {
+    if (lines.length > lineCount.current) showNewest.current = true;
+    lineCount.current = lines.length;
+  }, [lines.length]);
 
   useEffect(() => {
     setPicked(null);
@@ -114,9 +129,15 @@ export function OrderPane({
       </View>
 
       <ScrollView
+        ref={body}
         style={styles.body}
         contentContainerStyle={styles.bodyContent}
         keyboardShouldPersistTaps="handled"
+        onContentSizeChange={() => {
+          if (!showNewest.current) return;
+          showNewest.current = false;
+          body.current?.scrollToEnd({ animated: true });
+        }}
       >
         {!editing && delivery && (
           <View style={styles.fields}>
