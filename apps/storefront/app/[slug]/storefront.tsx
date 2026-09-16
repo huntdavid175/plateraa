@@ -859,7 +859,7 @@ function ItemRow({
           )}
         </div>
         {orderable && (
-          <span className="absolute -right-1.5 -bottom-1.5 flex h-9 w-9 items-center justify-center rounded-full bg-card text-ink shadow-md ring-1 ring-border transition-colors group-hover:bg-brand group-hover:text-on-brand">
+          <span className="absolute -right-1.5 -bottom-1.5 flex h-9 w-9 items-center justify-center rounded-full bg-brand text-on-brand shadow-md transition-transform group-hover:scale-105">
             <svg
               width="14"
               height="14"
@@ -903,6 +903,13 @@ function ItemSheet({
   const [variantId, setVariantId] = useState(item.variants[0]?.id);
   const [chosen, setChosen] = useState<Record<string, string[]>>({});
   useLockScroll(true);
+  useEffect(() => {
+    const onKey = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') onClose();
+    };
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, [onClose]);
   const [quantity, setQuantity] = useState(1);
   useEffect(() => {
     const onKey = (event: KeyboardEvent) => {
@@ -949,7 +956,15 @@ function ItemSheet({
       aria-label={item.name}
     >
       <div className="absolute inset-0 bg-black/40" onClick={onClose} />
-      <div className="sheet-enter relative flex max-h-[92vh] flex-col rounded-t-2xl bg-page lg:w-[480px] lg:rounded-2xl">
+      <div className="sheet-enter relative flex max-h-[92vh] flex-col overflow-hidden rounded-t-2xl bg-page lg:w-[480px] lg:rounded-2xl">
+        <button
+          type="button"
+          onClick={onClose}
+          aria-label="Close"
+          className="absolute top-3 right-3 z-10 flex h-9 w-9 items-center justify-center rounded-full bg-card/90 text-lg leading-none text-ink shadow-sm ring-1 ring-border backdrop-blur transition-colors hover:bg-card"
+        >
+          ×
+        </button>
         <div className="flex flex-shrink-0 justify-center pt-3 pb-1">
           <div className="h-1 w-10 rounded-full bg-tile" />
         </div>
@@ -1567,7 +1582,7 @@ function AlsoAdd({
               ) : (
                 <PhotoPlaceholder name={item.name} />
               )}
-              <span className="absolute right-1.5 bottom-1.5 flex h-8 w-8 items-center justify-center rounded-full bg-card text-ink shadow-md ring-1 ring-border">
+              <span className="absolute right-1.5 bottom-1.5 flex h-8 w-8 items-center justify-center rounded-full bg-brand text-on-brand shadow-md">
                 <svg
                   width="13"
                   height="13"

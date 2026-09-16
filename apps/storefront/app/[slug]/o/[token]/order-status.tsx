@@ -145,7 +145,7 @@ export function OrderStatus({ token, initial }: { token: string; initial: Tracke
       </div>
 
       {checking ? (
-        <div className="mb-6 rounded-xl border border-border bg-card p-5 text-center">
+        <div className="mb-6 border-y border-border py-6 text-center">
           <div className="mx-auto mb-3 flex h-12 w-12 animate-pulse items-center justify-center rounded-full bg-brand-tint">
             <span className="text-xl" aria-hidden="true">
               💳
@@ -188,7 +188,7 @@ export function OrderStatus({ token, initial }: { token: string; initial: Tracke
           </button>
         </div>
       ) : (
-        <div className="mb-6 rounded-xl border border-border bg-card p-5">
+        <div className="mb-6 border-y border-border py-5">
           {steps.map((step, index) => {
             const done = index <= reached;
             const current = index === reached;
@@ -250,7 +250,7 @@ export function OrderStatus({ token, initial }: { token: string; initial: Tracke
         </p>
       )}
 
-      <div className="mb-4 space-y-2 rounded-xl border border-border bg-card p-4">
+      <div className="mb-4 space-y-2 border-y border-border py-4">
         <p className="mb-2 text-xs font-semibold tracking-wider text-muted uppercase">
           What you ordered
         </p>
