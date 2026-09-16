@@ -2,17 +2,19 @@
 
 import { normalizeGhanaPhone } from '@plateraa/shared';
 import { useRouter } from 'next/navigation';
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useState, type ReactNode } from 'react';
 import { ulid } from 'ulid';
 import {
   ArrowLeft,
   Badge,
+  Basket,
   ChevronDown,
+  ChevronRight,
   Clock,
   DarkToggle,
   PhotoPlaceholder,
   Qty,
-  initialsOf,
+  Share,
 } from '../../components/ui';
 import type { Store, StoreGroup, StoreItem } from '../../lib/api';
 import {
@@ -180,243 +182,412 @@ function StoreScreen({
   }, [store]);
   const ids = useMemo(() => sections.map((section) => section.id), [sections]);
   const menu = useMenuNav(ids);
+  const [info, setInfo] = useState(false);
 
   return (
-    <div className="min-h-screen">
-      <div className="lg:mx-auto lg:flex lg:min-h-screen lg:max-w-5xl">
-        <div className="lg:flex-1">
-          <div className="mx-auto max-w-[430px] lg:max-w-none">
-            <header className="border-b border-border bg-card">
-              <div className="relative h-32 overflow-hidden bg-hero lg:h-40">
-                {store.coverUrl && (
-                  <>
-                    <img
-                      src={store.coverUrl}
-                      alt=""
-                      className="absolute inset-0 h-full w-full object-cover"
-                    />
-                    {/* Keeps the name readable on any photo. */}
-                    <div className="absolute inset-0 bg-linear-to-t from-black/65 via-black/15 to-transparent" />
-                  </>
-                )}
-                <DarkToggle className="absolute top-3 right-3 bg-card/70 hover:bg-card" />
-                <div className="absolute right-4 bottom-3 left-4 flex items-end gap-3">
-                  {store.logoUrl ? (
-                    <img
-                      src={store.logoUrl}
-                      alt=""
-                      className="h-12 w-12 flex-shrink-0 rounded-xl bg-card object-cover shadow-sm"
-                    />
-                  ) : (
-                    <div className="flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-xl bg-brand text-base font-bold text-on-brand shadow-sm">
-                      {initialsOf(store.name)}
-                    </div>
-                  )}
-                  <div className="min-w-0">
-                    <h1
-                      className={`truncate text-lg leading-tight font-semibold ${store.coverUrl ? 'text-white' : 'text-on-hero'}`}
-                    >
-                      {store.name}
-                    </h1>
-                    {store.area && (
-                      <p
-                        className={`text-xs ${store.coverUrl ? 'text-white/85' : 'text-on-hero/80'}`}
-                      >
-                        {store.area}
-                      </p>
-                    )}
-                  </div>
-                </div>
-              </div>
+    <div className="min-h-screen bg-page">
+      <StoreHero store={store} onInfo={() => setInfo(true)} />
+      <StoreFacts store={store} onInfo={() => setInfo(true)} />
 
-              <div className="flex flex-wrap items-center gap-2 px-4 pt-3 pb-1">
-                <Badge
-                  tone={store.open ? 'green' : 'red'}
-                  text={
-                    store.open
-                      ? 'Open · taking orders'
-                      : store.opensWords
-                        ? `Closed · ${store.opensWords.toLowerCase()}`
-                        : 'Not taking orders right now'
-                  }
-                />
-                {store.hours && (
-                  <span className="flex items-center gap-1 text-xs text-muted">
-                    <span className="text-border select-none">·</span>
-                    <Clock />
-                    {store.hours}
-                  </span>
-                )}
-                {store.phone && (
-                  <span className="flex items-center gap-1 text-xs text-muted">
-                    <span className="text-border select-none">·</span>
-                    <a href={`tel:${store.phone}`} className="underline">
-                      {phoneWords(store.phone)}
-                    </a>
-                  </span>
-                )}
-              </div>
-
-              {store.zones.length > 0 ? (
-                <div className="px-4 pt-3 pb-4">
-                  <FulfilmentChoice value={fulfilment} onChange={setFulfilment} />
-                </div>
-              ) : (
-                <div className="h-3" />
-              )}
-            </header>
-
-            {!store.open && <ClosedNote store={store} />}
-
-            {sections.length > 1 && (
-              <nav
-                ref={menu.navRef}
-                className="sticky top-0 z-10 border-b border-border bg-card px-4 py-3"
-              >
-                <div
-                  ref={menu.stripRef}
-                  className="scrollbar-hide flex gap-2 overflow-x-auto scroll-smooth"
-                >
-                  {sections.map((section) => (
-                    <button
-                      key={section.id}
-                      ref={(element) => {
-                        menu.pills.current[section.id] = element;
-                      }}
-                      type="button"
-                      onClick={() => menu.jump(section.id)}
-                      aria-current={menu.active === section.id ? 'true' : undefined}
-                      className={`flex-shrink-0 rounded-full border px-4 py-1.5 text-sm font-medium whitespace-nowrap transition-colors duration-200 ${
-                        menu.active === section.id
-                          ? 'border-brand bg-brand text-on-brand'
-                          : 'border-border bg-tile text-muted'
-                      }`}
-                    >
-                      {section.name}
-                    </button>
-                  ))}
-                </div>
-              </nav>
-            )}
-
-            <main className="pb-32 lg:pb-6">
-              {sections.length === 0 && (
-                <p className="px-4 pt-10 text-center text-sm text-muted">
-                  Nothing on the menu yet. Check back soon.
-                </p>
-              )}
-              {sections.map((section) => (
-                <section
-                  key={section.id}
-                  ref={(element) => {
-                    menu.sections.current[section.id] = element;
-                  }}
-                  className="scroll-mt-16 px-4 pt-5"
-                >
-                  <h2 className="mb-3 text-base font-semibold text-ink">{section.name}</h2>
-                  <div className="space-y-2">
-                    {section.items.map((item) => (
-                      <ItemCard
-                        key={item.id}
-                        item={item}
-                        canOrder={store.open}
-                        onPick={() => onPick(item)}
-                      />
-                    ))}
-                  </div>
-                </section>
-              ))}
-            </main>
-          </div>
-        </div>
-
-        <aside className="hidden lg:flex lg:w-96 lg:flex-col lg:border-l lg:border-border lg:bg-card">
-          <div className="border-b border-border p-5">
-            <h2 className="font-semibold text-ink">Your order</h2>
-          </div>
-          <div className="scrollbar-hide flex-1 overflow-y-auto p-4">
-            {priced.length === 0 ? (
-              <div className="flex h-full flex-col items-center justify-center gap-2 text-center opacity-60">
-                <p className="text-4xl" aria-hidden="true">
-                  🛒
-                </p>
-                <p className="text-sm text-muted">Nothing added yet</p>
-              </div>
-            ) : (
-              <div className="space-y-3">
-                {priced.map((line) => (
-                  <div
-                    key={line.uid}
-                    className="flex items-start justify-between gap-2 rounded-xl bg-tile p-3"
-                  >
-                    <div className="min-w-0 flex-1">
-                      <LineWords line={line} />
-                      {!line.problem && (
-                        <div className="mt-2">
-                          <Qty
-                            value={line.quantity}
-                            onDec={() => setQuantity(line.uid, line.quantity - 1)}
-                            onInc={() => setQuantity(line.uid, line.quantity + 1)}
-                          />
-                        </div>
-                      )}
-                    </div>
-                    <div className="text-right">
-                      <p className="font-mono text-sm font-medium">{ghs(line.lineTotal)}</p>
-                      <button
-                        type="button"
-                        onClick={() => remove(line.uid)}
-                        className="mt-1 text-xs text-muted underline hover:text-ink"
-                      >
-                        Remove
-                      </button>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            )}
-          </div>
-          {priced.length > 0 && (
-            <div className="border-t border-border p-4">
-              <div className="mb-3 flex justify-between text-sm font-semibold">
-                <span>Total</span>
-                <span className="font-mono">{ghs(subtotal)}</span>
-              </div>
-              <button
-                type="button"
-                onClick={onCheckout}
-                disabled={!store.open || priced.some((line) => line.problem)}
-                className={primary}
-              >
-                {store.open ? 'Checkout' : 'Closed right now'}
-              </button>
-              {!store.open && (
-                <p className="mt-2 flex items-center justify-center gap-1 text-xs text-muted">
-                  <Clock />
-                  {store.opensWords ?? 'The store isn’t taking orders right now'}
-                </p>
-              )}
+      {(!store.open || store.zones.length > 0) && (
+        <div className="mx-auto w-full max-w-6xl px-4 lg:px-8">
+          {!store.open && <ClosedNote store={store} />}
+          {store.zones.length > 0 && (
+            <div className="py-4 sm:max-w-xs">
+              <FulfilmentChoice value={fulfilment} onChange={setFulfilment} />
             </div>
           )}
+        </div>
+      )}
+
+      {/* The categories, pinned as the menu scrolls; the same list stands on the left on a laptop. */}
+      {sections.length > 1 && (
+        <nav
+          ref={menu.navRef}
+          aria-label="Menu categories"
+          className="sticky top-0 z-20 border-b border-border bg-page/95 backdrop-blur lg:hidden"
+        >
+          <div
+            ref={menu.stripRef}
+            className="scrollbar-hide flex gap-6 overflow-x-auto scroll-smooth px-4"
+          >
+            {sections.map((section) => {
+              const on = menu.active === section.id;
+              return (
+                <button
+                  key={section.id}
+                  ref={(element) => {
+                    menu.pills.current[section.id] = element;
+                  }}
+                  type="button"
+                  onClick={() => menu.jump(section.id)}
+                  aria-current={on ? 'true' : undefined}
+                  className={`shrink-0 border-b-2 py-3.5 text-[15px] whitespace-nowrap transition-colors duration-200 ${
+                    on
+                      ? 'border-ink font-bold text-ink'
+                      : 'border-transparent font-medium text-muted'
+                  }`}
+                >
+                  {section.name}
+                </button>
+              );
+            })}
+          </div>
+        </nav>
+      )}
+
+      <div className="mx-auto flex w-full max-w-6xl gap-8 px-4 lg:gap-12 lg:px-8">
+        {sections.length > 1 && (
+          <nav aria-label="Menu categories" className="hidden w-44 shrink-0 lg:block">
+            <div className="sticky top-8 space-y-0.5 py-10">
+              {sections.map((section) => {
+                const on = menu.active === section.id;
+                return (
+                  <button
+                    key={section.id}
+                    type="button"
+                    onClick={() => menu.jump(section.id)}
+                    aria-current={on ? 'true' : undefined}
+                    className={`block w-full border-l-2 py-1.5 pl-3 text-left text-sm transition-colors ${
+                      on
+                        ? 'border-brand font-semibold text-ink'
+                        : 'border-transparent text-muted hover:text-ink'
+                    }`}
+                  >
+                    {section.name}
+                  </button>
+                );
+              })}
+            </div>
+          </nav>
+        )}
+
+        <main className="min-w-0 flex-1 pb-32 lg:pb-16">
+          {sections.length === 0 && (
+            <p className="py-16 text-center text-sm text-muted">
+              Nothing on the menu yet. Check back soon.
+            </p>
+          )}
+          {sections.map((section) => (
+            <section
+              key={section.id}
+              ref={(element) => {
+                menu.sections.current[section.id] = element;
+              }}
+              className="scroll-mt-14 pt-7 lg:scroll-mt-8 lg:pt-10"
+            >
+              <h2 className="text-2xl font-bold tracking-tight text-ink lg:text-[28px]">
+                {section.name}
+              </h2>
+              <div className="mt-1 divide-y divide-border border-b border-border">
+                {section.items.map((item) => (
+                  <ItemRow
+                    key={item.id}
+                    item={item}
+                    canOrder={store.open}
+                    onPick={() => onPick(item)}
+                  />
+                ))}
+              </div>
+            </section>
+          ))}
+        </main>
+
+        {/* The order, kept in view beside the menu on a laptop: a hairline, not a card. */}
+        <aside aria-label="Your order" className="hidden w-80 shrink-0 lg:block">
+          <div className="sticky top-8 py-10">
+            <div className="border-l border-border pl-8">
+              <h2 className="text-lg font-bold text-ink">Your order</h2>
+              {priced.length === 0 ? (
+                <p className="mt-2 text-sm text-muted">
+                  Nothing added yet. Tap an item to start your order.
+                </p>
+              ) : (
+                <>
+                  <ul className="mt-4 max-h-[50vh] divide-y divide-border overflow-y-auto border-y border-border">
+                    {priced.map((line) => (
+                      <li key={line.uid} className="py-3">
+                        <div className="flex items-start justify-between gap-3">
+                          <div className="min-w-0 flex-1">
+                            <LineWords line={line} />
+                          </div>
+                          <p className="font-mono text-sm font-medium">{ghs(line.lineTotal)}</p>
+                        </div>
+                        <div className="mt-2 flex items-center justify-between">
+                          {line.problem ? (
+                            <span />
+                          ) : (
+                            <Qty
+                              value={line.quantity}
+                              onDec={() => setQuantity(line.uid, line.quantity - 1)}
+                              onInc={() => setQuantity(line.uid, line.quantity + 1)}
+                            />
+                          )}
+                          <button
+                            type="button"
+                            onClick={() => remove(line.uid)}
+                            className="text-xs text-muted underline hover:text-ink"
+                          >
+                            Remove
+                          </button>
+                        </div>
+                      </li>
+                    ))}
+                  </ul>
+                  <div className="mt-4 flex items-baseline justify-between">
+                    <span className="text-sm font-semibold text-ink">Total</span>
+                    <span className="font-mono text-lg font-semibold text-ink">
+                      {ghs(subtotal)}
+                    </span>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={onCheckout}
+                    disabled={!store.open || priced.some((line) => line.problem)}
+                    className={`${primary} mt-4`}
+                  >
+                    {store.open ? 'Checkout' : 'Closed right now'}
+                  </button>
+                  {!store.open && (
+                    <p className="mt-2 flex items-center justify-center gap-1 text-xs text-muted">
+                      <Clock />
+                      {store.opensWords ?? 'The store isn’t taking orders right now'}
+                    </p>
+                  )}
+                </>
+              )}
+            </div>
+          </div>
         </aside>
       </div>
 
+      {/* The basket, floating over the menu on a phone. */}
       {count > 0 && (
-        <div className="fixed right-0 bottom-0 left-0 mx-auto max-w-[430px] px-4 pt-3 pb-6 lg:hidden">
+        <div className="pointer-events-none fixed inset-x-0 bottom-0 z-30 flex justify-center p-4 lg:hidden">
           <button
             type="button"
             onClick={onCart}
-            className="flex h-14 w-full items-center justify-between rounded-xl bg-brand px-5 text-sm font-semibold text-on-brand shadow-lg transition-all hover:bg-brand-hover active:scale-[0.98]"
+            className="pointer-events-auto flex items-center gap-3 rounded-full bg-brand px-5 py-3.5 text-on-brand shadow-xl transition-all hover:bg-brand-hover active:scale-[0.98]"
           >
-            <span className="rounded-lg bg-white/25 px-2.5 py-1 font-mono text-xs font-bold">
+            <Basket />
+            <span className="font-mono text-base font-semibold">{ghs(subtotal)}</span>
+            <span className="flex h-6 min-w-6 items-center justify-center rounded-full bg-black/25 px-1.5 font-mono text-xs font-bold">
               {count}
             </span>
-            <span>View cart</span>
-            <span className="font-mono">{ghs(subtotal)}</span>
+          </button>
+        </div>
+      )}
+
+      {info && <InfoSheet store={store} onClose={() => setInfo(false)} />}
+    </div>
+  );
+}
+
+/** The cover picture, with the store's name over it and the way into its details. */
+function StoreHero({ store, onInfo }: { store: Store; onInfo: () => void }) {
+  const [copied, setCopied] = useState(false);
+  const onCover = Boolean(store.coverUrl);
+
+  const share = async () => {
+    const url = window.location.href;
+    try {
+      if (navigator.share) {
+        await navigator.share({ title: store.name, url });
+        return;
+      }
+      await navigator.clipboard.writeText(url);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    } catch {
+      // The customer closed the share sheet, or the browser wouldn't copy: nothing to say.
+    }
+  };
+
+  return (
+    <header className="relative h-56 overflow-hidden bg-hero sm:h-64 lg:h-80">
+      {store.coverUrl && (
+        <>
+          <img
+            src={store.coverUrl}
+            alt=""
+            className="absolute inset-0 h-full w-full object-cover"
+          />
+          {/* Keeps the name readable on any photo. */}
+          <div className="absolute inset-0 bg-linear-to-t from-black/70 via-black/25 to-black/20" />
+        </>
+      )}
+
+      <div className="absolute inset-x-0 top-0 flex items-center justify-end gap-2 p-4">
+        {copied && (
+          <span className="rounded-full bg-black/60 px-3 py-1 text-xs font-medium text-white">
+            Link copied
+          </span>
+        )}
+        <RoundButton label="Share this store" onClick={() => void share()}>
+          <Share />
+        </RoundButton>
+        <DarkToggle className="bg-card/85 text-ink shadow-sm backdrop-blur hover:bg-card" />
+      </div>
+
+      <div className="absolute inset-x-0 bottom-0 flex flex-col items-center px-5 pb-6 text-center">
+        {store.logoUrl ? (
+          <img
+            src={store.logoUrl}
+            alt=""
+            className="mb-3 h-16 w-16 rounded-2xl bg-card object-cover shadow-md lg:h-20 lg:w-20"
+          />
+        ) : null}
+        <h1
+          className={`text-2xl leading-tight font-bold lg:text-4xl ${
+            onCover ? 'text-white' : 'text-on-hero'
+          }`}
+        >
+          {store.name}
+        </h1>
+        <button
+          type="button"
+          onClick={onInfo}
+          className={`mt-1.5 flex items-center gap-0.5 text-sm font-semibold ${
+            onCover ? 'text-white/90 hover:text-white' : 'text-on-hero/85 hover:text-on-hero'
+          }`}
+        >
+          More info
+          <ChevronRight />
+        </button>
+      </div>
+    </header>
+  );
+}
+
+/** What a customer checks before ordering: whether it's open, how they can get it, how they pay. */
+function StoreFacts({ store, onInfo }: { store: Store; onInfo: () => void }) {
+  const cheapest = store.zones.length ? Math.min(...store.zones.map((zone) => zone.fee)) : null;
+  const facts: { label: string; value: string }[] = [
+    {
+      label: store.open ? 'Open' : 'Closed',
+      value: store.open
+        ? 'taking orders'
+        : (store.opensWords?.replace(/^Opens /, 'opens ') ?? 'not taking orders'),
+    },
+    cheapest === null
+      ? { label: 'Pickup', value: 'collect in person' }
+      : { label: 'Delivery', value: `from ${ghs(cheapest)}` },
+    store.payOnline
+      ? { label: 'Pay online', value: store.cashOnPickup ? 'or cash on pickup' : 'by MoMo' }
+      : { label: 'Cash', value: 'when you collect' },
+  ];
+
+  return (
+    <div className="border-b border-border">
+      <div className="mx-auto flex w-full max-w-6xl items-stretch divide-x divide-border px-4 lg:px-8">
+        {facts.map((fact) => (
+          <div key={fact.label} className="flex-1 px-2 py-4 text-center first:pl-0 last:pr-0">
+            <p className="text-sm font-semibold text-ink">{fact.label}</p>
+            <p className="mt-0.5 text-xs text-muted">{fact.value}</p>
+          </div>
+        ))}
+      </div>
+      {store.area && (
+        <div className="mx-auto w-full max-w-6xl px-4 pb-3 lg:px-8">
+          <button
+            type="button"
+            onClick={onInfo}
+            className="text-xs text-muted underline hover:text-ink"
+          >
+            {store.area}
           </button>
         </div>
       )}
     </div>
+  );
+}
+
+/**
+ * Everything about the store in one place, from the hero's "More info". Plain rows, no cards;
+ * the user's own design for this screen comes later.
+ */
+function InfoSheet({ store, onClose }: { store: Store; onClose: () => void }) {
+  const rows: { title: string; lines: string[] }[] = [
+    { title: 'Opening hours', lines: [store.hours] },
+    ...(store.area ? [{ title: 'Where', lines: [store.area] }] : []),
+    {
+      title: 'How you can get it',
+      lines: [
+        'Pickup — collect from the store',
+        ...store.zones.map((zone) => `Delivery to ${zone.name} — ${ghs(zone.fee)}`),
+        ...(store.zones.length ? [] : ['Delivery isn’t offered here yet']),
+      ],
+    },
+    {
+      title: 'Paying',
+      lines: [
+        ...(store.payOnline ? ['Online by mobile money'] : []),
+        ...(store.cashOnPickup ? ['Cash when you collect'] : []),
+      ],
+    },
+  ];
+
+  return (
+    <div
+      className="fixed inset-0 z-40 flex items-end justify-center bg-black/50 lg:items-center"
+      role="dialog"
+      aria-modal="true"
+      aria-label={`About ${store.name}`}
+      onClick={onClose}
+    >
+      <div
+        className="max-h-[85vh] w-full max-w-lg overflow-y-auto rounded-t-2xl bg-page p-6 lg:rounded-2xl"
+        onClick={(event) => event.stopPropagation()}
+      >
+        <h2 className="text-xl font-bold text-ink">{store.name}</h2>
+        <dl className="mt-4 divide-y divide-border border-y border-border">
+          {rows.map((row) => (
+            <div key={row.title} className="py-3">
+              <dt className="text-sm font-semibold text-ink">{row.title}</dt>
+              {row.lines.map((line) => (
+                <dd key={line} className="mt-0.5 text-sm text-muted">
+                  {line}
+                </dd>
+              ))}
+            </div>
+          ))}
+        </dl>
+        {store.phone && (
+          <a
+            href={`tel:${store.phone}`}
+            className="mt-4 block text-sm font-semibold text-brand-ink underline"
+          >
+            Call {phoneWords(store.phone)}
+          </a>
+        )}
+        <button type="button" onClick={onClose} className={`${primary} mt-6`}>
+          Close
+        </button>
+      </div>
+    </div>
+  );
+}
+
+/** One of the round buttons that float over the cover picture. */
+function RoundButton({
+  label,
+  onClick,
+  children,
+}: {
+  label: string;
+  onClick: () => void;
+  children: ReactNode;
+}) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      aria-label={label}
+      title={label}
+      className="flex h-9 w-9 items-center justify-center rounded-full bg-card/85 text-ink shadow-sm backdrop-blur transition-colors hover:bg-card"
+    >
+      {children}
+    </button>
   );
 }
 
@@ -436,10 +607,10 @@ function FulfilmentChoice({
           role="radio"
           aria-checked={value === option}
           onClick={() => onChange(option)}
-          className={`flex-1 rounded-lg border py-2 text-sm font-medium transition-all ${
+          className={`flex-1 rounded-full border py-2 text-sm font-medium transition-colors ${
             value === option
-              ? 'border-brand bg-brand-tint text-brand-ink'
-              : 'border-border bg-tile text-muted'
+              ? 'border-ink bg-ink text-page'
+              : 'border-border text-muted hover:text-ink'
           }`}
         >
           {option === 'PICKUP' ? 'Pickup' : 'Delivery'}
@@ -462,7 +633,7 @@ function priceWords(item: StoreItem) {
  */
 function ClosedNote({ store }: { store: Store }) {
   return (
-    <div className="mx-4 mt-4 flex items-start gap-3 rounded-xl border border-border bg-tile px-4 py-3">
+    <div className="flex items-start gap-3 border-b border-border py-4">
       <span className="mt-0.5 shrink-0 text-muted">
         <Clock />
       </span>
@@ -473,13 +644,17 @@ function ClosedNote({ store }: { store: Store }) {
             ? `${store.opensWords}. You can look at the menu, but ordering opens then.`
             : 'The store isn’t taking orders at the moment. You can still look at the menu.'}
         </p>
-        {store.hours && <p className="mt-1 text-xs text-muted">{store.hours}</p>}
       </div>
     </div>
   );
 }
 
-function ItemCard({
+/**
+ * One item on the menu: its name, what's in it and the price, with the photo and a round + on
+ * the right. Flat, with a hairline between one item and the next — no cards (user's design,
+ * 16 Sep).
+ */
+function ItemRow({
   item,
   canOrder,
   onPick,
@@ -494,33 +669,40 @@ function ItemCard({
       type="button"
       onClick={onPick}
       disabled={!orderable}
-      className={`flex w-full overflow-hidden rounded-xl border border-border bg-card text-left transition-all ${
-        orderable ? 'hover:shadow-sm active:scale-[0.99]' : 'cursor-default opacity-60'
+      className={`flex w-full items-start gap-4 py-5 text-left transition-opacity ${
+        orderable ? 'group' : 'cursor-default opacity-55'
       }`}
     >
-      <div className="min-w-0 flex-1 p-3">
-        <div className="flex items-start justify-between gap-2">
-          <p className="text-sm font-medium text-ink">{item.name}</p>
-          {item.soldOut && <Badge tone="muted" text="Sold out" />}
-        </div>
+      <div className="min-w-0 flex-1">
+        <p className="text-base font-semibold text-ink lg:text-[17px]">{item.name}</p>
         {item.description && (
-          <p className="mt-0.5 line-clamp-2 text-xs leading-relaxed text-muted">
-            {item.description}
-          </p>
+          <p className="mt-1 line-clamp-2 text-sm leading-relaxed text-muted">{item.description}</p>
         )}
-        <p className="mt-2 font-mono text-sm font-medium text-ink">{priceWords(item)}</p>
+        <p className="mt-2 font-mono text-[15px] font-medium text-ink">{priceWords(item)}</p>
+        {item.soldOut && (
+          <span className="mt-2 inline-block">
+            <Badge tone="muted" text="Sold out" />
+          </span>
+        )}
       </div>
-      <div className="relative h-24 w-24 flex-shrink-0 bg-tile">
-        {item.photoUrl ? (
-          <img src={item.photoUrl} alt="" loading="lazy" className="h-full w-full object-cover" />
-        ) : (
-          <PhotoPlaceholder name={item.name} />
-        )}
+      <div className="relative h-24 w-24 shrink-0 lg:h-28 lg:w-28">
+        <div className="h-full w-full overflow-hidden rounded-xl bg-tile">
+          {item.photoUrl ? (
+            <img
+              src={item.photoUrl}
+              alt=""
+              loading="lazy"
+              className="h-full w-full object-cover transition-transform duration-200 group-hover:scale-105"
+            />
+          ) : (
+            <PhotoPlaceholder name={item.name} />
+          )}
+        </div>
         {orderable && (
-          <div className="absolute right-1.5 bottom-1.5 flex h-6 w-6 items-center justify-center rounded-full bg-brand text-on-brand shadow-sm">
+          <span className="absolute -right-1.5 -bottom-1.5 flex h-9 w-9 items-center justify-center rounded-full bg-card text-ink shadow-md ring-1 ring-border transition-colors group-hover:bg-brand group-hover:text-on-brand">
             <svg
-              width="12"
-              height="12"
+              width="14"
+              height="14"
               fill="none"
               viewBox="0 0 12 12"
               stroke="currentColor"
@@ -530,7 +712,7 @@ function ItemCard({
             >
               <path d="M6 2v8M2 6h8" />
             </svg>
-          </div>
+          </span>
         )}
       </div>
     </button>
@@ -606,7 +788,7 @@ function ItemSheet({
       aria-label={item.name}
     >
       <div className="absolute inset-0 bg-black/40" onClick={onClose} />
-      <div className="sheet-enter relative flex max-h-[92vh] flex-col rounded-t-2xl bg-card lg:w-[480px] lg:rounded-2xl">
+      <div className="sheet-enter relative flex max-h-[92vh] flex-col rounded-t-2xl bg-page lg:w-[480px] lg:rounded-2xl">
         <div className="flex flex-shrink-0 justify-center pt-3 pb-1">
           <div className="h-1 w-10 rounded-full bg-tile" />
         </div>
@@ -709,7 +891,7 @@ function ItemSheet({
           <div className="h-4" />
         </div>
 
-        <div className="flex-shrink-0 border-t border-border bg-card px-4 py-4">
+        <div className="flex-shrink-0 border-t border-border bg-page px-4 py-4">
           <div className="mb-3 flex items-center justify-between">
             <Qty
               value={quantity}
@@ -755,7 +937,7 @@ function LineWords({ line }: { line: PricedLine }) {
 
 function Header({ title, onBack, extra }: { title: string; onBack: () => void; extra?: string }) {
   return (
-    <header className="flex items-center gap-3 border-b border-border bg-card px-4 py-4">
+    <header className="sticky top-0 z-20 flex items-center gap-3 border-b border-border bg-page px-4 py-4">
       <button
         type="button"
         onClick={onBack}
@@ -790,7 +972,7 @@ function CartScreen({
   const blocked = !store.open || priced.some((line) => line.problem);
   if (priced.length === 0) {
     return (
-      <div className="mx-auto flex min-h-screen max-w-[430px] flex-col">
+      <div className="mx-auto flex min-h-screen max-w-[430px] flex-col lg:max-w-2xl">
         <Header title="Your cart" onBack={onBack} />
         <div className="flex flex-1 flex-col items-center justify-center gap-3 px-6 text-center">
           <div className="mb-2 text-5xl" aria-hidden="true">
@@ -812,15 +994,12 @@ function CartScreen({
 
   const items = priced.reduce((sum, line) => sum + line.quantity, 0);
   return (
-    <div className="mx-auto flex min-h-screen max-w-[430px] flex-col">
+    <div className="mx-auto flex min-h-screen max-w-[430px] flex-col lg:max-w-2xl">
       <Header title="Your cart" onBack={onBack} extra={`${items} item${items === 1 ? '' : 's'}`} />
       <div className="flex-1 pb-32">
-        <div className="mx-4 mt-4 overflow-hidden rounded-xl border border-border bg-card">
-          {priced.map((line, index) => (
-            <div
-              key={line.uid}
-              className={`px-4 py-4 ${index > 0 ? 'border-t border-border' : ''}`}
-            >
+        <div className="mx-4 mt-2 divide-y divide-border border-y border-border">
+          {priced.map((line) => (
+            <div key={line.uid} className="py-4">
               <div className="flex items-start justify-between gap-2">
                 <div className={`min-w-0 flex-1 ${line.problem ? 'opacity-70' : ''}`}>
                   <LineWords line={line} />
@@ -853,7 +1032,7 @@ function CartScreen({
           ))}
         </div>
 
-        <div className="mx-4 mt-4 flex justify-between rounded-xl border border-border bg-card px-4 py-3 text-sm font-semibold">
+        <div className="mx-4 mt-4 flex justify-between text-base font-semibold">
           <span>Subtotal</span>
           <span className="font-mono">{ghs(subtotal)}</span>
         </div>
@@ -873,7 +1052,7 @@ function CartScreen({
         )}
       </div>
 
-      <div className="fixed right-0 bottom-0 left-0 mx-auto max-w-[430px] border-t border-border bg-page px-4 pt-3 pb-6">
+      <div className="fixed right-0 bottom-0 left-0 mx-auto max-w-[430px] border-t border-border bg-page px-4 pt-3 pb-6 lg:max-w-2xl">
         <button type="button" onClick={onCheckout} disabled={blocked} className={primary}>
           {store.open ? 'Checkout' : 'Closed right now'}
         </button>
@@ -885,7 +1064,7 @@ function CartScreen({
 // ─── Checkout ─────────────────────────────────────────────────────────────────
 
 const field =
-  'w-full rounded-lg border border-border bg-card px-3 py-2.5 text-sm text-ink outline-none placeholder:text-muted focus:border-brand';
+  'w-full rounded-xl border border-border bg-page px-3.5 py-3 text-sm text-ink outline-none placeholder:text-muted focus:border-brand';
 
 function Checkout({
   store,
@@ -966,12 +1145,12 @@ function Checkout({
   };
 
   return (
-    <div className="mx-auto flex min-h-screen max-w-[430px] flex-col">
+    <div className="mx-auto flex min-h-screen max-w-[430px] flex-col lg:max-w-2xl">
       <Header title="Checkout" onBack={onBack} />
 
-      <div className="mt-4 flex-1 space-y-4 px-4 pb-36">
+      <div className="flex-1 px-4 pb-36">
         {store.zones.length > 0 && (
-          <section className="rounded-xl border border-border bg-card p-4">
+          <section className="border-b border-border py-5">
             <p className="mb-3 text-xs font-semibold tracking-wider text-muted uppercase">
               How you’ll get it
             </p>
@@ -980,7 +1159,7 @@ function Checkout({
         )}
 
         {fulfilment === 'DELIVERY' && (
-          <section className="space-y-3 rounded-xl border border-border bg-card p-4">
+          <section className="space-y-3 border-b border-border py-5">
             <p className="text-xs font-semibold tracking-wider text-muted uppercase">
               Delivery area
             </p>
@@ -996,7 +1175,7 @@ function Checkout({
               <ChevronDown size={16} />
             </button>
             {showZones && (
-              <div className="overflow-hidden rounded-xl border border-border bg-card">
+              <div className="divide-y divide-border overflow-hidden rounded-xl border border-border">
                 {store.zones.map((row, index) => (
                   <button
                     key={row.id}
@@ -1026,7 +1205,7 @@ function Checkout({
           </section>
         )}
 
-        <section className="space-y-3 rounded-xl border border-border bg-card p-4">
+        <section className="space-y-3 border-b border-border py-5">
           <p className="text-xs font-semibold tracking-wider text-muted uppercase">Your details</p>
           <input
             value={name}
@@ -1063,7 +1242,7 @@ function Checkout({
           />
         </section>
 
-        <section className="space-y-2 rounded-xl border border-border bg-card p-4">
+        <section className="space-y-2 border-b border-border py-5">
           <p className="mb-3 text-xs font-semibold tracking-wider text-muted uppercase">
             How you’ll pay
           </p>
@@ -1091,7 +1270,7 @@ function Checkout({
           )}
         </section>
 
-        <section className="space-y-2 rounded-xl border border-border bg-card p-4">
+        <section className="space-y-2 border-b border-border py-5">
           <p className="mb-2 text-xs font-semibold tracking-wider text-muted uppercase">
             Order summary
           </p>
@@ -1132,7 +1311,7 @@ function Checkout({
         )}
       </div>
 
-      <div className="fixed right-0 bottom-0 left-0 mx-auto max-w-[430px] border-t border-border bg-page px-4 pt-3 pb-6">
+      <div className="fixed right-0 bottom-0 left-0 mx-auto max-w-[430px] border-t border-border bg-page px-4 pt-3 pb-6 lg:max-w-2xl">
         <button
           type="button"
           onClick={() => void submit()}

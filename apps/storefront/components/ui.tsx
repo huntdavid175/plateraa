@@ -153,6 +153,65 @@ export function ChevronDown({ size = 20 }: { size?: number }) {
   );
 }
 
+export function ChevronRight({ size = 16 }: { size?: number }) {
+  return (
+    <svg
+      width={size}
+      height={size}
+      fill="none"
+      viewBox="0 0 20 20"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      aria-hidden="true"
+    >
+      <path d="M8 5l5 5-5 5" />
+    </svg>
+  );
+}
+
+/** The basket on the floating cart button. */
+export function Basket() {
+  return (
+    <svg
+      width="20"
+      height="20"
+      fill="none"
+      viewBox="0 0 20 20"
+      stroke="currentColor"
+      strokeWidth="1.8"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden="true"
+    >
+      <path d="M3 7h14l-1.2 8.2a2 2 0 0 1-2 1.8H6.2a2 2 0 0 1-2-1.8L3 7Z" />
+      <path d="M7 7l1.6-3.5M13 7l-1.6-3.5" />
+    </svg>
+  );
+}
+
+/** Sharing the store's link, the way a phone's own share button looks. */
+export function Share() {
+  return (
+    <svg
+      width="18"
+      height="18"
+      fill="none"
+      viewBox="0 0 20 20"
+      stroke="currentColor"
+      strokeWidth="1.8"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden="true"
+    >
+      <circle cx="15" cy="4.5" r="2.2" />
+      <circle cx="5" cy="10" r="2.2" />
+      <circle cx="15" cy="15.5" r="2.2" />
+      <path d="M7 8.9l6-3.2M7 11.1l6 3.2" />
+    </svg>
+  );
+}
+
 export function Clock() {
   return (
     <svg

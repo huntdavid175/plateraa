@@ -83,10 +83,21 @@ export function useMenuNav(ids: readonly string[]) {
     let waiting = false;
     const topOf = (id: string) => sections.current[id]?.getBoundingClientRect().top ?? null;
 
+    // The reading line is each section's own scroll-margin-top, so where a tap lands and where
+    // scrolling decides the pill can't drift apart — on a phone it clears the pinned bar, and on
+    // a laptop, where the categories stand in a column instead, it's the small top margin.
+    let line: number | null = null;
+    const lineOf = () => {
+      if (line !== null) return line;
+      const first = sections.current[ids[0] ?? ''];
+      const margin = first ? parseFloat(getComputedStyle(first).scrollMarginTop) : NaN;
+      line = Number.isFinite(margin) ? margin : (navRef.current?.offsetHeight ?? 56) + 8;
+      return line;
+    };
+
     const look = () => {
       waiting = false;
-      // The reading line: just under the pinned bar, matching the sections' scroll-mt.
-      const line = (navRef.current?.offsetHeight ?? 56) + 8;
+      const line = lineOf();
 
       const jump = jumpingTo.current;
       if (jump) {
@@ -115,13 +126,18 @@ export function useMenuNav(ids: readonly string[]) {
       waiting = true;
       requestAnimationFrame(look);
     };
+    // A wider window can change the layout, and with it where the line sits.
+    const onResize = () => {
+      line = null;
+      onScroll();
+    };
 
     window.addEventListener('scroll', onScroll, { passive: true });
-    window.addEventListener('resize', onScroll, { passive: true });
+    window.addEventListener('resize', onResize, { passive: true });
     look();
     return () => {
       window.removeEventListener('scroll', onScroll);
-      window.removeEventListener('resize', onScroll);
+      window.removeEventListener('resize', onResize);
     };
   }, [ids, light]);
 
