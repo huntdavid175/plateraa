@@ -8,16 +8,17 @@ import {
   ArrowLeft,
   Badge,
   Basket,
-  ChevronDown,
   ChevronRight,
   Clock,
   DarkToggle,
+  Moped,
   Navigate,
   Phone,
   PhotoPlaceholder,
   Pin,
   Qty,
   Share,
+  Trash,
 } from '../../components/ui';
 import type { Store, StoreGroup, StoreItem } from '../../lib/api';
 import {
@@ -33,7 +34,7 @@ import { ghs } from '../../lib/money';
 import { phoneWords } from '../../lib/words';
 import { placeOrder } from '../actions';
 
-type Screen = 'store' | 'info' | 'cart' | 'checkout' | 'paying';
+type Screen = 'store' | 'info' | 'order' | 'paying';
 type Fulfilment = 'PICKUP' | 'DELIVERY';
 
 const primary =
@@ -94,22 +95,9 @@ export function Storefront({ store }: { store: Store }) {
       />
     );
   }
-  if (screen === 'cart') {
+  if (screen === 'order') {
     return (
-      <CartScreen
-        store={store}
-        priced={priced}
-        subtotal={subtotal}
-        onBack={() => setScreen('store')}
-        onCheckout={() => setScreen('checkout')}
-        setQuantity={setQuantity}
-        remove={remove}
-      />
-    );
-  }
-  if (screen === 'checkout') {
-    return (
-      <Checkout
+      <OrderScreen
         store={store}
         priced={priced}
         subtotal={subtotal}
@@ -117,7 +105,10 @@ export function Storefront({ store }: { store: Store }) {
         setFulfilment={setFulfilment}
         zoneId={zoneId}
         setZoneId={setZoneId}
-        onBack={() => setScreen('cart')}
+        onBack={() => setScreen('store')}
+        onAddMore={() => setScreen('store')}
+        onEmpty={() => change(() => [])}
+        setQuantity={setQuantity}
         onPlaced={placed}
       />
     );
@@ -133,8 +124,8 @@ export function Storefront({ store }: { store: Store }) {
         fulfilment={fulfilment}
         setFulfilment={setFulfilment}
         onPick={setPicking}
-        onCart={() => setScreen('cart')}
-        onCheckout={() => setScreen('checkout')}
+        onCart={() => setScreen('order')}
+        onCheckout={() => setScreen('order')}
         onInfo={() => setScreen('info')}
         setQuantity={setQuantity}
         remove={remove}
@@ -957,22 +948,22 @@ function ItemSheet({
 
         <div className="scrollbar-hide flex-1 overflow-y-auto">
           {item.photoUrl && (
-            <div className="relative mx-4 h-52 flex-shrink-0 overflow-hidden rounded-xl bg-tile">
+            <div className="h-52 w-full flex-shrink-0 bg-tile sm:h-60">
               <img src={item.photoUrl} alt="" className="h-full w-full object-cover" />
             </div>
           )}
 
-          <div className="px-4 pt-4 pb-2">
-            <h2 className="text-xl font-semibold text-ink">{item.name}</h2>
+          <div className="px-4 pt-5 pb-3">
+            <h2 className="text-2xl leading-tight font-bold text-ink">{item.name}</h2>
             {item.description && (
-              <p className="mt-1 text-sm leading-relaxed text-muted">{item.description}</p>
+              <p className="mt-2 text-sm leading-relaxed text-muted">{item.description}</p>
             )}
-            <p className="mt-2 font-mono font-medium text-ink">{ghs(unit)}</p>
+            <p className="mt-3 font-mono text-base font-medium text-ink">{ghs(unit)}</p>
           </div>
 
           {item.variants.length > 0 && (
-            <section className="border-t border-border px-4 pt-3 pb-2">
-              <p className="mb-2 text-xs font-semibold tracking-wider text-muted uppercase">Size</p>
+            <section className="border-t border-border px-4 py-4">
+              <h3 className="mb-3 text-base font-bold text-ink">Size</h3>
               <div className="flex flex-wrap gap-2">
                 {item.variants.map((size) => (
                   <button
@@ -980,10 +971,10 @@ function ItemSheet({
                     type="button"
                     onClick={() => setVariantId(size.id)}
                     aria-pressed={size.id === variantId}
-                    className={`rounded-lg border px-4 py-2 text-sm font-medium transition-all ${
+                    className={`rounded-full border px-4 py-2 text-sm font-medium transition-colors ${
                       size.id === variantId
-                        ? 'border-brand bg-brand-tint text-brand-ink'
-                        : 'border-border bg-tile text-ink'
+                        ? 'border-ink bg-ink text-page'
+                        : 'border-border text-ink hover:border-ink'
                     }`}
                   >
                     {size.name}
@@ -997,14 +988,16 @@ function ItemSheet({
           {item.groups.map((group) => {
             const count = chosen[group.id]?.length ?? 0;
             return (
-              <section key={group.id} className="border-t border-border px-4 pt-3 pb-2">
-                <div className="mb-2 flex items-center justify-between">
-                  <p className="text-xs font-semibold tracking-wider text-muted uppercase">
-                    {group.name}
-                  </p>
-                  <Badge tone={group.minSelect > 0 ? 'amber' : 'muted'} text={ruleOf(group)} />
+              <section key={group.id} className="border-t border-border px-4 py-4">
+                <div className="flex items-baseline justify-between gap-3">
+                  <h3 className="text-base font-bold text-ink">{group.name}</h3>
+                  <span
+                    className={`text-xs ${group.minSelect > 0 ? 'font-medium text-amber' : 'text-muted'}`}
+                  >
+                    {ruleOf(group)}
+                  </span>
                 </div>
-                <div className="space-y-1">
+                <div className="mt-1 divide-y divide-border">
                   {group.options.map((option) => {
                     const on = chosen[group.id]?.includes(option.id) ?? false;
                     const full =
@@ -1015,15 +1008,11 @@ function ItemSheet({
                     return (
                       <label
                         key={option.id}
-                        className={`flex cursor-pointer items-center justify-between rounded-lg border px-3 py-2.5 transition-colors ${
-                          on
-                            ? 'border-brand bg-brand-tint'
-                            : full
-                              ? 'cursor-default border-transparent bg-tile opacity-50'
-                              : 'border-transparent bg-tile hover:border-border'
+                        className={`flex items-center justify-between gap-3 py-3 ${
+                          full ? 'cursor-default opacity-45' : 'cursor-pointer'
                         }`}
                       >
-                        <span className="flex items-center gap-3">
+                        <span className="flex min-w-0 flex-1 items-center gap-3">
                           <input
                             type={group.maxSelect === 1 ? 'radio' : 'checkbox'}
                             name={group.id}
@@ -1036,11 +1025,13 @@ function ItemSheet({
                                 toggle(group, option.id);
                               }
                             }}
-                            className="h-4 w-4 accent-[var(--brand)]"
+                            className="h-[18px] w-[18px] accent-[var(--brand)]"
                           />
-                          <span className="text-sm text-ink">{option.name}</span>
+                          <span className={`text-sm ${on ? 'font-medium text-ink' : 'text-ink'}`}>
+                            {option.name}
+                          </span>
                         </span>
-                        <span className="font-mono text-sm text-muted">
+                        <span className="shrink-0 font-mono text-sm text-muted">
                           {option.priceDelta === 0 ? 'Free' : `+${ghs(option.priceDelta)}`}
                         </span>
                       </label>
@@ -1054,21 +1045,22 @@ function ItemSheet({
         </div>
 
         <div className="flex-shrink-0 border-t border-border bg-page px-4 py-4">
-          <div className="mb-3 flex items-center justify-between">
-            <Qty
-              value={quantity}
-              onDec={() => setQuantity((q) => Math.max(1, q - 1))}
-              onInc={() => setQuantity((q) => Math.min(50, q + 1))}
-            />
-            {missing && (
-              <p className="ml-2 text-xs text-amber">
-                Choose your {missing.name.toLowerCase()} first
-              </p>
-            )}
+          {missing && (
+            <p className="mb-2 text-xs text-amber">
+              Choose your {missing.name.toLowerCase()} first
+            </p>
+          )}
+          <div className="flex items-center gap-3">
+            <Stepper value={quantity} onChange={(next) => setQuantity(Math.min(50, next))} />
+            <button
+              type="button"
+              onClick={add}
+              disabled={Boolean(missing)}
+              className={`${primary} flex-1`}
+            >
+              Add to order · <span className="font-mono">{ghs(unit * quantity)}</span>
+            </button>
           </div>
-          <button type="button" onClick={add} disabled={Boolean(missing)} className={primary}>
-            Add to order · <span className="font-mono">{ghs(unit * quantity)}</span>
-          </button>
         </div>
       </div>
     </div>
@@ -1133,121 +1125,17 @@ function Header({
   );
 }
 
-function CartScreen({
-  store,
-  priced,
-  subtotal,
-  onBack,
-  onCheckout,
-  setQuantity,
-  remove,
-}: {
-  store: Store;
-  priced: PricedLine[];
-  subtotal: number;
-  onBack: () => void;
-  onCheckout: () => void;
-  setQuantity: (uid: string, quantity: number) => void;
-  remove: (uid: string) => void;
-}) {
-  const blocked = !store.open || priced.some((line) => line.problem);
-  if (priced.length === 0) {
-    return (
-      <div className="mx-auto flex min-h-screen max-w-[430px] flex-col lg:max-w-2xl">
-        <Header title="Your cart" onBack={onBack} />
-        <div className="flex flex-1 flex-col items-center justify-center gap-3 px-6 text-center">
-          <div className="mb-2 text-5xl" aria-hidden="true">
-            🛒
-          </div>
-          <p className="font-semibold text-ink">Your cart is empty</p>
-          <p className="text-sm text-muted">Add something from the menu to get started.</p>
-          <button
-            type="button"
-            onClick={onBack}
-            className="mt-4 rounded-xl bg-brand px-6 py-2.5 text-sm font-semibold text-on-brand"
-          >
-            Browse the menu
-          </button>
-        </div>
-      </div>
-    );
-  }
-
-  const items = priced.reduce((sum, line) => sum + line.quantity, 0);
-  return (
-    <div className="mx-auto flex min-h-screen max-w-[430px] flex-col lg:max-w-2xl">
-      <Header title="Your cart" onBack={onBack} extra={`${items} item${items === 1 ? '' : 's'}`} />
-      <div className="flex-1 pb-32">
-        <div className="mx-4 mt-2 divide-y divide-border border-y border-border">
-          {priced.map((line) => (
-            <div key={line.uid} className="py-4">
-              <div className="flex items-start justify-between gap-2">
-                <div className={`min-w-0 flex-1 ${line.problem ? 'opacity-70' : ''}`}>
-                  <LineWords line={line} />
-                </div>
-                {!line.problem && (
-                  <p className="flex-shrink-0 font-mono text-sm font-medium text-ink">
-                    {ghs(line.lineTotal)}
-                  </p>
-                )}
-              </div>
-              <div className="mt-3 flex items-center justify-between">
-                {line.problem ? (
-                  <span />
-                ) : (
-                  <Qty
-                    value={line.quantity}
-                    onDec={() => setQuantity(line.uid, line.quantity - 1)}
-                    onInc={() => setQuantity(line.uid, line.quantity + 1)}
-                  />
-                )}
-                <button
-                  type="button"
-                  onClick={() => remove(line.uid)}
-                  className="text-xs text-muted underline hover:text-ink"
-                >
-                  Remove
-                </button>
-              </div>
-            </div>
-          ))}
-        </div>
-
-        <div className="mx-4 mt-4 flex justify-between text-base font-semibold">
-          <span>Subtotal</span>
-          <span className="font-mono">{ghs(subtotal)}</span>
-        </div>
-        {!store.open ? (
-          <p className="mx-4 mt-3 flex items-center gap-1 text-xs text-muted">
-            <Clock />
-            {store.opensWords
-              ? `Closed right now. ${store.opensWords}.`
-              : 'The store isn’t taking orders right now.'}
-          </p>
-        ) : (
-          blocked && (
-            <p className="mx-4 mt-3 text-xs text-red">
-              Take off what’s marked above before you check out.
-            </p>
-          )
-        )}
-      </div>
-
-      <div className="fixed right-0 bottom-0 left-0 mx-auto max-w-[430px] border-t border-border bg-page px-4 pt-3 pb-6 lg:max-w-2xl">
-        <button type="button" onClick={onCheckout} disabled={blocked} className={primary}>
-          {store.open ? 'Checkout' : 'Closed right now'}
-        </button>
-      </div>
-    </div>
-  );
-}
-
-// ─── Checkout ─────────────────────────────────────────────────────────────────
-
+/** A box to type in: a hairline outline on the page's own colour, not a card. */
 const field =
   'w-full rounded-xl border border-border bg-page px-3.5 py-3 text-sm text-ink outline-none placeholder:text-muted focus:border-brand';
 
-function Checkout({
+/**
+ * The order: what's in it, and everything needed to send it, on one page (16 Sep, user request,
+ * to the reference they shared) — the cart and checkout used to be two screens. Items at the
+ * top with their photo and a stepper, a comment for the kitchen, then how they'll get it, where
+ * to, who they are, how they'll pay, and what it comes to.
+ */
+function OrderScreen({
   store,
   priced,
   subtotal,
@@ -1256,6 +1144,9 @@ function Checkout({
   zoneId,
   setZoneId,
   onBack,
+  onAddMore,
+  onEmpty,
+  setQuantity,
   onPlaced,
 }: {
   store: Store;
@@ -1266,16 +1157,18 @@ function Checkout({
   zoneId: string | null;
   setZoneId: (zoneId: string) => void;
   onBack: () => void;
+  onAddMore: () => void;
+  onEmpty: () => void;
+  setQuantity: (uid: string, quantity: number) => void;
   onPlaced: (result: { token: string; payUrl: string | null }) => void;
 }) {
-  // One order per checkout: sending it again after a lost answer records it once.
+  // One order per visit to this page: sending it again after a lost answer records it once.
   const [orderId] = useState(() => ulid());
   const [name, setName] = useState('');
   const [phone, setPhone] = useState('');
   const [address, setAddress] = useState('');
   const [note, setNote] = useState('');
   const [chosenPayment, setPayment] = useState<'ONLINE' | 'CASH'>('ONLINE');
-  const [showZones, setShowZones] = useState(false);
   const [busy, setBusy] = useState(false);
   const [problem, setProblem] = useState<string | null>(null);
 
@@ -1288,10 +1181,11 @@ function Checkout({
   const total = subtotal + deliveryFee;
   const digits = phone.replace(/\D/g, '');
   const phoneToSend = digits.length === 9 ? `0${digits}` : phone.trim();
+  const blocked = priced.some((line) => line.problem);
   const ready =
     store.open &&
     priced.length > 0 &&
-    !priced.some((line) => line.problem) &&
+    !blocked &&
     name.trim().length >= 2 &&
     normalizeGhanaPhone(phoneToSend) !== null &&
     (fulfilment === 'PICKUP' || (zone !== null && address.trim().length >= 3)) &&
@@ -1325,146 +1219,239 @@ function Checkout({
     onPlaced(result);
   };
 
+  if (priced.length === 0) {
+    return (
+      <div className="mx-auto flex min-h-screen max-w-[430px] flex-col lg:max-w-2xl">
+        <Header title="Your order" onBack={onBack} />
+        <div className="flex flex-1 flex-col items-center justify-center gap-3 px-6 text-center">
+          <div className="mb-2 text-5xl" aria-hidden="true">
+            🛒
+          </div>
+          <p className="font-semibold text-ink">Nothing in your order yet</p>
+          <p className="text-sm text-muted">Add something from the menu to get started.</p>
+          <button
+            type="button"
+            onClick={onBack}
+            className="mt-4 rounded-full bg-brand px-6 py-2.5 text-sm font-semibold text-on-brand"
+          >
+            Browse the menu
+          </button>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="mx-auto flex min-h-screen max-w-[430px] flex-col lg:max-w-2xl">
-      <Header title="Checkout" onBack={onBack} />
+      <Header
+        title={store.name}
+        onBack={onBack}
+        right={
+          <RoundButton label="Empty your order" onClick={onEmpty}>
+            <Trash />
+          </RoundButton>
+        }
+      />
 
       <div className="flex-1 px-4 pb-36">
-        {store.zones.length > 0 && (
-          <section className="border-b border-border py-5">
-            <p className="mb-3 text-xs font-semibold tracking-wider text-muted uppercase">
-              How you’ll get it
-            </p>
-            <FulfilmentChoice value={fulfilment} onChange={setFulfilment} />
-          </section>
-        )}
-
-        {fulfilment === 'DELIVERY' && (
-          <section className="space-y-3 border-b border-border py-5">
-            <p className="text-xs font-semibold tracking-wider text-muted uppercase">
-              Delivery area
-            </p>
-            <button
-              type="button"
-              onClick={() => setShowZones(!showZones)}
-              aria-expanded={showZones}
-              className="flex w-full items-center justify-between rounded-lg border border-border bg-tile px-3 py-2.5 text-sm"
-            >
-              <span className={zone ? 'text-ink' : 'text-muted'}>
-                {zone ? `${zone.name} · ${ghs(zone.fee)}` : 'Choose your area'}
-              </span>
-              <ChevronDown size={16} />
-            </button>
-            {showZones && (
-              <div className="divide-y divide-border overflow-hidden rounded-xl border border-border">
-                {store.zones.map((row, index) => (
-                  <button
-                    key={row.id}
-                    type="button"
-                    onClick={() => {
-                      setZoneId(row.id);
-                      setShowZones(false);
-                    }}
-                    className={`flex w-full items-center justify-between px-4 py-3 text-sm text-ink hover:bg-tile ${
-                      index > 0 ? 'border-t border-border' : ''
-                    }`}
-                  >
-                    <span>{row.name}</span>
-                    <span className="font-mono text-muted">{ghs(row.fee)}</span>
-                  </button>
-                ))}
+        <ul className="divide-y divide-border">
+          {priced.map((line) => (
+            <li key={line.uid} className="flex items-center gap-3 py-4">
+              <div className="h-14 w-14 shrink-0 overflow-hidden rounded-xl bg-tile">
+                {line.photoUrl ? (
+                  <img src={line.photoUrl} alt="" className="h-full w-full object-cover" />
+                ) : (
+                  <PhotoPlaceholder name={line.name} />
+                )}
               </div>
-            )}
-            <input
-              value={address}
-              onChange={(event) => setAddress(event.target.value)}
-              placeholder="House no., street, landmark"
-              maxLength={300}
-              autoComplete="street-address"
-              className={field}
-            />
-          </section>
-        )}
+              <div className={`min-w-0 flex-1 ${line.problem ? 'opacity-70' : ''}`}>
+                <LineWords line={line} />
+                {!line.problem && (
+                  <p className="mt-1 font-mono text-sm font-medium text-ink">
+                    {ghs(line.lineTotal)}
+                  </p>
+                )}
+              </div>
+              <div className="shrink-0">
+                {line.problem ? (
+                  <button
+                    type="button"
+                    onClick={() => setQuantity(line.uid, 0)}
+                    className="text-xs text-muted underline hover:text-ink"
+                  >
+                    Remove
+                  </button>
+                ) : (
+                  <Stepper
+                    value={line.quantity}
+                    onChange={(quantity) => setQuantity(line.uid, quantity)}
+                  />
+                )}
+              </div>
+            </li>
+          ))}
+        </ul>
 
-        <section className="space-y-3 border-b border-border py-5">
-          <p className="text-xs font-semibold tracking-wider text-muted uppercase">Your details</p>
-          <input
-            value={name}
-            onChange={(event) => setName(event.target.value)}
-            placeholder="Your name"
-            maxLength={80}
-            autoComplete="name"
-            className={field}
-          />
-          <div className="flex gap-2">
-            <span className="rounded-lg border border-border bg-tile px-3 py-2.5 text-sm text-muted">
-              +233
-            </span>
-            <input
-              value={phone}
-              onChange={(event) => setPhone(event.target.value)}
-              placeholder="24 000 0000"
-              type="tel"
-              autoComplete="tel-national"
-              maxLength={16}
-              className={`flex-1 ${field}`}
-            />
-          </div>
-          <p className="text-xs text-muted">
-            The store calls or texts this number about your order.
-          </p>
+        <button
+          type="button"
+          onClick={onAddMore}
+          className="flex w-full items-center gap-3 border-b border-border py-4 text-left text-base font-semibold text-brand-ink"
+        >
+          <span className="flex h-8 w-8 items-center justify-center rounded-full bg-brand text-on-brand">
+            <svg
+              width="14"
+              height="14"
+              fill="none"
+              viewBox="0 0 12 12"
+              stroke="currentColor"
+              strokeWidth="2.5"
+              strokeLinecap="round"
+              aria-hidden="true"
+            >
+              <path d="M6 2v8M2 6h8" />
+            </svg>
+          </span>
+          Add more
+        </button>
+
+        <div className="border-b border-border py-4">
           <textarea
             value={note}
             onChange={(event) => setNote(event.target.value)}
-            placeholder="Note for the kitchen (optional)"
+            placeholder="Need cutlery? Less pepper? Leave a note for the kitchen…"
             rows={2}
             maxLength={300}
-            className={`resize-none ${field}`}
+            aria-label="Note for the kitchen"
+            className="w-full resize-none bg-transparent text-sm text-ink outline-none placeholder:text-muted"
           />
-        </section>
+        </div>
 
-        <section className="space-y-2 border-b border-border py-5">
-          <p className="mb-3 text-xs font-semibold tracking-wider text-muted uppercase">
-            How you’ll pay
-          </p>
-          {canOnline && (
-            <PayChoice
-              on={payment === 'ONLINE'}
-              onChoose={() => setPayment('ONLINE')}
-              title="Pay now with mobile money"
-              detail="On a secure payment page"
+        <section className="border-b border-border py-5">
+          <h2 className="text-xl font-bold text-ink">Delivery or pickup?</h2>
+          <div className="mt-3 divide-y divide-border">
+            <ChoiceRow
+              on={fulfilment === 'PICKUP'}
+              onChoose={() => setFulfilment('PICKUP')}
+              icon={<Basket />}
+              title="Pickup"
+              detail="Collect from the store"
+              aside="Free"
             />
-          )}
-          {canCash && (
-            <PayChoice
-              on={payment === 'CASH'}
-              onChoose={() => setPayment('CASH')}
-              title="Pay cash when I collect"
-            />
-          )}
-          {payment === null && (
-            <p className="text-sm text-amber">
-              {fulfilment === 'DELIVERY'
-                ? 'This store can’t take payment for deliveries online yet. Choose pickup, or call the store.'
-                : 'This store can’t take payment online yet. Call the store to order.'}
-            </p>
-          )}
-        </section>
+            {store.zones.length > 0 ? (
+              <ChoiceRow
+                on={fulfilment === 'DELIVERY'}
+                onChoose={() => setFulfilment('DELIVERY')}
+                icon={<Moped />}
+                title="Delivery"
+                detail={zone ? `To ${zone.name}` : 'Choose your area below'}
+                aside={ghs(zone ? zone.fee : Math.min(...store.zones.map((row) => row.fee)))}
+              />
+            ) : (
+              <p className="py-3 text-sm text-muted">
+                This store doesn’t deliver yet — pickup only.
+              </p>
+            )}
+          </div>
 
-        <section className="space-y-2 border-b border-border py-5">
-          <p className="mb-2 text-xs font-semibold tracking-wider text-muted uppercase">
-            Order summary
-          </p>
-          {priced.map((line) => (
-            <div key={line.uid} className="flex justify-between gap-3 text-sm">
-              <span className="text-ink">
-                {line.quantity}× {line.name}
-                {line.variantName ? ` (${line.variantName})` : ''}
-              </span>
-              <span className="font-mono text-muted">{ghs(line.lineTotal)}</span>
+          {fulfilment === 'DELIVERY' && store.zones.length > 0 && (
+            <div className="mt-4 space-y-3">
+              <ul className="divide-y divide-border border-y border-border">
+                {store.zones.map((row) => (
+                  <li key={row.id}>
+                    <button
+                      type="button"
+                      onClick={() => setZoneId(row.id)}
+                      aria-pressed={zoneId === row.id}
+                      className="flex w-full items-center justify-between py-3 text-sm"
+                    >
+                      <span className={zoneId === row.id ? 'font-semibold text-ink' : 'text-muted'}>
+                        {row.name}
+                      </span>
+                      <span className="flex items-center gap-3">
+                        <span className="font-mono text-muted">{ghs(row.fee)}</span>
+                        <Tick on={zoneId === row.id} />
+                      </span>
+                    </button>
+                  </li>
+                ))}
+              </ul>
+              <input
+                value={address}
+                onChange={(event) => setAddress(event.target.value)}
+                placeholder="House no., street, landmark"
+                maxLength={300}
+                autoComplete="street-address"
+                aria-label="Where to deliver to"
+                className={field}
+              />
             </div>
-          ))}
-          <div className="mt-2 space-y-1 border-t border-border pt-2">
+          )}
+        </section>
+
+        <section className="border-b border-border py-5">
+          <h2 className="text-xl font-bold text-ink">Your details</h2>
+          <div className="mt-3 space-y-3">
+            <input
+              value={name}
+              onChange={(event) => setName(event.target.value)}
+              placeholder="Your name"
+              maxLength={80}
+              autoComplete="name"
+              aria-label="Your name"
+              className={field}
+            />
+            <div className="flex gap-2">
+              <span className="flex items-center rounded-xl border border-border px-3 text-sm text-muted">
+                +233
+              </span>
+              <input
+                value={phone}
+                onChange={(event) => setPhone(event.target.value)}
+                placeholder="24 000 0000"
+                type="tel"
+                autoComplete="tel-national"
+                maxLength={16}
+                aria-label="Your phone number"
+                className={`flex-1 ${field}`}
+              />
+            </div>
+            <p className="text-xs text-muted">
+              The store calls or texts this number about your order.
+            </p>
+          </div>
+        </section>
+
+        <section className="border-b border-border py-5">
+          <h2 className="text-xl font-bold text-ink">How you’ll pay</h2>
+          <div className="mt-3 divide-y divide-border">
+            {canOnline && (
+              <ChoiceRow
+                on={payment === 'ONLINE'}
+                onChoose={() => setPayment('ONLINE')}
+                title="Mobile money, now"
+                detail="On a secure payment page"
+              />
+            )}
+            {canCash && (
+              <ChoiceRow
+                on={payment === 'CASH'}
+                onChoose={() => setPayment('CASH')}
+                title="Cash when I collect"
+                detail="Pay at the store"
+              />
+            )}
+            {payment === null && (
+              <p className="py-3 text-sm text-amber">
+                {fulfilment === 'DELIVERY'
+                  ? 'This store can’t take payment for deliveries online yet. Choose pickup, or call the store.'
+                  : 'This store can’t take payment online yet. Call the store to order.'}
+              </p>
+            )}
+          </div>
+        </section>
+
+        <section className="py-5">
+          <div className="space-y-1.5">
             <div className="flex justify-between text-sm">
               <span className="text-muted">Subtotal</span>
               <span className="font-mono">{ghs(subtotal)}</span>
@@ -1475,15 +1462,23 @@ function Checkout({
                 <span className="font-mono">{ghs(deliveryFee)}</span>
               </div>
             )}
-            <div className="flex justify-between text-sm font-semibold">
+            <div className="flex items-baseline justify-between border-t border-border pt-2 text-base font-semibold">
               <span>Total</span>
-              <span className="font-mono">{ghs(total)}</span>
+              <span className="font-mono text-lg">{ghs(total)}</span>
             </div>
           </div>
         </section>
 
+        {blocked && (
+          <p className="text-sm text-red">Take off what’s marked above before you order.</p>
+        )}
         {!store.open && (
-          <p className="text-sm text-red">The store isn’t taking orders right now.</p>
+          <p className="flex items-center gap-1 text-sm text-muted">
+            <Clock />
+            {store.opensWords
+              ? `Closed right now. ${store.opensWords}.`
+              : 'The store isn’t taking orders right now.'}
+          </p>
         )}
         {problem && (
           <p className="rounded-xl bg-red-bg px-4 py-3 text-sm text-red" role="alert">
@@ -1501,6 +1496,8 @@ function Checkout({
         >
           {busy ? (
             'Sending your order…'
+          ) : !store.open ? (
+            'Closed right now'
           ) : payment === 'CASH' ? (
             'Place order'
           ) : (
@@ -1514,39 +1511,93 @@ function Checkout({
   );
 }
 
-function PayChoice({
-  on,
-  onChoose,
-  title,
-  detail,
-}: {
-  on: boolean;
-  onChoose: () => void;
-  title: string;
-  detail?: string;
-}) {
+/** − 1 + in a rounded outline, as the reference has it beside each item. */
+function Stepper({ value, onChange }: { value: number; onChange: (value: number) => void }) {
   return (
-    <label
-      className={`flex cursor-pointer items-center gap-3 rounded-lg border bg-tile px-3 py-3 transition-all ${
-        on ? 'border-brand' : 'border-border'
-      }`}
-    >
-      <input
-        type="radio"
-        name="payment"
-        checked={on}
-        onChange={onChoose}
-        className="h-4 w-4 accent-[var(--brand)]"
-      />
-      <span>
-        <span className="block text-sm font-medium text-ink">{title}</span>
-        {detail && <span className="mt-0.5 block text-xs text-muted">{detail}</span>}
-      </span>
-    </label>
+    <div className="flex items-center gap-1 rounded-full border border-border px-1">
+      <button
+        type="button"
+        onClick={() => onChange(value - 1)}
+        aria-label={value === 1 ? 'Remove' : 'One fewer'}
+        className="flex h-9 w-9 items-center justify-center rounded-full text-lg text-ink hover:bg-tile"
+      >
+        −
+      </button>
+      <span className="w-5 text-center font-mono text-sm">{value}</span>
+      <button
+        type="button"
+        onClick={() => onChange(value + 1)}
+        aria-label="One more"
+        className="flex h-9 w-9 items-center justify-center rounded-full text-lg text-ink hover:bg-tile"
+      >
+        +
+      </button>
+    </div>
   );
 }
 
-/** On the way to Moolre's payment page. */
+/** One of a set to pick from: how they'll get it, or how they'll pay. */
+function ChoiceRow({
+  on,
+  onChoose,
+  icon,
+  title,
+  detail,
+  aside,
+}: {
+  on: boolean;
+  onChoose: () => void;
+  icon?: ReactNode;
+  title: string;
+  detail?: string;
+  aside?: string;
+}) {
+  return (
+    <button
+      type="button"
+      role="radio"
+      aria-checked={on}
+      onClick={onChoose}
+      className="flex w-full items-center gap-3 py-3.5 text-left"
+    >
+      {icon && <span className="shrink-0 text-ink">{icon}</span>}
+      <span className="min-w-0 flex-1">
+        <span className="block text-sm font-semibold text-ink">{title}</span>
+        {detail && <span className="mt-0.5 block text-xs text-muted">{detail}</span>}
+      </span>
+      {aside && <span className="shrink-0 font-mono text-sm text-muted">{aside}</span>}
+      <Tick on={on} />
+    </button>
+  );
+}
+
+/** The chosen one of a set, in the brand colour. */
+function Tick({ on }: { on: boolean }) {
+  return (
+    <span
+      aria-hidden="true"
+      className={`flex h-5 w-5 shrink-0 items-center justify-center rounded-full border-2 ${
+        on ? 'border-brand bg-brand text-on-brand' : 'border-border'
+      }`}
+    >
+      {on && (
+        <svg
+          width="11"
+          height="11"
+          fill="none"
+          viewBox="0 0 12 12"
+          stroke="currentColor"
+          strokeWidth="2.5"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+        >
+          <path d="M2.5 6.5l2.5 2.5 4.5-5" />
+        </svg>
+      )}
+    </span>
+  );
+}
+
 function Paying() {
   return (
     <div className="flex min-h-screen flex-col items-center justify-center px-6 text-center">

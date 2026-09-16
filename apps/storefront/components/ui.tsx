@@ -278,6 +278,47 @@ export function Navigate() {
   );
 }
 
+/** Emptying the order. */
+export function Trash() {
+  return (
+    <svg
+      width="18"
+      height="18"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.8"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden="true"
+    >
+      <path d="M4 7h16M9 7V5h6v2M6 7l1 12.2A2 2 0 0 0 9 21h6a2 2 0 0 0 2-1.8L18 7" />
+      <path d="M10 11v6M14 11v6" />
+    </svg>
+  );
+}
+
+/** Delivery: the rider's moped. */
+export function Moped() {
+  return (
+    <svg
+      width="20"
+      height="20"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.8"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden="true"
+    >
+      <circle cx="6" cy="17" r="2.5" />
+      <circle cx="18" cy="17" r="2.5" />
+      <path d="M8.5 17h7M4 7h4l3.5 10M14 7h3l2.5 7" />
+    </svg>
+  );
+}
+
 /** A full-screen message: store not found, something went wrong, and the like. */
 export function Message({
   icon,

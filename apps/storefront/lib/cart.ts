@@ -13,6 +13,8 @@ export interface CartLine {
 /** A cart line with today's names and prices, or why it can't be ordered any more. */
 export interface PricedLine extends CartLine {
   name: string;
+  /** The item's photo, so the order page can show it beside each line. */
+  photoUrl: string | null;
   variantName: string | null;
   extras: string[];
   unitTotal: number;
@@ -45,6 +47,7 @@ export function priceCart(store: Store, lines: CartLine[]): PricedLine[] {
       return {
         ...line,
         name: 'Something no longer on the menu',
+        photoUrl: null,
         variantName: null,
         extras: [],
         unitTotal: 0,
@@ -73,6 +76,7 @@ export function priceCart(store: Store, lines: CartLine[]): PricedLine[] {
     return {
       ...line,
       name: item.name,
+      photoUrl: item.photoUrl,
       variantName: variant?.name ?? null,
       extras: options.map((option) => option.name),
       unitTotal: priced!.unitTotal,
