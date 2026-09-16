@@ -174,6 +174,7 @@ _11 Sep: built in the new app shell (Expo Router, `apps/mobile/app/`), with test
 - [x] Device registration (Owner/Manager signs in with email once)
   - _Sign in → pick the business → name the tablet → the menu and staff list download → the owner sets their own PIN if they have none. The tablet keeps only its device token (encrypted in secure storage) and signs the email login out. Registering again wipes the tablet's data first._
 - [x] 6-digit PIN switcher: local PBKDF2 check, lockout (5 → 30 s doubling, 10 → disabled), auto-lock after 3 idle minutes
+  - _16 Sep, user request: the lock screen lists people the way the CosyPOS design does — a row each, a round initial in that person's own colour, and the whole row in that colour once picked. The same colour marks them on the nav bar at the till (`src/ui/people.ts`). Not tried on the tablet yet._
   - _Tap your name, type your PIN. The wrong-PIN count is kept in the tablet's database, so restarting the app doesn't reset it, and it starts again when a manager sets a new PIN. The idle lock uses the business's own setting (3 minutes by default). Someone switched off on the dashboard is locked out at the next sync._
 - [x] Add staff at the counter (≤60 s)
   - _Owners and managers, online only. Name, role and PIN, confirmed with their own PIN; only the owner can add managers. The new person appears on the lock screen straight after. Works on the tablet; not timed yet._

@@ -6,6 +6,7 @@ import logo from '../assets/logo.png';
 import PlateraaCrypto from '../modules/plateraa-crypto/src/PlateraaCryptoModule';
 import { checkPin, pinMessage } from '../src/tablet/pin-guard';
 import { useLocalQuery, useTablet } from '../src/tablet/TabletProvider';
+import { initialOf, personColour } from '../src/ui/people';
 import { PinPad } from '../src/ui/PinPad';
 import { SyncBanner } from '../src/ui/SyncBanner';
 import { colors, font, radii, space, text, themedStyles } from '../src/ui/theme';
@@ -76,10 +77,13 @@ export default function LockScreen() {
         ) : people.length === 0 ? (
           <Text style={styles.hint}>The staff list appears once the tablet has synced.</Text>
         ) : (
-          <ScrollView style={styles.grow} contentContainerStyle={styles.tiles}>
+          <ScrollView style={styles.grow} contentContainerStyle={styles.rows}>
             {people.map((person) => {
               const selected = chosen?.id === person.id;
               const hasPin = Boolean(person.pin_verifier);
+              // Everyone has their own colour: the circle they're known by, and their whole row
+              // once they're picked (the user's reference, 16 Sep).
+              const colour = personColour(person.id);
               return (
                 <Pressable
                   key={person.id}
@@ -88,21 +92,33 @@ export default function LockScreen() {
                   onPress={() => choose(person)}
                   disabled={!hasPin}
                   style={({ pressed }) => [
-                    styles.tile,
-                    selected && styles.tileSelected,
-                    pressed && !selected && styles.tilePressed,
-                    !hasPin && styles.tileNoPin,
+                    styles.row,
+                    selected && { backgroundColor: colour.tint },
+                    pressed && !selected && styles.rowPressed,
+                    !hasPin && styles.rowNoPin,
                   ]}
                 >
-                  <Text
-                    style={[styles.tileName, selected && styles.tileNameSelected]}
-                    numberOfLines={1}
+                  <View
+                    style={[
+                      styles.avatar,
+                      { backgroundColor: selected ? colors.canvas : colour.tint },
+                    ]}
                   >
-                    {person.display_name}
-                  </Text>
-                  <Text style={styles.tileRole}>
-                    {hasPin ? ROLE_NAMES[person.role] : 'No PIN yet'}
-                  </Text>
+                    <Text style={[styles.initial, { color: colour.ink }]}>
+                      {initialOf(person.display_name)}
+                    </Text>
+                  </View>
+                  <View style={styles.rowWords}>
+                    <Text
+                      style={[styles.rowName, selected && { color: colour.ink }]}
+                      numberOfLines={1}
+                    >
+                      {person.display_name}
+                    </Text>
+                    <Text style={[styles.rowRole, selected && { color: colour.ink }]}>
+                      {hasPin ? ROLE_NAMES[person.role] : 'No PIN yet'}
+                    </Text>
+                  </View>
                 </Pressable>
               );
             })}
@@ -149,24 +165,29 @@ const styles = themedStyles(() => ({
   logo: { width: 28, height: 28 },
   business: { fontFamily: font.medium, fontSize: text.small, color: colors.muted },
   title: { fontFamily: font.semibold, fontSize: text.title, color: colors.ink },
-  tiles: { flexDirection: 'row', flexWrap: 'wrap', gap: 12 },
-  tile: {
-    width: '48%',
-    minHeight: 88,
-    justifyContent: 'center',
-    gap: 2,
+  rows: { gap: 10 },
+  row: {
+    minHeight: 76,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 14,
     borderRadius: radii.lg,
-    borderWidth: 1.5,
-    borderColor: 'transparent',
     backgroundColor: colors.tile,
-    paddingHorizontal: space.md,
+    paddingHorizontal: 14,
   },
-  tileSelected: { backgroundColor: colors.brandTint, borderColor: colors.brand },
-  tilePressed: { backgroundColor: colors.tilePressed },
-  tileNoPin: { opacity: 0.5 },
-  tileName: { fontFamily: font.semibold, fontSize: 18, color: colors.ink },
-  tileNameSelected: { color: colors.brandInk },
-  tileRole: { fontFamily: font.regular, fontSize: text.small, color: colors.muted },
+  rowPressed: { backgroundColor: colors.tilePressed },
+  rowNoPin: { opacity: 0.5 },
+  avatar: {
+    width: 48,
+    height: 48,
+    borderRadius: 24,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  initial: { fontFamily: font.semibold, fontSize: 20 },
+  rowWords: { flex: 1, gap: 2 },
+  rowName: { fontFamily: font.semibold, fontSize: 18, color: colors.ink },
+  rowRole: { fontFamily: font.regular, fontSize: text.small, color: colors.muted },
   link: {
     fontFamily: font.medium,
     fontSize: text.small,

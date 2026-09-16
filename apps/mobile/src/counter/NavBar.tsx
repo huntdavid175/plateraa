@@ -4,6 +4,7 @@ import { Alert, Modal, Pressable, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useEngineState, useLocalQuery, useTablet } from '../tablet/TabletProvider';
 import { saveAppearance } from '../ui/appearance';
+import { initialOf, personColour } from '../ui/people';
 import {
   CounterIcon,
   DrawerIcon,
@@ -32,16 +33,6 @@ const TABS: readonly {
   { value: 'stock', label: 'Stock', Icon: StockIcon },
 ];
 
-/** Up to two letters for whoever is on the till. */
-function initialsOf(name: string | undefined): string {
-  const letters = (name ?? '')
-    .split(/\s+/)
-    .filter(Boolean)
-    .slice(0, 2)
-    .map((word) => word[0]!.toUpperCase());
-  return letters.join('') || '·';
-}
-
 /**
  * The bar along the bottom of the counter: who is on the till, one button per part of the app
  * (an icon and a word, the one in use in the brand colour), and More. A POS keeps its menu down
@@ -60,6 +51,8 @@ export function NavBar({ tab, onTab }: { tab: CounterTab; onTab: (tab: CounterTa
       `SELECT count(*) AS count FROM orders WHERE source = 'STOREFRONT' AND status = 'NEW'`,
     )?.[0]?.count ?? 0;
   const refused = state?.needsAttention ?? 0;
+  // The colour they were picked by on the lock screen, carried through to the till.
+  const colour = personColour(staff?.id ?? '');
   const canAddStaff = staff?.capabilities.has('staff.manage') ?? false;
   const runsDrawer = staff?.capabilities.has('shift.operate') ?? false;
   const countsStock = staff?.capabilities.has('stock.count') ?? false;
@@ -91,8 +84,10 @@ export function NavBar({ tab, onTab }: { tab: CounterTab; onTab: (tab: CounterTa
         onPress={askToLock}
         style={({ pressed }) => [styles.item, pressed && styles.pressed]}
       >
-        <View style={styles.avatar}>
-          <Text style={styles.initials}>{initialsOf(staff?.displayName)}</Text>
+        <View style={[styles.avatar, { backgroundColor: colour.tint }]}>
+          <Text style={[styles.initials, { color: colour.ink }]}>
+            {initialOf(staff?.displayName ?? '')}
+          </Text>
         </View>
         <Text style={styles.label} numberOfLines={1}>
           {staff?.displayName}
@@ -227,15 +222,13 @@ const styles = themedStyles(() => ({
   pressed: { backgroundColor: colors.track },
   glyph: { width: 22, height: 22, alignItems: 'center', justifyContent: 'center' },
   avatar: {
-    width: 26,
-    height: 26,
-    borderRadius: 13,
-    borderWidth: 1,
-    borderColor: colors.line,
+    width: 28,
+    height: 28,
+    borderRadius: 14,
     alignItems: 'center',
     justifyContent: 'center',
   },
-  initials: { fontFamily: font.semibold, fontSize: 11, color: colors.muted },
+  initials: { fontFamily: font.semibold, fontSize: 13 },
   label: { fontFamily: font.medium, fontSize: 15, color: colors.muted },
   labelOn: { fontFamily: font.semibold, color: colors.brand },
   count: {
