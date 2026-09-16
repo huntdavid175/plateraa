@@ -362,6 +362,24 @@ function OrderDetail({
           <View style={styles.steps}>
             {steps.map((status, index) => (
               <View key={status} style={styles.step}>
+                {index > 0 && (
+                  <View
+                    style={[
+                      styles.stepTrack,
+                      styles.stepTrackBefore,
+                      index <= reached && styles.stepTrackOn,
+                    ]}
+                  />
+                )}
+                {index < steps.length - 1 && (
+                  <View
+                    style={[
+                      styles.stepTrack,
+                      styles.stepTrackAfter,
+                      index < reached && styles.stepTrackOn,
+                    ]}
+                  />
+                )}
                 <View style={[styles.stepDot, index <= reached && styles.stepDotOn]} />
                 <Text style={[styles.stepLabel, index <= reached && styles.stepLabelOn]}>
                   {STATUS_LABELS[status]}
@@ -678,6 +696,15 @@ const styles = themedStyles(() => ({
     backgroundColor: colors.track,
   },
   stepDotOn: { backgroundColor: colors.brand, borderColor: colors.brand },
+  /**
+   * The line joining one step to the next. Each step draws its own half, from its edge to the
+   * middle, so the halves of neighbouring steps meet; the dot is opaque and covers the ends.
+   * A half is lit once the journey has passed through it.
+   */
+  stepTrack: { position: 'absolute', top: 7, height: 2, backgroundColor: colors.line },
+  stepTrackBefore: { left: 0, right: '50%' },
+  stepTrackAfter: { left: '50%', right: 0 },
+  stepTrackOn: { backgroundColor: colors.brand },
   stepLabel: { fontFamily: font.regular, fontSize: 12, color: colors.faint, textAlign: 'center' },
   stepLabelOn: { fontFamily: font.semibold, color: colors.ink },
   section: { paddingVertical: space.md, gap: 10 },
