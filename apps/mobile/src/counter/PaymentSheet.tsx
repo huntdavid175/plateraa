@@ -2,6 +2,7 @@ import { pesewas, sub, type Pesewas } from '@plateraa/shared';
 import { useEffect, useState } from 'react';
 import { ScrollView, Text, View, useWindowDimensions } from 'react-native';
 import { problemText } from '../tablet/api';
+import { useLocalQuery } from '../tablet/TabletProvider';
 import { Button } from '../ui/Button';
 import { Segmented } from '../ui/controls';
 import { Label, PhoneField } from '../ui/Field';
@@ -9,6 +10,7 @@ import { CloseButton, Overlay } from '../ui/Sheet';
 import { cedis, colors, font, radii, space, text, themedStyles } from '../ui/theme';
 import { openDrawer, openShiftOf, type Counter } from './actions';
 import { amountOf, plainAmount } from './amounts';
+import { ghanaPhone } from './checkout';
 import { AmountDisplay, Keypad } from './Keypad';
 import { LINK_NOTE } from './words';
 
@@ -44,7 +46,7 @@ export function PaymentSheet({
   summary: PaymentSummary;
   due: Pesewas;
   allowLink: boolean;
-  /** The customer's number from the order column, for a link. */
+  /** A number already on the order (a delivery, or one being paid again), to start a link with. */
   phone: string;
   onCash: (tendered: Pesewas, shiftId: string) => Promise<void>;
   onLink: (phone: string) => Promise<void>;
@@ -69,6 +71,15 @@ export function PaymentSheet({
       setMode(open ? 'cash' : 'drawer');
     });
   }, [visible, phone, counter]);
+
+  // Who the number belongs to, so the person at the till can see the link is going to the
+  // right customer before it goes out.
+  const keyed = ghanaPhone(linkPhone) ?? '';
+  const known = useLocalQuery<{ name: string | null }>(
+    'SELECT name FROM customers WHERE phone = ? AND name IS NOT NULL LIMIT 1',
+    [keyed],
+  );
+  const knownName = keyed ? known?.[0]?.name : null;
 
   const given = amountOf(typed);
   const enough = given !== null && given >= due;
@@ -218,6 +229,7 @@ export function PaymentSheet({
                   value={linkPhone}
                   onChangeText={setLinkPhone}
                 />
+                {knownName && <Text style={styles.known}>Known customer: {knownName}</Text>}
                 <Text style={styles.note}>{LINK_NOTE}</Text>
               </>
             )}
@@ -303,6 +315,7 @@ const styles = themedStyles(() => ({
   payBody: { paddingHorizontal: 28, paddingTop: 20, paddingBottom: space.md, gap: 20 },
   body: { fontFamily: font.regular, fontSize: 15, lineHeight: 22, color: colors.muted },
   note: { fontFamily: font.medium, fontSize: 14, color: colors.brandInk },
+  known: { fontFamily: font.medium, fontSize: 14, color: colors.goodInk, marginTop: -12 },
   toPay: { fontFamily: font.monoMedium, fontSize: text.huge, color: colors.ink, marginTop: 6 },
   quick: { flexDirection: 'row', gap: 10 },
   cashRow: { flexDirection: 'row', gap: 20, alignItems: 'flex-start' },

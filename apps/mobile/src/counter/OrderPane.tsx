@@ -15,8 +15,9 @@ import { TYPE_LABELS } from './words';
 
 /**
  * The order being typed in at the counter: dine-in (where the owner offers it), pickup or
- * delivery, the customer's number, the lines and the total, with Charge and Hold pinned at the
- * bottom. A phone call is typed in here too.
+ * delivery, the lines and the total, with Charge and Hold pinned at the bottom. A phone call is
+ * typed in here too. The customer's number is asked for at the payment sheet, where a payment
+ * link needs it; a delivery asks here, since the rider needs it with the address.
  */
 export function OrderPane({
   number,
@@ -117,66 +118,55 @@ export function OrderPane({
         contentContainerStyle={styles.bodyContent}
         keyboardShouldPersistTaps="handled"
       >
-        {!editing && (
+        {!editing && delivery && (
           <View style={styles.fields}>
-            <PhoneField
-              label="Customer phone"
-              value={phone}
-              onChangeText={setPhone}
-              required={delivery}
-            />
+            <PhoneField label="Customer phone" value={phone} onChangeText={setPhone} required />
             {knownName && <Text style={styles.known}>Known customer: {knownName}</Text>}
-            {type !== 'DINE_IN' && (
-              <Field label="Name" optional value={name} onChangeText={setName} />
-            )}
-            {delivery && (
-              <>
-                <Field
-                  label="Delivery address"
-                  required
-                  value={address}
-                  onChangeText={setAddress}
-                  placeholder="House no., street, landmark"
-                />
-                {zones && zones.length > 0 && (
-                  <View style={styles.zoneBlock}>
-                    <Label text="Delivery zone" />
-                    <View style={styles.zones}>
-                      {zones.map((zone) => (
-                        <Chip
-                          key={zone.id}
-                          label={`${zone.name} · ${cedis(zone.fee)}`}
-                          selected={zoneId === zone.id}
-                          onPress={() => {
-                            setZoneId(zone.id);
-                            setFeeText(cedis(zone.fee));
-                          }}
-                        />
-                      ))}
-                    </View>
-                  </View>
-                )}
-                <Field
-                  label="Delivery fee (GH₵)"
-                  value={feeText}
-                  onChangeText={setFeeText}
-                  keyboardType="decimal-pad"
-                  placeholder="0.00"
-                  mono
-                />
-                <View style={styles.zoneBlock}>
-                  <Label text="Delivery fee goes to" />
-                  <Segmented
-                    options={[
-                      { value: 'us', label: 'Us' },
-                      { value: 'rider', label: 'Rider' },
-                    ]}
-                    value={riderKeeps ? 'rider' : 'us'}
-                    onChange={(who) => setRiderKeeps(who === 'rider')}
-                  />
+            <Field label="Name" optional value={name} onChangeText={setName} />
+            <Field
+              label="Delivery address"
+              required
+              value={address}
+              onChangeText={setAddress}
+              placeholder="House no., street, landmark"
+            />
+            {zones && zones.length > 0 && (
+              <View style={styles.zoneBlock}>
+                <Label text="Delivery zone" />
+                <View style={styles.zones}>
+                  {zones.map((zone) => (
+                    <Chip
+                      key={zone.id}
+                      label={`${zone.name} · ${cedis(zone.fee)}`}
+                      selected={zoneId === zone.id}
+                      onPress={() => {
+                        setZoneId(zone.id);
+                        setFeeText(cedis(zone.fee));
+                      }}
+                    />
+                  ))}
                 </View>
-              </>
+              </View>
             )}
+            <Field
+              label="Delivery fee (GH₵)"
+              value={feeText}
+              onChangeText={setFeeText}
+              keyboardType="decimal-pad"
+              placeholder="0.00"
+              mono
+            />
+            <View style={styles.zoneBlock}>
+              <Label text="Delivery fee goes to" />
+              <Segmented
+                options={[
+                  { value: 'us', label: 'Us' },
+                  { value: 'rider', label: 'Rider' },
+                ]}
+                value={riderKeeps ? 'rider' : 'us'}
+                onChange={(who) => setRiderKeeps(who === 'rider')}
+              />
+            </View>
           </View>
         )}
         <TicketLines
