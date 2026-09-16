@@ -29,6 +29,7 @@ import {
   type CartLine,
   type PricedLine,
 } from '../../lib/cart';
+import { useLockScroll } from '../../lib/lock-scroll';
 import { useMenuNav } from '../../lib/menu-nav';
 import { ghs } from '../../lib/money';
 import { phoneWords } from '../../lib/words';
@@ -901,6 +902,7 @@ function ItemSheet({
 }) {
   const [variantId, setVariantId] = useState(item.variants[0]?.id);
   const [chosen, setChosen] = useState<Record<string, string[]>>({});
+  useLockScroll(true);
   const [quantity, setQuantity] = useState(1);
   useEffect(() => {
     const onKey = (event: KeyboardEvent) => {

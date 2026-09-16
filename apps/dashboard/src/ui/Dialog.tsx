@@ -1,4 +1,5 @@
 import { useEffect, type ReactNode } from 'react';
+import { useLockScroll } from '../lib/lock-scroll';
 
 /** A box over the page: a sheet from the bottom on phones, centred on laptops. Escape closes it. */
 export function Dialog({
@@ -10,6 +11,7 @@ export function Dialog({
   onClose: () => void;
   children: ReactNode;
 }) {
+  useLockScroll(true);
   useEffect(() => {
     const onKey = (event: KeyboardEvent) => {
       if (event.key === 'Escape') onClose();

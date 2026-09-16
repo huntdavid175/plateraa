@@ -2,6 +2,7 @@ import type { Capability } from '@plateraa/shared';
 import { useState, type ComponentType } from 'react';
 import { Link, Navigate, NavLink, Outlet, useOutletContext } from 'react-router';
 import { ApiError } from '../lib/api';
+import { useLockScroll } from '../lib/lock-scroll';
 import { signOutAndForget, useBusinesses, useContextQuery, type Me } from '../lib/query';
 import { session, useSession } from '../lib/session';
 import { setDark, useDark } from '../lib/theme';
@@ -201,6 +202,8 @@ function Avatar({ name }: { name: string }) {
 function PhoneHeader({ me, overflow }: { me: Me; overflow: NavItem[] }) {
   const [open, setOpen] = useState(false);
   const dark = useDark();
+  // The page behind the sheet stays where it is (16 Sep, user request).
+  useLockScroll(open);
   return (
     <>
       <header className="flex items-center justify-between border-b border-border bg-surface px-4 py-3 md:hidden">
