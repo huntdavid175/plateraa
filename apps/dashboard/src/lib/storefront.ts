@@ -10,11 +10,10 @@ export type SaveStorefront = Omit<
   | 'deliveryZones'
   | 'area'
   | 'phone'
-  | 'hours'
   | 'coverUrl'
   | 'logoUrl'
   | 'photosReady'
-> & { area: string; phone: string; hours: string };
+> & { area: string; phone: string };
 
 export const saveStorefront = (body: SaveStorefront) =>
   call(api.PUT('/api/storefront/settings', { body }));

@@ -82,6 +82,7 @@ export function Storefront({ store }: { store: Store }) {
   if (screen === 'cart') {
     return (
       <CartScreen
+        store={store}
         priced={priced}
         subtotal={subtotal}
         onBack={() => setScreen('store')}
@@ -231,7 +232,13 @@ function StoreScreen({
               <div className="flex flex-wrap items-center gap-2 px-4 pt-3 pb-1">
                 <Badge
                   tone={store.open ? 'green' : 'red'}
-                  text={store.open ? 'Open · taking orders' : 'Not taking orders right now'}
+                  text={
+                    store.open
+                      ? 'Open · taking orders'
+                      : store.opensWords
+                        ? `Closed · ${store.opensWords.toLowerCase()}`
+                        : 'Not taking orders right now'
+                  }
                 />
                 {store.hours && (
                   <span className="flex items-center gap-1 text-xs text-muted">
@@ -258,6 +265,8 @@ function StoreScreen({
                 <div className="h-3" />
               )}
             </header>
+
+            {!store.open && <ClosedNote store={store} />}
 
             {sections.length > 1 && (
               <nav
@@ -379,8 +388,14 @@ function StoreScreen({
                 disabled={!store.open || priced.some((line) => line.problem)}
                 className={primary}
               >
-                Checkout
+                {store.open ? 'Checkout' : 'Closed right now'}
               </button>
+              {!store.open && (
+                <p className="mt-2 flex items-center justify-center gap-1 text-xs text-muted">
+                  <Clock />
+                  {store.opensWords ?? 'The store isn’t taking orders right now'}
+                </p>
+              )}
             </div>
           )}
         </aside>
@@ -439,6 +454,29 @@ function priceWords(item: StoreItem) {
   const prices = item.variants.map((variant) => variant.price);
   if (prices.length > 1 && new Set(prices).size > 1) return `from ${ghs(Math.min(...prices))}`;
   return ghs(prices[0] ?? item.price);
+}
+
+/**
+ * The store is shut: said once, plainly, above the menu (16 Sep, user request). The menu still
+ * shows — people look before they order — but nothing can be added and checkout is off.
+ */
+function ClosedNote({ store }: { store: Store }) {
+  return (
+    <div className="mx-4 mt-4 flex items-start gap-3 rounded-xl border border-border bg-tile px-4 py-3">
+      <span className="mt-0.5 shrink-0 text-muted">
+        <Clock />
+      </span>
+      <div className="min-w-0">
+        <p className="text-sm font-semibold text-ink">Closed right now</p>
+        <p className="mt-0.5 text-xs text-muted">
+          {store.opensWords
+            ? `${store.opensWords}. You can look at the menu, but ordering opens then.`
+            : 'The store isn’t taking orders at the moment. You can still look at the menu.'}
+        </p>
+        {store.hours && <p className="mt-1 text-xs text-muted">{store.hours}</p>}
+      </div>
+    </div>
+  );
 }
 
 function ItemCard({
@@ -733,6 +771,7 @@ function Header({ title, onBack, extra }: { title: string; onBack: () => void; e
 }
 
 function CartScreen({
+  store,
   priced,
   subtotal,
   onBack,
@@ -740,6 +779,7 @@ function CartScreen({
   setQuantity,
   remove,
 }: {
+  store: Store;
   priced: PricedLine[];
   subtotal: number;
   onBack: () => void;
@@ -747,7 +787,7 @@ function CartScreen({
   setQuantity: (uid: string, quantity: number) => void;
   remove: (uid: string) => void;
 }) {
-  const blocked = priced.some((line) => line.problem);
+  const blocked = !store.open || priced.some((line) => line.problem);
   if (priced.length === 0) {
     return (
       <div className="mx-auto flex min-h-screen max-w-[430px] flex-col">
@@ -817,16 +857,25 @@ function CartScreen({
           <span>Subtotal</span>
           <span className="font-mono">{ghs(subtotal)}</span>
         </div>
-        {blocked && (
-          <p className="mx-4 mt-3 text-xs text-red">
-            Take off what’s marked above before you check out.
+        {!store.open ? (
+          <p className="mx-4 mt-3 flex items-center gap-1 text-xs text-muted">
+            <Clock />
+            {store.opensWords
+              ? `Closed right now. ${store.opensWords}.`
+              : 'The store isn’t taking orders right now.'}
           </p>
+        ) : (
+          blocked && (
+            <p className="mx-4 mt-3 text-xs text-red">
+              Take off what’s marked above before you check out.
+            </p>
+          )
         )}
       </div>
 
       <div className="fixed right-0 bottom-0 left-0 mx-auto max-w-[430px] border-t border-border bg-page px-4 pt-3 pb-6">
         <button type="button" onClick={onCheckout} disabled={blocked} className={primary}>
-          Checkout
+          {store.open ? 'Checkout' : 'Closed right now'}
         </button>
       </div>
     </div>

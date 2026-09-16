@@ -1954,7 +1954,43 @@ export interface components {
             theme: "classic" | "orange" | "red" | "pink" | "purple" | "blue" | "teal" | "green" | "gold";
             area: string | null;
             phone: string | null;
-            hours: string | null;
+            hours: {
+                mon: {
+                    open: boolean;
+                    from: string;
+                    to: string;
+                };
+                tue: {
+                    open: boolean;
+                    from: string;
+                    to: string;
+                };
+                wed: {
+                    open: boolean;
+                    from: string;
+                    to: string;
+                };
+                thu: {
+                    open: boolean;
+                    from: string;
+                    to: string;
+                };
+                fri: {
+                    open: boolean;
+                    from: string;
+                    to: string;
+                };
+                sat: {
+                    open: boolean;
+                    from: string;
+                    to: string;
+                };
+                sun: {
+                    open: boolean;
+                    from: string;
+                    to: string;
+                };
+            };
             url: string;
             moolreConnected: boolean;
             deliveryZones: number;
@@ -1971,19 +2007,56 @@ export interface components {
             theme: "classic" | "orange" | "red" | "pink" | "purple" | "blue" | "teal" | "green" | "gold";
             area: string;
             phone: string;
-            hours: string;
+            hours: {
+                mon: {
+                    open: boolean;
+                    from: string;
+                    to: string;
+                };
+                tue: {
+                    open: boolean;
+                    from: string;
+                    to: string;
+                };
+                wed: {
+                    open: boolean;
+                    from: string;
+                    to: string;
+                };
+                thu: {
+                    open: boolean;
+                    from: string;
+                    to: string;
+                };
+                fri: {
+                    open: boolean;
+                    from: string;
+                    to: string;
+                };
+                sat: {
+                    open: boolean;
+                    from: string;
+                    to: string;
+                };
+                sun: {
+                    open: boolean;
+                    from: string;
+                    to: string;
+                };
+            };
         };
         StoreDto_Output: {
             slug: string;
             name: string;
             area: string | null;
             phone: string | null;
-            hours: string | null;
+            hours: string;
             /** @enum {string} */
             theme: "classic" | "orange" | "red" | "pink" | "purple" | "blue" | "teal" | "green" | "gold";
             coverUrl: string | null;
             logoUrl: string | null;
             open: boolean;
+            opensWords: string | null;
             payOnline: boolean;
             cashOnPickup: boolean;
             zones: {

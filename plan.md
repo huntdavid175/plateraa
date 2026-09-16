@@ -383,6 +383,9 @@ _What vendors need most: one link on WhatsApp and Instagram where customers orde
   - _16 Sep, user request: the category pills stay pinned while the menu scrolls, and follow it — the section under the bar is the one lit, and the strip slides it into view. Not tried on a phone yet._
 - [ ] Tests: the public routes (priced from the menu, sold-out and closed-store refusals, a repeat recorded once, another store's items refused), the payment path end to end with the pretend Moolre, and Accept on the tablet.
   - _13 Sep, partly: the public routes and the payment path (`apps/api/src/storefront/storefront.spec.ts`), and the tablet's lanes (`lanes.test.ts`). Accept on the tablet is still to test._
+- [x] Opening hours per day (16 Sep, user request)
+  - _The owner sets, for each day, whether they work it and between what times (dashboard → Online store → Opening hours; `tenant_settings.storefront_hours`, migration 0014). Outside them the store's page shows "Closed · opens today at 5:00 pm", the menu can be looked at but not ordered from, and both Checkout buttons are off. The API refuses an order placed outside the hours (409), so a page left open past closing time can't slip one through. A closing time earlier than the opening one means past midnight. "Taking orders now" still closes the store by hand whatever the hours say. Not tried on a phone yet._
+
 - _Founder: the Figma Make design; a Cloudflare account (R2) for photos; a Vercel account for the pages; `plateraa.com` for tidy store links (the Vercel address until then)._
 
 - [x] Offline torture script: airplane mode mid-order, kill the app mid-sync, replay a batch twice, 200 queued commands

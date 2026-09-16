@@ -41,10 +41,14 @@ import {
   type Tx,
 } from '@plateraa/db';
 import {
+  DEFAULT_STORE_HOURS,
   ORDER_STATUSES,
   ORDER_TYPES,
   STOREFRONT_THEMES,
   amountDue,
+  hoursWords,
+  isOpenAt,
+  opensWords,
   phoneSchema,
   sub,
   type Pesewas,
@@ -83,13 +87,16 @@ class StoreDto extends createZodDto(
     name: z.string(),
     area: nullableText(),
     phone: nullableText(),
-    hours: nullableText(),
+    /** The week in words, for the store's page: "Mon–Fri 8:00 am – 8:00 pm · Sat closed". */
+    hours: z.string(),
     theme: z.enum(STOREFRONT_THEMES),
     /** The store's own pictures, set on the dashboard; without them the header is its colour. */
     coverUrl: nullableText(),
     logoUrl: nullableText(),
     /** Taking orders right now; otherwise the menu shows but can't be ordered from. */
     open: z.boolean(),
+    /** Why it's shut, when it's the hours: "Opens tomorrow at 8:00 am". Null if it's the switch. */
+    opensWords: nullableText(),
     /** The vendor's Moolre account is connected, so customers can pay online. */
     payOnline: z.boolean(),
     cashOnPickup: z.boolean(),
@@ -237,7 +244,12 @@ export class PublicStoreService {
     const [tenant] = SLUG.test(slug)
       ? await withPlatform(this.db, (tx) =>
           tx
-            .select({ id: tenants.id, name: tenants.name, slug: tenants.slug })
+            .select({
+              id: tenants.id,
+              name: tenants.name,
+              slug: tenants.slug,
+              timezone: tenants.timezone,
+            })
             .from(tenants)
             .innerJoin(tenantSettings, eq(tenantSettings.tenantId, tenants.id))
             .where(
@@ -272,6 +284,9 @@ export class PublicStoreService {
     return withTenant(this.db, tenant.id, async (tx) => {
       const today = (await businessToday(tx)).date;
       const [settings] = await tx.select().from(tenantSettings);
+      // Closed is either the owner's switch or the hours they keep, by the store's own clock.
+      const hours = settings?.storefrontHours ?? DEFAULT_STORE_HOURS;
+      const withinHours = isOpenAt(hours, new Date(), tenant.timezone);
       const [account] = await tx.select({ tenantId: moolreAccounts.tenantId }).from(moolreAccounts);
       const zones = await tx
         .select({ id: deliveryZones.id, name: deliveryZones.name, fee: deliveryZones.fee })
@@ -283,11 +298,15 @@ export class PublicStoreService {
         name: tenant.name,
         area: settings?.storefrontArea ?? null,
         phone: settings?.storefrontPhone ?? null,
-        hours: settings?.storefrontHours ?? null,
+        hours: hoursWords(hours),
         theme: settings?.storefrontTheme ?? 'orange',
         coverUrl: this.urlOf(settings?.storefrontCoverKey),
         logoUrl: this.urlOf(settings?.storefrontLogoKey),
-        open: settings?.storefrontTakingOrders ?? false,
+        open: (settings?.storefrontTakingOrders ?? false) && withinHours,
+        // Only the hours can say when it opens again; the switch is the owner's own doing.
+        opensWords: settings?.storefrontTakingOrders
+          ? opensWords(hours, new Date(), tenant.timezone)
+          : null,
         payOnline: Boolean(account),
         cashOnPickup: settings?.storefrontCashOnPickup ?? false,
         zones,
@@ -413,8 +432,16 @@ export class PublicStoreService {
 
   private async record(tx: Tx, tenantId: string, input: PlaceOrderInput) {
     const [settings] = await tx.select().from(tenantSettings);
+    const today = await businessToday(tx);
     if (!settings?.storefrontTakingOrders) {
       throw new ConflictException("The store isn't taking orders right now");
+    }
+    // The hours the vendor keeps, checked here too: a page left open past closing time, or
+    // anything calling the API directly, must not be able to put an order into the kitchen.
+    const when = new Date();
+    if (!isOpenAt(settings.storefrontHours, when, today.timezone)) {
+      const next = opensWords(settings.storefrontHours, when, today.timezone);
+      throw new ConflictException(`The store is closed right now.${next ? ` ${next}.` : ''}`);
     }
     if (input.payment === 'CASH' && !(settings.storefrontCashOnPickup && input.type === 'PICKUP')) {
       throw new BadRequestException('This order has to be paid online');
@@ -463,7 +490,7 @@ export class PublicStoreService {
       tx,
       tenant: {
         id: tenantId,
-        timezone: (await businessToday(tx)).timezone,
+        timezone: today.timezone,
         requirePaymentBeforePrep: settings.requirePaymentBeforePrep,
       },
       device: { id: null, tenantId, locationId: location!.id, code: 'W' },

@@ -1,4 +1,9 @@
-import type { RevenueVisibility, StorefrontTheme } from '@plateraa/shared';
+import {
+  DEFAULT_STORE_HOURS,
+  type RevenueVisibility,
+  type StoreHours,
+  type StorefrontTheme,
+} from '@plateraa/shared';
 import { sql } from 'drizzle-orm';
 import {
   boolean,
@@ -54,10 +59,15 @@ export const tenantSettings = pgTable('tenant_settings', {
   /** Online orders wait for staff to tap Accept, paid or not, before the kitchen starts. */
   storefrontAcceptFirst: boolean().notNull().default(false),
   storefrontTheme: text().$type<StorefrontTheme>().notNull().default('orange'),
-  /** On the store's page: where it is, a number to call, and when it's open. */
+  /** On the store's page: where it is, and a number to call. */
   storefrontArea: text(),
   storefrontPhone: text(),
-  storefrontHours: text(),
+  /**
+   * When the store takes online orders, day by day, in the tenant's own timezone (16 Sep, user
+   * request). Outside these hours the store shows as closed and orders are refused; the
+   * `storefrontTakingOrders` switch closes it by hand whatever the hours say.
+   */
+  storefrontHours: jsonb().$type<StoreHours>().notNull().default(DEFAULT_STORE_HOURS),
   /** Photo storage names of the store's cover picture and logo (apps/api/src/photos). */
   storefrontCoverKey: text(),
   storefrontLogoKey: text(),

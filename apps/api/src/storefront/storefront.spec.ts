@@ -14,7 +14,7 @@ import {
   withTenant,
   type Database,
 } from '@plateraa/db';
-import { pesewas, type Pesewas } from '@plateraa/shared';
+import { STORE_DAYS, pesewas, type Pesewas, type StoreHours } from '@plateraa/shared';
 import request from 'supertest';
 import { ulid } from 'ulid';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
@@ -63,6 +63,10 @@ describe.skipIf(!hasDatabase())('the online store (against Neon, pretend Moolre)
   const inTenant = <T>(fn: Parameters<typeof withTenant<T>>[2]) =>
     withTenant(db, vendor.tenantId, fn);
 
+  /** A week the store keeps, the same every day. */
+  const week = (from: string, to: string, open = true): StoreHours =>
+    Object.fromEntries(STORE_DAYS.map((day) => [day, { open, from, to }])) as StoreHours;
+
   const settings = {
     enabled: true,
     takingOrders: true,
@@ -71,7 +75,8 @@ describe.skipIf(!hasDatabase())('the online store (against Neon, pretend Moolre)
     theme: 'green',
     area: 'Osu, Accra',
     phone: '024 111 2222',
-    hours: 'Mon–Sat 7am–9pm',
+    // Open around the clock, so the other tests don't depend on when they run.
+    hours: week('00:00', '23:59'),
   };
   const saveSettings = (changes: Partial<typeof settings> = {}) =>
     asOwner(request(server()).put('/api/storefront/settings'))
@@ -145,6 +150,21 @@ describe.skipIf(!hasDatabase())('the online store (against Neon, pretend Moolre)
     await request(server()).get(`/api/public/stores/${slug}`).expect(404);
     const res = await asOwner(request(server()).get('/api/storefront/settings')).expect(200);
     expect(res.body).toMatchObject({ enabled: false, theme: 'orange', moolreConnected: true });
+  });
+
+  it('closes the store outside the hours it keeps, and refuses an order then', async () => {
+    await saveSettings({ hours: week('08:00', '20:00', false) });
+    const shut = await request(server()).get(`/api/public/stores/${slug}`).expect(200);
+    // The menu still shows; it just can't be ordered from, and there's no opening to promise.
+    expect(shut.body).toMatchObject({ open: false, hours: 'Closed every day', opensWords: null });
+    expect(shut.body.items.length).toBeGreaterThan(0);
+
+    const refused = await place(order()).expect(409);
+    expect(refused.body.message).toContain('closed right now');
+
+    await saveSettings();
+    const back = await request(server()).get(`/api/public/stores/${slug}`).expect(200);
+    expect(back.body).toMatchObject({ open: true, opensWords: null });
   });
 
   it('saves the store’s settings, with its number written the usual way', async () => {

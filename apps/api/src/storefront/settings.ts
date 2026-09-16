@@ -19,7 +19,12 @@ import {
   tenants,
   withTenant,
 } from '@plateraa/db';
-import { STOREFRONT_THEMES, normalizeGhanaPhone } from '@plateraa/shared';
+import {
+  DEFAULT_STORE_HOURS,
+  STOREFRONT_THEMES,
+  normalizeGhanaPhone,
+  storeHoursSchema,
+} from '@plateraa/shared';
 import { ApiBearerAuth, ApiNoContentResponse, ApiOkResponse } from '@nestjs/swagger';
 import { createZodDto } from 'nestjs-zod';
 import { z } from 'zod';
@@ -49,7 +54,8 @@ class SaveStorefrontDto extends createZodDto(
     ...switches,
     area: z.string().trim().max(80),
     phone: z.string().trim().max(20),
-    hours: z.string().trim().max(120),
+    /** The week the store keeps, in its own timezone; outside it the store closes itself. */
+    hours: storeHoursSchema,
   }),
 ) {}
 
@@ -58,7 +64,7 @@ class StorefrontSettingsDto extends createZodDto(
     ...switches,
     area: nullableText(),
     phone: nullableText(),
-    hours: nullableText(),
+    hours: storeHoursSchema,
     /** The store's link, to share on WhatsApp and Instagram. */
     url: z.string(),
     /** Paying online needs the vendor's own Moolre account. */
@@ -102,7 +108,7 @@ export class StorefrontSettingsService {
         theme: settings?.storefrontTheme ?? 'orange',
         area: settings?.storefrontArea ?? null,
         phone: settings?.storefrontPhone ?? null,
-        hours: settings?.storefrontHours ?? null,
+        hours: settings?.storefrontHours ?? DEFAULT_STORE_HOURS,
         url: `${this.env.STOREFRONT_URL}/${tenant!.slug}`,
         moolreConnected: Boolean(account),
         deliveryZones: zones?.count ?? 0,
@@ -128,7 +134,7 @@ export class StorefrontSettingsService {
       storefrontTheme: input.theme,
       storefrontArea: input.area || null,
       storefrontPhone: phone,
-      storefrontHours: input.hours || null,
+      storefrontHours: input.hours,
     };
     await withTenant(this.database.db, actor.tenantId, async (tx) => {
       const [before] = await tx

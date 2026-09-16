@@ -112,6 +112,7 @@ packages/ui         web components (empty so far)
 - `capabilities.ts`: role → capabilities (STAFF / MANAGER / OWNER).
 - `sync-commands.ts`: Zod command schemas plus `COMMAND_CAPABILITY`.
 - `storefront.ts`: `STOREFRONT_THEMES` and `STOREFRONT_LOOKS`, each store look's light and dark colours. `storefront.test.ts` checks every look's contrast.
+- `store-hours.ts`: the week the online store keeps — `StoreHours` (a day each, with `open`, `from`, `to`), `isOpenAt`, `nextOpening`, `opensWords` ("Opens tomorrow at 8:00 am") and `hoursWords` ("Mon–Fri 8:00 am – 8:00 pm · Sun closed"), all in the store's own timezone. A closing time earlier than the opening one runs past midnight.
 - `pin.ts`, `phone.ts`, `enums.ts`, `menu-templates.ts`.
 
 ## Commands

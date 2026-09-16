@@ -1,4 +1,12 @@
-import { STOREFRONT_LOOKS, STOREFRONT_THEMES, type StorefrontTheme } from '@plateraa/shared';
+import {
+  STORE_DAYS,
+  STOREFRONT_LOOKS,
+  STOREFRONT_THEMES,
+  hoursWords,
+  type StoreDay,
+  type StoreHours,
+  type StorefrontTheme,
+} from '@plateraa/shared';
 import { useMutation, useQuery } from '@tanstack/react-query';
 import qrcode from 'qrcode-generator';
 import { useMemo, useState } from 'react';
@@ -23,6 +31,7 @@ import {
   Spinner,
   SwitchRow,
   TextInput,
+  Toggle,
   cx,
 } from '../ui/controls';
 import { Dialog } from '../ui/Dialog';
@@ -66,7 +75,7 @@ function OnlineStore({ store }: { store: Storefront }) {
       acceptFirst: next.acceptFirst,
       theme: next.theme,
       area: next.area || null,
-      hours: next.hours || null,
+      hours: next.hours,
     })),
     onSettled: refreshStorefront,
   });
@@ -78,7 +87,7 @@ function OnlineStore({ store }: { store: Storefront }) {
     theme: store.theme,
     area: store.area ?? '',
     phone: store.phone ? phoneWords(store.phone) : '',
-    hours: store.hours ?? '',
+    hours: store.hours,
   };
   const shown = saved;
   const set = (patch: Partial<SaveStorefront>) => saving.mutate({ ...shown, ...patch });
@@ -154,6 +163,13 @@ function OnlineStore({ store }: { store: Storefront }) {
           <Section title="Look">
             <ThemeRow theme={shown.theme} onChange={(theme) => set({ theme })} />
             <StorePhotos store={store} />
+          </Section>
+          <Section title="Opening hours">
+            <OpeningHours
+              saved={shown.hours}
+              busy={saving.isPending}
+              onSave={(hours) => saving.mutate({ ...shown, hours })}
+            />
           </Section>
           <Section title="On your store’s page">
             <StoreDetails
@@ -297,6 +313,129 @@ function StorePhotos({ store }: { store: Storefront }) {
   );
 }
 
+/** How each day reads in the list of hours. */
+const DAY_LABELS: Record<StoreDay, string> = {
+  mon: 'Monday',
+  tue: 'Tuesday',
+  wed: 'Wednesday',
+  thu: 'Thursday',
+  fri: 'Friday',
+  sat: 'Saturday',
+  sun: 'Sunday',
+};
+
+/**
+ * The week the store keeps (16 Sep, user request). Outside these times the store's page shows as
+ * closed and nobody can order; "Taking orders now" closes it by hand whatever the hours say.
+ */
+function OpeningHours({
+  saved,
+  busy,
+  onSave,
+}: {
+  saved: StoreHours;
+  busy: boolean;
+  onSave: (hours: StoreHours) => void;
+}) {
+  const [hours, setHours] = useState(saved);
+  // Someone else may have changed them (another tab, or the same owner on the tablet).
+  const [base, setBase] = useState(saved);
+  if (base !== saved) {
+    setBase(saved);
+    setHours(saved);
+  }
+  const changed = STORE_DAYS.some(
+    (day) =>
+      hours[day].open !== saved[day].open ||
+      hours[day].from !== saved[day].from ||
+      hours[day].to !== saved[day].to,
+  );
+  const set = (day: StoreDay, patch: Partial<StoreHours[StoreDay]>) =>
+    setHours((current) => ({ ...current, [day]: { ...current[day], ...patch } }));
+  const everyDay = () =>
+    setHours((current) => {
+      const first = STORE_DAYS.find((day) => current[day].open);
+      if (!first) return current;
+      const { from, to } = current[first];
+      return Object.fromEntries(
+        STORE_DAYS.map((day) => [day, { ...current[day], from, to }]),
+      ) as StoreHours;
+    });
+
+  return (
+    <div className="space-y-4 px-5 py-4">
+      <p className="text-xs text-muted">
+        Your store closes itself outside these times, and customers see when it opens again. A
+        closing time earlier than the opening one means you close after midnight.
+      </p>
+      <div className="space-y-2">
+        {STORE_DAYS.map((day) => (
+          <div key={day} className="flex items-center gap-3">
+            <Toggle
+              on={hours[day].open}
+              onChange={(on) => set(day, { open: on })}
+              label={`Open on ${DAY_LABELS[day]}`}
+            />
+            <span className="w-20 shrink-0 text-sm font-medium">{DAY_LABELS[day]}</span>
+            {hours[day].open ? (
+              <div className="flex items-center gap-2">
+                <TimeInput
+                  label={`${DAY_LABELS[day]} opens at`}
+                  value={hours[day].from}
+                  onChange={(from) => set(day, { from })}
+                />
+                <span className="text-xs text-muted">to</span>
+                <TimeInput
+                  label={`${DAY_LABELS[day]} closes at`}
+                  value={hours[day].to}
+                  onChange={(to) => set(day, { to })}
+                />
+              </div>
+            ) : (
+              <span className="text-sm text-muted">Closed</span>
+            )}
+          </div>
+        ))}
+      </div>
+      <p className="text-xs text-muted">Customers see: {hoursWords(hours)}</p>
+      <div className="flex items-center gap-2">
+        {changed && (
+          <Button small busy={busy} onClick={() => onSave(hours)}>
+            Save
+          </Button>
+        )}
+        <button
+          type="button"
+          onClick={everyDay}
+          className="text-xs font-medium text-muted underline"
+        >
+          Use the same times every day
+        </button>
+      </div>
+    </div>
+  );
+}
+
+function TimeInput({
+  label,
+  value,
+  onChange,
+}: {
+  label: string;
+  value: string;
+  onChange: (value: string) => void;
+}) {
+  return (
+    <TextInput
+      type="time"
+      aria-label={label}
+      className="w-28"
+      value={value}
+      onChange={(event) => onChange(event.target.value)}
+    />
+  );
+}
+
 /** What the store's page says about the business. Blank means it isn't shown. */
 function StoreDetails({
   saved,
@@ -305,12 +444,11 @@ function StoreDetails({
 }: {
   saved: SaveStorefront;
   busy: boolean;
-  onSave: (details: Pick<SaveStorefront, 'area' | 'phone' | 'hours'>) => void;
+  onSave: (details: Pick<SaveStorefront, 'area' | 'phone'>) => void;
 }) {
   const [area, setArea] = useState(saved.area);
   const [phone, setPhone] = useState(saved.phone);
-  const [hours, setHours] = useState(saved.hours);
-  const changed = area !== saved.area || phone !== saved.phone || hours !== saved.hours;
+  const changed = area !== saved.area || phone !== saved.phone;
   return (
     <div className="space-y-4 px-5 py-4">
       <p className="text-xs text-muted">Leave one blank to keep it off the page.</p>
@@ -335,21 +473,11 @@ function StoreDetails({
           onChange={(event) => setPhone(event.target.value)}
         />
       </div>
-      <div>
-        <FieldLabel htmlFor="store-hours">Opening hours</FieldLabel>
-        <TextInput
-          id="store-hours"
-          maxLength={120}
-          placeholder="e.g. Mon–Sat 7am–9pm"
-          value={hours}
-          onChange={(event) => setHours(event.target.value)}
-        />
-      </div>
       {changed && (
         <Button
           small
           busy={busy}
-          onClick={() => onSave({ area: area.trim(), phone: phone.trim(), hours: hours.trim() })}
+          onClick={() => onSave({ area: area.trim(), phone: phone.trim() })}
         >
           Save
         </Button>
