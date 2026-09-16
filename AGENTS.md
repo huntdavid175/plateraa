@@ -29,7 +29,7 @@ A solo founder (GitHub `huntdavid175`) builds it with an AI agent. Work started 
   - The rest of Phase 2 (12 Sep): "not synced yet" labels, refund owed, and the restyled screens.
 - **Done (13 Sep, tablet):** Dine-in / Pickup / Delivery, dark mode, Remove on each order line, the item sheet for any item with extras, and screens clear of the status bar. All tried on the tablet and working.
 - **The online store (13 Sep, plan.md §4.0),** moved up to before the pilot:
-  - the data and public API (`apps/api/src/storefront`), online orders on the tablet (numbered W1, W2, …, with "N online orders to accept" in the top bar), and the dashboard's Online store page (its own sidebar entry since 14 Sep; it was in Settings);
+  - the data and public API (`apps/api/src/storefront`), online orders on the tablet (numbered W1, W2, …, counted on the nav bar’s Orders button), and the dashboard's Online store page (its own sidebar entry since 14 Sep; it was in Settings);
   - the storefront pages to the user's Figma Make design (`apps/storefront`), live on Vercel at `https://plateraa-storefront-bvos.vercel.app`, with `STOREFRONT_URL` on Render pointing there;
   - photos: one per menu item, plus the store's cover picture and logo, kept in Cloudflare R2 (`apps/api/src/photos`);
   - nine store looks (`STOREFRONT_LOOKS` in `@plateraa/shared`): the owner picks the page colour, and the top band, text and buttons follow it, in light and dark, with every look's contrast checked by a test.

@@ -2,11 +2,7 @@ import { useState } from 'react';
 import { ActivityIndicator, Pressable, ScrollView, Text, View } from 'react-native';
 import { Badge, Chip } from '../ui/controls';
 import { cedis, colors, font, radii, space, text, themedStyles } from '../ui/theme';
-import { useNow } from './hooks';
-import { urgency } from './lanes';
 import type { MenuCategory, MenuItem } from './menu';
-import type { QueueOrder } from './queue';
-import { kitchenSince, minutesSince } from './views';
 
 const GUTTER = space.lg;
 const GAP = 12;
@@ -26,22 +22,15 @@ function priceLabel(item: MenuItem): string {
 }
 
 /**
- * The menu: category chips, a quiet grid of text tiles (four across on a 10" tablet, three on
- * an 8"), and a strip of what the kitchen is cooking and what's ready to go out.
+ * The menu: category chips and a quiet grid of text tiles (four across on a 10" tablet, three
+ * on an 8"). What the kitchen is cooking sits in the bar across the top of the screen.
  */
 export function MenuPane({
   menu,
   onPick,
-  cooking,
-  ready,
-  onOrder,
 }: {
   menu: MenuCategory[] | null;
   onPick: (item: MenuItem) => void;
-  cooking: QueueOrder[];
-  ready: QueueOrder[];
-  /** An order in the strip was tapped: show it, with its next step. */
-  onOrder: (order: QueueOrder) => void;
 }) {
   const [category, setCategory] = useState<string>(ALL);
   const [width, setWidth] = useState(0);
@@ -102,8 +91,6 @@ export function MenuPane({
           ))
         )}
       </ScrollView>
-
-      <KitchenStrip cooking={cooking} ready={ready} onOrder={onOrder} />
     </View>
   );
 }
@@ -144,86 +131,6 @@ function MenuTile({
   );
 }
 
-/**
- * The kitchen at a glance, so a one-tablet counter never leaves the till: what's cooking (timers
- * turn amber, then red) and what's ready to hand over. Tapping an order shows it with its next step.
- */
-function KitchenStrip({
-  cooking,
-  ready,
-  onOrder,
-}: {
-  cooking: QueueOrder[];
-  ready: QueueOrder[];
-  onOrder: (order: QueueOrder) => void;
-}) {
-  const now = useNow();
-  return (
-    <View style={styles.strip}>
-      <ScrollView
-        horizontal
-        showsHorizontalScrollIndicator={false}
-        contentContainerStyle={styles.stripContent}
-      >
-        <Text style={styles.stripLabel}>Cooking</Text>
-        {cooking.length === 0 && <Text style={styles.stripNone}>Nothing yet</Text>}
-        {cooking.map((order) => {
-          const since = kitchenSince(order);
-          const late = urgency(since, order.prepMinutes, now);
-          const minutes = minutesSince(since, now);
-          return (
-            <Pressable
-              key={order.id}
-              accessibilityRole="button"
-              accessibilityLabel={`Order ${order.display_number}, cooking for ${minutes} minutes${late === 'red' ? ', late' : late === 'amber' ? ', getting late' : ''}`}
-              hitSlop={4}
-              onPress={() => onOrder(order)}
-              style={({ pressed }) => [
-                styles.orderChip,
-                late === 'amber' && styles.amberChip,
-                late === 'red' && styles.redChip,
-                pressed && styles.pressedChip,
-              ]}
-            >
-              <Text
-                style={[
-                  styles.chipText,
-                  late === 'amber' && styles.amberText,
-                  late === 'red' && styles.redText,
-                ]}
-              >
-                {order.display_number} · {minutes}m
-              </Text>
-            </Pressable>
-          );
-        })}
-        {ready.length > 0 && (
-          <>
-            <View style={styles.stripDivider} />
-            <Text style={styles.stripLabel}>Ready</Text>
-            {ready.map((order) => (
-              <Pressable
-                key={order.id}
-                accessibilityRole="button"
-                accessibilityLabel={`Order ${order.display_number}, ready`}
-                hitSlop={4}
-                onPress={() => onOrder(order)}
-                style={({ pressed }) => [
-                  styles.orderChip,
-                  styles.readyChip,
-                  pressed && styles.pressedChip,
-                ]}
-              >
-                <Text style={[styles.chipText, styles.readyText]}>{order.display_number} ✓</Text>
-              </Pressable>
-            ))}
-          </>
-        )}
-      </ScrollView>
-    </View>
-  );
-}
-
 const styles = themedStyles(() => ({
   pane: { flex: 62, backgroundColor: colors.ground },
   grow: { flex: 1 },
@@ -261,24 +168,4 @@ const styles = themedStyles(() => ({
   tilePrice: { fontFamily: font.mono, fontSize: text.small, color: colors.muted },
   faded: { color: colors.faint },
   soldOut: { fontFamily: font.medium, fontSize: text.label, color: colors.muted },
-  strip: { height: 60, borderTopWidth: 1, borderTopColor: colors.line },
-  stripContent: { alignItems: 'center', gap: 8, paddingHorizontal: GUTTER },
-  stripLabel: { fontFamily: font.medium, fontSize: 13, color: colors.muted, marginRight: 2 },
-  stripNone: { fontFamily: font.regular, fontSize: 13, color: colors.muted },
-  stripDivider: { width: 1, height: 24, backgroundColor: colors.line, marginHorizontal: 8 },
-  orderChip: {
-    height: 40,
-    paddingHorizontal: 14,
-    borderRadius: 20,
-    backgroundColor: colors.track,
-    justifyContent: 'center',
-  },
-  amberChip: { backgroundColor: colors.amberBg },
-  redChip: { backgroundColor: colors.redTint },
-  readyChip: { backgroundColor: colors.goodBg },
-  pressedChip: { opacity: 0.7 },
-  chipText: { fontFamily: font.monoMedium, fontSize: 14, color: colors.text2 },
-  amberText: { color: colors.amberInk },
-  redText: { color: colors.redInk },
-  readyText: { color: colors.goodInk },
 }));

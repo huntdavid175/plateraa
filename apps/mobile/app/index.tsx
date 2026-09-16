@@ -16,10 +16,12 @@ import { asksForDrawer } from '../src/counter/drawer';
 import { DrawerScreen } from '../src/counter/DrawerScreen';
 import { DrawerSheet } from '../src/counter/DrawerSheet';
 import { today, useCounter, useMenu, usePayBeforePrep, useQueue } from '../src/counter/hooks';
+import { KitchenBar } from '../src/counter/KitchenBar';
 import { KitchenScreen } from '../src/counter/KitchenScreen';
 import { laneOf } from '../src/counter/lanes';
 import { needsChoice, type MenuItem } from '../src/counter/menu';
 import { MenuPane } from '../src/counter/MenuPane';
+import { NavBar, NAV_BAR_HEIGHT, type CounterTab } from '../src/counter/NavBar';
 import { upcomingNumber } from '../src/counter/numbers';
 import { OptionsSheet } from '../src/counter/OptionsSheet';
 import { OrderPane } from '../src/counter/OrderPane';
@@ -30,7 +32,6 @@ import { QuickOrderSheet } from '../src/counter/QuickOrderSheet';
 import { SaleDone, type Done } from '../src/counter/SaleDone';
 import { StockScreen } from '../src/counter/StockScreen';
 import { addToTicket, priceTicket, replaceLine, type TicketLine } from '../src/counter/ticket';
-import { TopBar, type CounterTab } from '../src/counter/TopBar';
 import { phoneWords } from '../src/counter/words';
 import { problemText } from '../src/tablet/api';
 import { newId } from '../src/tablet/ids';
@@ -232,18 +233,12 @@ export default function CounterScreen() {
 
   return (
     <View style={styles.screen}>
-      <TopBar tab={tab} onTab={setTab} />
+      <KitchenBar cooking={cooking} ready={ready} onOrder={(order) => setQuickId(order.id)} />
       <SyncBanner offline={false} refused={false} />
 
       {tab === 'counter' && (
         <View style={styles.body}>
-          <MenuPane
-            menu={menu}
-            onPick={pick}
-            cooking={cooking}
-            ready={ready}
-            onOrder={(order) => setQuickId(order.id)}
-          />
+          <MenuPane menu={menu} onPick={pick} />
           <OrderPane
             number={number}
             lines={lines}
@@ -273,6 +268,8 @@ export default function CounterScreen() {
       )}
       {tab === 'drawer' && <DrawerScreen counter={counter} />}
       {tab === 'stock' && <StockScreen counter={counter} />}
+
+      <NavBar tab={tab} onTab={setTab} />
 
       <OptionsSheet
         item={picking?.item ?? null}
@@ -352,7 +349,7 @@ const styles = themedStyles(() => ({
   toast: {
     position: 'absolute',
     left: space.lg,
-    bottom: 72,
+    bottom: NAV_BAR_HEIGHT + space.md,
     maxWidth: 560,
     backgroundColor: colors.inverse,
     borderRadius: radii.lg,

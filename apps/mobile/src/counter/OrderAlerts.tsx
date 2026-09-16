@@ -5,6 +5,7 @@ import { useEngineState, useTablet } from '../tablet/TabletProvider';
 import { chime } from '../ui/chime';
 import { colors, font, radii, space, themedStyles } from '../ui/theme';
 import { listen, type Heard, type OrderAlert, type WatchedLink, type WatchedOrder } from './alerts';
+import { KITCHEN_BAR_HEIGHT } from './KitchenBar';
 import { PAY_BEFORE_PREP_SQL, payBeforePrepOf, today } from './hooks';
 
 const OPEN_OR_TODAY = `o.business_date = ? OR o.status NOT IN ('COMPLETED', 'CANCELLED', 'REFUNDED')`;
@@ -70,7 +71,10 @@ export function OrderAlerts() {
   return (
     <View
       pointerEvents="box-none"
-      style={[styles.stack, { top: insets.top + 64 + space.sm, right: insets.right + space.lg }]}
+      style={[
+        styles.stack,
+        { top: insets.top + KITCHEN_BAR_HEIGHT + space.sm, right: insets.right + space.lg },
+      ]}
     >
       {shown.map((alert) => {
         const problem = alert.tone === 'problem';
