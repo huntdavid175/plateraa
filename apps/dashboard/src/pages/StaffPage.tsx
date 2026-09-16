@@ -145,6 +145,7 @@ function RevenueCard({ byRole }: { byRole: RevenueByRole }) {
   const { tenantId } = useSession();
   const saving = useMutation({
     mutationFn: setRevenueVisibility,
+    meta: { ok: 'Saved who sees sales totals' },
     // Switches move at once and stay put; they go back if saving fails.
     ...saveInPlace(
       ['team', tenantId],
@@ -194,7 +195,11 @@ function RevenueCard({ byRole }: { byRole: RevenueByRole }) {
 }
 
 function TabletsCard({ tablets }: { tablets: Tablet[] }) {
-  const signingOut = useMutation({ mutationFn: signOutTablet, onSuccess: refreshTeam });
+  const signingOut = useMutation({
+    meta: { ok: 'Tablet signed out' },
+    mutationFn: signOutTablet,
+    onSuccess: refreshTeam,
+  });
   return (
     <Card className="overflow-hidden">
       <div className="border-b border-border px-5 py-4">
@@ -357,6 +362,7 @@ function AddStaffDialog({ isOwner, onClose }: { isOwner: boolean; onClose: () =>
   const problem = !name.trim() ? 'Type their name.' : pinWords(pin, again);
   const saving = useMutation({
     mutationFn: () => addStaff({ displayName: name.trim(), role, pin }),
+    meta: { ok: 'Staff member added' },
     onSuccess: () => {
       refreshTeam();
       onClose();
@@ -432,6 +438,7 @@ function EditStaffDialog({
   const problem = !name.trim() ? 'Type their name.' : pinTyped ? pinWords(pin, again) : null;
 
   const saving = useMutation({
+    meta: { ok: 'Staff member saved' },
     mutationFn: async () => {
       await updateStaff(member.id, {
         displayName: name.trim(),

@@ -258,6 +258,7 @@ function Editor({ menu, item }: { menu: Menu; item: MenuItem | undefined }) {
   };
 
   const saving = useMutation({
+    meta: { ok: 'Item saved' },
     mutationFn: async () => {
       let categoryId: string | null = form.categoryId || null;
       if (form.categoryId === NEW_CATEGORY) {
@@ -276,6 +277,7 @@ function Editor({ menu, item }: { menu: Menu; item: MenuItem | undefined }) {
 
   const removing = useMutation({
     mutationFn: () => removeItem(itemId),
+    meta: { ok: 'Item removed' },
     onSuccess: async () => {
       await refreshMenu();
       navigate('/menu');

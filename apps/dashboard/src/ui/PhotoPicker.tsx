@@ -30,6 +30,7 @@ export function PhotoPicker({
   const current = saved === undefined ? url : saved;
 
   const uploading = useMutation({
+    meta: { ok: 'Photo saved' },
     mutationFn: (file: File) => uploadPhoto(path, file, longest),
     onSuccess: (newUrl) => {
       setSaved(newUrl);
@@ -37,6 +38,7 @@ export function PhotoPicker({
     },
   });
   const removing = useMutation({
+    meta: { ok: 'Photo removed' },
     mutationFn: () => removePhoto(path),
     onSuccess: () => {
       setSaved(null);

@@ -17,6 +17,8 @@ export function SignUpPage() {
   // Set with the new login, so this page goes on to setup instead of the business picker.
   const [created, setCreated] = useState(false);
   const signingUp = useMutation({
+    // The form says why underneath; a toast on top of it would only repeat itself.
+    meta: { quiet: true },
     mutationFn: () => signUp(name.trim(), email.trim(), password),
     onSuccess: (newToken) => {
       setCreated(true);

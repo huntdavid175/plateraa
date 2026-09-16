@@ -12,6 +12,8 @@ export function SignInPage() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const signingIn = useMutation({
+    // The form says why underneath; a toast on top of it would only repeat itself.
+    meta: { quiet: true },
     mutationFn: () => signIn(email.trim(), password),
     onSuccess: (newToken) => session.signedIn(newToken),
   });

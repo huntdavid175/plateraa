@@ -232,9 +232,13 @@ export function SwitchRow({
 }
 
 /** A red box for something that went wrong, in words the owner can act on. */
+/** Something went wrong, in words the owner can act on. Kept strong enough to read at a glance. */
 export function ErrorNote({ children }: { children: ReactNode }) {
   return (
-    <p role="alert" className="rounded-xl bg-red-bg px-4 py-3 text-sm text-red">
+    <p
+      role="alert"
+      className="rounded-xl border border-red/30 bg-red-bg px-4 py-3 text-sm font-medium text-red"
+    >
       {children}
     </p>
   );

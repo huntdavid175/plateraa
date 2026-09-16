@@ -154,6 +154,7 @@ function EditCustomerDialog({
   const [notes, setNotes] = useState(customer.notes ?? '');
   const saving = useMutation({
     mutationFn: () => saveCustomer(customer.id, { name: name.trim(), notes: notes.trim() }),
+    meta: { ok: 'Customer saved' },
     onSuccess: () => {
       refreshCustomers();
       onClose();

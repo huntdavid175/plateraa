@@ -189,6 +189,7 @@ export function ExpensesPage() {
 function ExpenseRow({ expense }: { expense: Expense }) {
   const removing = useMutation({
     mutationFn: () => removeExpense(expense.id),
+    meta: { ok: 'Expense removed' },
     onSuccess: refreshMoneyOut,
   });
   const detail = [
@@ -274,6 +275,7 @@ function AddExpenseDialog({ onClose }: { onClose: () => void }) {
       : null;
 
   const saving = useMutation({
+    meta: { ok: 'Expense added' },
     mutationFn: () =>
       addExpense({
         id,

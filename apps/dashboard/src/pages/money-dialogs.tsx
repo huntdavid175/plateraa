@@ -76,6 +76,7 @@ export function RecordRefundDialog({
           : null;
 
   const saving = useMutation({
+    meta: { ok: 'Refund recorded' },
     mutationFn: () =>
       recordRefund(order.id, { refundId, amount: amount!, method, reason: reason.trim() }),
     onSuccess: () => {
@@ -174,6 +175,7 @@ export function DiscountDialog({ order, onClose }: { order: OrderDetail; onClose
   const belowPaid = preview !== null && preview.total < order.amountPaid;
 
   const saving = useMutation({
+    meta: { ok: 'Discount saved' },
     mutationFn: (body: Parameters<typeof setDiscount>[1]) => setDiscount(order.id, body),
     onSuccess: () => {
       refreshMoney();

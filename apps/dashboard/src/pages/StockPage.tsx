@@ -116,6 +116,7 @@ function ItemDialog({ item, onClose }: { item?: StockItem; onClose: () => void }
           : null;
 
   const saving = useMutation({
+    meta: { ok: 'Stock item saved' },
     mutationFn: () =>
       item
         ? updateStockItem(item.id, { name: name.trim(), unit: unit.trim(), lowThreshold })
@@ -127,6 +128,7 @@ function ItemDialog({ item, onClose }: { item?: StockItem; onClose: () => void }
   });
   const removing = useMutation({
     mutationFn: () => removeStockItem(item!.id),
+    meta: { ok: 'Stock item removed' },
     onSuccess: () => {
       refreshMoneyOut();
       onClose();
@@ -224,6 +226,7 @@ function CountDialog({ item, onClose }: { item: StockItem; onClose: () => void }
   const counted = wholeNumber(text);
   const saving = useMutation({
     mutationFn: () => countStock(item.id, { movementId, counted: counted! }),
+    meta: { ok: 'Count saved' },
     onSuccess: () => {
       refreshMoneyOut();
       onClose();

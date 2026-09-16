@@ -65,6 +65,7 @@ function OnlineStore({ store }: { store: Storefront }) {
   const isOwner = me.capabilities.includes('settings.manage');
   const saving = useMutation({
     mutationFn: saveStorefront,
+    meta: { ok: 'Online store saved' },
     // Switches and the look change at once and stay put; they go back if saving fails. The
     // phone number waits for the reload, which returns it tidied.
     ...saveInPlace(['storefront', tenantId], (current: Storefront, next: SaveStorefront) => ({
@@ -338,11 +339,14 @@ function OpeningHours({
   onSave: (hours: StoreHours) => void;
 }) {
   const [hours, setHours] = useState(saved);
-  // Someone else may have changed them (another tab, or the same owner on the tablet).
+  // The time fields are uncontrolled (see TimeInput), so anything that changes them from outside
+  // the keyboard — a save elsewhere, or "the same times every day" — bumps this to refill them.
+  const [revision, setRevision] = useState(0);
   const [base, setBase] = useState(saved);
-  if (base !== saved) {
+  if (JSON.stringify(base) !== JSON.stringify(saved)) {
     setBase(saved);
     setHours(saved);
+    setRevision((count) => count + 1);
   }
   const changed = STORE_DAYS.some(
     (day) =>
@@ -352,7 +356,8 @@ function OpeningHours({
   );
   const set = (day: StoreDay, patch: Partial<StoreHours[StoreDay]>) =>
     setHours((current) => ({ ...current, [day]: { ...current[day], ...patch } }));
-  const everyDay = () =>
+  const everyDay = () => {
+    setRevision((count) => count + 1);
     setHours((current) => {
       const first = STORE_DAYS.find((day) => current[day].open);
       if (!first) return current;
@@ -361,6 +366,7 @@ function OpeningHours({
         STORE_DAYS.map((day) => [day, { ...current[day], from, to }]),
       ) as StoreHours;
     });
+  };
 
   return (
     <div className="space-y-4 px-5 py-4">
@@ -380,12 +386,14 @@ function OpeningHours({
             {hours[day].open ? (
               <div className="flex items-center gap-2">
                 <TimeInput
+                  key={`${day}-from-${revision}`}
                   label={`${DAY_LABELS[day]} opens at`}
                   value={hours[day].from}
                   onChange={(from) => set(day, { from })}
                 />
                 <span className="text-xs text-muted">to</span>
                 <TimeInput
+                  key={`${day}-to-${revision}`}
                   label={`${DAY_LABELS[day]} closes at`}
                   value={hours[day].to}
                   onChange={(to) => set(day, { to })}
@@ -416,6 +424,12 @@ function OpeningHours({
   );
 }
 
+/**
+ * A time of day. It is deliberately **not** controlled: a time field reports an empty value
+ * while it's half typed, and feeding that back wipes what the owner is typing, so the hour can
+ * never be finished (user report, 16 Sep). It starts from what's saved (`key` brings it back in
+ * step after a save) and reports only a complete time.
+ */
 function TimeInput({
   label,
   value,
@@ -429,9 +443,12 @@ function TimeInput({
     <TextInput
       type="time"
       aria-label={label}
-      className="w-28"
-      value={value}
-      onChange={(event) => onChange(event.target.value)}
+      className="w-28 [color-scheme:light] dark:[color-scheme:dark]"
+      defaultValue={value}
+      step={60}
+      onChange={(event) => {
+        if (event.target.value) onChange(event.target.value);
+      }}
     />
   );
 }

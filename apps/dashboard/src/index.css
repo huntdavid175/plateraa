@@ -3,24 +3,27 @@
 /* Dark mode follows the `dark` class on <html> (see src/lib/theme.ts). */
 @custom-variant dark (&:where(.dark, .dark *));
 
-/* Colours from the Figma Make design (design/dashboard_design.make). */
+/* Colours from the Figma Make design (design/dashboard_design.make). The status inks and the
+   muted grey were strengthened on 16 Sep (user report: alerts were hard to read): every one now
+   clears 5.6:1 on the page, a card and a tile, in both looks. Check with the numbers in
+   apps/dashboard/AGENTS.md before changing one. */
 :root {
   --bg: #f6f5f3;
   --surface: #ffffff;
   --tile: #eceae7;
   --border: #e2dfd9;
   --text: #1a1917;
-  --muted: #6b6860;
+  --muted: #5e5b54;
   --brand: #e8701a;
   --brand-fg: #ffffff;
   --brand-subtle: #fdf0e7;
-  --green: #1a7a4a;
+  --green: #146138;
   --green-bg: #e6f4ed;
-  --amber: #92570a;
+  --amber: #7a4a06;
   --amber-bg: #fef3e2;
-  --red: #b91c1c;
+  --red: #991111;
   --red-bg: #fee2e2;
-  --blue: #1e5fad;
+  --blue: #17508f;
   --blue-bg: #e3edfa;
 }
 
@@ -30,15 +33,15 @@ html.dark {
   --tile: #252220;
   --border: #35302b;
   --text: #f0ede8;
-  --muted: #9e9a94;
+  --muted: #aba7a1;
   --brand-subtle: #2a1808;
   --green: #34d07a;
   --green-bg: #0d2318;
   --amber: #f5a623;
   --amber-bg: #241605;
-  --red: #f87171;
+  --red: #f99494;
   --red-bg: #2a0c0c;
-  --blue: #60a5fa;
+  --blue: #7cb6fb;
   --blue-bg: #0d1e35;
 }
 

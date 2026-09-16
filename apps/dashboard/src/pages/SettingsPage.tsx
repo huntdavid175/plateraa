@@ -109,6 +109,7 @@ function BusinessSection({ business }: { business: Settings['business'] }) {
   const changed = name.trim() !== business.name || type !== business.vendorType;
   const saving = useMutation({
     mutationFn: () => saveBusiness({ name: name.trim(), vendorType: type }),
+    meta: { ok: 'Business details saved' },
     onSuccess: refreshSettings,
   });
 
@@ -160,6 +161,7 @@ function OrdersSection({ orders }: { orders: OrderSettings }) {
   const { tenantId } = useSession();
   const saving = useMutation({
     mutationFn: saveOrderSettings,
+    meta: { ok: 'Settings saved' },
     // Switches move at once and stay put; they go back if saving fails.
     ...saveInPlace(['settings', tenantId], (settings: Settings, next: OrderSettings) => ({
       ...settings,
@@ -293,9 +295,14 @@ function ZoneDialog({ zone, onClose }: { zone: Zone | null; onClose: () => void 
   };
   const saving = useMutation({
     mutationFn: () => saveZone(id, { name: name.trim(), fee: fee!, active }),
+    meta: { ok: 'Delivery zone saved' },
     onSuccess: done,
   });
-  const removing = useMutation({ mutationFn: () => removeZone(id), onSuccess: done });
+  const removing = useMutation({
+    meta: { ok: 'Delivery zone removed' },
+    mutationFn: () => removeZone(id),
+    onSuccess: done,
+  });
 
   return (
     <Dialog title={zone ? `Edit ${zone.name}` : 'Add a delivery zone'} onClose={onClose}>
@@ -444,6 +451,7 @@ function MoolreDialog({ current, onClose }: { current: Settings['moolre']; onClo
     /^\d{6,20}$/.test(accountNumber.trim()) &&
     email.includes('@');
   const saving = useMutation({
+    meta: { ok: 'Moolre account saved' },
     mutationFn: () =>
       saveMoolre({
         apiUser: apiUser.trim(),

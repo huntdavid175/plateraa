@@ -1,9 +1,24 @@
-import { QueryClient, useQuery } from '@tanstack/react-query';
+import { MutationCache, QueryClient, useQuery } from '@tanstack/react-query';
 import { useEffect, useState } from 'react';
+import { toast } from '../ui/Toast';
 import { api, ApiError, call, signOut } from './api';
 import { useSession } from './session';
 
 export const queryClient = new QueryClient({
+  /**
+   * Every change says how it went, without each page having to remember: anything that fails
+   * shows why, and anything that works says so when it carries `meta: { ok: 'Saved' }`.
+   */
+  mutationCache: new MutationCache({
+    onError: (error, _input, _context, mutation) => {
+      // `meta: { quiet: true }` for a form that already says why under itself.
+      if (!mutation.meta?.quiet) toast.problem(error.message);
+    },
+    onSuccess: (_data, _input, _context, mutation) => {
+      const ok = mutation.meta?.ok;
+      if (typeof ok === 'string') toast.ok(ok);
+    },
+  }),
   defaultOptions: {
     queries: {
       staleTime: 30_000,
