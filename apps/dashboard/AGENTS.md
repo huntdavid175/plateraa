@@ -23,6 +23,7 @@ The web dashboard for owners and managers (plan.md §3.1). It uses:
   - Use those names, never hex values, so dark mode keeps working.
   - Dark mode is the `dark` class on `<html>` (`lib/theme.ts`). It starts from the device's own setting and is then remembered per browser.
 - **Fonts:** DM Sans for text; DM Mono (`font-mono`) for money and order numbers.
+- **The Plateraa logo** (15 Sep) is `public/logo.png`, a plain `<img>` wherever the brand mark goes: sign-in, sign-up and choosing a business (`Centered` in `ui/Page.tsx`), the sidebar and the phone header (`shell/Shell.tsx`). It replaced the orange square with a typed "P". The tab and home-screen icons are `public/favicon.ico`, `public/icon-192.png` and `public/apple-touch-icon.png`, linked from `index.html`. All of them are made by `pnpm brand:assets` from `public/images/logo.png` at the repo root, so don't edit them by hand. A vendor's own logo is a different thing (`logoUrl`, uploaded on the Online store page).
 - **Plain words.** Every screen works at phone width: the sidebar shows from `md` up; below that there's a bottom bar plus "More".
 - **Scrollbars** (`src/index.css`): nothing may show a bar on hover, since it takes width and shifts the page. `no-scrollbar` for the sidebar and rows of pills (they still scroll), `page-scroll` for a page's own scrolling (thin, with its room always kept), `thin-scrollbar` for dialogs.
 
