@@ -8100,6 +8100,12 @@
             ],
             "additionalProperties": false
           },
+          "popular": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
           "today": {
             "type": "string",
             "enum": [
@@ -8328,6 +8334,7 @@
           "phone",
           "hours",
           "week",
+          "popular",
           "today",
           "theme",
           "coverUrl",

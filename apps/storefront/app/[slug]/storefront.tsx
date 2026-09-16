@@ -84,6 +84,17 @@ export function Storefront({ store }: { store: Store }) {
     window.location.assign(result.payUrl);
   };
 
+  const sheet = picking && (
+    <ItemSheet
+      item={picking}
+      onClose={() => setPicking(null)}
+      onAdd={(line) => {
+        change((lines) => addLine(lines, line));
+        setPicking(null);
+      }}
+    />
+  );
+
   if (screen === 'paying') return <Paying />;
   if (screen === 'info') {
     return (
@@ -97,20 +108,24 @@ export function Storefront({ store }: { store: Store }) {
   }
   if (screen === 'order') {
     return (
-      <OrderScreen
-        store={store}
-        priced={priced}
-        subtotal={subtotal}
-        fulfilment={fulfilment}
-        setFulfilment={setFulfilment}
-        zoneId={zoneId}
-        setZoneId={setZoneId}
-        onBack={() => setScreen('store')}
-        onAddMore={() => setScreen('store')}
-        onEmpty={() => change(() => [])}
-        setQuantity={setQuantity}
-        onPlaced={placed}
-      />
+      <>
+        <OrderScreen
+          store={store}
+          priced={priced}
+          subtotal={subtotal}
+          fulfilment={fulfilment}
+          setFulfilment={setFulfilment}
+          zoneId={zoneId}
+          setZoneId={setZoneId}
+          onBack={() => setScreen('store')}
+          onAddMore={() => setScreen('store')}
+          onEmpty={() => change(() => [])}
+          setQuantity={setQuantity}
+          onPick={setPicking}
+          onPlaced={placed}
+        />
+        {sheet}
+      </>
     );
   }
 
@@ -130,16 +145,7 @@ export function Storefront({ store }: { store: Store }) {
         setQuantity={setQuantity}
         remove={remove}
       />
-      {picking && (
-        <ItemSheet
-          item={picking}
-          onClose={() => setPicking(null)}
-          onAdd={(line) => {
-            change((lines) => addLine(lines, line));
-            setPicking(null);
-          }}
-        />
-      )}
+      {sheet}
     </>
   );
 }
@@ -1147,6 +1153,7 @@ function OrderScreen({
   onAddMore,
   onEmpty,
   setQuantity,
+  onPick,
   onPlaced,
 }: {
   store: Store;
@@ -1160,6 +1167,8 @@ function OrderScreen({
   onAddMore: () => void;
   onEmpty: () => void;
   setQuantity: (uid: string, quantity: number) => void;
+  /** Adding one more thing from "People also add": the item's own sheet opens. */
+  onPick: (item: StoreItem) => void;
   onPlaced: (result: { token: string; payUrl: string | null }) => void;
 }) {
   // One order per visit to this page: sending it again after a lost answer records it once.
@@ -1313,6 +1322,8 @@ function OrderScreen({
           </span>
           Add more
         </button>
+
+        <AlsoAdd store={store} priced={priced} onPick={onPick} />
 
         <div className="border-b border-border py-4">
           <textarea
@@ -1508,6 +1519,73 @@ function OrderScreen({
         </button>
       </div>
     </div>
+  );
+}
+
+/**
+ * What people order most here, minus whatever is already in the order (16 Sep, user request,
+ * following the reference's "People also added"). The API works it out from the last four weeks
+ * of orders; a store with no orders yet gets an empty list, and this row doesn't show at all.
+ */
+function AlsoAdd({
+  store,
+  priced,
+  onPick,
+}: {
+  store: Store;
+  priced: PricedLine[];
+  onPick: (item: StoreItem) => void;
+}) {
+  const already = new Set(priced.map((line) => line.itemId));
+  const suggestions = store.popular
+    .map((id) => store.items.find((item) => item.id === id))
+    .filter((item): item is StoreItem => Boolean(item) && !item!.soldOut && !already.has(item!.id))
+    .slice(0, 6);
+  if (!store.open || suggestions.length === 0) return null;
+
+  return (
+    <section className="border-b border-border py-5">
+      <h2 className="text-xl font-bold text-ink">People also add</h2>
+      <div className="scrollbar-hide -mx-4 mt-3 flex gap-3 overflow-x-auto px-4">
+        {suggestions.map((item) => (
+          <button
+            key={item.id}
+            type="button"
+            onClick={() => onPick(item)}
+            className="w-32 shrink-0 text-left"
+          >
+            <div className="relative h-32 w-32 overflow-hidden rounded-xl bg-tile">
+              {item.photoUrl ? (
+                <img
+                  src={item.photoUrl}
+                  alt=""
+                  loading="lazy"
+                  className="h-full w-full object-cover"
+                />
+              ) : (
+                <PhotoPlaceholder name={item.name} />
+              )}
+              <span className="absolute right-1.5 bottom-1.5 flex h-8 w-8 items-center justify-center rounded-full bg-card text-ink shadow-md ring-1 ring-border">
+                <svg
+                  width="13"
+                  height="13"
+                  fill="none"
+                  viewBox="0 0 12 12"
+                  stroke="currentColor"
+                  strokeWidth="2.5"
+                  strokeLinecap="round"
+                  aria-hidden="true"
+                >
+                  <path d="M6 2v8M2 6h8" />
+                </svg>
+              </span>
+            </div>
+            <p className="mt-2 font-mono text-sm font-medium text-ink">{priceWords(item)}</p>
+            <p className="mt-0.5 line-clamp-2 text-xs text-muted">{item.name}</p>
+          </button>
+        ))}
+      </div>
+    </section>
   );
 }
 

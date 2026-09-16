@@ -2088,6 +2088,7 @@ export interface components {
                     to: string;
                 };
             };
+            popular: string[];
             /** @enum {string} */
             today: "mon" | "tue" | "wed" | "thu" | "fri" | "sat" | "sun";
             /** @enum {string} */

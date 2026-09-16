@@ -259,6 +259,14 @@ describe.skipIf(!hasDatabase())('the online store (against Neon, pretend Moolre)
     expect(moolre.links).toHaveLength(1);
   });
 
+  it('says what people order most here, once there are orders to go by', async () => {
+    const store = await request(server()).get(`/api/public/stores/${slug}`).expect(200);
+    // Every order placed by the tests above has jollof in it, so it leads.
+    expect(store.body.popular[0]).toBe(menu.jollof);
+    expect(store.body.popular).toContain(menu.sobolo);
+    expect(store.body.popular.length).toBeLessThanOrEqual(8);
+  });
+
   it('shows the order’s progress, and counts the payment once Moolre confirms it', async () => {
     const waiting = await request(server()).get(`/api/public/orders/${token}`).expect(200);
     expect(waiting.body).toMatchObject({

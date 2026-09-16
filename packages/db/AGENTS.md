@@ -7,7 +7,7 @@ Neon Postgres 18.6 (AWS eu-central-1), drizzle-orm 0.45.2 with `casing: 'snake_c
 - `src/schema/*.ts`: the tables, re-exported from `src/schema/index.ts`. Shared column helpers are in `columns.ts`. `approvals.ts` is unused (approvals are a future feature; the table stays).
 - `src/client.ts`: `createDatabase`, `withTenant(db, tenantId, fn)`, `withPlatform(db, fn)`.
 - `src/sync.ts`: `changedSince`, `nextSyncCursor` for the xid8 sync cursor, and `anythingChangedSince` — one EXISTS probe per table, so a pull with nothing to send answers from the `(tenant_id, sync_xid)` indexes instead of reading every table (16 Sep; see `apps/api/AGENTS.md`).
-- `src/index.ts` also re-exports the drizzle operators, so apps never import `drizzle-orm` directly.
+- `src/index.ts` also re-exports the drizzle operators, so apps never import `drizzle-orm` directly (`notInArray` joined them on 16 Sep).
 - `0012_storefront` (13 Sep): the online store's settings on `tenant_settings`, `staff_members.system` (the hidden "Online store" member, one per business), and `orders.pay_on_collection` / `orders.track_token`.
 - `0013_store_photos` (13 Sep): `tenant_settings.storefront_cover_key` / `storefront_logo_key`, the photo storage names of the store's cover picture and logo (item photos use `items.photo_key`, there from the start).
 - `0014_store_hours` (16 Sep): `tenant_settings.storefront_hours` becomes a `jsonb` week of opening times (`StoreHours` in `@plateraa/shared`), replacing the free-text line, which can't be turned into JSON — the old column is dropped and every store starts on 8am–8pm, seven days.

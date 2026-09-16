@@ -20,6 +20,7 @@ import {
   desc,
   eq,
   gt,
+  gte,
   inArray,
   isNull,
   itemModifierGroups,
@@ -29,6 +30,7 @@ import {
   modifierGroups,
   modifiers,
   moolreAccounts,
+  notInArray,
   or,
   orderItems,
   orders,
@@ -79,6 +81,10 @@ import { RateLimit } from './rate-limit';
 
 type Line = SyncCommandOf<'order.create'>['payload']['lines'][number];
 
+/** How far back "what people order most" looks. */
+const POPULAR_DAYS = 28;
+const DAY_MS = 86_400_000;
+
 const money = z.number().int();
 const text = (max: number) => z.string().trim().min(1).max(max);
 const SLUG = /^[a-z0-9-]{1,60}$/;
@@ -94,6 +100,8 @@ class StoreDto extends createZodDto(
     hours: z.string(),
     /** The same week day by day, for the store's details page. */
     week: storeHoursSchema,
+    /** What sells most here, best first: the ids of at most eight items (may be empty). */
+    popular: z.array(z.string()),
     /** Which day it is where the store is, so its page can point at today's line. */
     today: z.enum(STORE_DAYS),
     theme: z.enum(STOREFRONT_THEMES),
@@ -308,6 +316,7 @@ export class PublicStoreService {
         hours: hoursWords(hours),
         week: hours,
         today: clockAt(new Date(), tenant.timezone).day,
+        popular: await this.popular(tx, today),
         theme: settings?.storefrontTheme ?? 'orange',
         coverUrl: this.urlOf(settings?.storefrontCoverKey),
         logoUrl: this.urlOf(settings?.storefrontLogoKey),
@@ -322,6 +331,33 @@ export class PublicStoreService {
         ...(await this.menu(tx, today)),
       };
     });
+  }
+
+  /**
+   * What people order most here, over the last four weeks: the ids of at most eight items, best
+   * first (16 Sep, user request, for "People also add" on the order page). Counter sales count
+   * as well as online ones — it's the same kitchen. A store with no orders yet gets nothing back,
+   * and the page leaves the row out rather than guessing.
+   */
+  private async popular(tx: Tx, today: string) {
+    const from = new Date(Date.parse(`${today}T00:00:00Z`) - (POPULAR_DAYS - 1) * DAY_MS)
+      .toISOString()
+      .slice(0, 10);
+    const rows = await tx
+      .select({ itemId: orderItems.itemId, sold: sql<number>`sum(${orderItems.quantity})::int` })
+      .from(orderItems)
+      .innerJoin(orders, eq(orders.id, orderItems.orderId))
+      .where(
+        and(
+          isNull(orderItems.deletedAt),
+          gte(orders.businessDate, from),
+          notInArray(orders.status, ['CANCELLED', 'REFUNDED']),
+        ),
+      )
+      .groupBy(orderItems.itemId)
+      .orderBy(desc(sql`sum(${orderItems.quantity})`))
+      .limit(8);
+    return rows.map((row) => row.itemId);
   }
 
   /** The menu as customers see it: never cost prices. */
