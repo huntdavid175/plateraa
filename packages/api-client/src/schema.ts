@@ -2051,6 +2051,45 @@ export interface components {
             area: string | null;
             phone: string | null;
             hours: string;
+            week: {
+                mon: {
+                    open: boolean;
+                    from: string;
+                    to: string;
+                };
+                tue: {
+                    open: boolean;
+                    from: string;
+                    to: string;
+                };
+                wed: {
+                    open: boolean;
+                    from: string;
+                    to: string;
+                };
+                thu: {
+                    open: boolean;
+                    from: string;
+                    to: string;
+                };
+                fri: {
+                    open: boolean;
+                    from: string;
+                    to: string;
+                };
+                sat: {
+                    open: boolean;
+                    from: string;
+                    to: string;
+                };
+                sun: {
+                    open: boolean;
+                    from: string;
+                    to: string;
+                };
+            };
+            /** @enum {string} */
+            today: "mon" | "tue" | "wed" | "thu" | "fri" | "sat" | "sun";
             /** @enum {string} */
             theme: "classic" | "orange" | "red" | "pink" | "purple" | "blue" | "teal" | "green" | "gold";
             coverUrl: string | null;

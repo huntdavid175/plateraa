@@ -44,11 +44,14 @@ import {
   DEFAULT_STORE_HOURS,
   ORDER_STATUSES,
   ORDER_TYPES,
+  STORE_DAYS,
   STOREFRONT_THEMES,
   amountDue,
+  clockAt,
   hoursWords,
   isOpenAt,
   opensWords,
+  storeHoursSchema,
   phoneSchema,
   sub,
   type Pesewas,
@@ -89,6 +92,10 @@ class StoreDto extends createZodDto(
     phone: nullableText(),
     /** The week in words, for the store's page: "Mon–Fri 8:00 am – 8:00 pm · Sat closed". */
     hours: z.string(),
+    /** The same week day by day, for the store's details page. */
+    week: storeHoursSchema,
+    /** Which day it is where the store is, so its page can point at today's line. */
+    today: z.enum(STORE_DAYS),
     theme: z.enum(STOREFRONT_THEMES),
     /** The store's own pictures, set on the dashboard; without them the header is its colour. */
     coverUrl: nullableText(),
@@ -299,6 +306,8 @@ export class PublicStoreService {
         area: settings?.storefrontArea ?? null,
         phone: settings?.storefrontPhone ?? null,
         hours: hoursWords(hours),
+        week: hours,
+        today: clockAt(new Date(), tenant.timezone).day,
         theme: settings?.storefrontTheme ?? 'orange',
         coverUrl: this.urlOf(settings?.storefrontCoverKey),
         logoUrl: this.urlOf(settings?.storefrontLogoKey),

@@ -212,11 +212,11 @@ export function Share() {
   );
 }
 
-export function Clock() {
+export function Clock({ size = 12 }: { size?: number }) {
   return (
     <svg
-      width="12"
-      height="12"
+      width={size}
+      height={size}
       viewBox="0 0 12 12"
       fill="none"
       stroke="currentColor"
@@ -226,6 +226,54 @@ export function Clock() {
     >
       <circle cx="6" cy="6" r="5" />
       <path d="M6 3v3l2 1.5" />
+    </svg>
+  );
+}
+
+/** Calling the store. */
+export function Phone() {
+  return (
+    <svg
+      width="22"
+      height="22"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.8"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden="true"
+    >
+      <path d="M6.5 3h3l1.5 4-2 1.2a12 12 0 0 0 5.8 5.8L16 12l4 1.5v3a2 2 0 0 1-2.2 2A16.5 16.5 0 0 1 4.5 5.2 2 2 0 0 1 6.5 3Z" />
+    </svg>
+  );
+}
+
+/** Where the store is. */
+export function Pin() {
+  return (
+    <svg
+      width="22"
+      height="22"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.8"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden="true"
+    >
+      <path d="M12 21s7-5.6 7-11a7 7 0 1 0-14 0c0 5.4 7 11 7 11Z" />
+      <circle cx="12" cy="10" r="2.5" />
+    </svg>
+  );
+}
+
+/** Getting directions: the arrow a map app uses. */
+export function Navigate() {
+  return (
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+      <path d="M21 3 3 10.5l7.5 2.8L13.3 21 21 3Z" />
     </svg>
   );
 }

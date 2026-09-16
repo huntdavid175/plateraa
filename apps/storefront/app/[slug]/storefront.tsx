@@ -1,6 +1,6 @@
 'use client';
 
-import { normalizeGhanaPhone } from '@plateraa/shared';
+import { STORE_DAYS, normalizeGhanaPhone, timeWords, type StoreDay } from '@plateraa/shared';
 import { useRouter } from 'next/navigation';
 import { useEffect, useMemo, useState, type ReactNode } from 'react';
 import { ulid } from 'ulid';
@@ -12,7 +12,10 @@ import {
   ChevronRight,
   Clock,
   DarkToggle,
+  Navigate,
+  Phone,
   PhotoPlaceholder,
+  Pin,
   Qty,
   Share,
 } from '../../components/ui';
@@ -30,7 +33,7 @@ import { ghs } from '../../lib/money';
 import { phoneWords } from '../../lib/words';
 import { placeOrder } from '../actions';
 
-type Screen = 'store' | 'cart' | 'checkout' | 'paying';
+type Screen = 'store' | 'info' | 'cart' | 'checkout' | 'paying';
 type Fulfilment = 'PICKUP' | 'DELIVERY';
 
 const primary =
@@ -81,6 +84,16 @@ export function Storefront({ store }: { store: Store }) {
   };
 
   if (screen === 'paying') return <Paying />;
+  if (screen === 'info') {
+    return (
+      <InfoScreen
+        store={store}
+        fulfilment={fulfilment}
+        setFulfilment={setFulfilment}
+        onBack={() => setScreen('store')}
+      />
+    );
+  }
   if (screen === 'cart') {
     return (
       <CartScreen
@@ -122,6 +135,7 @@ export function Storefront({ store }: { store: Store }) {
         onPick={setPicking}
         onCart={() => setScreen('cart')}
         onCheckout={() => setScreen('checkout')}
+        onInfo={() => setScreen('info')}
         setQuantity={setQuantity}
         remove={remove}
       />
@@ -151,6 +165,7 @@ function StoreScreen({
   onPick,
   onCart,
   onCheckout,
+  onInfo,
   setQuantity,
   remove,
 }: {
@@ -163,6 +178,7 @@ function StoreScreen({
   onPick: (item: StoreItem) => void;
   onCart: () => void;
   onCheckout: () => void;
+  onInfo: () => void;
   setQuantity: (uid: string, quantity: number) => void;
   remove: (uid: string) => void;
 }) {
@@ -182,21 +198,30 @@ function StoreScreen({
   }, [store]);
   const ids = useMemo(() => sections.map((section) => section.id), [sections]);
   const menu = useMenuNav(ids);
-  const [info, setInfo] = useState(false);
 
   return (
     <div className="min-h-screen bg-page">
-      <StoreHero store={store} onInfo={() => setInfo(true)} />
-      <StoreFacts store={store} onInfo={() => setInfo(true)} />
+      <StoreHero store={store} onInfo={onInfo} />
+      <StoreFacts store={store} onInfo={onInfo} />
 
-      {(!store.open || store.zones.length > 0) && (
-        <div className="mx-auto w-full max-w-6xl px-4 lg:px-8">
-          {!store.open && <ClosedNote store={store} />}
-          {store.zones.length > 0 && (
-            <div className="py-4 sm:max-w-xs">
-              <FulfilmentChoice value={fulfilment} onChange={setFulfilment} />
-            </div>
+      <div className="border-b border-border">
+        <div className="mx-auto w-full max-w-6xl px-4 py-3 lg:flex lg:items-center lg:gap-4 lg:px-8">
+          {store.zones.length > 0 ? (
+            <>
+              <span className="hidden text-sm text-muted lg:block">How you’ll get it</span>
+              <div className="lg:w-72">
+                <FulfilmentChoice value={fulfilment} onChange={setFulfilment} />
+              </div>
+            </>
+          ) : (
+            <p className="text-sm text-muted">Pickup only — collect from the store.</p>
           )}
+        </div>
+      </div>
+
+      {!store.open && (
+        <div className="mx-auto w-full max-w-6xl px-4 lg:px-8">
+          <ClosedNote store={store} />
         </div>
       )}
 
@@ -377,10 +402,27 @@ function StoreScreen({
           </button>
         </div>
       )}
-
-      {info && <InfoSheet store={store} onClose={() => setInfo(false)} />}
     </div>
   );
+}
+
+/**
+ * Passing the store's link on: the phone's own share sheet where there is one, the clipboard
+ * otherwise. Says whether it had to copy, so the page can tell the customer.
+ */
+async function shareStore(name: string): Promise<'shared' | 'copied' | 'no'> {
+  const url = window.location.href;
+  try {
+    if (navigator.share) {
+      await navigator.share({ title: name, url });
+      return 'shared';
+    }
+    await navigator.clipboard.writeText(url);
+    return 'copied';
+  } catch {
+    // The customer closed the share sheet, or the browser wouldn't copy: nothing to say.
+    return 'no';
+  }
 }
 
 /** The cover picture, with the store's name over it and the way into its details. */
@@ -389,18 +431,9 @@ function StoreHero({ store, onInfo }: { store: Store; onInfo: () => void }) {
   const onCover = Boolean(store.coverUrl);
 
   const share = async () => {
-    const url = window.location.href;
-    try {
-      if (navigator.share) {
-        await navigator.share({ title: store.name, url });
-        return;
-      }
-      await navigator.clipboard.writeText(url);
-      setCopied(true);
-      setTimeout(() => setCopied(false), 2000);
-    } catch {
-      // The customer closed the share sheet, or the browser wouldn't copy: nothing to say.
-    }
+    if ((await shareStore(store.name)) !== 'copied') return;
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
   };
 
   return (
@@ -503,68 +536,197 @@ function StoreFacts({ store, onInfo }: { store: Store; onInfo: () => void }) {
 }
 
 /**
- * Everything about the store in one place, from the hero's "More info". Plain rows, no cards;
- * the user's own design for this screen comes later.
+ * Everything about the store, from "More info" on the cover (16 Sep, the user's reference): when
+ * it's open, how to reach it, where it is, and what it offers. Plain rows with an icon each, a
+ * hairline between them — no cards.
  */
-function InfoSheet({ store, onClose }: { store: Store; onClose: () => void }) {
-  const rows: { title: string; lines: string[] }[] = [
-    { title: 'Opening hours', lines: [store.hours] },
-    ...(store.area ? [{ title: 'Where', lines: [store.area] }] : []),
-    {
-      title: 'How you can get it',
-      lines: [
-        'Pickup — collect from the store',
-        ...store.zones.map((zone) => `Delivery to ${zone.name} — ${ghs(zone.fee)}`),
-        ...(store.zones.length ? [] : ['Delivery isn’t offered here yet']),
-      ],
-    },
-    {
-      title: 'Paying',
-      lines: [
-        ...(store.payOnline ? ['Online by mobile money'] : []),
-        ...(store.cashOnPickup ? ['Cash when you collect'] : []),
-      ],
-    },
-  ];
+function InfoScreen({
+  store,
+  fulfilment,
+  setFulfilment,
+  onBack,
+}: {
+  store: Store;
+  fulfilment: Fulfilment;
+  setFulfilment: (fulfilment: Fulfilment) => void;
+  onBack: () => void;
+}) {
+  const today = store.week[store.today];
+  const todayWords =
+    today.open && today.from !== today.to
+      ? `${timeWords(today.from)} – ${timeWords(today.to)}`
+      : 'Closed today';
+  const mapsQuery = encodeURIComponent(`${store.name}${store.area ? `, ${store.area}` : ''}`);
+  const directions = `https://www.google.com/maps/search/?api=1&query=${mapsQuery}`;
 
   return (
-    <div
-      className="fixed inset-0 z-40 flex items-end justify-center bg-black/50 lg:items-center"
-      role="dialog"
-      aria-modal="true"
-      aria-label={`About ${store.name}`}
-      onClick={onClose}
-    >
-      <div
-        className="max-h-[85vh] w-full max-w-lg overflow-y-auto rounded-t-2xl bg-page p-6 lg:rounded-2xl"
-        onClick={(event) => event.stopPropagation()}
-      >
-        <h2 className="text-xl font-bold text-ink">{store.name}</h2>
-        <dl className="mt-4 divide-y divide-border border-y border-border">
-          {rows.map((row) => (
-            <div key={row.title} className="py-3">
-              <dt className="text-sm font-semibold text-ink">{row.title}</dt>
-              {row.lines.map((line) => (
-                <dd key={line} className="mt-0.5 text-sm text-muted">
-                  {line}
-                </dd>
-              ))}
-            </div>
-          ))}
-        </dl>
-        {store.phone && (
+    <div className="mx-auto flex min-h-screen max-w-[430px] flex-col lg:max-w-2xl">
+      <Header
+        title=""
+        onBack={onBack}
+        bare
+        right={
+          <RoundButton label="Share this store" onClick={() => void shareStore(store.name)}>
+            <Share />
+          </RoundButton>
+        }
+      />
+
+      <div className="flex-1 px-4 pb-16">
+        <h1 className="mt-2 text-[28px] leading-tight font-bold text-ink lg:text-4xl">
+          {store.name}
+        </h1>
+        <p className="mt-3 text-sm leading-relaxed text-muted">
+          Call the store if you have an allergy: they’ll tell you what’s in a dish and how it’s
+          cooked.
+        </p>
+
+        <div className="mt-6 divide-y divide-border border-y border-border">
+          <InfoRow
+            icon={<Clock size={22} />}
+            title={store.open ? 'Open now' : 'Closed right now'}
+            detail={store.open ? todayWords : (store.opensWords ?? todayWords)}
+          />
+          {store.phone && (
+            <InfoRow
+              icon={<Phone />}
+              title="Call us"
+              detail={phoneWords(store.phone)}
+              href={`tel:${store.phone}`}
+            />
+          )}
+          {store.area && (
+            <InfoRow
+              icon={<Pin />}
+              title="Where we are"
+              detail={store.area}
+              href={directions}
+              external
+            />
+          )}
+        </div>
+
+        {store.area && (
           <a
-            href={`tel:${store.phone}`}
-            className="mt-4 block text-sm font-semibold text-brand-ink underline"
+            href={directions}
+            target="_blank"
+            rel="noreferrer"
+            className="mt-5 flex h-12 w-full items-center justify-center gap-2 rounded-full bg-tile text-sm font-semibold text-ink transition-colors hover:bg-border"
           >
-            Call {phoneWords(store.phone)}
+            <Navigate />
+            Get directions
           </a>
         )}
-        <button type="button" onClick={onClose} className={`${primary} mt-6`}>
-          Close
-        </button>
+
+        <h2 className="mt-9 text-xl font-bold text-ink">How you can get it</h2>
+        <p className="mt-1 text-sm text-muted">
+          {store.zones.length
+            ? 'Pick one now, or change it at checkout.'
+            : 'This store is pickup only for now.'}
+        </p>
+        {store.zones.length > 0 ? (
+          <div className="mt-3 max-w-xs">
+            <FulfilmentChoice value={fulfilment} onChange={setFulfilment} />
+          </div>
+        ) : (
+          <ul className="mt-3 space-y-1 text-sm text-muted">
+            <li>• Pickup — collect from the store</li>
+          </ul>
+        )}
+        {store.zones.length > 0 && (
+          <ul className="mt-4 divide-y divide-border border-y border-border">
+            {store.zones.map((zone) => (
+              <li key={zone.id} className="flex justify-between py-2.5 text-sm">
+                <span className="text-ink">Delivery to {zone.name}</span>
+                <span className="font-mono text-muted">{ghs(zone.fee)}</span>
+              </li>
+            ))}
+          </ul>
+        )}
+
+        <h2 className="mt-9 text-xl font-bold text-ink">Paying</h2>
+        <ul className="mt-2 space-y-1 text-sm text-muted">
+          {store.payOnline && <li>• Online by mobile money, when you order</li>}
+          {store.cashOnPickup && <li>• Cash when you collect</li>}
+          {!store.payOnline && !store.cashOnPickup && (
+            <li>• This store isn’t set up to take payments yet</li>
+          )}
+        </ul>
+
+        <h2 className="mt-9 text-xl font-bold text-ink">Opening hours</h2>
+        <ul className="mt-2 divide-y divide-border border-y border-border">
+          {STORE_DAYS.map((day) => {
+            const hours = store.week[day];
+            const isToday = day === store.today;
+            return (
+              <li
+                key={day}
+                className={`flex justify-between py-2.5 text-sm ${
+                  isToday ? 'font-semibold text-ink' : 'text-muted'
+                }`}
+              >
+                <span>
+                  {DAY_WORDS[day]}
+                  {isToday && ' · today'}
+                </span>
+                <span className={hours.open ? 'font-mono' : ''}>
+                  {hours.open && hours.from !== hours.to
+                    ? `${timeWords(hours.from)} – ${timeWords(hours.to)}`
+                    : 'Closed'}
+                </span>
+              </li>
+            );
+          })}
+        </ul>
       </div>
     </div>
+  );
+}
+
+const DAY_WORDS: Record<StoreDay, string> = {
+  mon: 'Monday',
+  tue: 'Tuesday',
+  wed: 'Wednesday',
+  thu: 'Thursday',
+  fri: 'Friday',
+  sat: 'Saturday',
+  sun: 'Sunday',
+};
+
+/** One line of the store's details: an icon, what it is, and the answer under it. */
+function InfoRow({
+  icon,
+  title,
+  detail,
+  href,
+  external,
+}: {
+  icon: ReactNode;
+  title: string;
+  detail: string;
+  href?: string;
+  external?: boolean;
+}) {
+  const inside = (
+    <>
+      <span className="mt-0.5 shrink-0 text-ink">{icon}</span>
+      <span className="min-w-0">
+        <span className="block text-base font-semibold text-ink">{title}</span>
+        <span className="mt-0.5 block text-sm text-muted">{detail}</span>
+      </span>
+    </>
+  );
+  const className = 'flex w-full items-start gap-4 py-4 text-left';
+  return href ? (
+    <a
+      href={href}
+      className={className}
+      {...(external ? { target: '_blank', rel: 'noreferrer' } : {})}
+    >
+      {inside}
+    </a>
+  ) : (
+    <div className={className}>{inside}</div>
   );
 }
 
@@ -935,9 +1097,27 @@ function LineWords({ line }: { line: PricedLine }) {
   );
 }
 
-function Header({ title, onBack, extra }: { title: string; onBack: () => void; extra?: string }) {
+function Header({
+  title,
+  onBack,
+  extra,
+  right,
+  bare,
+}: {
+  title: string;
+  onBack: () => void;
+  extra?: string;
+  /** Anything that belongs at the far end of the bar, such as Share. */
+  right?: ReactNode;
+  /** No hairline underneath: for a screen that opens with a heading of its own. */
+  bare?: boolean;
+}) {
   return (
-    <header className="sticky top-0 z-20 flex items-center gap-3 border-b border-border bg-page px-4 py-4">
+    <header
+      className={`sticky top-0 z-20 flex items-center gap-3 bg-page px-4 py-4 ${
+        bare ? '' : 'border-b border-border'
+      }`}
+    >
       <button
         type="button"
         onClick={onBack}
@@ -948,6 +1128,7 @@ function Header({ title, onBack, extra }: { title: string; onBack: () => void; e
       </button>
       <h1 className="text-base font-semibold">{title}</h1>
       {extra && <Badge tone="muted" text={extra} />}
+      {right && <div className="ml-auto">{right}</div>}
     </header>
   );
 }
