@@ -1,5 +1,5 @@
 import { isNull, sql, type SQL } from 'drizzle-orm';
-import type { PgColumn } from 'drizzle-orm/pg-core';
+import type { PgColumn, PgTable } from 'drizzle-orm/pg-core';
 
 /**
  * The pull filter for a synced table. With a cursor: every row written since (deletions
@@ -11,6 +11,24 @@ export function changedSince(
   cursor: string | undefined,
 ): SQL {
   return cursor ? sql`${table.syncXid} >= ${cursor}::xid8` : isNull(table.deletedAt);
+}
+
+/**
+ * Has anything changed for this tenant since the cursor? One index probe per table, each
+ * stopping at the first row it finds, in a single expression — so a pull that has nothing to
+ * send can say so without reading every table (16 Sep). Run it in the same transaction as the
+ * reads it stands in for, so it answers from the same snapshot.
+ */
+export function anythingChangedSince(
+  tables: readonly (PgTable & { syncXid: PgColumn })[],
+  cursor: string | undefined,
+): SQL<boolean> {
+  // The first sync has nothing to compare against: everything is new to that tablet.
+  if (!cursor) return sql<boolean>`true`;
+  const probes = tables.map(
+    (table) => sql`EXISTS (SELECT 1 FROM ${table} WHERE ${table.syncXid} >= ${cursor}::xid8)`,
+  );
+  return sql<boolean>`(${sql.join(probes, sql` OR `)})`;
 }
 
 /**

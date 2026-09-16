@@ -89,6 +89,8 @@ To add one:
 
 Pull runs in one REPEATABLE READ snapshot with an xid8 cursor (`changedSince`, `nextSyncCursor` from `@plateraa/db`). It never returns aggregates, cost prices or PIN hashes.
 
+A tablet pulls every 30 s, and nearly every pull has nothing to send, so the first thing it asks is whether anything changed at all: `anythingChangedSince` (16 Sep) probes each synced table's `(tenant_id, sync_xid)` index in one expression, alongside the cursor it already reads. Nothing changed → it answers with every list empty and reads no tables; ~20 round trips to Neon become 1. `SYNCED_TABLES` in `sync.service.ts` is the list it probes: **add a table there whenever the pull starts reading one**, or its changes would never wake a quiet tablet. The test `sends every list, even when nothing changed` compares the quiet answer's keys with a full pull's, so a missing name shows up.
+
 Current commands (16): `order.create` (no discount), `order.update_items`, `order.set_status` (refuses `AWAITING_PAYMENT` moves), `order.hold`, `order.resume`, `order.cancel` (a paid order becomes "refund owed"), `payment.record_cash`, `payment.record_platform` (a payment that clears an awaiting-payment order moves it to PREPARING), `payment.request_link` (queues a link for what's owed; one open link per order; refused until the business has a Moolre account), `shift.open`, `shift.cash_movement` (DROP / PAY_IN only), `shift.close` (expected = float + cash − payouts − drops + pay-ins; refunds are outside the drawer), `item.set_sold_out`, `stock.prep_count`, `stock.raw_count`, `customer.upsert`.
 
 ## After changing routes or DTOs

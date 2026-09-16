@@ -115,6 +115,7 @@ _11 Sep: everything for the spike is built, and the first development build fini
 - [x] `POST /sync/push`: batches of ≤50, one transaction per command, idempotent via `sync_commands`
   - _Authenticated by the tablet (device token), not a PIN session, so queued sales upload while the screen is locked. Each command's own staff member is permission-checked (`COMMAND_CAPABILITY`). Business refusals are recorded and never retried; server errors stop the batch for a retry._
 - [x] `GET /sync/pull`: xid8 cursor, filtered by what the device may hold, never includes aggregates (_one REPEATABLE READ snapshot; no cost prices, no PIN hashes_)
+  - _16 Sep: a pull with nothing to send no longer reads all twenty tables. It asks the `(tenant_id, sync_xid)` indexes whether anything changed at all (`anythingChangedSince`, one expression beside the cursor it already reads) and, if nothing has, answers with every list empty: ~20 round trips to Neon become 1 for the ~95% of pulls that are idle. No schema change and no cost on writes._
   - [x] gzip the response (_`compression` on every response_)
 - [x] Command handlers: orders, cash payments, paid-via-platform, cash refunds, shifts, cash movements, stock, sold-out, customers, receipt links
   - [x] Orders: create (re-priced with `priceOrder`), edit items, status, hold/resume, cancel (a paid order is left as a refund owed); prep counts go down with each sale and sell out at zero

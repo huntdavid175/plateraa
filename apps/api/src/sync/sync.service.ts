@@ -1,6 +1,7 @@
 import { Inject, Injectable, Logger } from '@nestjs/common';
 import {
   and,
+  anythingChangedSince,
   approvalRequests,
   cashMovements,
   categories,
@@ -56,6 +57,44 @@ import {
 
 const ACTIVE_STATUSES = ['NEW', 'CONFIRMED', 'PREPARING', 'READY', 'OUT_FOR_DELIVERY'] as const;
 const HOUR_MS = 3_600_000;
+
+/**
+ * Every table a pull reads, under the name its rows arrive as. A pull first asks these whether
+ * anything has changed at all (`anythingChangedSince`), and only reads them in full if something
+ * has: a tablet syncs every 30 s, and almost every one of those has nothing to send.
+ *
+ * Add a table here whenever the pull below starts reading one, or its changes would never wake a
+ * quiet tablet. `sends every list, even when nothing changed` in sync.spec.ts guards the names.
+ */
+const SYNCED_TABLES = {
+  tenantSettings,
+  staff: staffMembers,
+  categories,
+  items,
+  itemVariants,
+  modifierGroups,
+  modifiers,
+  itemModifierGroups,
+  itemChannelPrices,
+  deliveryZones,
+  customers,
+  stockItems,
+  orders,
+  orderItems,
+  payments,
+  refunds,
+  paymentLinks,
+  shifts,
+  cashMovements,
+  approvalRequests,
+} as const;
+
+/** What a pull sends when nothing has changed: the usual shape, every list empty. */
+const nothingChanged = () =>
+  Object.fromEntries(Object.keys(SYNCED_TABLES).map((name) => [name, []])) as Record<
+    keyof typeof SYNCED_TABLES,
+    never[]
+  >;
 
 /** Drizzle wraps driver errors; the Postgres error (with its code) is the cause. */
 function postgresError(error: unknown): { code?: string; constraint?: string } {
@@ -237,8 +276,17 @@ export class SyncService {
       device.tenantId,
       async (tx) => {
         const [meta] = await tx
-          .select({ cursor: nextSyncCursor, timezone: tenants.timezone })
+          .select({
+            cursor: nextSyncCursor,
+            timezone: tenants.timezone,
+            changed: anythingChangedSince(Object.values(SYNCED_TABLES), cursor),
+          })
           .from(tenants);
+        // Nothing has been written since this tablet's last sync: say so and stop, rather than
+        // reading twenty tables to find twenty empty lists.
+        if (cursor && !meta?.changed) {
+          return { cursor: meta?.cursor ?? cursor, changes: nothingChanged() };
+        }
         const timezone = meta?.timezone ?? 'Africa/Accra';
         const yesterday = businessDateOf(new Date(Date.now() - 24 * HOUR_MS), timezone);
 

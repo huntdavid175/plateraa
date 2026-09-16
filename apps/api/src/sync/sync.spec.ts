@@ -1,5 +1,13 @@
 import type { NestExpressApplication } from '@nestjs/platform-express';
-import { eq, items, orders, stockItems, withTenant, type Database } from '@plateraa/db';
+import {
+  eq,
+  items,
+  orders,
+  stockItems,
+  tenantSettings,
+  withTenant,
+  type Database,
+} from '@plateraa/db';
 import type { SyncCommandInput } from '@plateraa/shared';
 import request from 'supertest';
 import { ulid } from 'ulid';
@@ -175,6 +183,22 @@ describe.skipIf(!hasDatabase())('sync (against Neon)', () => {
     const next = await pull(quiet.cursor);
     expect(next.changes.orders!.map((o) => o.id)).toContain(order.payload.orderId);
     expect(next.changes.categories).toEqual([]);
+  });
+
+  it('sends every list, even when nothing changed, and notices the next change anywhere', async () => {
+    const first = await pull();
+    const quiet = await pull(first.cursor);
+    // The cheap answer has to look exactly like the full one, or a tablet would miss a table.
+    expect(Object.keys(quiet.changes).sort()).toEqual(Object.keys(first.changes).sort());
+    expect(Object.values(quiet.changes).every((rows) => rows.length === 0)).toBe(true);
+
+    // A change made on the dashboard, in a table the counter rarely touches, still wakes it.
+    await withTenant(db, vendor.tenantId, (tx) =>
+      tx.update(tenantSettings).set({ idleLockSeconds: 123 }),
+    );
+    const next = await pull(quiet.cursor);
+    expect(next.changes.tenantSettings).toHaveLength(1);
+    expect(next.changes.orders).toEqual([]);
   });
 
   it('still sends an old order that finishes after the first pull', async () => {
