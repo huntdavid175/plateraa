@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import { Pressable, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useEngineState, useTablet } from '../tablet/TabletProvider';
-import { chime } from '../ui/chime';
+import { chime, warmUpChime } from '../ui/chime';
 import { colors, font, radii, space, themedStyles } from '../ui/theme';
 import { listen, type Heard, type OrderAlert, type WatchedLink, type WatchedOrder } from './alerts';
 import { KITCHEN_BAR_HEIGHT } from './KitchenBar';
@@ -37,6 +37,11 @@ export function OrderAlerts() {
   const [shown, setShown] = useState<OrderAlert[]>([]);
   const watching = phase === 'locked' || phase === 'unlocked';
   const deviceId = device?.deviceId ?? null;
+
+  // Ready the chime as soon as the tablet is in use, not when the first order lands on it.
+  useEffect(() => {
+    if (watching) warmUpChime();
+  }, [watching]);
 
   useEffect(() => {
     if (!db || !deviceId || !watching) {
