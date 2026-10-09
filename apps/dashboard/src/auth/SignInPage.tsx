@@ -57,11 +57,11 @@ export function SignInPage() {
           Sign in
         </Button>
         {slow && (
-          <p className="text-center text-xs text-muted">
+          <p className="text-center text-xs text-muted-foreground">
             Plateraa is waking up. The first sign-in of the day can take up to a minute.
           </p>
         )}
-        <p className="text-center text-sm text-muted">
+        <p className="text-center text-sm text-muted-foreground">
           New to Plateraa?{' '}
           <Link to="/sign-up" className="font-medium text-brand">
             Set up your business

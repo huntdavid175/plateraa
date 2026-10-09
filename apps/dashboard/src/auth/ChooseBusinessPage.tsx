@@ -31,7 +31,7 @@ export function ChooseBusinessPage() {
   return (
     <Centered title="Choose a business">
       {businesses.isPending && (
-        <div className="flex flex-col items-center gap-3 py-8 text-sm text-muted">
+        <div className="flex flex-col items-center gap-3 py-8 text-sm text-muted-foreground">
           <Spinner />
           {slow && (
             <p className="text-center">Plateraa is waking up. This can take up to a minute.</p>
@@ -50,7 +50,7 @@ export function ChooseBusinessPage() {
 
       {businesses.data?.length === 0 && (
         <div className="space-y-4">
-          <p className="rounded-xl border border-border bg-surface px-4 py-4 text-sm text-muted">
+          <p className="rounded-xl border border-border bg-surface px-4 py-4 text-sm text-muted-foreground">
             This login isn’t an owner or manager of any business yet. A manager is added by the
             owner; an owner sets their business up here.
           </p>
@@ -73,7 +73,7 @@ export function ChooseBusinessPage() {
                 )}
               >
                 <span className="font-medium">{business.name}</span>
-                <span className="text-xs text-muted">{ROLE_WORDS[business.role]}</span>
+                <span className="text-xs text-muted-foreground">{ROLE_WORDS[business.role]}</span>
               </button>
             </li>
           ))}

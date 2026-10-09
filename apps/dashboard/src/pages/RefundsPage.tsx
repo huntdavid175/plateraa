@@ -24,7 +24,7 @@ export function RefundsPage() {
       {owed.isError && <ErrorNote>{owed.error.message}</ErrorNote>}
       {owed.data?.length === 0 && (
         <Card className="px-5 py-12 text-center">
-          <p className="text-muted">No refunds owed.</p>
+          <p className="text-muted-foreground">No refunds owed.</p>
         </Card>
       )}
       {owed.data?.map((order) => (
@@ -32,7 +32,7 @@ export function RefundsPage() {
           <div className="mb-3 flex items-start justify-between gap-4">
             <div className="min-w-0">
               <p className="font-semibold">Order {order.displayNumber}</p>
-              <p className="mt-0.5 text-xs text-muted">
+              <p className="mt-0.5 text-xs text-muted-foreground">
                 {order.businessDate === todayHere() ? 'Today' : longDate(order.businessDate)} at{' '}
                 {clock(order.takenAt)}
                 {order.paidWith.length > 0 &&
@@ -49,7 +49,7 @@ export function RefundsPage() {
             <Link
               to={`/orders/${order.id}`}
               state={{ back: '/refunds', label: 'Refunds' }}
-              className="inline-flex h-11 shrink-0 items-center rounded-xl border border-border px-4 text-sm font-semibold text-muted"
+              className="inline-flex h-11 shrink-0 items-center rounded-xl border border-border px-4 text-sm font-semibold text-muted-foreground"
             >
               View order
             </Link>

@@ -122,7 +122,7 @@ function OnlineStore({ store }: { store: Storefront }) {
         )}
       </Section>
       {shown.enabled && (!store.moolreConnected || store.deliveryZones === 0) && (
-        <div className="-mt-3 mb-5 space-y-1 px-1 text-xs text-muted">
+        <div className="-mt-3 mb-5 space-y-1 px-1 text-xs text-muted-foreground">
           {!store.moolreConnected && (
             <p className="text-amber">
               {shown.cashOnPickup
@@ -235,7 +235,7 @@ function ThemeRow({
   return (
     <div className="px-5 py-4">
       <p className="text-sm font-medium">Page colour</p>
-      <p className="mt-0.5 text-xs text-muted">
+      <p className="mt-0.5 text-xs text-muted-foreground">
         Pick your page’s colour. The buttons get a colour that goes with it. Now:{' '}
         {STOREFRONT_LOOKS[theme].describe.toLowerCase()}.
       </p>
@@ -258,7 +258,9 @@ function ThemeRow({
               onClick={() => onChange(key)}
               className={cx(
                 'overflow-hidden rounded-xl border text-left transition',
-                theme === key ? 'border-text ring-2 ring-text' : 'border-border hover:border-muted',
+                theme === key
+                  ? 'border-text ring-2 ring-text'
+                  : 'border-border hover:border-muted-foreground',
               )}
             >
               {/* A tiny store page: the band, a card, and a button. */}
@@ -289,7 +291,9 @@ function ThemeRow({
 /** The cover picture across the top of the store's page, and the logo beside its name. */
 function StorePhotos({ store }: { store: Storefront }) {
   if (!store.photosReady) {
-    return <p className="px-5 py-4 text-xs text-muted">Photos can’t be added just yet.</p>;
+    return (
+      <p className="px-5 py-4 text-xs text-muted-foreground">Photos can’t be added just yet.</p>
+    );
   }
   return (
     <div className="space-y-4 px-5 py-4">
@@ -370,7 +374,7 @@ function OpeningHours({
 
   return (
     <div className="space-y-4 px-5 py-4">
-      <p className="text-xs text-muted">
+      <p className="text-xs text-muted-foreground">
         Your store closes itself outside these times, and customers see when it opens again. A
         closing time earlier than the opening one means you close after midnight.
       </p>
@@ -391,7 +395,7 @@ function OpeningHours({
                   value={hours[day].from}
                   onChange={(from) => set(day, { from })}
                 />
-                <span className="text-xs text-muted">to</span>
+                <span className="text-xs text-muted-foreground">to</span>
                 <TimeInput
                   key={`${day}-to-${revision}`}
                   label={`${DAY_LABELS[day]} closes at`}
@@ -400,12 +404,12 @@ function OpeningHours({
                 />
               </div>
             ) : (
-              <span className="text-sm text-muted">Closed</span>
+              <span className="text-sm text-muted-foreground">Closed</span>
             )}
           </div>
         ))}
       </div>
-      <p className="text-xs text-muted">Customers see: {hoursWords(hours)}</p>
+      <p className="text-xs text-muted-foreground">Customers see: {hoursWords(hours)}</p>
       <div className="flex items-center gap-2">
         {changed && (
           <Button small busy={busy} onClick={() => onSave(hours)}>
@@ -415,7 +419,7 @@ function OpeningHours({
         <button
           type="button"
           onClick={everyDay}
-          className="text-xs font-medium text-muted underline"
+          className="text-xs font-medium text-muted-foreground underline"
         >
           Use the same times every day
         </button>
@@ -468,7 +472,7 @@ function StoreDetails({
   const changed = area !== saved.area || phone !== saved.phone;
   return (
     <div className="space-y-4 px-5 py-4">
-      <p className="text-xs text-muted">Leave one blank to keep it off the page.</p>
+      <p className="text-xs text-muted-foreground">Leave one blank to keep it off the page.</p>
       <div>
         <FieldLabel htmlFor="store-area">Area</FieldLabel>
         <TextInput
@@ -513,7 +517,7 @@ function QrDialog({ url, onClose }: { url: string; onClose: () => void }) {
   }, [url]);
   return (
     <Dialog title="Your store’s QR code" onClose={onClose}>
-      <p className="text-sm text-muted">
+      <p className="text-sm text-muted-foreground">
         Print it for the counter, or put it on your posts. Scanning it opens your store.
       </p>
       <div
@@ -521,7 +525,7 @@ function QrDialog({ url, onClose }: { url: string; onClose: () => void }) {
         // The library's own SVG, made from the store's link.
         dangerouslySetInnerHTML={{ __html: qr.createSvgTag({ margin: 0, scalable: true }) }}
       />
-      <p className="text-center font-mono text-xs break-all text-muted">{url}</p>
+      <p className="text-center font-mono text-xs break-all text-muted-foreground">{url}</p>
       <div className="mt-6 flex gap-2">
         <Button variant="ghost" onClick={onClose}>
           Close

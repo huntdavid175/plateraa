@@ -34,7 +34,7 @@ function MoneyField({
     <div>
       <FieldLabel htmlFor={id}>{label}</FieldLabel>
       <div className="relative">
-        <span className="pointer-events-none absolute top-1/2 left-4 -translate-y-1/2 text-sm text-muted">
+        <span className="pointer-events-none absolute top-1/2 left-4 -translate-y-1/2 text-sm text-muted-foreground">
           GH₵
         </span>
         <TextInput
@@ -94,7 +94,7 @@ export function RecordRefundDialog({
           if (!problem) saving.mutate();
         }}
       >
-        <p className="text-sm text-muted">
+        <p className="text-sm text-muted-foreground">
           Give the money back first, from outside the drawer. Then record it here.
         </p>
         <MoneyField id="refund-amount" label="Amount given back" value={text} onChange={setText} />
@@ -120,7 +120,7 @@ export function RecordRefundDialog({
           />
         </div>
         {saving.error && <ErrorNote>{saving.error.message}</ErrorNote>}
-        {problem && text !== '' && <p className="text-xs text-muted">{problem}</p>}
+        {problem && text !== '' && <p className="text-xs text-muted-foreground">{problem}</p>}
         <Actions>
           <Button variant="ghost" onClick={onClose}>
             Cancel
@@ -216,7 +216,7 @@ export function DiscountDialog({ order, onClose }: { order: OrderDetail; onClose
                 value={percentText}
                 onChange={(event) => setPercentText(event.target.value)}
               />
-              <span className="pointer-events-none absolute top-1/2 right-4 -translate-y-1/2 text-sm text-muted">
+              <span className="pointer-events-none absolute top-1/2 right-4 -translate-y-1/2 text-sm text-muted-foreground">
                 %
               </span>
             </div>
@@ -231,7 +231,7 @@ export function DiscountDialog({ order, onClose }: { order: OrderDetail; onClose
         )}
         <div className="rounded-xl bg-tile px-4 py-3 text-sm">
           <div className="flex justify-between">
-            <span className="text-muted">Now</span>
+            <span className="text-muted-foreground">Now</span>
             <span className="font-mono">{cedis(order.total)}</span>
           </div>
           <div className="mt-1 flex justify-between font-semibold">
@@ -305,7 +305,7 @@ export function PayoutDialog({ drawer, onClose }: { drawer: Drawer; onClose: () 
           if (amount && !tooMuch) saving.mutate();
         }}
       >
-        <p className="text-sm text-muted">
+        <p className="text-sm text-muted-foreground">
           For cash already taken out of this drawer to pay for something. It counts as money out
           today, and the drawer expects that much less at close.
         </p>

@@ -40,7 +40,7 @@ export function Dialog({
             type="button"
             onClick={onClose}
             aria-label="Close"
-            className="rounded-lg px-2 text-lg leading-none text-muted hover:bg-tile"
+            className="rounded-lg px-2 text-lg leading-none text-muted-foreground hover:bg-tile"
           >
             ×
           </button>

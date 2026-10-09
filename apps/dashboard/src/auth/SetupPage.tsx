@@ -64,7 +64,7 @@ export default function SetupPage() {
             type="button"
             onClick={back}
             aria-label="Back"
-            className="mr-1 text-2xl leading-none text-muted"
+            className="mr-1 text-2xl leading-none text-muted-foreground"
           >
             ‹
           </button>
@@ -73,7 +73,7 @@ export default function SetupPage() {
             type="button"
             onClick={done}
             aria-label="Close"
-            className="mr-1 text-2xl leading-none text-muted"
+            className="mr-1 text-2xl leading-none text-muted-foreground"
           >
             ×
           </button>
@@ -84,7 +84,7 @@ export default function SetupPage() {
             style={{ width: `${(step / TOTAL) * 100}%` }}
           />
         </div>
-        <span className="shrink-0 font-mono text-xs text-muted">
+        <span className="shrink-0 font-mono text-xs text-muted-foreground">
           {step} of {TOTAL}
         </span>
       </div>
@@ -124,7 +124,7 @@ function Heading({ title, detail }: { title: string; detail: string }) {
   return (
     <div className="pt-8">
       <h1 className="mb-1 text-2xl font-bold">{title}</h1>
-      <p className="mb-8 text-sm text-muted">{detail}</p>
+      <p className="mb-8 text-sm text-muted-foreground">{detail}</p>
     </div>
   );
 }
@@ -149,7 +149,7 @@ function Footer({
         <Button full onClick={onClick} disabled={disabled} busy={busy}>
           {label}
         </Button>
-        {note && <p className="mt-2 text-center text-xs text-muted">{note}</p>}
+        {note && <p className="mt-2 text-center text-xs text-muted-foreground">{note}</p>}
       </div>
     </div>
   );
@@ -291,10 +291,10 @@ function TemplateStep({
               <p className={cx('text-sm font-semibold', value === type && 'text-brand')}>
                 {type === BLANK ? 'Start blank' : template.label}
                 {type === vendorType && type !== BLANK && (
-                  <span className="ml-2 text-xs font-normal text-muted">Suggested</span>
+                  <span className="ml-2 text-xs font-normal text-muted-foreground">Suggested</span>
                 )}
               </p>
-              <p className="mt-1 text-xs text-muted">
+              <p className="mt-1 text-xs text-muted-foreground">
                 {names.length
                   ? `${names.slice(0, 5).join(', ')}${names.length > 5 ? `, and ${names.length - 5} more` : ''}`
                   : 'Add your own items on the Menu page.'}
@@ -361,14 +361,14 @@ function PricesStep({
           >
             <span className="min-w-0 truncate text-sm">{row.label}</span>
             <span className="flex shrink-0 items-center gap-1 font-mono">
-              <span className="text-xs text-muted">GH₵</span>
+              <span className="text-xs text-muted-foreground">GH₵</span>
               <input
                 inputMode="decimal"
                 aria-label={`${row.label} price`}
                 value={texts[row.key] ?? ''}
                 placeholder="0.00"
                 onChange={(event) => setTexts({ ...texts, [row.key]: event.target.value })}
-                className="w-20 bg-transparent text-right text-base font-medium outline-none placeholder:text-muted/50"
+                className="w-20 bg-transparent text-right text-base font-medium outline-none placeholder:text-muted-foreground/50"
               />
             </span>
           </label>
@@ -528,7 +528,7 @@ function StaffStep({ staffId, onNext }: { staffId: string; onNext: () => void })
             {others.map((member) => (
               <div key={member.id} className="flex items-center justify-between px-4 py-3">
                 <p className="text-sm font-medium">{member.displayName}</p>
-                <p className="text-xs text-muted">
+                <p className="text-xs text-muted-foreground">
                   {ROLE_WORDS[member.role]} · {member.hasPin ? 'PIN set' : 'no PIN'}
                 </p>
               </div>
@@ -620,7 +620,7 @@ function MoolreStep({ onNext }: { onNext: () => void }) {
             ✓
           </div>
           <p className="font-semibold text-green">Connected</p>
-          <p className="mt-1 text-xs text-muted">
+          <p className="mt-1 text-xs text-muted-foreground">
             Payments land in the Moolre account ending {settings.data?.moolre.accountEnding}.
           </p>
         </div>
@@ -664,7 +664,7 @@ function MoolreStep({ onNext }: { onNext: () => void }) {
               onChange={(event) => setEmail(event.target.value)}
             />
           </div>
-          <p className="text-xs text-muted">
+          <p className="text-xs text-muted-foreground">
             From app.moolre.com. Only the public key, never the private one.
           </p>
           {state === 'failed' && (

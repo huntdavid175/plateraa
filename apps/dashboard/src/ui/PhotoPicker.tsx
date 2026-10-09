@@ -58,7 +58,7 @@ export function PhotoPicker({
           disabled={busy}
           aria-label={`${current ? 'Change' : 'Add'} ${label.toLowerCase()}`}
           className={cx(
-            'relative flex h-20 shrink-0 items-center justify-center overflow-hidden rounded-xl border border-border bg-tile text-2xl text-muted',
+            'relative flex h-20 shrink-0 items-center justify-center overflow-hidden rounded-xl border border-border bg-tile text-2xl text-muted-foreground',
             shape === 'wide' ? 'w-36' : 'w-20',
             !current && 'border-dashed',
           )}
@@ -72,7 +72,7 @@ export function PhotoPicker({
         </button>
         <div className="min-w-0 flex-1">
           <p className="text-sm font-medium">{label}</p>
-          {hint && <p className="mt-0.5 text-xs text-muted">{hint}</p>}
+          {hint && <p className="mt-0.5 text-xs text-muted-foreground">{hint}</p>}
           <div className="mt-2 flex gap-2">
             <Button variant="secondary" small disabled={busy} onClick={pick}>
               {current ? 'Change' : 'Add photo'}

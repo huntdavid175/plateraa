@@ -51,7 +51,7 @@ const KIND_WORDS = { purchase: 'Purchases only', other: 'Other expenses only' } 
 type Kind = keyof typeof KIND_WORDS;
 
 const dateInput =
-  'h-9 rounded-lg border border-border bg-surface px-3 text-sm font-medium text-muted outline-none focus:border-brand';
+  'h-9 rounded-lg border border-border bg-surface px-3 text-sm font-medium text-muted-foreground outline-none focus:border-brand';
 
 /**
  * Money out: purchases, bills and drawer payouts. The days (`?range=`, or `from`/`to`), and a
@@ -131,7 +131,7 @@ export function ExpensesPage() {
                 onChange={(event) => event.target.value && change({ from: event.target.value })}
                 className={dateInput}
               />
-              <span className="text-sm text-muted">to</span>
+              <span className="text-sm text-muted-foreground">to</span>
               <input
                 type="date"
                 aria-label="Last day"
@@ -156,7 +156,7 @@ export function ExpensesPage() {
           ))}
         </div>
         {list.data && (
-          <p className="text-sm text-muted">
+          <p className="text-sm text-muted-foreground">
             Total <span className="font-mono font-semibold text-text">{cedis(total)}</span>
           </p>
         )}
@@ -173,7 +173,7 @@ export function ExpensesPage() {
           </div>
         )}
         {list.data && shown.length === 0 && (
-          <p className="px-5 py-10 text-center text-sm text-muted">
+          <p className="px-5 py-10 text-center text-sm text-muted-foreground">
             {chips.length ? 'Nothing like that on these days.' : 'Nothing spent on these days.'}
           </p>
         )}
@@ -207,7 +207,7 @@ function ExpenseRow({ expense }: { expense: Expense }) {
           <p className="text-sm font-medium">{EXPENSE_WORDS[expense.category]}</p>
           <Tag>{METHOD_OUT_WORDS[expense.method]}</Tag>
         </div>
-        <p className="mt-0.5 truncate text-xs text-muted">
+        <p className="mt-0.5 truncate text-xs text-muted-foreground">
           {longDate(expense.spentOn)}
           {expense.by ? ` · ${expense.by}` : ''}
           {detail.length ? ` · ${detail.join(' · ')}` : ''}
@@ -229,7 +229,7 @@ function ExpenseRow({ expense }: { expense: Expense }) {
                 removing.mutate();
               }
             }}
-            className="mt-1 text-xs text-muted hover:text-red"
+            className="mt-1 text-xs text-muted-foreground hover:text-red"
           >
             Remove
           </button>
@@ -302,7 +302,7 @@ function AddExpenseDialog({ onClose }: { onClose: () => void }) {
           if (!problem) saving.mutate();
         }}
       >
-        <p className="text-xs text-muted">
+        <p className="text-xs text-muted-foreground">
           Cash paid out of a tablet’s drawer is a payout: record it from Today’s open drawers.
         </p>
         <div className="grid grid-cols-2 gap-3">
@@ -377,7 +377,9 @@ function AddExpenseDialog({ onClose }: { onClose: () => void }) {
             <div className="flex items-center justify-between gap-4">
               <div>
                 <p className="text-sm font-medium">It’s a stock purchase</p>
-                <p className="text-xs text-muted">Adds what was bought to an ingredient’s stock.</p>
+                <p className="text-xs text-muted-foreground">
+                  Adds what was bought to an ingredient’s stock.
+                </p>
               </div>
               <Toggle on={isPurchase} onChange={setIsPurchase} label="It’s a stock purchase" />
             </div>

@@ -20,7 +20,7 @@ export function Page({
       <header className="mb-6 flex flex-wrap items-start justify-between gap-3">
         <div>
           <h1 className="text-2xl font-bold">{title}</h1>
-          {subtitle && <p className="mt-1 text-sm text-muted">{subtitle}</p>}
+          {subtitle && <p className="mt-1 text-sm text-muted-foreground">{subtitle}</p>}
         </div>
         {actions && <div className="flex gap-2">{actions}</div>}
       </header>
@@ -35,7 +35,7 @@ export function ComingSoon({ title, what }: { title: string; what: string }) {
     <Page title={title}>
       <Card className="px-5 py-12 text-center">
         <p className="text-sm font-semibold">Coming soon</p>
-        <p className="mx-auto mt-1 max-w-sm text-sm text-muted">{what}</p>
+        <p className="mx-auto mt-1 max-w-sm text-sm text-muted-foreground">{what}</p>
       </Card>
     </Page>
   );
@@ -59,7 +59,7 @@ export function Centered({
           <span className="text-lg font-semibold">Plateraa</span>
         </div>
         <h1 className="text-2xl font-bold">{title}</h1>
-        {subtitle && <p className="mt-1 text-sm text-muted">{subtitle}</p>}
+        {subtitle && <p className="mt-1 text-sm text-muted-foreground">{subtitle}</p>}
         <div className="mt-6">{children}</div>
       </div>
     </div>

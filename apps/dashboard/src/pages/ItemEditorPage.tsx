@@ -301,7 +301,11 @@ function Editor({ menu, item }: { menu: Menu; item: MenuItem | undefined }) {
   return (
     <div className="fixed inset-0 z-50 flex flex-col bg-bg">
       <div className="flex shrink-0 items-center gap-3 border-b border-border bg-surface px-4 py-4">
-        <Link to="/menu" aria-label="Close" className="px-1 text-2xl leading-none text-muted">
+        <Link
+          to="/menu"
+          aria-label="Close"
+          className="px-1 text-2xl leading-none text-muted-foreground"
+        >
           ×
         </Link>
         <h2 className="flex-1 font-semibold">{item ? 'Edit item' : 'New item'}</h2>
@@ -328,7 +332,9 @@ function Editor({ menu, item }: { menu: Menu; item: MenuItem | undefined }) {
                   onSaved={() => void refreshMenu()}
                 />
               ) : (
-                <p className="text-xs text-muted">You can add a photo once the item is saved.</p>
+                <p className="text-xs text-muted-foreground">
+                  You can add a photo once the item is saved.
+                </p>
               )}
               <div>
                 <FieldLabel htmlFor="item-name">Item name</FieldLabel>
@@ -395,7 +401,7 @@ function Editor({ menu, item }: { menu: Menu; item: MenuItem | undefined }) {
                 ) : (
                   <div>
                     <FieldLabel>Price</FieldLabel>
-                    <p className="flex h-11 items-center text-sm text-muted">
+                    <p className="flex h-11 items-center text-sm text-muted-foreground">
                       Set for each size below
                     </p>
                   </div>
@@ -421,7 +427,7 @@ function Editor({ menu, item }: { menu: Menu; item: MenuItem | undefined }) {
                   <p className={cx('text-sm font-medium', form.soldOut && 'text-amber')}>
                     Sold out today
                   </p>
-                  <p className="text-xs text-muted">Can’t be ordered until tomorrow</p>
+                  <p className="text-xs text-muted-foreground">Can’t be ordered until tomorrow</p>
                 </div>
                 <Toggle
                   on={form.soldOut}
@@ -435,7 +441,9 @@ function Editor({ menu, item }: { menu: Menu; item: MenuItem | undefined }) {
           <Section title={`Sizes${form.sizes.length ? ` (${form.sizes.length})` : ''}`}>
             <div className="space-y-3 p-4">
               {form.sizes.length === 0 && (
-                <p className="text-sm text-muted">No sizes: every order uses the one price.</p>
+                <p className="text-sm text-muted-foreground">
+                  No sizes: every order uses the one price.
+                </p>
               )}
               {form.sizes.map((size, index) => (
                 <div key={size.id} className="flex items-center gap-2">
@@ -483,7 +491,9 @@ function Editor({ menu, item }: { menu: Menu; item: MenuItem | undefined }) {
 
           <Section title={`Extras groups${form.groups.length ? ` (${form.groups.length})` : ''}`}>
             <div className="space-y-5 p-4">
-              {form.groups.length === 0 && <p className="text-sm text-muted">No extras yet.</p>}
+              {form.groups.length === 0 && (
+                <p className="text-sm text-muted-foreground">No extras yet.</p>
+              )}
               {form.groups.map((group, groupIndex) => (
                 <div key={group.id} className="space-y-3 rounded-xl border border-border p-4">
                   <div className="flex items-start gap-2">
@@ -503,7 +513,7 @@ function Editor({ menu, item }: { menu: Menu; item: MenuItem | undefined }) {
                     />
                   </div>
                   {group.sharedWith.length > 0 && (
-                    <p className="text-xs text-muted">
+                    <p className="text-xs text-muted-foreground">
                       Also on {group.sharedWith.join(', ')}. Changes here change it there too.
                     </p>
                   )}
@@ -519,7 +529,7 @@ function Editor({ menu, item }: { menu: Menu; item: MenuItem | undefined }) {
                       />
                       Required
                     </label>
-                    <label className="flex items-center gap-2 text-sm text-muted">
+                    <label className="flex items-center gap-2 text-sm text-muted-foreground">
                       Pick up to
                       <input
                         inputMode="numeric"
@@ -721,14 +731,14 @@ function MoneyInput({
     <div>
       {label && <FieldLabel htmlFor={id}>{label}</FieldLabel>}
       <div className="flex h-11 items-center gap-1 rounded-xl border border-border bg-surface px-3 focus-within:border-brand">
-        <span className="shrink-0 font-mono text-xs text-muted">GH₵</span>
+        <span className="shrink-0 font-mono text-xs text-muted-foreground">GH₵</span>
         <input
           id={id}
           inputMode="decimal"
           value={value}
           placeholder={placeholder}
           onChange={(event) => onChange(event.target.value)}
-          className="w-full min-w-0 flex-1 bg-transparent font-mono text-sm outline-none placeholder:text-muted/60"
+          className="w-full min-w-0 flex-1 bg-transparent font-mono text-sm outline-none placeholder:text-muted-foreground/60"
         />
       </div>
     </div>
@@ -748,7 +758,7 @@ function SmallMoney({
 }) {
   return (
     <div className="flex h-10 w-28 shrink-0 items-center gap-1 rounded-lg border border-border bg-surface px-3 focus-within:border-brand">
-      <span className="shrink-0 font-mono text-xs text-muted">{prefix}</span>
+      <span className="shrink-0 font-mono text-xs text-muted-foreground">{prefix}</span>
       <input
         aria-label={label}
         inputMode="decimal"

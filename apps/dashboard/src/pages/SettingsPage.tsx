@@ -71,7 +71,7 @@ export function SettingsPage() {
       {settings.data && <PaymentsSection settings={settings.data} />}
       {isOwner && <SetupGuideSection />}
       {!isOwner && (
-        <p className="px-1 text-xs text-muted">
+        <p className="px-1 text-xs text-muted-foreground">
           Only the owner changes how orders and payments work.
         </p>
       )}
@@ -84,7 +84,7 @@ function Row({ label, value, action }: { label: string; value: ReactNode; action
     <div className="flex items-center justify-between gap-4 px-5 py-4">
       <span className="text-sm">{label}</span>
       <div className="flex items-center gap-3">
-        <span className="text-right text-sm text-muted">{value}</span>
+        <span className="text-right text-sm text-muted-foreground">{value}</span>
         {action}
       </div>
     </div>
@@ -124,7 +124,9 @@ function BusinessSection({ business }: { business: Settings['business'] }) {
             value={name}
             onChange={(event) => setName(event.target.value)}
           />
-          <p className="mt-1 text-xs text-muted">On receipts, and in the payment link texts.</p>
+          <p className="mt-1 text-xs text-muted-foreground">
+            On receipts, and in the payment link texts.
+          </p>
         </div>
         <div>
           <FieldLabel htmlFor="business-type">Type</FieldLabel>
@@ -195,7 +197,7 @@ function OrdersSection({ orders }: { orders: OrderSettings }) {
       <div className="flex items-center justify-between gap-4 px-5 py-4">
         <div className="flex-1">
           <p className="text-sm font-medium">Lock an idle tablet after</p>
-          <p className="mt-0.5 text-xs text-muted">
+          <p className="mt-0.5 text-xs text-muted-foreground">
             Then the next person unlocks it with their PIN.
           </p>
         </div>
@@ -243,7 +245,7 @@ function DeliverySection() {
           </div>
         )}
         {zones.data?.length === 0 && (
-          <p className="px-5 py-4 text-sm text-muted">
+          <p className="px-5 py-4 text-sm text-muted-foreground">
             No zones yet. Add each area you deliver to with its fee, and the tablet fills in the fee
             when someone picks the zone.
           </p>
@@ -327,7 +329,7 @@ function ZoneDialog({ zone, onClose }: { zone: Zone | null; onClose: () => void 
         <div>
           <FieldLabel htmlFor="zone-fee">Delivery fee</FieldLabel>
           <div className="flex h-11 items-center gap-1 rounded-xl border border-border bg-surface px-3 focus-within:border-brand">
-            <span className="font-mono text-xs text-muted">GH₵</span>
+            <span className="font-mono text-xs text-muted-foreground">GH₵</span>
             <input
               id="zone-fee"
               inputMode="decimal"
@@ -337,7 +339,7 @@ function ZoneDialog({ zone, onClose }: { zone: Zone | null; onClose: () => void 
               className="w-full min-w-0 bg-transparent font-mono text-sm outline-none"
             />
           </div>
-          <p className="mt-1 text-xs text-muted">
+          <p className="mt-1 text-xs text-muted-foreground">
             Staff can still change it on the tablet for one order.
           </p>
         </div>
@@ -395,7 +397,7 @@ function SwitchRowPlain({
     <div className="flex items-center justify-between gap-4">
       <div className="flex-1">
         <p className="text-sm font-medium">{title}</p>
-        <p className="mt-0.5 text-xs text-muted">{detail}</p>
+        <p className="mt-0.5 text-xs text-muted-foreground">{detail}</p>
       </div>
       <Toggle on={on} onChange={onChange} label={title} />
     </div>
@@ -431,7 +433,7 @@ function PaymentsSection({ settings }: { settings: Settings }) {
         />
       </Section>
       {!moolre.connected && (
-        <p className="-mt-3 mb-5 px-1 text-xs text-muted">
+        <p className="-mt-3 mb-5 px-1 text-xs text-muted-foreground">
           Without a Moolre account, payment links can’t go out, so customers can only pay cash.
         </p>
       )}
@@ -493,7 +495,7 @@ function MoolreDialog({ current, onClose }: { current: Settings['moolre']; onClo
           if (ready) saving.mutate();
         }}
       >
-        <p className="text-sm text-muted">
+        <p className="text-sm text-muted-foreground">
           Payment-link money goes straight into this account; it never passes through Plateraa. Find
           these on app.moolre.com. Only the public key is needed, never the private one.
         </p>
@@ -522,7 +524,7 @@ function MoolreDialog({ current, onClose }: { current: Settings['moolre']; onClo
           </Button>
         </div>
         {saving.isPending && (
-          <p className="text-center text-xs text-muted">
+          <p className="text-center text-xs text-muted-foreground">
             Asking Moolre whether it knows this account…
           </p>
         )}
@@ -539,7 +541,7 @@ function SetupGuideSection() {
       <div className="flex items-center justify-between gap-4 px-5 py-4">
         <div className="flex-1">
           <p className="text-sm font-medium">Go through setup again</p>
-          <p className="mt-0.5 text-xs text-muted">
+          <p className="mt-0.5 text-xs text-muted-foreground">
             A starter menu and its prices, staff PINs, Moolre and the tablet, one step at a time.
           </p>
         </div>

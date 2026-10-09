@@ -32,7 +32,7 @@ export function OrderPage() {
     <div className="mx-auto max-w-2xl px-4 py-6 md:px-8">
       <Link
         to={back.back}
-        className="mb-5 inline-flex items-center gap-2 text-sm text-muted transition-colors hover:text-text"
+        className="mb-5 inline-flex items-center gap-2 text-sm text-muted-foreground transition-colors hover:text-text"
       >
         ← {back.label}
       </Link>
@@ -59,7 +59,7 @@ function OrderBody({ order }: { order: OrderDetail }) {
       <div className="mb-6 flex items-start justify-between gap-4">
         <div>
           <h1 className="text-xl font-bold">Order {order.displayNumber}</h1>
-          <p className="mt-0.5 text-sm text-muted">
+          <p className="mt-0.5 text-sm text-muted-foreground">
             {longDate(order.businessDate)} at {clock(order.takenAt)}
             {order.takenBy ? ` · ${order.takenBy}` : ''}
           </p>
@@ -85,7 +85,7 @@ function OrderBody({ order }: { order: OrderDetail }) {
 
       {order.status === 'CANCELLED' && order.cancelReason && (
         <p className="mb-4 rounded-xl bg-tile px-5 py-3 text-sm">
-          Cancelled: <span className="text-muted">{order.cancelReason}</span>
+          Cancelled: <span className="text-muted-foreground">{order.cancelReason}</span>
         </p>
       )}
 
@@ -112,18 +112,24 @@ function OrderBody({ order }: { order: OrderDetail }) {
           >
             <div className="min-w-0">
               <p className="text-sm">
-                {line.quantity > 1 && <span className="text-muted">{line.quantity} × </span>}
+                {line.quantity > 1 && (
+                  <span className="text-muted-foreground">{line.quantity} × </span>
+                )}
                 {line.name}
-                {line.variantName && <span className="text-muted"> ({line.variantName})</span>}
+                {line.variantName && (
+                  <span className="text-muted-foreground"> ({line.variantName})</span>
+                )}
               </p>
               {line.modifiers.map((modifier) => (
-                <p key={modifier.name} className="mt-0.5 text-xs text-muted">
+                <p key={modifier.name} className="mt-0.5 text-xs text-muted-foreground">
                   + {modifier.name}
                   {modifier.quantity > 1 ? ` × ${modifier.quantity}` : ''}
                   {modifier.unitPriceDelta !== 0 ? ` (${cedis(modifier.unitPriceDelta)})` : ''}
                 </p>
               ))}
-              {line.note && <p className="mt-0.5 text-xs text-muted italic">“{line.note}”</p>}
+              {line.note && (
+                <p className="mt-0.5 text-xs text-muted-foreground italic">“{line.note}”</p>
+              )}
             </div>
             <p className="shrink-0 font-mono text-sm">{cedis(line.lineTotal)}</p>
           </div>
@@ -172,10 +178,10 @@ function OrderBody({ order }: { order: OrderDetail }) {
               <p className="text-sm">
                 {METHOD_WORDS[payment.method]}
                 {payment.status !== 'CONFIRMED' && (
-                  <span className="text-muted"> ({payment.status.toLowerCase()})</span>
+                  <span className="text-muted-foreground"> ({payment.status.toLowerCase()})</span>
                 )}
               </p>
-              <p className="text-xs text-muted">
+              <p className="text-xs text-muted-foreground">
                 {clock(payment.at)}
                 {payment.by ? ` · ${payment.by}` : ''}
                 {payment.tendered !== null && payment.tendered > payment.amount
@@ -193,7 +199,7 @@ function OrderBody({ order }: { order: OrderDetail }) {
           >
             <div>
               <p className="text-sm">Refund given · {METHOD_WORDS[refund.method]}</p>
-              <p className="text-xs text-muted">
+              <p className="text-xs text-muted-foreground">
                 {clock(refund.at)}
                 {refund.by ? ` · ${refund.by}` : ''} · {refund.reason}
               </p>
@@ -216,7 +222,7 @@ function OrderBody({ order }: { order: OrderDetail }) {
               >
                 {words.text}
               </p>
-              <p className="text-xs text-muted">
+              <p className="text-xs text-muted-foreground">
                 {cedis(link.amount)} · asked for at {clock(link.at)}
               </p>
             </div>
@@ -261,7 +267,7 @@ function OrderBody({ order }: { order: OrderDetail }) {
             {order.history.map((event, index) => (
               <li key={index} className="flex items-center justify-between gap-4 py-2 text-sm">
                 <span>{STATUS_WORDS[event.to]}</span>
-                <span className="text-xs text-muted">
+                <span className="text-xs text-muted-foreground">
                   {clock(event.at)}
                   {event.by ? ` · ${event.by}` : ''}
                 </span>
@@ -288,7 +294,7 @@ function CardTitle({ children }: { children: ReactNode }) {
 function Line({ label, value }: { label: string; value: string }) {
   return (
     <div className="flex items-center justify-between border-b border-border px-5 py-3 text-sm">
-      <span className="text-muted">{label}</span>
+      <span className="text-muted-foreground">{label}</span>
       <span className="font-mono">{value}</span>
     </div>
   );
@@ -297,7 +303,7 @@ function Line({ label, value }: { label: string; value: string }) {
 function Pair({ label, value, strong }: { label: string; value: string; strong?: boolean }) {
   return (
     <div className="flex items-start justify-between gap-4">
-      <span className="text-sm text-muted">{label}</span>
+      <span className="text-sm text-muted-foreground">{label}</span>
       <span className={cx('text-right text-sm', strong && 'font-semibold text-amber')}>
         {value}
       </span>

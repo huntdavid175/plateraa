@@ -7,7 +7,7 @@ export const cx = (...names: (string | false | null | undefined)[]) =>
 const BUTTON_VARIANTS = {
   primary: 'bg-brand text-brand-fg',
   secondary: 'bg-tile text-text border border-border',
-  ghost: 'bg-transparent text-muted border border-border',
+  ghost: 'bg-transparent text-muted-foreground border border-border',
   danger: 'bg-red text-white',
 } as const;
 
@@ -95,7 +95,7 @@ const BADGE_TONES = {
   amber: 'bg-amber-bg text-amber',
   red: 'bg-red-bg text-red',
   blue: 'bg-blue-bg text-blue',
-  neutral: 'bg-tile text-muted',
+  neutral: 'bg-tile text-muted-foreground',
 } as const;
 
 /** A coloured pill for a status: Paid, Unpaid, Refund owed, … */
@@ -115,7 +115,7 @@ export function Badge({ tone, children }: { tone: keyof typeof BADGE_TONES; chil
 /** A grey tag for what kind of order it is: Dine-in, Pickup, Delivery. */
 export function Tag({ children }: { children: ReactNode }) {
   return (
-    <span className="inline-flex items-center rounded bg-tile px-2 py-0.5 text-xs font-medium text-muted">
+    <span className="inline-flex items-center rounded bg-tile px-2 py-0.5 text-xs font-medium text-muted-foreground">
       {children}
     </span>
   );
@@ -125,7 +125,7 @@ export function FieldLabel({ htmlFor, children }: { htmlFor?: string; children: 
   return (
     <label
       htmlFor={htmlFor}
-      className="mb-1.5 block text-xs font-semibold tracking-wide text-muted uppercase"
+      className="mb-1.5 block text-xs font-semibold tracking-wide text-muted-foreground uppercase"
     >
       {children}
     </label>
@@ -136,7 +136,7 @@ export function TextInput({ className, ...rest }: InputHTMLAttributes<HTMLInputE
   return (
     <input
       className={cx(
-        'h-11 w-full rounded-xl border border-border bg-surface px-4 text-sm text-text outline-none transition-colors placeholder:text-muted focus:border-brand',
+        'h-11 w-full rounded-xl border border-border bg-surface px-4 text-sm text-text outline-none transition-colors placeholder:text-muted-foreground focus:border-brand',
         className,
       )}
       {...rest}
@@ -184,7 +184,7 @@ export function PillFilter<T extends string>({
           onClick={() => onChange(option.value)}
           className={cx(
             'h-7 shrink-0 rounded-md px-3 text-sm font-medium transition-colors',
-            value === option.value ? 'bg-tile text-text' : 'text-muted hover:text-text',
+            value === option.value ? 'bg-tile text-text' : 'text-muted-foreground hover:text-text',
           )}
         >
           {option.label}
@@ -198,7 +198,7 @@ export function PillFilter<T extends string>({
 export function Section({ title, children }: { title: string; children: ReactNode }) {
   return (
     <section className="mb-5">
-      <h2 className="mb-2 px-1 text-xs font-semibold tracking-wider text-muted uppercase">
+      <h2 className="mb-2 px-1 text-xs font-semibold tracking-wider text-muted-foreground uppercase">
         {title}
       </h2>
       <Card className="divide-y divide-border overflow-hidden">{children}</Card>
@@ -224,7 +224,7 @@ export function SwitchRow({
     <div className="flex items-center justify-between gap-4 px-5 py-4">
       <div className="flex-1">
         <p className="text-sm font-medium">{title}</p>
-        <p className="mt-0.5 text-xs text-muted">{detail}</p>
+        <p className="mt-0.5 text-xs text-muted-foreground">{detail}</p>
       </div>
       <Toggle on={on} onChange={onChange} label={title} disabled={disabled} />
     </div>

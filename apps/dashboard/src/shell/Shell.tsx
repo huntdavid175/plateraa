@@ -133,7 +133,7 @@ function Sidebar({ me, nav }: { me: Me; nav: NavItem[] }) {
                 'flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition-colors',
                 isActive
                   ? 'bg-brand-subtle text-brand'
-                  : 'text-muted hover:bg-tile hover:text-text',
+                  : 'text-muted-foreground hover:bg-tile hover:text-text',
               )
             }
           >
@@ -152,14 +152,14 @@ function Sidebar({ me, nav }: { me: Me; nav: NavItem[] }) {
           <Avatar name={me.displayName} />
           <div className="min-w-0 flex-1">
             <div className="truncate text-sm font-medium">{me.displayName}</div>
-            <div className="text-xs text-muted">{ROLE_WORDS[me.role]}</div>
+            <div className="text-xs text-muted-foreground">{ROLE_WORDS[me.role]}</div>
           </div>
           <button
             type="button"
             onClick={signOutAndForget}
             title="Sign out"
             aria-label="Sign out"
-            className="rounded-lg p-1.5 text-muted transition-colors hover:bg-tile hover:text-text"
+            className="rounded-lg p-1.5 text-muted-foreground transition-colors hover:bg-tile hover:text-text"
           >
             <SignOutIcon size={16} />
           </button>
@@ -178,7 +178,7 @@ function BusinessBlock({ me }: { me: Me }) {
         <img src="/logo.png" alt="" className="h-8 w-8 shrink-0" />
         <div className="min-w-0">
           <div className="truncate text-sm font-semibold">{me.businessName}</div>
-          <div className="text-xs text-muted">{VENDOR_TYPE_WORDS[me.vendorType]}</div>
+          <div className="text-xs text-muted-foreground">{VENDOR_TYPE_WORDS[me.vendorType]}</div>
         </div>
       </div>
       {canSwitch && (
@@ -192,7 +192,7 @@ function BusinessBlock({ me }: { me: Me }) {
 
 function Avatar({ name }: { name: string }) {
   return (
-    <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-tile text-xs font-bold text-muted">
+    <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-tile text-xs font-bold text-muted-foreground">
       {name.trim().charAt(0).toUpperCase() || '?'}
     </div>
   );
@@ -215,7 +215,7 @@ function PhoneHeader({ me, overflow }: { me: Me; overflow: NavItem[] }) {
           type="button"
           onClick={() => setOpen(true)}
           aria-label="More"
-          className="rounded-lg p-2 text-muted hover:bg-tile"
+          className="rounded-lg p-2 text-muted-foreground hover:bg-tile"
         >
           <MoreIcon size={20} />
         </button>
@@ -252,7 +252,7 @@ function PhoneHeader({ me, overflow }: { me: Me; overflow: NavItem[] }) {
               <Avatar name={me.displayName} />
               <div className="min-w-0 flex-1">
                 <div className="truncate text-sm font-medium">{me.displayName}</div>
-                <div className="text-xs text-muted">{ROLE_WORDS[me.role]}</div>
+                <div className="text-xs text-muted-foreground">{ROLE_WORDS[me.role]}</div>
               </div>
               <Button variant="ghost" small onClick={signOutAndForget}>
                 Sign out
@@ -276,7 +276,7 @@ function BottomBar({ nav }: { nav: NavItem[] }) {
           className={({ isActive }) =>
             cx(
               'flex flex-1 flex-col items-center gap-1 py-2.5 text-xs font-medium',
-              isActive ? 'text-brand' : 'text-muted',
+              isActive ? 'text-brand' : 'text-muted-foreground',
             )
           }
         >

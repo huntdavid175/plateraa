@@ -58,7 +58,7 @@ export function StockPage() {
           </div>
         )}
         {stock.data?.length === 0 && (
-          <p className="px-5 py-10 text-center text-sm text-muted">
+          <p className="px-5 py-10 text-center text-sm text-muted-foreground">
             No ingredients yet. Add the ones you buy often, like rice, oil or gas.
           </p>
         )}
@@ -72,7 +72,7 @@ export function StockPage() {
                 <p className="text-sm font-medium">{item.name}</p>
                 {item.low && <Badge tone="amber">Running low</Badge>}
               </div>
-              <p className="mt-0.5 text-xs text-muted">
+              <p className="mt-0.5 text-xs text-muted-foreground">
                 <span className="font-mono text-text">{item.onHand}</span> {item.unit}
                 {item.lowThreshold !== null ? ` · low at ${item.lowThreshold}` : ''}
               </p>
@@ -243,7 +243,7 @@ function CountDialog({ item, onClose }: { item: StockItem; onClose: () => void }
           if (counted !== null) saving.mutate();
         }}
       >
-        <p className="text-sm text-muted">
+        <p className="text-sm text-muted-foreground">
           Plateraa expects {item.onHand} {item.unit}. Count what’s really there.
         </p>
         <div>

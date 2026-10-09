@@ -109,13 +109,13 @@ function StaffRow({
 }) {
   return (
     <div className="flex items-center gap-4 border-b border-border px-5 py-4 last:border-b-0">
-      <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-tile text-sm font-bold text-muted">
+      <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-tile text-sm font-bold text-muted-foreground">
         {member.displayName.trim().charAt(0).toUpperCase() || '?'}
       </div>
       <div className="min-w-0 flex-1">
         <p className="truncate text-sm font-medium">
           {member.displayName}
-          {member.you && <span className="text-muted"> (you)</span>}
+          {member.you && <span className="text-muted-foreground"> (you)</span>}
         </p>
         <div className="mt-1 flex flex-wrap items-center gap-1.5">
           <Tag>{ROLE_WORDS[member.role]}</Tag>
@@ -132,7 +132,11 @@ function StaffRow({
           }
         />
         {editable && (
-          <button type="button" onClick={onEdit} className="text-sm text-muted hover:text-text">
+          <button
+            type="button"
+            onClick={onEdit}
+            className="text-sm text-muted-foreground hover:text-text"
+          >
             Edit
           </button>
         )}
@@ -163,7 +167,7 @@ function RevenueCard({ byRole }: { byRole: RevenueByRole }) {
     <Card className="mb-6 overflow-hidden">
       <div className="border-b border-border px-5 py-4">
         <p className="text-sm font-semibold">Who sees sales totals</p>
-        <p className="mt-0.5 text-xs text-muted">
+        <p className="mt-0.5 text-xs text-muted-foreground">
           Sales totals, profit and margins, on the dashboard and the tablet. A person can be set
           differently from their role under Edit.
         </p>
@@ -204,13 +208,13 @@ function TabletsCard({ tablets }: { tablets: Tablet[] }) {
     <Card className="overflow-hidden">
       <div className="border-b border-border px-5 py-4">
         <p className="text-sm font-semibold">Tablets</p>
-        <p className="mt-0.5 text-xs text-muted">
+        <p className="mt-0.5 text-xs text-muted-foreground">
           To add one: install Plateraa on the tablet, sign in with your email and pick this
           business.
         </p>
       </div>
       {tablets.length === 0 && (
-        <p className="px-5 py-6 text-sm text-muted">No tablet is set up yet.</p>
+        <p className="px-5 py-6 text-sm text-muted-foreground">No tablet is set up yet.</p>
       )}
       {tablets.map((tablet) => (
         <div
@@ -220,11 +224,11 @@ function TabletsCard({ tablets }: { tablets: Tablet[] }) {
           <div className="min-w-0 flex-1">
             <p className="text-sm font-medium">
               {tablet.name}{' '}
-              <span className="text-muted">
+              <span className="text-muted-foreground">
                 · orders {tablet.code}1, {tablet.code}2…
               </span>
             </p>
-            <p className="mt-0.5 text-xs text-muted">
+            <p className="mt-0.5 text-xs text-muted-foreground">
               {tablet.signedOut
                 ? 'Signed out'
                 : tablet.lastSeenAt
@@ -343,7 +347,7 @@ function RolePicker({
     <div>
       <FieldLabel>Role</FieldLabel>
       <PillFilter label="Role" options={options} value={value} onChange={onChange} />
-      <p className="mt-1.5 text-xs text-muted">
+      <p className="mt-1.5 text-xs text-muted-foreground">
         {value === 'MANAGER'
           ? 'Managers can also give refunds, pay out and set up the menu. They sign in to this dashboard with their own email.'
           : value === 'RIDER'
@@ -391,7 +395,7 @@ function AddStaffDialog({ isOwner, onClose }: { isOwner: boolean; onClose: () =>
         </div>
         <RolePicker value={role} onChange={setRole} isOwner={isOwner} />
         <PinFields pin={pin} again={again} onPin={setPin} onAgain={setAgain} label="Their PIN" />
-        <p className="text-xs text-muted">
+        <p className="text-xs text-muted-foreground">
           They unlock the tablet with it. Tell them in person; it isn’t shown anywhere.
         </p>
         {pin.length === 6 && problem && <p className="text-xs text-amber">{problem}</p>}
@@ -478,7 +482,7 @@ function EditStaffDialog({
           <div className="flex items-center justify-between rounded-xl bg-tile px-4 py-3">
             <div>
               <p className="text-sm font-medium">Switched on</p>
-              <p className="text-xs text-muted">
+              <p className="text-xs text-muted-foreground">
                 Switched off, they can’t unlock a tablet or sign in.
               </p>
             </div>
@@ -504,7 +508,7 @@ function EditStaffDialog({
             onAgain={setAgain}
             label={member.hasPin ? 'New PIN (optional)' : 'PIN'}
           />
-          <p className="mt-1.5 text-xs text-muted">
+          <p className="mt-1.5 text-xs text-muted-foreground">
             {member.pinLocked
               ? 'Their PIN is locked after too many wrong tries. A new PIN unlocks it.'
               : 'Leave blank to keep their PIN.'}

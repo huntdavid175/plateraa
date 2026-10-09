@@ -40,7 +40,7 @@ export function CustomerPage() {
     <div className="mx-auto max-w-2xl px-4 py-6 md:px-8">
       <Link
         to={back.back}
-        className="mb-5 inline-flex items-center gap-2 text-sm text-muted transition-colors hover:text-text"
+        className="mb-5 inline-flex items-center gap-2 text-sm text-muted-foreground transition-colors hover:text-text"
       >
         ← {back.label}
       </Link>
@@ -68,7 +68,9 @@ function CustomerBody({ customer }: { customer: CustomerDetail }) {
       <div className="mb-6">
         <h1 className="text-xl font-bold">{title}</h1>
         {customer.name && (
-          <p className="mt-0.5 font-mono text-sm text-muted">{phoneWords(customer.phone)}</p>
+          <p className="mt-0.5 font-mono text-sm text-muted-foreground">
+            {phoneWords(customer.phone)}
+          </p>
         )}
       </div>
 
@@ -103,7 +105,7 @@ function CustomerBody({ customer }: { customer: CustomerDetail }) {
           <h2 className="text-sm font-semibold">Their orders</h2>
         </div>
         {customer.recentOrders.length === 0 && (
-          <p className="px-5 py-8 text-center text-sm text-muted">No orders yet.</p>
+          <p className="px-5 py-8 text-center text-sm text-muted-foreground">No orders yet.</p>
         )}
         {customer.recentOrders.map((order) => {
           const state = paymentState(order);
@@ -116,8 +118,12 @@ function CustomerBody({ customer }: { customer: CustomerDetail }) {
             >
               <div className="min-w-0 flex-1">
                 <div className="flex items-center gap-2">
-                  <span className="font-mono text-xs text-muted">{order.displayNumber}</span>
-                  <span className="text-xs text-muted">{shortDate(order.businessDate)}</span>
+                  <span className="font-mono text-xs text-muted-foreground">
+                    {order.displayNumber}
+                  </span>
+                  <span className="text-xs text-muted-foreground">
+                    {shortDate(order.businessDate)}
+                  </span>
                   <Tag>{kindWords(order)}</Tag>
                 </div>
                 <p className="mt-0.5 truncate text-sm">{orderLine(order.items)}</p>
@@ -133,7 +139,7 @@ function CustomerBody({ customer }: { customer: CustomerDetail }) {
         })}
       </Card>
       {customer.recentOrders.length > 0 && customer.recentOrders.length < customer.orders && (
-        <p className="mt-3 text-center text-xs text-muted">
+        <p className="mt-3 text-center text-xs text-muted-foreground">
           Showing their latest {customer.recentOrders.length} orders.
         </p>
       )}
@@ -189,10 +195,10 @@ function EditCustomerDialog({
             placeholder="e.g. Gate is on the left, call on arrival"
             value={notes}
             onChange={(event) => setNotes(event.target.value)}
-            className="w-full rounded-xl border border-border bg-surface px-4 py-3 text-sm text-text outline-none transition-colors placeholder:text-muted focus:border-brand"
+            className="w-full rounded-xl border border-border bg-surface px-4 py-3 text-sm text-text outline-none transition-colors placeholder:text-muted-foreground focus:border-brand"
           />
         </div>
-        <p className="text-xs text-muted">
+        <p className="text-xs text-muted-foreground">
           The number can’t change: it’s how the tablet knows them. Tablets get these at their next
           sync.
         </p>
@@ -213,9 +219,9 @@ function EditCustomerDialog({
 function Stat({ label, value, sub }: { label: string; value: string; sub?: string }) {
   return (
     <Card className="p-4">
-      <p className="mb-1 text-xs text-muted">{label}</p>
+      <p className="mb-1 text-xs text-muted-foreground">{label}</p>
       <p className="font-mono text-lg font-semibold">{value}</p>
-      {sub && <p className="mt-0.5 text-xs text-muted">{sub}</p>}
+      {sub && <p className="mt-0.5 text-xs text-muted-foreground">{sub}</p>}
     </Card>
   );
 }
@@ -223,7 +229,7 @@ function Stat({ label, value, sub }: { label: string; value: string; sub?: strin
 function Pair({ label, value }: { label: string; value: string }) {
   return (
     <div className="flex items-start justify-between gap-4">
-      <span className="text-sm text-muted">{label}</span>
+      <span className="text-sm text-muted-foreground">{label}</span>
       <span className="text-right text-sm whitespace-pre-line">{value}</span>
     </div>
   );

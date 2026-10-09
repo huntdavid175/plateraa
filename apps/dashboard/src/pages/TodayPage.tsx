@@ -85,7 +85,7 @@ export function TodayPage() {
             value={date}
             max={here}
             onChange={(event) => pick(event.target.value)}
-            className="h-9 rounded-lg border border-border bg-surface px-3 text-sm font-medium text-muted outline-none focus:border-brand"
+            className="h-9 rounded-lg border border-border bg-surface px-3 text-sm font-medium text-muted-foreground outline-none focus:border-brand"
           />
         </>
       }
@@ -110,7 +110,7 @@ export function TodayPage() {
       ) : (
         <Card className="mb-6 px-5 py-4">
           <p className="text-sm font-medium">Sales totals are hidden for you</p>
-          <p className="mt-0.5 text-sm text-muted">
+          <p className="mt-0.5 text-sm text-muted-foreground">
             The owner decides who sees them, on the Staff page.
           </p>
         </Card>
@@ -188,7 +188,7 @@ function OpenDrawers({ drawers }: { drawers: Drawer[] }) {
     <Card className="mb-6 overflow-hidden">
       <div className="border-b border-border px-5 py-4">
         <h2 className="font-semibold">Open drawers</h2>
-        <p className="mt-0.5 text-xs text-muted">
+        <p className="mt-0.5 text-xs text-muted-foreground">
           Cash paid out of a drawer is recorded here. The tablet can’t record it.
         </p>
       </div>
@@ -199,7 +199,7 @@ function OpenDrawers({ drawers }: { drawers: Drawer[] }) {
         >
           <div className="min-w-0 flex-1">
             <p className="text-sm font-medium">{drawer.deviceName}</p>
-            <p className="mt-0.5 text-xs text-muted">
+            <p className="mt-0.5 text-xs text-muted-foreground">
               Opened {clock(drawer.openedAt)}
               {drawer.openedBy ? ` by ${drawer.openedBy}` : ''}
               {drawer.expectedCash !== null
@@ -277,11 +277,13 @@ function Figures({
       </div>
 
       <Card className="mb-6 p-5">
-        <p className="text-xs font-medium tracking-wide text-muted uppercase">Orders by hour</p>
+        <p className="text-xs font-medium tracking-wide text-muted-foreground uppercase">
+          Orders by hour
+        </p>
         {busiest ? (
           <>
             <p className="mt-1 text-2xl font-semibold">{hourRange(busiest.hour)}</p>
-            <p className="mt-0.5 mb-4 text-xs text-muted">
+            <p className="mt-0.5 mb-4 text-xs text-muted-foreground">
               Busiest hour · {busiest.orders === 1 ? '1 order' : `${busiest.orders} orders`}
             </p>
             <Suspense fallback={<div className="h-[150px]" />}>
@@ -289,7 +291,7 @@ function Figures({
             </Suspense>
           </>
         ) : (
-          <p className="py-8 text-center text-sm text-muted">
+          <p className="py-8 text-center text-sm text-muted-foreground">
             {isToday ? 'No orders yet today.' : 'No orders on this day.'}
           </p>
         )}
@@ -335,11 +337,11 @@ function Metric({
         accent ? 'border-brand/25 bg-brand-subtle' : 'border-border bg-surface',
       )}
     >
-      <p className="mb-2 text-xs font-medium text-muted">{label}</p>
+      <p className="mb-2 text-xs font-medium text-muted-foreground">{label}</p>
       <p className={cx('font-mono text-lg font-semibold', accent ? 'text-brand' : 'text-text')}>
         {value}
       </p>
-      {sub && <p className="mt-1 text-xs text-muted">{sub}</p>}
+      {sub && <p className="mt-1 text-xs text-muted-foreground">{sub}</p>}
     </Link>
   );
 }
@@ -361,9 +363,11 @@ function TypeCard({
       to={to}
       className="block rounded-xl border border-border bg-surface p-4 transition-colors hover:border-brand/50"
     >
-      <p className="mb-1 text-xs text-muted">{label}</p>
+      <p className="mb-1 text-xs text-muted-foreground">{label}</p>
       <p className="font-mono font-medium">{cedis(sales)}</p>
-      <p className="mt-0.5 text-xs text-muted">{orders === 1 ? '1 order' : `${orders} orders`}</p>
+      <p className="mt-0.5 text-xs text-muted-foreground">
+        {orders === 1 ? '1 order' : `${orders} orders`}
+      </p>
     </Link>
   );
 }
@@ -400,7 +404,7 @@ function RecentOrders({
     );
   } else if (!orders || orders.length === 0) {
     body = (
-      <p className="px-5 py-8 text-center text-sm text-muted">
+      <p className="px-5 py-8 text-center text-sm text-muted-foreground">
         {date ? 'No orders on this day.' : 'No orders yet today.'}
       </p>
     );
@@ -416,7 +420,7 @@ function RecentOrders({
         >
           <div className="min-w-0 flex-1">
             <div className="flex items-center gap-2">
-              <span className="font-mono text-xs text-muted">{order.displayNumber}</span>
+              <span className="font-mono text-xs text-muted-foreground">{order.displayNumber}</span>
               <Tag>{kindWords(order)}</Tag>
             </div>
             <p className="mt-0.5 truncate text-sm">{orderLine(order.items)}</p>

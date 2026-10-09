@@ -22,7 +22,7 @@ function useChartColours() {
     return {
       brand: read('--brand'),
       border: read('--border'),
-      muted: read('--muted'),
+      muted: read('--muted-foreground'),
       surface: read('--surface'),
       text: read('--text'),
       dark,

@@ -51,7 +51,7 @@ export function MenuPage() {
           🍽️
         </div>
         <h2 className="mb-2 text-xl font-bold">No menu items yet</h2>
-        <p className="mb-8 text-sm text-muted">
+        <p className="mb-8 text-sm text-muted-foreground">
           Add your first item to start taking orders on the tablet.
         </p>
         <Link
@@ -104,11 +104,11 @@ export function MenuPage() {
             onClick={() => setCategory(pill.id)}
             className={cx(
               'h-8 shrink-0 rounded-lg px-4 text-sm font-medium transition-all',
-              category === pill.id ? 'bg-surface text-text shadow-sm' : 'text-muted',
+              category === pill.id ? 'bg-surface text-text shadow-sm' : 'text-muted-foreground',
             )}
           >
             {pill.name}
-            <span className="ml-1.5 text-xs text-muted">{pill.count}</span>
+            <span className="ml-1.5 text-xs text-muted-foreground">{pill.count}</span>
           </button>
         ))}
       </div>
@@ -149,7 +149,7 @@ function ItemCard({ item, seesMoney }: { item: MenuItem; seesMoney: boolean }) {
           <p className="text-sm font-semibold">{item.name}</p>
           {item.soldOutToday && <Badge tone="amber">Sold out today</Badge>}
         </div>
-        <div className="mt-1.5 flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-muted">
+        <div className="mt-1.5 flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-muted-foreground">
           {item.variants.length > 0 ? (
             item.variants.map((variant) => (
               <span key={variant.id} className="font-mono">
@@ -169,7 +169,7 @@ function ItemCard({ item, seesMoney }: { item: MenuItem; seesMoney: boolean }) {
         </div>
         {seesMoney && item.costPrice !== null && (
           <div className="mt-2 flex items-center gap-2">
-            <span className="text-xs text-muted">Cost {cedis(item.costPrice)}</span>
+            <span className="text-xs text-muted-foreground">Cost {cedis(item.costPrice)}</span>
             {margin !== null && <Badge tone={marginTone(margin)}>{margin}% margin</Badge>}
           </div>
         )}
@@ -190,7 +190,7 @@ function ItemCard({ item, seesMoney }: { item: MenuItem; seesMoney: boolean }) {
             'rounded-lg border px-3 py-1.5 text-xs font-semibold transition-colors',
             item.soldOutToday
               ? 'border-green/40 text-green'
-              : 'border-border text-muted hover:border-amber hover:text-amber',
+              : 'border-border text-muted-foreground hover:border-amber hover:text-amber',
           )}
         >
           {item.soldOutToday ? 'Back in stock' : 'Mark sold out'}

@@ -159,7 +159,7 @@ export function OrdersPage() {
               const value = event.target.value || here;
               change({ date: value === here ? null : value });
             }}
-            className="h-9 rounded-lg border border-border bg-surface px-3 text-sm font-medium text-muted outline-none focus:border-brand"
+            className="h-9 rounded-lg border border-border bg-surface px-3 text-sm font-medium text-muted-foreground outline-none focus:border-brand"
           />
         )
       }
@@ -203,7 +203,7 @@ export function OrdersPage() {
       </div>
 
       <Card className="overflow-hidden">
-        <div className="hidden grid-cols-[1fr_1.5fr_1fr_1fr_1fr] gap-4 border-b border-border px-5 py-3 text-xs font-semibold tracking-wide text-muted uppercase md:grid">
+        <div className="hidden grid-cols-[1fr_1.5fr_1fr_1fr_1fr] gap-4 border-b border-border px-5 py-3 text-xs font-semibold tracking-wide text-muted-foreground uppercase md:grid">
           <span>{range ? 'Day · Number' : 'Time · Number'}</span>
           <span>Items</span>
           <span>Type</span>
@@ -221,7 +221,7 @@ export function OrdersPage() {
           </div>
         )}
         {orders.data && rows.length === 0 && (
-          <p className="px-5 py-10 text-center text-sm text-muted">
+          <p className="px-5 py-10 text-center text-sm text-muted-foreground">
             {filtered
               ? 'No orders match this filter.'
               : range
@@ -234,7 +234,7 @@ export function OrdersPage() {
         ))}
       </Card>
       {rows.length === LIMIT && (
-        <p className="mt-3 text-center text-xs text-muted">
+        <p className="mt-3 text-center text-xs text-muted-foreground">
           Showing the latest {LIMIT} orders. Narrow the days or the filters to see the rest.
         </p>
       )}
@@ -245,7 +245,7 @@ export function OrdersPage() {
 function Stat({ label, value }: { label: string; value: string }) {
   return (
     <Card className="p-4">
-      <p className="mb-1 text-xs text-muted">{label}</p>
+      <p className="mb-1 text-xs text-muted-foreground">{label}</p>
       <p className="font-mono text-xl font-semibold">{value}</p>
     </Card>
   );
@@ -274,7 +274,7 @@ function OrderRowLink({
     >
       <div className="hidden grid-cols-[1fr_1.5fr_1fr_1fr_1fr] items-center gap-4 px-5 py-3.5 md:grid">
         <div>
-          <p className="font-mono text-xs text-muted">{order.displayNumber}</p>
+          <p className="font-mono text-xs text-muted-foreground">{order.displayNumber}</p>
           <p className="mt-0.5 text-sm">{when}</p>
         </div>
         <p className="truncate text-sm">{orderLine(order.items)}</p>
@@ -287,11 +287,11 @@ function OrderRowLink({
       <div className="flex items-center gap-4 px-4 py-3.5 md:hidden">
         <div className="min-w-0 flex-1">
           <div className="mb-0.5 flex items-center gap-2">
-            <span className="font-mono text-xs text-muted">{order.displayNumber}</span>
+            <span className="font-mono text-xs text-muted-foreground">{order.displayNumber}</span>
             <Tag>{kindWords(order)}</Tag>
           </div>
           <p className="truncate text-sm">{orderLine(order.items)}</p>
-          <p className="mt-0.5 text-xs text-muted">
+          <p className="mt-0.5 text-xs text-muted-foreground">
             {when}
             {order.takenBy ? ` · ${order.takenBy}` : ''}
           </p>

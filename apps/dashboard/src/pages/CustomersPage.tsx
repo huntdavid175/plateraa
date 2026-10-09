@@ -61,7 +61,7 @@ export function CustomersPage() {
       <Card className="overflow-hidden">
         <div
           className={cx(
-            'hidden gap-4 border-b border-border px-5 py-3 text-xs font-semibold tracking-wide text-muted uppercase md:grid',
+            'hidden gap-4 border-b border-border px-5 py-3 text-xs font-semibold tracking-wide text-muted-foreground uppercase md:grid',
             columns,
           )}
         >
@@ -82,7 +82,7 @@ export function CustomersPage() {
           </div>
         )}
         {list.data?.length === 0 && (
-          <p className="px-5 py-10 text-center text-sm text-muted">
+          <p className="px-5 py-10 text-center text-sm text-muted-foreground">
             {search
               ? `No one matches “${search}”.`
               : 'No customers yet. The tablet adds one whenever an order is taken with the customer’s number: phone orders and deliveries.'}
@@ -98,7 +98,7 @@ export function CustomersPage() {
         ))}
       </Card>
       {list.data?.length === CUSTOMER_LIST_SIZE && (
-        <p className="mt-3 text-center text-xs text-muted">
+        <p className="mt-3 text-center text-xs text-muted-foreground">
           Showing the {CUSTOMER_LIST_SIZE} who ordered most recently. Search to find anyone else.
         </p>
       )}
@@ -122,20 +122,27 @@ function CustomerLink({
       className="block border-b border-border transition-colors last:border-b-0 hover:bg-tile/40"
     >
       <div className={cx('hidden items-center gap-4 px-5 py-3.5 md:grid', columns)}>
-        <p className={cx('truncate text-sm font-medium', !customer.name && 'text-muted')}>
+        <p
+          className={cx('truncate text-sm font-medium', !customer.name && 'text-muted-foreground')}
+        >
           {customer.name ?? 'No name'}
         </p>
-        <p className="font-mono text-sm text-muted">{phoneWords(customer.phone)}</p>
+        <p className="font-mono text-sm text-muted-foreground">{phoneWords(customer.phone)}</p>
         <p className="text-right font-mono text-sm">{customer.orders}</p>
-        <p className="text-sm text-muted">{last}</p>
+        <p className="text-sm text-muted-foreground">{last}</p>
         {seesMoney && <p className="text-right font-mono text-sm">{cedis(customer.spent ?? 0)}</p>}
       </div>
       <div className="flex items-center gap-4 px-4 py-3.5 md:hidden">
         <div className="min-w-0 flex-1">
-          <p className={cx('truncate text-sm font-medium', !customer.name && 'text-muted')}>
+          <p
+            className={cx(
+              'truncate text-sm font-medium',
+              !customer.name && 'text-muted-foreground',
+            )}
+          >
             {customer.name ?? 'No name'}
           </p>
-          <p className="mt-0.5 text-xs text-muted">
+          <p className="mt-0.5 text-xs text-muted-foreground">
             {phoneWords(customer.phone)} · {orderWords(customer.orders)}
           </p>
         </div>
@@ -143,7 +150,7 @@ function CustomerLink({
           {seesMoney && (
             <p className="font-mono text-sm font-semibold">{cedis(customer.spent ?? 0)}</p>
           )}
-          <p className="mt-0.5 text-xs text-muted">{last}</p>
+          <p className="mt-0.5 text-xs text-muted-foreground">{last}</p>
         </div>
       </div>
     </Link>

@@ -70,7 +70,7 @@ export function ReportsPage() {
     if (value) setParams({ range: 'pick', from, to, [key]: value }, { replace: true });
   };
   const dateInput =
-    'h-9 rounded-lg border border-border bg-surface px-3 text-sm font-medium text-muted outline-none focus:border-brand';
+    'h-9 rounded-lg border border-border bg-surface px-3 text-sm font-medium text-muted-foreground outline-none focus:border-brand';
 
   return (
     <Page title="Reports" subtitle={`${longDate(from)} to ${longDate(to)}`}>
@@ -86,7 +86,7 @@ export function ReportsPage() {
               onChange={(event) => pickDay('from', event.target.value)}
               className={dateInput}
             />
-            <span className="text-sm text-muted">to</span>
+            <span className="text-sm text-muted-foreground">to</span>
             <input
               type="date"
               aria-label="Last day"
@@ -200,7 +200,7 @@ function Report({ period, back }: { period: Period; back: BackTo }) {
       <Box title="Busy hours" className="mb-6">
         {busiest ? (
           <div className="p-5">
-            <p className="mb-4 text-sm text-muted">
+            <p className="mb-4 text-sm text-muted-foreground">
               Busiest {hourRange(busiest.hour)}, with{' '}
               {busiest.orders === 1 ? '1 order' : `${busiest.orders} orders`} over these days.
             </p>
@@ -214,7 +214,7 @@ function Report({ period, back }: { period: Period; back: BackTo }) {
       </Box>
 
       <Box title="Day by day" className="mb-6">
-        <div className="hidden grid-cols-[1.5fr_1fr_1fr_1fr_1fr] gap-4 border-b border-border px-5 py-3 text-xs font-semibold tracking-wide text-muted uppercase md:grid">
+        <div className="hidden grid-cols-[1.5fr_1fr_1fr_1fr_1fr] gap-4 border-b border-border px-5 py-3 text-xs font-semibold tracking-wide text-muted-foreground uppercase md:grid">
           <span>Day</span>
           <span className="text-right">Orders</span>
           <span className="text-right">Sales</span>
@@ -229,7 +229,7 @@ function Report({ period, back }: { period: Period; back: BackTo }) {
             className="grid grid-cols-[1fr_auto] gap-x-4 gap-y-0.5 border-b border-border px-5 py-3 text-sm transition-colors last:border-b-0 hover:bg-tile/40 md:grid-cols-[1.5fr_1fr_1fr_1fr_1fr]"
           >
             <span>{shortDate(day.date)}</span>
-            <span className="text-right font-mono text-muted md:text-text">
+            <span className="text-right font-mono text-muted-foreground md:text-text">
               <span className="md:hidden">{day.orders} orders · </span>
               <span className="hidden md:inline">{day.orders}</span>
               <span className="md:hidden">{cedis(day.sales)}</span>
@@ -298,7 +298,7 @@ function Report({ period, back }: { period: Period; back: BackTo }) {
           >
             <div className="min-w-0">
               <p className="text-sm">{close.tablet}</p>
-              <p className="text-xs text-muted">
+              <p className="text-xs text-muted-foreground">
                 {shortDate(close.closedAt.slice(0, 10))} at {clock(close.closedAt)}
                 {close.closedBy ? ` · ${close.closedBy}` : ''}
                 {close.expected !== null && close.counted !== null
@@ -350,9 +350,9 @@ function Metric({
   );
   const body = (
     <>
-      <p className="mb-2 text-xs font-medium text-muted">{label}</p>
+      <p className="mb-2 text-xs font-medium text-muted-foreground">{label}</p>
       <p className={cx('font-mono text-lg font-semibold', accent && 'text-brand')}>{value}</p>
-      <p className="mt-1 text-xs text-muted">{sub}</p>
+      <p className="mt-1 text-xs text-muted-foreground">{sub}</p>
     </>
   );
   return to ? (
@@ -401,12 +401,12 @@ function Line({
     <>
       <div className="min-w-0">
         <p className="truncate text-sm">{label}</p>
-        {sub && <p className="text-xs text-muted">{sub}</p>}
+        {sub && <p className="text-xs text-muted-foreground">{sub}</p>}
       </div>
       <span className="shrink-0 font-mono text-sm">
         {value}
         {to && (
-          <span aria-hidden="true" className="ml-2 text-muted">
+          <span aria-hidden="true" className="ml-2 text-muted-foreground">
             ›
           </span>
         )}
@@ -423,5 +423,5 @@ function Line({
 }
 
 function Empty({ children }: { children: ReactNode }) {
-  return <p className="px-5 py-6 text-center text-sm text-muted">{children}</p>;
+  return <p className="px-5 py-6 text-center text-sm text-muted-foreground">{children}</p>;
 }
