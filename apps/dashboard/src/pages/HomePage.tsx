@@ -1,31 +1,24 @@
 import { ORDER_TYPES, type PaymentMethod } from '@plateraa/shared';
 import { useQuery } from '@tanstack/react-query';
-import { ChevronRight, ReceiptText } from 'lucide-react';
+import { ReceiptText } from 'lucide-react';
 import { Suspense, lazy, useState, type ReactNode } from 'react';
 import { Link, useSearchParams } from 'react-router';
 import { Alert } from '@/components/arc/alert/alert';
 import { Button } from '@/components/arc/button/button';
 import { EmptyState } from '@/components/arc/empty-state/empty-state';
 import { DayPicker } from '@/components/app/day-picker';
+import { OrderListRow } from '@/components/app/order-row';
 import { Panel, PanelLink, PanelRows } from '@/components/app/panel';
-import { StatusBadge } from '@/components/app/status-badge';
 import { Skeleton } from '@/components/ui/skeleton';
 import { cn } from '@/lib/utils';
 import { fetchDrawers, type Drawer } from '../lib/manager';
 import { cedis, clock, hourRange, longDate, shortDate, todayHere } from '../lib/money';
-import {
-  fetchOrders,
-  fetchRefundsOwed,
-  orderLine,
-  paymentState,
-  type BackTo,
-  type OrderRow,
-} from '../lib/orders';
+import { fetchOrders, fetchRefundsOwed, type BackTo, type OrderRow } from '../lib/orders';
 import { busiestHour, fetchDay, type DaySummary } from '../lib/reports';
 import { useSession } from '../lib/session';
 import { alertTone, tabletAlertWords } from '../lib/tablet-alerts';
 import { fetchTablets, type Tablet } from '../lib/team';
-import { TYPE_WORDS, kindWords } from '../lib/words';
+import { TYPE_WORDS } from '../lib/words';
 import { useMe } from '../shell/Shell';
 import { Page } from '../ui/Page';
 import { PayoutDialog } from './money-dialogs';
@@ -502,33 +495,7 @@ function RecentOrders({
     body = (
       <PanelRows>
         {orders.map((order) => (
-          <li key={order.id}>
-            <Link
-              to={`/orders/${order.id}`}
-              state={back}
-              className="flex items-center gap-4 px-5 py-3.5 transition-colors hover:bg-muted/60"
-            >
-              <span className="flex min-w-0 flex-1 flex-col gap-0.5">
-                <span className="flex items-center gap-2 text-sm">
-                  <span className="font-mono font-medium">{order.displayNumber}</span>
-                  <span className="text-muted-foreground">{kindWords(order)}</span>
-                </span>
-                <span className="truncate text-sm text-text-secondary">
-                  {orderLine(order.items)}
-                </span>
-              </span>
-              <span className="flex shrink-0 flex-col items-end gap-1">
-                <span className="font-mono text-sm">{cedis(order.total)}</span>
-                <StatusBadge state={paymentState(order)} />
-              </span>
-              <ChevronRight
-                size={16}
-                strokeWidth={1.75}
-                className="hidden shrink-0 text-muted-foreground sm:block"
-                aria-hidden
-              />
-            </Link>
-          </li>
+          <OrderListRow key={order.id} order={order} back={back} />
         ))}
       </PanelRows>
     );

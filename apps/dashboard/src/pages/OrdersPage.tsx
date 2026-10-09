@@ -282,7 +282,7 @@ export function OrdersPage() {
 
 function Stat({ label, value }: { label: string; value: string | null }) {
   return (
-    <li className="flex items-center justify-between gap-1 px-5 py-3 sm:flex-col sm:items-start sm:py-4">
+    <li className="flex items-center justify-between gap-1 px-5 py-3 sm:flex-col sm:items-start sm:justify-start sm:py-4">
       <span className="text-sm text-muted-foreground">{label}</span>
       {value === null ? (
         <Skeleton className="h-6 w-20" />

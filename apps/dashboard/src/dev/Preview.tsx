@@ -228,6 +228,38 @@ const ORDER_DETAIL = {
   ],
 };
 
+const daysAgo = (days: number) => {
+  const day = new Date();
+  day.setDate(day.getDate() - days);
+  return day.toLocaleDateString('en-CA');
+};
+
+const CUSTOMERS = [
+  ['customer-1', 'Yaw Mensah', '+233241234567', 14, 0, 98_500],
+  ['customer-2', 'Akosua Boateng', '+233201112233', 9, 1, 61_000],
+  ['customer-3', null, '+233559876543', 3, 2, 19_500],
+  ['customer-4', 'Kwame Asante', '+233271234500', 22, 4, 154_000],
+  ['customer-5', 'Efua Darko', '+233244550011', 1, 9, 6_500],
+].map(([id, name, phone, orders, ago, spent]) => ({
+  id,
+  name,
+  phone,
+  orders,
+  lastOrderOn: daysAgo(ago as number),
+  spent,
+}));
+
+const CUSTOMER_DETAIL = {
+  ...CUSTOMERS[0],
+  notes: 'Gate is on the left. Call on arrival.',
+  firstOrderOn: daysAgo(60),
+  recentOrders: [
+    RECENT[4],
+    order('A12', 'DELIVERY', [['Waakye special', 2]], 13_000, 13_000, { businessDate: daysAgo(2) }),
+    order('W7', 'PICKUP', [['Jollof with chicken', 1]], 4_500, 4_500, { businessDate: daysAgo(5) }),
+  ],
+};
+
 /** What each screen's queries would have fetched. Keys match the screens' own. */
 function seed(tenant: string | null) {
   // Sample data never goes stale here, so nothing is fetched over it.
@@ -239,6 +271,8 @@ function seed(tenant: string | null) {
   queryClient.setQueryData(['drawers', tenant], DRAWERS);
   queryClient.setQueryData(['orders', tenant, { date: today, limit: 500 }], DAY_ORDERS);
   queryClient.setQueryData(['order', tenant, 'order-A35'], ORDER_DETAIL);
+  queryClient.setQueryData(['customers', tenant, ''], CUSTOMERS);
+  queryClient.setQueryData(['customer', tenant, 'customer-1'], CUSTOMER_DETAIL);
 }
 
 export default function Preview() {
