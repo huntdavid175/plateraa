@@ -3,14 +3,16 @@ import { useMutation, useQuery } from '@tanstack/react-query';
 import { Plus } from 'lucide-react';
 import { useState } from 'react';
 import { Alert } from '@/components/arc/alert/alert';
+import { Avatar } from '@/components/arc/avatar/avatar';
 import { Badge } from '@/components/arc/badge/badge';
 import { Button } from '@/components/arc/button/button';
+import { ConfirmMorph } from '@/components/arc/confirm-morph/confirm-morph';
 import { Dialog, DialogContent } from '@/components/arc/dialog/dialog';
 import { Input } from '@/components/arc/input/input';
 import { RadioGroup } from '@/components/arc/radio-group/radio-group';
 import { Switch } from '@/components/arc/switch/switch';
 import { PlainField } from '@/components/app/money-field';
-import { Panel, PanelEmpty, PanelRows } from '@/components/app/panel';
+import { Panel, PanelRows } from '@/components/app/panel';
 import { SwitchRow } from '@/components/app/setting-row';
 import { Skeleton } from '@/components/ui/skeleton';
 import { cn } from '@/lib/utils';
@@ -54,7 +56,6 @@ export function StaffPage() {
     <Page
       title="Staff"
       subtitle="Who works the tablet and the dashboard, and the tablets themselves."
-      narrow
       actions={
         <Button onClick={() => setAdding(true)}>
           <Plus size={16} strokeWidth={1.75} aria-hidden />
@@ -73,18 +74,18 @@ export function StaffPage() {
         )}
         {team.data && (
           <>
-            <Panel title="Team">
-              <PanelRows>
+            <section aria-label="Team">
+              <ul className="grid grid-cols-2 gap-3 lg:grid-cols-3">
                 {team.data.staff.map((member) => (
-                  <StaffRow
+                  <PersonCard
                     key={member.id}
                     member={member}
                     canEdit={canEdit(me.role, member)}
                     onEdit={() => setEditing(member)}
                   />
                 ))}
-              </PanelRows>
-            </Panel>
+              </ul>
+            </section>
             {isOwner && <RevenuePanel byRole={team.data.revenueByRole} />}
           </>
         )}
@@ -115,7 +116,8 @@ function canEdit(myRole: string, member: TeamMember): boolean {
   return myRole === 'OWNER' || member.role === 'STAFF' || member.role === 'RIDER';
 }
 
-function StaffRow({
+/** One person as a card: their avatar, name, role and anything to sort out. */
+function PersonCard({
   member,
   canEdit: editable,
   onEdit,
@@ -125,20 +127,22 @@ function StaffRow({
   onEdit: () => void;
 }) {
   return (
-    <li className="flex items-center gap-4 px-5 py-3.5">
-      <span
-        aria-hidden
-        className={cn(
-          'flex size-10 shrink-0 items-center justify-center rounded-full bg-muted text-sm text-text-secondary',
-          !member.active && 'opacity-50',
+    <li
+      className={cn(
+        'flex flex-col gap-4 rounded-(--radius-surface) border bg-card p-4 sm:p-5',
+        !member.active && 'opacity-60',
+      )}
+    >
+      <div className="flex items-start justify-between gap-3">
+        <Avatar name={member.displayName} size="lg" />
+        {editable && (
+          <Button variant="ghost" size="sm" onClick={onEdit}>
+            Edit
+          </Button>
         )}
-      >
-        {member.displayName.trim().charAt(0).toUpperCase() || '?'}
-      </span>
-      <div className="flex min-w-0 flex-1 flex-col gap-1">
-        <span
-          className={cn('truncate text-sm font-medium', !member.active && 'text-muted-foreground')}
-        >
+      </div>
+      <div className="flex min-w-0 flex-col gap-1.5">
+        <span className="truncate font-medium">
           {member.displayName}
           {member.you && <span className="font-normal text-muted-foreground"> (you)</span>}
         </span>
@@ -157,11 +161,6 @@ function StaffRow({
           )}
         </span>
       </div>
-      {editable && (
-        <Button variant="ghost" size="sm" onClick={onEdit}>
-          Edit
-        </Button>
-      )}
     </li>
   );
 }
@@ -213,65 +212,77 @@ function RevenuePanel({ byRole }: { byRole: RevenueByRole }) {
 
 function TabletsPanel({ tablets }: { tablets: Tablet[] }) {
   return (
-    <Panel
-      title="Tablets"
-      description="To add one: install Plateraa on the tablet, sign in with your email and pick this business."
-    >
+    <section aria-labelledby="tablets" className="flex flex-col gap-3">
+      <div>
+        <h2 id="tablets" className="font-medium">
+          Tablets
+        </h2>
+        <p className="text-sm text-muted-foreground">
+          To add one: install Plateraa on the tablet, sign in with your email and pick this
+          business.
+        </p>
+      </div>
       {tablets.length === 0 ? (
-        <PanelEmpty>No tablet is set up yet.</PanelEmpty>
+        <p className="rounded-(--radius-surface) border bg-card p-5 text-sm text-muted-foreground">
+          No tablet is set up yet.
+        </p>
       ) : (
-        <PanelRows>
+        <ul className="grid gap-3 md:grid-cols-2">
           {tablets.map((tablet) => (
-            <TabletRow key={tablet.id} tablet={tablet} />
+            <TabletCard key={tablet.id} tablet={tablet} />
           ))}
-        </PanelRows>
+        </ul>
       )}
-    </Panel>
+    </section>
   );
 }
 
-function TabletRow({ tablet }: { tablet: Tablet }) {
-  const [confirming, setConfirming] = useState(false);
+/** Seen in the last five minutes counts as online (the tablet checks in every minute or so). */
+const ONLINE_MS = 5 * 60_000;
+
+function TabletCard({ tablet }: { tablet: Tablet }) {
   const signingOut = useMutation({
     meta: { ok: 'Tablet signed out' },
     mutationFn: signOutTablet,
     onSuccess: refreshTeam,
   });
-  const seen = tablet.signedOut
-    ? 'Signed out'
-    : tablet.lastSeenAt
-      ? `Last online ${ago(tablet.lastSeenAt)}`
-      : 'Not online yet';
+  const online =
+    !tablet.signedOut &&
+    tablet.lastSeenAt !== null &&
+    Date.now() - new Date(tablet.lastSeenAt).getTime() < ONLINE_MS;
   return (
-    <li className="flex flex-col gap-3 px-5 py-4">
-      <div className="flex items-start gap-4">
-        <div className="flex min-w-0 flex-1 flex-col gap-0.5">
-          <span className="text-sm font-medium">{tablet.name}</span>
+    <li className="flex flex-col gap-4 rounded-(--radius-surface) border bg-card p-4 sm:p-5">
+      <div className="flex items-start justify-between gap-3">
+        <div className="flex min-w-0 flex-col gap-1">
+          <span className="flex items-center gap-2 font-medium">
+            <span
+              className={cn(
+                'size-2.5 shrink-0 rounded-full',
+                tablet.signedOut ? 'bg-muted-foreground' : online ? 'bg-success' : 'bg-warning',
+              )}
+              aria-hidden
+            />
+            {tablet.name}
+          </span>
           <span className="text-xs text-muted-foreground">
-            Orders {tablet.code}1, {tablet.code}2 and on. {seen}
-            {!tablet.signedOut && tablet.lastSyncedAt
-              ? `, fully synced ${ago(tablet.lastSyncedAt)}`
-              : ''}
-            .
+            {tablet.signedOut
+              ? 'Signed out'
+              : online
+                ? 'Online now'
+                : tablet.lastSeenAt
+                  ? `Last online ${ago(tablet.lastSeenAt)}`
+                  : 'Not online yet'}
           </span>
         </div>
-        {!tablet.signedOut && (
-          // Two presses: the first asks, the second signs it out.
-          <Button
-            variant={confirming ? 'danger' : 'ghost'}
-            size="sm"
-            loading={signingOut.isPending}
-            onClick={() => (confirming ? signingOut.mutate(tablet.id) : setConfirming(true))}
-            onBlur={() => setConfirming(false)}
-          >
-            {confirming ? 'Yes, sign it out' : 'Sign out'}
-          </Button>
-        )}
+        <Badge size="sm">
+          Orders {tablet.code}1, {tablet.code}2…
+        </Badge>
       </div>
-      {confirming && (
-        <p className="text-xs text-muted-foreground" role="status">
-          It stops syncing at once. Anything it hasn’t uploaded stays on it, and it has to be set up
-          again.
+      {!tablet.signedOut && (
+        <p className="text-sm text-text-secondary">
+          {tablet.lastSyncedAt
+            ? `Fully synced ${ago(tablet.lastSyncedAt)}.`
+            : 'Hasn’t finished a sync yet.'}
         </p>
       )}
       {tablet.alerts.map((alert) => (
@@ -283,10 +294,22 @@ function TabletRow({ tablet }: { tablet: Tablet }) {
           {tabletAlertWords(tablet.name, alert)}
         </Alert>
       ))}
-      {signingOut.error && (
-        <Alert tone="danger" title="Couldn’t sign it out">
-          {signingOut.error.message}
-        </Alert>
+      {!tablet.signedOut && (
+        <div className="mt-auto">
+          {/* Arc's confirm morph: the button asks in place, then signs it out. */}
+          <ConfirmMorph
+            label="Sign out"
+            prompt={`Sign out ${tablet.name}?`}
+            confirmLabel="Sign out"
+            pendingLabel="Signing out"
+            doneLabel="Signed out"
+            onConfirm={() => signingOut.mutateAsync(tablet.id)}
+          />
+          <p className="mt-2 text-xs text-muted-foreground">
+            It stops syncing at once. Anything it hasn’t uploaded stays on it, and it has to be set
+            up again.
+          </p>
+        </div>
       )}
     </li>
   );
