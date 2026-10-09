@@ -392,6 +392,14 @@ function seed(tenant: string | null) {
   queryClient.setQueryData(['customers', tenant, ''], CUSTOMERS);
   queryClient.setQueryData(['customer', tenant, 'customer-1'], CUSTOMER_DETAIL);
   queryClient.setQueryData(['menu', tenant], MENU);
+  queryClient.setQueryData(
+    ['orders', tenant, { source: 'STOREFRONT', limit: 100 }],
+    [
+      order('W12', 'DELIVERY', [['Waakye special', 1]], 6_500, 6_500, { takenAt: at(13, 22) }),
+      order('W11', 'PICKUP', [['Jollof with chicken', 2]], 9_000, 9_000, { takenAt: at(12, 5) }),
+      order('W10', 'PICKUP', [['Fried rice', 1]], 4_000, 0, { takenAt: at(11, 48) }),
+    ],
+  );
   queryClient.setQueryData(['period', tenant, daysAgo(6), today], {
     from: daysAgo(6),
     to: today,
