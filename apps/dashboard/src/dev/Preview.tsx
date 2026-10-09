@@ -31,6 +31,8 @@ const ME = {
     'staff.manage',
     'expenses.manage',
     'customers.manage',
+    'settings.manage',
+    'discounts.apply',
   ],
   offersDineIn: true,
 } as unknown as Me;
@@ -361,6 +363,29 @@ function seed(tenant: string | null) {
   queryClient.setQueryData(['refunds-owed', tenant], [{ ...RECENT[4], paidWith: ['LINK'] }]);
   queryClient.setQueryData(['tablets', tenant], TABLETS);
   queryClient.setQueryData(['team', tenant], TEAM);
+  queryClient.setQueryData(['settings', tenant], {
+    business: { name: 'Auntie Ama’s Kitchen', vendorType: 'CHOP_BAR' },
+    orders: {
+      offersDineIn: true,
+      requirePaymentBeforePrep: true,
+      countPortions: false,
+      idleLockSeconds: 300,
+    },
+    moolre: {
+      connected: true,
+      accountEnding: '4821',
+      apiUser: 'auntieama',
+      email: 'ama@example.com',
+    },
+  });
+  queryClient.setQueryData(
+    ['zones', tenant],
+    [
+      { id: 'z1', name: 'Osu', fee: 1_500, active: true },
+      { id: 'z2', name: 'Labone', fee: 2_000, active: true },
+      { id: 'z3', name: 'Airport', fee: 3_500, active: false },
+    ],
+  );
   queryClient.setQueryData(['drawers', tenant], DRAWERS);
   queryClient.setQueryData(['orders', tenant, { date: today, limit: 500 }], DAY_ORDERS);
   queryClient.setQueryData(['order', tenant, 'order-A35'], ORDER_DETAIL);

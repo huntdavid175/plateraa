@@ -96,6 +96,7 @@ export const router = createBrowserRouter([
             { path: 'refunds', Component: RefundsPage },
             { path: 'reports', Component: ReportsPage },
             { path: 'staff', Component: StaffPage },
+            { path: 'settings', Component: SettingsPage },
           ],
         },
       ]
