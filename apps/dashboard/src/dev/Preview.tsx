@@ -333,6 +333,71 @@ function seed(tenant: string | null) {
   queryClient.setQueryData(['customers', tenant, ''], CUSTOMERS);
   queryClient.setQueryData(['customer', tenant, 'customer-1'], CUSTOMER_DETAIL);
   queryClient.setQueryData(['menu', tenant], MENU);
+  queryClient.setQueryData(['period', tenant, daysAgo(6), today], {
+    from: daysAgo(6),
+    to: today,
+    totals: {
+      sales: 1_412_000,
+      orders: 241,
+      moneyIn: 1_350_500,
+      moneyOut: 102_500,
+      profit: 1_248_000,
+      platformOwed: 0,
+      commissionEstimate: 0,
+      purchases: 45_000,
+      otherExpenses: 57_500,
+    },
+    byHour: DAY.byHour.map((row) => ({ ...row, orders: row.orders * 6 })),
+    byItem: [
+      { name: 'Jollof with chicken', quantity: 96, sales: 462_000 },
+      { name: 'Waakye special', quantity: 41, sales: 266_500 },
+      { name: 'Banku and tilapia', quantity: 28, sales: 196_000 },
+      { name: 'Fried rice', quantity: 37, sales: 148_000 },
+      { name: 'Sobolo', quantity: 88, sales: 88_000 },
+    ],
+    byDay: [6, 5, 4, 3, 2, 1, 0].map((ago, index) => ({
+      date: daysAgo(ago),
+      orders: 30 + ((index * 7) % 12),
+      sales: 180_000 + ((index * 23_000) % 90_000),
+      moneyIn: 170_000 + ((index * 21_000) % 90_000),
+      moneyOut: ago % 3 === 0 ? 30_000 : 8_500,
+    })),
+    byType: DAY.byType,
+    byMethod: [
+      { method: 'CASH', amount: 902_000 },
+      { method: 'LINK', amount: 448_500 },
+    ],
+    byCategory: [
+      { category: 'INGREDIENTS', amount: 45_000 },
+      { category: 'ELECTRICITY', amount: 30_000 },
+      { category: 'GAS', amount: 19_000 },
+      { category: 'PACKAGING', amount: 8_500 },
+    ],
+    staff: [
+      { staffId: 'st1', name: 'Kofi', orders: 132, sales: 781_000, cash: 512_000 },
+      { staffId: 'st2', name: 'Esi', orders: 109, sales: 631_000, cash: 390_000 },
+    ],
+    drawerCloses: [
+      {
+        shiftId: 'sh1',
+        tablet: 'Counter 1',
+        closedAt: at(21, 5),
+        closedBy: 'Kofi',
+        expected: 142_000,
+        counted: 140_500,
+        variance: -1_500,
+      },
+      {
+        shiftId: 'sh2',
+        tablet: 'Counter 2',
+        closedAt: at(21, 12),
+        closedBy: 'Esi',
+        expected: 96_000,
+        counted: 96_000,
+        variance: 0,
+      },
+    ],
+  });
   const expense = (id: string, ago: number, category: string, amount: number, extra = {}) => ({
     id,
     spentOn: daysAgo(ago),

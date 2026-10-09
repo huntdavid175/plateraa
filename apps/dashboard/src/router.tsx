@@ -94,6 +94,7 @@ export const router = createBrowserRouter([
             { path: 'store', Component: OnlineStorePage },
             { path: 'expenses', Component: ExpensesPage },
             { path: 'refunds', Component: RefundsPage },
+            { path: 'reports', Component: ReportsPage },
           ],
         },
       ]
