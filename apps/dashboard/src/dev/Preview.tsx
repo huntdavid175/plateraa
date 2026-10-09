@@ -95,7 +95,8 @@ const order = (
     amountDue: total,
     amountPaid: paid,
     refundOwed: 0,
-    createdAt: at(13, 40),
+    takenAt: at(13, 40),
+    takenBy: 'Kofi',
     ...extra,
   }) as unknown as OrderRow;
 
@@ -146,6 +147,87 @@ const DRAWERS = [
   },
 ] as unknown as Drawer[];
 
+/** The whole day's list, for Orders: the recent five and more like them. */
+const DAY_ORDERS = [
+  ...RECENT.map((row) => row),
+  ...Array.from({ length: 7 }, (_, index) =>
+    order(
+      `A${34 - index}`,
+      index % 3 ? 'PICKUP' : 'DINE_IN',
+      [['Jollof with chicken', 1 + (index % 2)]],
+      4_500 * (1 + (index % 2)),
+      4_500 * (1 + (index % 2)),
+      {
+        takenAt: at(12, 50 - index * 5),
+        takenBy: index % 2 ? 'Kofi' : 'Esi',
+      },
+    ),
+  ),
+];
+
+/** One order in full: cancelled after it was paid, so a refund is owed. */
+const ORDER_DETAIL = {
+  ...RECENT[4],
+  id: 'order-A35',
+  takenAt: at(12, 41),
+  takenBy: 'Kofi',
+  onHold: false,
+  status: 'CANCELLED',
+  cancelReason: 'The customer left before it was ready.',
+  reviewReasons: [],
+  items: [
+    {
+      name: 'Kenkey and fish',
+      quantity: 1,
+      variantName: 'Large',
+      modifiers: [{ name: 'Extra shito', quantity: 1, unitPriceDelta: 500 }],
+      note: 'No pepper',
+      lineTotal: 3_500,
+    },
+  ],
+  subtotal: 3_500,
+  discount: 0,
+  deliveryFee: 0,
+  deliveryFeeCollectedBy: null,
+  total: 3_500,
+  amountDue: 3_500,
+  amountPaid: 3_500,
+  refundOwed: 3_500,
+  payments: [
+    {
+      id: 'pay-1',
+      method: 'LINK',
+      status: 'CONFIRMED',
+      at: at(12, 43),
+      by: null,
+      amount: 3_500,
+      tendered: null,
+    },
+  ],
+  refunds: [],
+  links: [
+    {
+      id: 'link-1',
+      status: 'PAID',
+      phone: '+233241234567',
+      failure: null,
+      amount: 3_500,
+      at: at(12, 42),
+    },
+  ],
+  customerName: 'Yaw Mensah',
+  customerPhone: '+233241234567',
+  customerId: 'customer-1',
+  deliveryAddress: null,
+  note: null,
+  externalReference: null,
+  history: [
+    { to: 'NEW', at: at(12, 41), by: 'Kofi' },
+    { to: 'PREPARING', at: at(12, 43), by: null },
+    { to: 'CANCELLED', at: at(12, 58), by: 'Kofi' },
+  ],
+};
+
 /** What each screen's queries would have fetched. Keys match the screens' own. */
 function seed(tenant: string | null) {
   // Sample data never goes stale here, so nothing is fetched over it.
@@ -155,6 +237,8 @@ function seed(tenant: string | null) {
   queryClient.setQueryData(['refunds-owed', tenant], [RECENT[4]]);
   queryClient.setQueryData(['tablets', tenant], TABLETS);
   queryClient.setQueryData(['drawers', tenant], DRAWERS);
+  queryClient.setQueryData(['orders', tenant, { date: today, limit: 500 }], DAY_ORDERS);
+  queryClient.setQueryData(['order', tenant, 'order-A35'], ORDER_DETAIL);
 }
 
 export default function Preview() {

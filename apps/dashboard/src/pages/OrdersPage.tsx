@@ -1,7 +1,16 @@
 import type { OrderSource, PaymentMethod } from '@plateraa/shared';
 import { ORDER_SOURCES } from '@plateraa/shared';
 import { useQuery } from '@tanstack/react-query';
+import { ChevronRight, ReceiptText } from 'lucide-react';
 import { Link, useLocation, useSearchParams } from 'react-router';
+import { Alert } from '@/components/arc/alert/alert';
+import { Button } from '@/components/arc/button/button';
+import { EmptyState } from '@/components/arc/empty-state/empty-state';
+import { FilterToolbar } from '@/components/arc/filter-toolbar/filter-toolbar';
+import SegmentedControl from '@/components/arc/segmented-control/segmented-control';
+import { DayPicker } from '@/components/app/day-picker';
+import { StatusBadge } from '@/components/app/status-badge';
+import { Skeleton } from '@/components/ui/skeleton';
 import { cedis, clock, longDate, shortDate, todayHere } from '../lib/money';
 import {
   fetchOrders,
@@ -15,7 +24,6 @@ import { useSession } from '../lib/session';
 import { fetchTeam } from '../lib/team';
 import { METHOD_WORDS, SOURCE_WORDS, kindWords } from '../lib/words';
 import { useMe } from '../shell/Shell';
-import { Badge, Button, Card, ErrorNote, PillFilter, Spinner, Tag } from '../ui/controls';
 import { Page } from '../ui/Page';
 
 const TYPE_FILTERS = [
@@ -32,11 +40,11 @@ const PAID_FILTERS = [
   { value: 'REFUND_OWED', label: 'Refund owed' },
 ] as const;
 
-type TypeFilter = (typeof TYPE_FILTERS)[number]['value'];
-type PaidFilter = (typeof PAID_FILTERS)[number]['value'];
-
 /** A busy day is a few hundred orders; a longer range shows its latest this many. */
 const LIMIT = 500;
+
+/** Wide screens: when, items, kind, paid, amount. */
+const COLUMNS = 'md:grid md:grid-cols-[7rem_minmax(0,1fr)_9rem_7rem_7rem_1rem] md:items-center';
 
 function oneOf<T extends string>(
   value: string | null,
@@ -50,7 +58,7 @@ function oneOf<T extends string>(
  * Orders for a day (`?date=`) or a range of days (`?from=&to=`), filtered by dine-in, pickup or
  * delivery, payment state, method (`?method=CASH,LINK`), item (`?item=`), who took them
  * (`?staff=`) or where they came from (`?source=`). Everything lives in the address, so the
- * figures on Today and Reports link straight to the orders behind them, and a filtered list can be
+ * figures on Home and Reports link straight to the orders behind them, and a filtered list can be
  * shared. The server does the filtering.
  */
 export function OrdersPage() {
@@ -117,18 +125,20 @@ export function OrdersPage() {
   const back: BackTo = { back: `/orders${search}`, label: 'Orders' };
   const filtered = type !== 'ALL' || source || paid !== 'ALL' || method || item || staff;
 
+  // Filters that arrive from a figure elsewhere (Home, Reports), each one removable.
   const chips = [
-    source && { key: 'source', label: `From ${SOURCE_WORDS[source]}` },
+    source && { id: 'source', label: 'From', value: SOURCE_WORDS[source] },
     method && {
-      key: 'method',
-      label: `Paid by ${method
+      id: 'method',
+      label: 'Paid by',
+      value: method
         .split(',')
         .map((m) => METHOD_WORDS[m as PaymentMethod] ?? m)
-        .join(' or ')}`,
+        .join(' or '),
     },
-    item && { key: 'item', label: `With ${item}` },
-    staff && { key: 'staff', label: `Taken by ${staffName ?? 'one person'}` },
-  ].filter((chip): chip is { key: string; label: string } => Boolean(chip));
+    item && { id: 'item', label: 'With', value: item },
+    staff && { id: 'staff', label: 'Taken by', value: staffName ?? 'one person' },
+  ].filter((chip): chip is { id: string; label: string; value: string } => Boolean(chip));
 
   return (
     <Page
@@ -144,110 +154,142 @@ export function OrdersPage() {
         range ? (
           <Button
             variant="secondary"
-            small
             onClick={() => change({ from: null, to: null, date: range.to })}
           >
             One day
           </Button>
         ) : (
-          <input
-            type="date"
-            aria-label="Day"
-            value={date}
-            max={here}
-            onChange={(event) => {
-              const value = event.target.value || here;
-              change({ date: value === here ? null : value });
-            }}
-            className="h-9 rounded-lg border border-border bg-surface px-3 text-sm font-medium text-muted-foreground outline-none focus:border-brand"
+          <DayPicker
+            date={date}
+            today={here}
+            onPick={(day) => change({ date: day && day < here ? day : null })}
           />
         )
       }
     >
-      <div className="mb-5 flex flex-wrap gap-2">
-        <PillFilter
-          label="Dine-in, pickup or delivery"
-          options={typeFilters}
-          value={type}
-          onChange={(value: TypeFilter) => change({ type: value === 'ALL' ? null : value })}
-        />
-        <PillFilter
-          label="Paid or not"
-          options={PAID_FILTERS}
-          value={paid}
-          onChange={(value: PaidFilter) => change({ paid: value === 'ALL' ? null : value })}
-        />
-        {chips.map((chip) => (
-          <button
-            key={chip.key}
-            type="button"
-            onClick={() => change({ [chip.key]: null })}
-            aria-label={`${chip.label}: remove this filter`}
-            className="inline-flex h-9 items-center gap-2 rounded-lg border border-brand/30 bg-brand-subtle px-3 text-sm font-medium text-brand"
-          >
-            {chip.label}
-            <span aria-hidden="true">×</span>
-          </button>
-        ))}
-      </div>
-
-      <div className="mb-6 grid grid-cols-3 gap-3">
-        <Stat label="Orders" value={String(sales.length)} />
-        {seesMoney && <Stat label="Sales" value={cedis(salesTotal)} />}
-        {seesMoney && (
-          <Stat
-            label="Average"
-            value={sales.length ? cedis(Math.round(salesTotal / sales.length)) : '—'}
-          />
-        )}
-      </div>
-
-      <Card className="overflow-hidden">
-        <div className="hidden grid-cols-[1fr_1.5fr_1fr_1fr_1fr] gap-4 border-b border-border px-5 py-3 text-xs font-semibold tracking-wide text-muted-foreground uppercase md:grid">
-          <span>{range ? 'Day · Number' : 'Time · Number'}</span>
-          <span>Items</span>
-          <span>Type</span>
-          <span>Paid</span>
-          <span className="text-right">Amount</span>
+      <div className="flex flex-col gap-6">
+        <div className="flex flex-col gap-3">
+          <div className="flex flex-wrap gap-3">
+            <SegmentedControl
+              label="Dine-in, pickup or delivery"
+              options={[...typeFilters]}
+              value={type}
+              onValueChange={(value) => change({ type: value === 'ALL' ? null : value })}
+            />
+            <SegmentedControl
+              label="Paid or not"
+              options={[...PAID_FILTERS]}
+              value={paid}
+              onValueChange={(value) => change({ paid: value === 'ALL' ? null : value })}
+            />
+          </div>
+          {chips.length > 0 && (
+            <FilterToolbar
+              filters={chips}
+              onRemove={(id) => change({ [id]: null })}
+              onClearAll={() => change(Object.fromEntries(chips.map((chip) => [chip.id, null])))}
+            />
+          )}
         </div>
-        {orders.isPending && (
-          <div className="flex justify-center py-10">
-            <Spinner />
+
+        <ul className="grid divide-y overflow-hidden rounded-(--radius-surface) border bg-card sm:grid-cols-3 sm:divide-x sm:divide-y-0">
+          <Stat label="Orders" value={orders.data ? String(sales.length) : null} />
+          {seesMoney && <Stat label="Sales" value={orders.data ? cedis(salesTotal) : null} />}
+          {seesMoney && (
+            <Stat
+              label="Average"
+              value={
+                orders.data
+                  ? sales.length
+                    ? cedis(Math.round(salesTotal / sales.length))
+                    : 'None yet'
+                  : null
+              }
+            />
+          )}
+        </ul>
+
+        <section
+          aria-label="Orders"
+          className="overflow-hidden rounded-(--radius-surface) border bg-card"
+        >
+          <div
+            className={`hidden gap-4 border-b px-5 py-3 text-xs text-muted-foreground ${COLUMNS}`}
+            aria-hidden
+          >
+            <span>{range ? 'Day and number' : 'Time and number'}</span>
+            <span>Items</span>
+            <span>Type</span>
+            <span>Paid</span>
+            <span className="text-right">Amount</span>
+            <span />
           </div>
-        )}
-        {orders.isError && (
-          <div className="p-4">
-            <ErrorNote>{orders.error.message}</ErrorNote>
-          </div>
-        )}
-        {orders.data && rows.length === 0 && (
-          <p className="px-5 py-10 text-center text-sm text-muted-foreground">
-            {filtered
-              ? 'No orders match this filter.'
-              : range
-                ? 'No orders on these days.'
-                : 'No orders on this day.'}
+          {orders.isPending && (
+            <ul className="flex flex-col divide-y" aria-busy="true">
+              {[0, 1, 2, 3, 4].map((row) => (
+                <li key={row} className="flex items-center justify-between gap-4 px-5 py-4">
+                  <span className="flex flex-col gap-2">
+                    <Skeleton className="h-3.5 w-24" />
+                    <Skeleton className="h-3.5 w-56" />
+                  </span>
+                  <Skeleton className="h-4 w-16" />
+                </li>
+              ))}
+            </ul>
+          )}
+          {orders.isError && (
+            <div className="p-5">
+              <Alert tone="danger" title="Couldn’t load the orders">
+                <div className="flex flex-col items-start gap-3">
+                  <p>{orders.error.message}</p>
+                  <Button variant="secondary" size="sm" onClick={() => orders.refetch()}>
+                    Try again
+                  </Button>
+                </div>
+              </Alert>
+            </div>
+          )}
+          {orders.data && rows.length === 0 && (
+            <EmptyState
+              icon={<ReceiptText size={24} strokeWidth={1.75} />}
+              title={filtered ? 'No orders match' : 'No orders'}
+              description={
+                filtered
+                  ? 'Try another filter, or clear them to see every order.'
+                  : range
+                    ? 'Nothing was ordered on these days.'
+                    : 'Nothing was ordered on this day.'
+              }
+            />
+          )}
+          {rows.length > 0 && (
+            <ul className="flex flex-col divide-y">
+              {rows.map((order) => (
+                <OrderRowLink key={order.id} order={order} back={back} showDay={Boolean(range)} />
+              ))}
+            </ul>
+          )}
+        </section>
+        {rows.length === LIMIT && (
+          <p className="text-sm text-muted-foreground">
+            Showing the latest {LIMIT} orders. Narrow the days or the filters to see the rest.
           </p>
         )}
-        {rows.map((order) => (
-          <OrderRowLink key={order.id} order={order} back={back} showDay={Boolean(range)} />
-        ))}
-      </Card>
-      {rows.length === LIMIT && (
-        <p className="mt-3 text-center text-xs text-muted-foreground">
-          Showing the latest {LIMIT} orders. Narrow the days or the filters to see the rest.
-        </p>
-      )}
+      </div>
     </Page>
   );
 }
 
-function Stat({ label, value }: { label: string; value: string }) {
+function Stat({ label, value }: { label: string; value: string | null }) {
   return (
-    <Card className="p-4">
-      <p className="mb-1 text-xs text-muted-foreground">{label}</p>
-      <p className="font-mono text-xl font-semibold">{value}</p>
-    </Card>
+    <li className="flex items-center justify-between gap-1 px-5 py-3 sm:flex-col sm:items-start sm:py-4">
+      <span className="text-sm text-muted-foreground">{label}</span>
+      {value === null ? (
+        <Skeleton className="h-6 w-20" />
+      ) : (
+        <span className="font-mono text-lg sm:text-xl">{value}</span>
+      )}
+    </li>
   );
 }
 
@@ -261,46 +303,46 @@ function OrderRowLink({
   /** A range of days: say which day each order was on. */
   showDay: boolean;
 }) {
-  const state = paymentState(order);
-  const badge = <Badge tone={state.tone}>{state.label}</Badge>;
   const when = showDay
     ? `${shortDate(order.businessDate)}, ${clock(order.takenAt)}`
     : clock(order.takenAt);
   return (
-    <Link
-      to={`/orders/${order.id}`}
-      state={back}
-      className="block border-b border-border transition-colors last:border-b-0 hover:bg-tile/40"
-    >
-      <div className="hidden grid-cols-[1fr_1.5fr_1fr_1fr_1fr] items-center gap-4 px-5 py-3.5 md:grid">
-        <div>
-          <p className="font-mono text-xs text-muted-foreground">{order.displayNumber}</p>
-          <p className="mt-0.5 text-sm">{when}</p>
-        </div>
-        <p className="truncate text-sm">{orderLine(order.items)}</p>
-        <div>
-          <Tag>{kindWords(order)}</Tag>
-        </div>
-        <div>{badge}</div>
-        <p className="text-right font-mono text-sm font-semibold">{cedis(order.total)}</p>
-      </div>
-      <div className="flex items-center gap-4 px-4 py-3.5 md:hidden">
-        <div className="min-w-0 flex-1">
-          <div className="mb-0.5 flex items-center gap-2">
-            <span className="font-mono text-xs text-muted-foreground">{order.displayNumber}</span>
-            <Tag>{kindWords(order)}</Tag>
-          </div>
-          <p className="truncate text-sm">{orderLine(order.items)}</p>
-          <p className="mt-0.5 text-xs text-muted-foreground">
-            {when}
-            {order.takenBy ? ` · ${order.takenBy}` : ''}
-          </p>
-        </div>
-        <div className="shrink-0 text-right">
-          <p className="font-mono text-sm font-semibold">{cedis(order.total)}</p>
-          <div className="mt-1">{badge}</div>
-        </div>
-      </div>
-    </Link>
+    <li>
+      <Link
+        to={`/orders/${order.id}`}
+        state={back}
+        className={`flex items-center gap-4 px-5 py-3.5 transition-colors hover:bg-muted/60 md:gap-4 ${COLUMNS}`}
+      >
+        {/* Phones: number, kind and items on the left, amount and badge on the right. */}
+        <span className="flex min-w-0 flex-1 flex-col gap-0.5 md:contents">
+          <span className="flex items-center gap-2 text-sm md:flex-col md:items-start md:gap-0">
+            <span className="font-mono font-medium">{order.displayNumber}</span>
+            <span className="text-muted-foreground md:text-foreground">{when}</span>
+          </span>
+          <span className="truncate text-sm text-text-secondary md:text-foreground">
+            {orderLine(order.items)}
+          </span>
+          <span className="text-xs text-muted-foreground md:text-sm md:text-foreground">
+            {kindWords(order)}
+            {order.takenBy && <span className="md:hidden">, taken by {order.takenBy}</span>}
+          </span>
+        </span>
+        <span className="hidden md:block">
+          <StatusBadge state={paymentState(order)} />
+        </span>
+        <span className="flex shrink-0 flex-col items-end gap-1 md:block md:text-right">
+          <span className="font-mono text-sm">{cedis(order.total)}</span>
+          <span className="md:hidden">
+            <StatusBadge state={paymentState(order)} />
+          </span>
+        </span>
+        <ChevronRight
+          size={16}
+          strokeWidth={1.75}
+          className="hidden shrink-0 text-muted-foreground md:block"
+          aria-hidden
+        />
+      </Link>
+    </li>
   );
 }

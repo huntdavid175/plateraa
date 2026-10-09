@@ -82,7 +82,11 @@ export const router = createBrowserRouter([
         {
           path: '/__preview',
           lazy: async () => ({ Component: (await import('./dev/Preview')).default }),
-          children: [{ index: true, Component: HomePage }],
+          children: [
+            { index: true, Component: HomePage },
+            { path: 'orders', Component: OrdersPage },
+            { path: 'orders/:orderId', Component: OrderPage },
+          ],
         },
       ]
     : []),

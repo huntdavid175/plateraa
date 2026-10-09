@@ -5,8 +5,8 @@ import { Suspense, lazy, useState, type ReactNode } from 'react';
 import { Link, useSearchParams } from 'react-router';
 import { Alert } from '@/components/arc/alert/alert';
 import { Button } from '@/components/arc/button/button';
-import { DatePicker } from '@/components/arc/date-picker/date-picker';
 import { EmptyState } from '@/components/arc/empty-state/empty-state';
+import { DayPicker } from '@/components/app/day-picker';
 import { Panel, PanelLink, PanelRows } from '@/components/app/panel';
 import { StatusBadge } from '@/components/app/status-badge';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -84,7 +84,7 @@ export function HomePage() {
     <Page
       title={isToday ? 'Home' : shortDate(date)}
       subtitle={longDate(date)}
-      actions={<DayPicker date={date} today={here} isToday={isToday} onPick={pick} />}
+      actions={<DayPicker date={date} today={here} onPick={pick} />}
     >
       <div className="flex flex-col gap-6">
         <NeedsYou tablets={tablets.data} owed={owed.data} />
@@ -94,10 +94,12 @@ export function HomePage() {
             {day.isPending && <MoneySkeleton />}
             {day.isError && (
               <Alert tone="danger" title="Couldn’t load the day’s figures">
-                <p>{day.error.message}</p>
-                <Button variant="secondary" size="sm" onClick={() => day.refetch()}>
-                  Try again
-                </Button>
+                <div className="flex flex-col items-start gap-3">
+                  <p>{day.error.message}</p>
+                  <Button variant="secondary" size="sm" onClick={() => day.refetch()}>
+                    Try again
+                  </Button>
+                </div>
               </Alert>
             )}
             {day.data && <DayMoney day={day.data} isToday={isToday} />}
@@ -128,46 +130,6 @@ export function HomePage() {
         />
       </div>
     </Page>
-  );
-}
-
-/** YYYY-MM-DD to a local Date and back, for the date picker. */
-const toDate = (day: string) => {
-  const [y, m, d] = day.split('-').map(Number);
-  return new Date(y!, m! - 1, d!);
-};
-const fromDate = (date: Date) => date.toLocaleDateString('en-CA');
-
-/** Any past day, or back to today. */
-function DayPicker({
-  date,
-  today,
-  isToday,
-  onPick,
-}: {
-  date: string;
-  today: string;
-  isToday: boolean;
-  onPick: (day: string) => void;
-}) {
-  return (
-    <div className="flex items-end gap-2">
-      {!isToday && (
-        <Button variant="secondary" onClick={() => onPick('')}>
-          Back to today
-        </Button>
-      )}
-      <DatePicker
-        label="Day"
-        className="w-44"
-        value={toDate(date)}
-        maxDate={toDate(today)}
-        locale="en-GB"
-        format={{ weekday: 'short', day: 'numeric', month: 'short' }}
-        showToday
-        onChange={(picked) => onPick(picked ? fromDate(picked) : '')}
-      />
-    </div>
   );
 }
 
