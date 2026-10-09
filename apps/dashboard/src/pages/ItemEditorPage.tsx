@@ -1,8 +1,20 @@
 import type { Station } from '@plateraa/shared';
 import { useMutation, useQuery } from '@tanstack/react-query';
+import { Plus, X } from 'lucide-react';
 import { useState, type ReactNode } from 'react';
 import { Link, useNavigate, useParams, useSearchParams } from 'react-router';
 import { ulid } from 'ulid';
+import { Alert } from '@/components/arc/alert/alert';
+import { Badge } from '@/components/arc/badge/badge';
+import { Button } from '@/components/arc/button/button';
+import { Checkbox } from '@/components/arc/checkbox/checkbox';
+import { Dialog, DialogContent } from '@/components/arc/dialog/dialog';
+import { Input } from '@/components/arc/input/input';
+import { Select } from '@/components/arc/select/select';
+import { Switch } from '@/components/arc/switch/switch';
+import { MoneyField, PlainField } from '@/components/app/money-field';
+import { Panel } from '@/components/app/panel';
+import { Skeleton } from '@/components/ui/skeleton';
 import {
   STATION_WORDS,
   addCategory,
@@ -22,17 +34,6 @@ import { PHOTO_SIZES, itemPhotoPath } from '../lib/photos';
 import { useSession } from '../lib/session';
 import { useMe } from '../shell/Shell';
 import { PhotoPicker } from '../ui/PhotoPicker';
-import {
-  Badge,
-  Button,
-  ErrorNote,
-  FieldLabel,
-  Section,
-  Spinner,
-  TextInput,
-  Toggle,
-  cx,
-} from '../ui/controls';
 
 const NEW_CATEGORY = '__new__';
 
@@ -210,28 +211,81 @@ export function ItemEditorPage() {
 
   if (menu.isPending) {
     return (
-      <div className="flex justify-center py-20">
-        <Spinner />
-      </div>
+      <EditorFrame title={itemId ? 'Edit item' : 'New item'}>
+        <div className="flex flex-col gap-6" aria-busy="true">
+          <Skeleton className="h-72 w-full rounded-(--radius-surface)" />
+          <Skeleton className="h-32 w-full rounded-(--radius-surface)" />
+        </div>
+      </EditorFrame>
     );
   }
   if (menu.isError) {
     return (
-      <div className="p-6">
-        <ErrorNote>{menu.error.message}</ErrorNote>
-      </div>
+      <EditorFrame title="Menu">
+        <Alert tone="danger" title="Couldn’t load the menu">
+          {menu.error.message}
+        </Alert>
+      </EditorFrame>
     );
   }
   const item = itemId ? menu.data.items.find((i) => i.id === itemId) : undefined;
   if (itemId && !item) {
     return (
-      <div className="p-6">
-        <ErrorNote>That item is no longer on the menu.</ErrorNote>
-      </div>
+      <EditorFrame title="Edit item">
+        <Alert tone="warning" title="That item is no longer on the menu">
+          Someone may have removed it. Go back to the menu to see what’s there now.
+        </Alert>
+      </EditorFrame>
     );
   }
   return <Editor key={itemId ?? 'new'} menu={menu.data} item={item} />;
 }
+
+/**
+ * The editor covers the whole screen: a bar with Close, the title and the one main action, then
+ * the form in a narrow column.
+ */
+function EditorFrame({
+  title,
+  action,
+  children,
+}: {
+  title: string;
+  action?: ReactNode;
+  children: ReactNode;
+}) {
+  return (
+    <div className="fixed inset-0 z-50 flex flex-col bg-background">
+      <div className="flex shrink-0 items-center gap-3 border-b bg-surface px-4 py-3">
+        <Link
+          to="/menu"
+          aria-label="Close"
+          className="flex size-10 items-center justify-center rounded-(--radius-control) text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+        >
+          <X size={20} strokeWidth={1.75} aria-hidden />
+        </Link>
+        <h1 className="flex-1 font-medium">{title}</h1>
+        {action}
+      </div>
+      <div className="page-scroll flex-1 overflow-y-auto">
+        <div className="mx-auto flex w-full max-w-2xl flex-col gap-6 px-4 py-6">{children}</div>
+      </div>
+    </div>
+  );
+}
+
+const MARGIN_TONES = { green: 'success', amber: 'warning', red: 'danger' } as const;
+
+function MarginBadge({ margin }: { margin: number }) {
+  return (
+    <Badge tone={MARGIN_TONES[marginTone(margin)]} size="sm">
+      {margin}% margin
+    </Badge>
+  );
+}
+
+/** Radix's select can't hold an empty value, so "no category" has a name of its own. */
+const NO_CATEGORY = '__none__';
 
 function Editor({ menu, item }: { menu: Menu; item: MenuItem | undefined }) {
   const me = useMe();
@@ -244,6 +298,7 @@ function Editor({ menu, item }: { menu: Menu; item: MenuItem | undefined }) {
     formOf(item, params.get('category') ?? menu.categories[0]?.id ?? ''),
   );
   const [problem, setProblem] = useState<string | null>(null);
+  const [confirmRemove, setConfirmRemove] = useState(false);
 
   const update = (patch: Partial<ItemForm>) => setForm((current) => ({ ...current, ...patch }));
   const updateSize = (index: number, patch: Partial<SizeForm>) =>
@@ -297,500 +352,383 @@ function Editor({ menu, item }: { menu: Menu; item: MenuItem | undefined }) {
   const price = parseAmount(form.price);
   const cost = parseAmount(form.cost);
   const margin = price === null ? null : marginOf(price, cost);
+  const trouble = problem ?? saving.error?.message;
 
   return (
-    <div className="fixed inset-0 z-50 flex flex-col bg-bg">
-      <div className="flex shrink-0 items-center gap-3 border-b border-border bg-surface px-4 py-4">
-        <Link
-          to="/menu"
-          aria-label="Close"
-          className="px-1 text-2xl leading-none text-muted-foreground"
-        >
-          ×
-        </Link>
-        <h2 className="flex-1 font-semibold">{item ? 'Edit item' : 'New item'}</h2>
-        <Button small busy={saving.isPending} onClick={save}>
+    <EditorFrame
+      title={item ? 'Edit item' : 'New item'}
+      action={
+        <Button loading={saving.isPending} onClick={save}>
           Save
         </Button>
-      </div>
+      }
+    >
+      {trouble && (
+        <Alert tone="danger" title="Not saved yet">
+          {trouble}
+        </Alert>
+      )}
 
-      <div className="page-scroll flex-1 overflow-y-auto">
-        <div className="mx-auto w-full max-w-2xl space-y-6 px-4 py-5">
-          {(problem ?? saving.error?.message) && (
-            <ErrorNote>{problem ?? saving.error?.message}</ErrorNote>
+      <Panel title="The item">
+        <div className="flex flex-col gap-4 border-t p-5">
+          {item ? (
+            <PhotoPicker
+              path={itemPhotoPath(item.id)}
+              url={item.photoUrl}
+              longest={PHOTO_SIZES.item}
+              label="Photo"
+              hint="Shown on your online store. The food itself, in good light."
+              onSaved={() => void refreshMenu()}
+            />
+          ) : (
+            <p className="text-sm text-muted-foreground">
+              You can add a photo once the item is saved.
+            </p>
           )}
-
-          <Section title="Basic info">
-            <div className="space-y-4 p-4">
-              {item ? (
-                <PhotoPicker
-                  path={itemPhotoPath(item.id)}
-                  url={item.photoUrl}
-                  longest={PHOTO_SIZES.item}
-                  label="Photo"
-                  hint="Shown on your online store. The food itself, in good light."
-                  onSaved={() => void refreshMenu()}
-                />
-              ) : (
-                <p className="text-xs text-muted-foreground">
-                  You can add a photo once the item is saved.
-                </p>
-              )}
-              <div>
-                <FieldLabel htmlFor="item-name">Item name</FieldLabel>
-                <TextInput
-                  id="item-name"
-                  value={form.name}
-                  placeholder="e.g. Jollof rice"
-                  maxLength={80}
-                  onChange={(event) => update({ name: event.target.value })}
-                />
-              </div>
-              <div className="grid grid-cols-2 gap-3">
-                <div>
-                  <FieldLabel htmlFor="item-category">Category</FieldLabel>
-                  <Select
-                    id="item-category"
-                    value={form.categoryId}
-                    onChange={(value) => update({ categoryId: value })}
-                  >
-                    <option value="">No category</option>
-                    {menu.categories.map((category) => (
-                      <option key={category.id} value={category.id}>
-                        {category.name}
-                      </option>
-                    ))}
-                    <option value={NEW_CATEGORY}>New category…</option>
-                  </Select>
-                </div>
-                <div>
-                  <FieldLabel htmlFor="item-station">Station</FieldLabel>
-                  <Select
-                    id="item-station"
-                    value={form.station}
-                    onChange={(value) => update({ station: value as Station })}
-                  >
-                    {(Object.keys(STATION_WORDS) as Station[]).map((station) => (
-                      <option key={station} value={station}>
-                        {STATION_WORDS[station]}
-                      </option>
-                    ))}
-                  </Select>
-                </div>
-              </div>
-              {form.categoryId === NEW_CATEGORY && (
-                <div>
-                  <FieldLabel htmlFor="new-category">New category name</FieldLabel>
-                  <TextInput
-                    id="new-category"
-                    value={form.newCategory}
-                    placeholder="e.g. Rice"
-                    maxLength={40}
-                    onChange={(event) => update({ newCategory: event.target.value })}
-                  />
-                </div>
-              )}
-              <div className="grid grid-cols-2 gap-3">
-                {form.sizes.length === 0 ? (
-                  <MoneyInput
-                    id="item-price"
-                    label="Price"
-                    value={form.price}
-                    onChange={(value) => update({ price: value })}
-                  />
-                ) : (
-                  <div>
-                    <FieldLabel>Price</FieldLabel>
-                    <p className="flex h-11 items-center text-sm text-muted-foreground">
-                      Set for each size below
-                    </p>
-                  </div>
-                )}
-                <div>
-                  <FieldLabel htmlFor="item-prep">Prep time (min)</FieldLabel>
-                  <TextInput
-                    id="item-prep"
-                    inputMode="numeric"
-                    className="font-mono"
-                    value={form.prep}
-                    onChange={(event) => update({ prep: event.target.value })}
-                  />
-                </div>
-              </div>
-              <div
-                className={cx(
-                  'flex items-center justify-between rounded-xl px-4 py-2',
-                  form.soldOut ? 'bg-amber-bg' : 'bg-tile',
-                )}
-              >
-                <div>
-                  <p className={cx('text-sm font-medium', form.soldOut && 'text-amber')}>
-                    Sold out today
-                  </p>
-                  <p className="text-xs text-muted-foreground">Can’t be ordered until tomorrow</p>
-                </div>
-                <Toggle
-                  on={form.soldOut}
-                  onChange={(soldOut) => update({ soldOut })}
-                  label="Sold out today"
-                />
-              </div>
-            </div>
-          </Section>
-
-          <Section title={`Sizes${form.sizes.length ? ` (${form.sizes.length})` : ''}`}>
-            <div className="space-y-3 p-4">
-              {form.sizes.length === 0 && (
-                <p className="text-sm text-muted-foreground">
-                  No sizes: every order uses the one price.
-                </p>
-              )}
-              {form.sizes.map((size, index) => (
-                <div key={size.id} className="flex items-center gap-2">
-                  <input
-                    aria-label="Size name"
-                    value={size.name}
-                    placeholder="e.g. Regular"
-                    maxLength={40}
-                    onChange={(event) => updateSize(index, { name: event.target.value })}
-                    className="h-10 min-w-0 flex-1 rounded-lg border border-border bg-surface px-3 text-sm outline-none focus:border-brand"
-                  />
-                  <SmallMoney
-                    label={`${size.name || 'Size'} price`}
-                    prefix="GH₵"
-                    value={size.price}
-                    onChange={(value) => updateSize(index, { price: value })}
-                  />
-                  <RemoveButton
-                    label="Remove size"
-                    onClick={() => update({ sizes: form.sizes.filter((_, i) => i !== index) })}
-                  />
-                </div>
-              ))}
-              <AddButton
-                onClick={() =>
-                  update({
-                    sizes: [
-                      ...form.sizes,
-                      {
-                        id: ulid(),
-                        name: '',
-                        price: form.sizes.length === 0 ? form.price : '',
-                        cost: form.sizes.length === 0 ? form.cost : '',
-                        bolt: form.sizes.length === 0 ? form.bolt : '',
-                        chowdeck: form.sizes.length === 0 ? form.chowdeck : '',
-                      },
-                    ],
-                  })
-                }
-              >
-                + Add size
-              </AddButton>
-            </div>
-          </Section>
-
-          <Section title={`Extras groups${form.groups.length ? ` (${form.groups.length})` : ''}`}>
-            <div className="space-y-5 p-4">
-              {form.groups.length === 0 && (
-                <p className="text-sm text-muted-foreground">No extras yet.</p>
-              )}
-              {form.groups.map((group, groupIndex) => (
-                <div key={group.id} className="space-y-3 rounded-xl border border-border p-4">
-                  <div className="flex items-start gap-2">
-                    <input
-                      aria-label="Group name"
-                      value={group.name}
-                      placeholder="e.g. Choose your protein"
-                      maxLength={60}
-                      onChange={(event) => updateGroup(groupIndex, { name: event.target.value })}
-                      className="h-10 min-w-0 flex-1 rounded-lg border border-border bg-surface px-3 text-sm font-medium outline-none focus:border-brand"
-                    />
-                    <RemoveButton
-                      label="Remove extras group"
-                      onClick={() =>
-                        update({ groups: form.groups.filter((_, i) => i !== groupIndex) })
-                      }
-                    />
-                  </div>
-                  {group.sharedWith.length > 0 && (
-                    <p className="text-xs text-muted-foreground">
-                      Also on {group.sharedWith.join(', ')}. Changes here change it there too.
-                    </p>
-                  )}
-                  <div className="flex flex-wrap items-center gap-4">
-                    <label className="flex cursor-pointer items-center gap-2 text-sm">
-                      <input
-                        type="checkbox"
-                        checked={group.required}
-                        onChange={(event) =>
-                          updateGroup(groupIndex, { required: event.target.checked })
-                        }
-                        className="h-4 w-4 accent-[var(--brand)]"
-                      />
-                      Required
-                    </label>
-                    <label className="flex items-center gap-2 text-sm text-muted-foreground">
-                      Pick up to
-                      <input
-                        inputMode="numeric"
-                        value={group.maxSelect}
-                        onChange={(event) =>
-                          updateGroup(groupIndex, { maxSelect: event.target.value })
-                        }
-                        className="h-8 w-14 rounded-lg border border-border bg-surface px-2 text-center font-mono text-sm text-text outline-none focus:border-brand"
-                      />
-                    </label>
-                  </div>
-                  <div className="space-y-2">
-                    {group.options.map((option, index) => (
-                      <div key={option.id} className="flex items-center gap-2">
-                        <input
-                          aria-label="Option name"
-                          value={option.name}
-                          placeholder="Option name"
-                          maxLength={60}
-                          onChange={(event) =>
-                            updateOption(groupIndex, index, { name: event.target.value })
-                          }
-                          className="h-9 min-w-0 flex-1 rounded-lg border border-border bg-surface px-3 text-sm outline-none focus:border-brand"
-                        />
-                        <SmallMoney
-                          label={`${option.name || 'Option'} extra price`}
-                          prefix="+₵"
-                          value={option.price}
-                          onChange={(value) => updateOption(groupIndex, index, { price: value })}
-                        />
-                        <RemoveButton
-                          label="Remove option"
-                          onClick={() =>
-                            updateGroup(groupIndex, {
-                              options: group.options.filter((_, i) => i !== index),
-                            })
-                          }
-                        />
-                      </div>
-                    ))}
-                    <AddButton
-                      onClick={() =>
-                        updateGroup(groupIndex, {
-                          options: [...group.options, { id: ulid(), name: '', price: '' }],
-                        })
-                      }
-                    >
-                      + Add option
-                    </AddButton>
-                  </div>
-                </div>
-              ))}
-              <AddButton
-                onClick={() =>
-                  update({
-                    groups: [
-                      ...form.groups,
-                      {
-                        id: ulid(),
-                        name: '',
-                        required: false,
-                        maxSelect: '1',
-                        options: [{ id: ulid(), name: '', price: '' }],
-                        sharedWith: [],
-                      },
-                    ],
-                  })
-                }
-              >
-                + Add extras group
-              </AddButton>
-            </div>
-          </Section>
-
-          {/* Bolt Food and Chowdeck prices are kept but not shown until their APIs connect. */}
-          {seesMoney && (
-            <Section title="Cost and margin">
-              <div className="space-y-4 p-4">
-                {form.sizes.length === 0 ? (
-                  <div>
-                    <FieldLabel htmlFor="item-cost">Cost price (only you can see this)</FieldLabel>
-                    <div className="flex items-center gap-3">
-                      <div className="flex-1">
-                        <MoneyInput
-                          id="item-cost"
-                          value={form.cost}
-                          onChange={(value) => update({ cost: value })}
-                        />
-                      </div>
-                      {margin !== null && <Badge tone={marginTone(margin)}>{margin}% margin</Badge>}
-                    </div>
-                  </div>
-                ) : (
-                  <SizeCosts
-                    sizes={form.sizes}
-                    onChange={(index, patch) => updateSize(index, patch)}
-                  />
-                )}
-              </div>
-            </Section>
-          )}
-
-          {item && (
-            <div className="pb-8">
-              <Button
-                variant="ghost"
-                full
-                busy={removing.isPending}
-                onClick={() => {
-                  if (window.confirm(`Take ${item.name} off the menu? Past orders keep it.`)) {
-                    removing.mutate();
-                  }
-                }}
-              >
-                Remove from menu
-              </Button>
-              {removing.error && (
-                <div className="mt-3">
-                  <ErrorNote>{removing.error.message}</ErrorNote>
-                </div>
-              )}
-            </div>
-          )}
-        </div>
-      </div>
-    </div>
-  );
-}
-
-/** What each size costs to make, with its margin. */
-function SizeCosts({
-  sizes,
-  onChange,
-}: {
-  sizes: SizeForm[];
-  onChange: (index: number, patch: Partial<SizeForm>) => void;
-}) {
-  return (
-    <div className="space-y-3">
-      {sizes.map((size, index) => {
-        const sizePrice = parseAmount(size.price);
-        const margin = sizePrice === null ? null : marginOf(sizePrice, parseAmount(size.cost));
-        return (
-          <div key={size.id} className="rounded-xl border border-border p-3">
-            <div className="mb-2 flex items-center justify-between gap-2">
-              <p className="text-sm font-medium">{size.name || 'Size'}</p>
-              {margin !== null && <Badge tone={marginTone(margin)}>{margin}% margin</Badge>}
-            </div>
-            <MoneyInput
-              id={`cost-${size.id}`}
-              label="Cost"
-              value={size.cost}
-              onChange={(value) => onChange(index, { cost: value })}
+          <Input
+            label="Name"
+            value={form.name}
+            placeholder="For example: Jollof rice"
+            maxLength={80}
+            onChange={(event) => update({ name: event.target.value })}
+          />
+          <div className="grid gap-4 sm:grid-cols-2">
+            <Select
+              label="Category"
+              value={form.categoryId || NO_CATEGORY}
+              onValueChange={(value) => update({ categoryId: value === NO_CATEGORY ? '' : value })}
+              options={[
+                { value: NO_CATEGORY, label: 'No category' },
+                ...menu.categories.map((category) => ({
+                  value: category.id,
+                  label: category.name,
+                })),
+                { value: NEW_CATEGORY, label: 'New category…' },
+              ]}
+            />
+            <Select
+              label="Made at"
+              value={form.station}
+              onValueChange={(value) => update({ station: value as Station })}
+              options={(Object.keys(STATION_WORDS) as Station[]).map((station) => ({
+                value: station,
+                label: STATION_WORDS[station],
+              }))}
             />
           </div>
-        );
-      })}
-    </div>
-  );
-}
+          {form.categoryId === NEW_CATEGORY && (
+            <Input
+              label="New category’s name"
+              value={form.newCategory}
+              placeholder="For example: Rice"
+              maxLength={40}
+              onChange={(event) => update({ newCategory: event.target.value })}
+            />
+          )}
+          <div className="grid gap-4 sm:grid-cols-2">
+            {form.sizes.length === 0 ? (
+              <MoneyField
+                label="Price"
+                value={form.price}
+                onChange={(value) => update({ price: value })}
+              />
+            ) : (
+              <div className="grid content-start">
+                <span className="mb-2 text-sm font-medium">Price</span>
+                <span className="flex min-h-(--control-height-md) items-center text-sm text-muted-foreground">
+                  Set for each size below
+                </span>
+              </div>
+            )}
+            <Input
+              label="Prep time, in minutes"
+              inputMode="numeric"
+              value={form.prep}
+              onChange={(event) => update({ prep: event.target.value })}
+            />
+          </div>
+        </div>
+        <div className="flex items-center justify-between gap-4 border-t px-5 py-4">
+          <div>
+            <p className="text-sm font-medium" id="sold-out">
+              Sold out today
+            </p>
+            <p className="text-xs text-muted-foreground">Can’t be ordered until tomorrow.</p>
+          </div>
+          <Switch
+            aria-labelledby="sold-out"
+            checked={form.soldOut}
+            onCheckedChange={(soldOut) => update({ soldOut })}
+          />
+        </div>
+      </Panel>
 
-function Select({
-  id,
-  value,
-  onChange,
-  children,
-}: {
-  id: string;
-  value: string;
-  onChange: (value: string) => void;
-  children: ReactNode;
-}) {
-  return (
-    <select
-      id={id}
-      value={value}
-      onChange={(event) => onChange(event.target.value)}
-      className="h-11 w-full rounded-xl border border-border bg-surface px-3 text-sm text-text outline-none focus:border-brand"
-    >
-      {children}
-    </select>
-  );
-}
+      <Panel
+        title="Sizes"
+        description={
+          form.sizes.length === 0
+            ? 'No sizes: every order uses the one price.'
+            : 'Each size has its own price.'
+        }
+      >
+        <div className="flex flex-col gap-3 border-t p-5">
+          {form.sizes.map((size, index) => (
+            <div key={size.id} className="flex items-end gap-2">
+              <PlainField
+                label="Size"
+                hideLabel={index > 0}
+                className="flex-1"
+                value={size.name}
+                placeholder="For example: Regular"
+                maxLength={40}
+                onChange={(value) => updateSize(index, { name: value })}
+              />
+              <MoneyField
+                label="Price"
+                hideLabel={index > 0}
+                className="w-32"
+                value={size.price}
+                onChange={(value) => updateSize(index, { price: value })}
+              />
+              <RemoveButton
+                label={`Remove ${size.name || 'this size'}`}
+                onClick={() => update({ sizes: form.sizes.filter((_, i) => i !== index) })}
+              />
+            </div>
+          ))}
+          <AddButton
+            onClick={() =>
+              update({
+                sizes: [
+                  ...form.sizes,
+                  {
+                    id: ulid(),
+                    name: '',
+                    price: form.sizes.length === 0 ? form.price : '',
+                    cost: form.sizes.length === 0 ? form.cost : '',
+                    bolt: form.sizes.length === 0 ? form.bolt : '',
+                    chowdeck: form.sizes.length === 0 ? form.chowdeck : '',
+                  },
+                ],
+              })
+            }
+          >
+            Add a size
+          </AddButton>
+        </div>
+      </Panel>
 
-function MoneyInput({
-  id,
-  label,
-  value,
-  placeholder,
-  onChange,
-}: {
-  id: string;
-  label?: string;
-  value: string;
-  placeholder?: string;
-  onChange: (value: string) => void;
-}) {
-  return (
-    <div>
-      {label && <FieldLabel htmlFor={id}>{label}</FieldLabel>}
-      <div className="flex h-11 items-center gap-1 rounded-xl border border-border bg-surface px-3 focus-within:border-brand">
-        <span className="shrink-0 font-mono text-xs text-muted-foreground">GH₵</span>
-        <input
-          id={id}
-          inputMode="decimal"
-          value={value}
-          placeholder={placeholder}
-          onChange={(event) => onChange(event.target.value)}
-          className="w-full min-w-0 flex-1 bg-transparent font-mono text-sm outline-none placeholder:text-muted-foreground/60"
-        />
-      </div>
-    </div>
-  );
-}
+      <Panel
+        title="Extras"
+        description={
+          form.groups.length === 0
+            ? 'No extras yet. A group of extras is a choice the customer makes, like a protein.'
+            : undefined
+        }
+      >
+        <div className="flex flex-col gap-4 border-t p-5">
+          {form.groups.map((group, groupIndex) => (
+            <div
+              key={group.id}
+              className="flex flex-col gap-4 rounded-(--radius-panel) border bg-background p-4"
+            >
+              <div className="flex items-end gap-2">
+                <PlainField
+                  label="Group name"
+                  className="flex-1"
+                  value={group.name}
+                  placeholder="For example: Choose your protein"
+                  maxLength={60}
+                  onChange={(value) => updateGroup(groupIndex, { name: value })}
+                />
+                <RemoveButton
+                  label={`Remove ${group.name || 'this group'}`}
+                  onClick={() => update({ groups: form.groups.filter((_, i) => i !== groupIndex) })}
+                />
+              </div>
+              {group.sharedWith.length > 0 && (
+                <p className="text-xs text-muted-foreground">
+                  Also on {group.sharedWith.join(', ')}. Changes here change it there too.
+                </p>
+              )}
+              <div className="flex flex-wrap items-end gap-6">
+                <Checkbox
+                  label="Required"
+                  description="The customer has to pick one."
+                  checked={group.required}
+                  onCheckedChange={(checked) =>
+                    updateGroup(groupIndex, { required: checked === true })
+                  }
+                />
+                <PlainField
+                  label="Pick up to"
+                  className="w-24"
+                  inputMode="numeric"
+                  value={group.maxSelect}
+                  onChange={(value) => updateGroup(groupIndex, { maxSelect: value })}
+                />
+              </div>
+              <div className="flex flex-col gap-2">
+                {group.options.map((option, index) => (
+                  <div key={option.id} className="flex items-end gap-2">
+                    <PlainField
+                      label="Option"
+                      hideLabel={index > 0}
+                      className="flex-1"
+                      value={option.name}
+                      placeholder="For example: Chicken"
+                      maxLength={60}
+                      onChange={(value) => updateOption(groupIndex, index, { name: value })}
+                    />
+                    <MoneyField
+                      label="Adds"
+                      hideLabel={index > 0}
+                      prefix="+GH₵"
+                      className="w-32"
+                      value={option.price}
+                      onChange={(value) => updateOption(groupIndex, index, { price: value })}
+                    />
+                    <RemoveButton
+                      label={`Remove ${option.name || 'this option'}`}
+                      onClick={() =>
+                        updateGroup(groupIndex, {
+                          options: group.options.filter((_, i) => i !== index),
+                        })
+                      }
+                    />
+                  </div>
+                ))}
+                <AddButton
+                  onClick={() =>
+                    updateGroup(groupIndex, {
+                      options: [...group.options, { id: ulid(), name: '', price: '' }],
+                    })
+                  }
+                >
+                  Add an option
+                </AddButton>
+              </div>
+            </div>
+          ))}
+          <AddButton
+            onClick={() =>
+              update({
+                groups: [
+                  ...form.groups,
+                  {
+                    id: ulid(),
+                    name: '',
+                    required: false,
+                    maxSelect: '1',
+                    options: [{ id: ulid(), name: '', price: '' }],
+                    sharedWith: [],
+                  },
+                ],
+              })
+            }
+          >
+            Add a group of extras
+          </AddButton>
+        </div>
+      </Panel>
 
-function SmallMoney({
-  label,
-  prefix,
-  value,
-  onChange,
-}: {
-  label: string;
-  prefix: string;
-  value: string;
-  onChange: (value: string) => void;
-}) {
-  return (
-    <div className="flex h-10 w-28 shrink-0 items-center gap-1 rounded-lg border border-border bg-surface px-3 focus-within:border-brand">
-      <span className="shrink-0 font-mono text-xs text-muted-foreground">{prefix}</span>
-      <input
-        aria-label={label}
-        inputMode="decimal"
-        value={value}
-        onChange={(event) => onChange(event.target.value)}
-        className="w-full min-w-0 bg-transparent font-mono text-sm outline-none"
-      />
-    </div>
+      {/* Bolt Food and Chowdeck prices are kept but not shown until their APIs connect. */}
+      {seesMoney && (
+        <Panel title="Cost and margin" description="Only people who see sales totals see this.">
+          <div className="flex flex-col gap-4 border-t p-5">
+            {form.sizes.length === 0 ? (
+              <div className="flex items-end gap-3">
+                <MoneyField
+                  label="What it costs you to make"
+                  className="flex-1"
+                  value={form.cost}
+                  onChange={(value) => update({ cost: value })}
+                />
+                {margin !== null && (
+                  <span className="flex min-h-(--control-height-md) items-center">
+                    <MarginBadge margin={margin} />
+                  </span>
+                )}
+              </div>
+            ) : (
+              form.sizes.map((size, index) => {
+                const sizePrice = parseAmount(size.price);
+                const sizeMargin =
+                  sizePrice === null ? null : marginOf(sizePrice, parseAmount(size.cost));
+                return (
+                  <div key={size.id} className="flex items-end gap-3">
+                    <MoneyField
+                      label={`${size.name || 'This size'}: what it costs to make`}
+                      className="flex-1"
+                      value={size.cost}
+                      onChange={(value) => updateSize(index, { cost: value })}
+                    />
+                    {sizeMargin !== null && (
+                      <span className="flex min-h-(--control-height-md) items-center">
+                        <MarginBadge margin={sizeMargin} />
+                      </span>
+                    )}
+                  </div>
+                );
+              })
+            )}
+          </div>
+        </Panel>
+      )}
+
+      {item && (
+        <div className="flex flex-col items-start gap-3 pb-8">
+          <Button variant="danger" onClick={() => setConfirmRemove(true)}>
+            Remove from menu
+          </Button>
+        </div>
+      )}
+
+      {item && (
+        <Dialog open={confirmRemove} onOpenChange={setConfirmRemove}>
+          <DialogContent
+            title={`Take ${item.name} off the menu?`}
+            description="It can’t be ordered any more. Past orders keep it."
+          >
+            <div className="flex flex-col gap-4">
+              {removing.error && (
+                <Alert tone="danger" title="Couldn’t remove it">
+                  {removing.error.message}
+                </Alert>
+              )}
+              <div className="flex justify-end gap-2">
+                <Button variant="ghost" onClick={() => setConfirmRemove(false)}>
+                  Keep it
+                </Button>
+                <Button
+                  variant="danger"
+                  loading={removing.isPending}
+                  onClick={() => removing.mutate()}
+                >
+                  Remove from menu
+                </Button>
+              </div>
+            </div>
+          </DialogContent>
+        </Dialog>
+      )}
+    </EditorFrame>
   );
 }
 
 function RemoveButton({ label, onClick }: { label: string; onClick: () => void }) {
   return (
-    <button
-      type="button"
-      aria-label={label}
-      onClick={onClick}
-      className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-red-bg text-lg text-red"
-    >
-      ×
-    </button>
+    <Button variant="ghost" aria-label={label} onClick={onClick}>
+      <X size={18} strokeWidth={1.75} aria-hidden />
+    </Button>
   );
 }
 
 function AddButton({ onClick, children }: { onClick: () => void; children: ReactNode }) {
   return (
-    <button
-      type="button"
-      onClick={onClick}
-      className="flex h-10 items-center gap-2 text-sm font-medium text-brand"
-    >
+    <Button variant="secondary" size="sm" className="self-start" onClick={onClick}>
+      <Plus size={16} strokeWidth={1.75} aria-hidden />
       {children}
-    </button>
+    </Button>
   );
 }

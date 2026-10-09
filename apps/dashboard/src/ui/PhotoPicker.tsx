@@ -1,7 +1,10 @@
 import { useMutation } from '@tanstack/react-query';
+import { ImagePlus, LoaderCircle } from 'lucide-react';
 import { useRef, useState } from 'react';
+import { Alert } from '@/components/arc/alert/alert';
+import { Button } from '@/components/arc/button/button';
+import { cn } from '@/lib/utils';
 import { removePhoto, uploadPhoto } from '../lib/photos';
-import { Button, ErrorNote, Spinner, cx } from './controls';
 
 /**
  * A photo with Add, Change and Remove. The picture is made small in the browser, then kept at
@@ -50,35 +53,41 @@ export function PhotoPicker({
   const pick = () => input.current?.click();
 
   return (
-    <div>
+    <div className="flex flex-col gap-3">
       <div className="flex items-center gap-4">
         <button
           type="button"
           onClick={pick}
           disabled={busy}
           aria-label={`${current ? 'Change' : 'Add'} ${label.toLowerCase()}`}
-          className={cx(
-            'relative flex h-20 shrink-0 items-center justify-center overflow-hidden rounded-xl border border-border bg-tile text-2xl text-muted-foreground',
+          className={cn(
+            'relative flex h-20 shrink-0 items-center justify-center overflow-hidden rounded-(--radius-panel) border bg-muted text-muted-foreground transition-colors hover:border-foreground',
             shape === 'wide' ? 'w-36' : 'w-20',
-            !current && 'border-dashed',
+            !current && 'border-dashed border-(--border-strong)',
           )}
         >
-          {current ? <img src={current} alt="" className="h-full w-full object-cover" /> : '+'}
+          {current ? (
+            <img src={current} alt="" className="size-full object-cover" />
+          ) : (
+            <ImagePlus size={20} strokeWidth={1.75} aria-hidden />
+          )}
           {busy && (
             <span className="absolute inset-0 flex items-center justify-center bg-surface/70">
-              <Spinner />
+              <LoaderCircle size={20} strokeWidth={1.75} className="animate-spin" aria-hidden />
             </span>
           )}
         </button>
-        <div className="min-w-0 flex-1">
-          <p className="text-sm font-medium">{label}</p>
-          {hint && <p className="mt-0.5 text-xs text-muted-foreground">{hint}</p>}
-          <div className="mt-2 flex gap-2">
-            <Button variant="secondary" small disabled={busy} onClick={pick}>
+        <div className="flex min-w-0 flex-1 flex-col gap-2">
+          <div>
+            <p className="text-sm font-medium">{label}</p>
+            {hint && <p className="text-xs text-muted-foreground">{hint}</p>}
+          </div>
+          <div className="flex gap-2">
+            <Button variant="secondary" size="sm" disabled={busy} onClick={pick}>
               {current ? 'Change' : 'Add photo'}
             </Button>
             {current && (
-              <Button variant="ghost" small disabled={busy} onClick={() => removing.mutate()}>
+              <Button variant="ghost" size="sm" disabled={busy} onClick={() => removing.mutate()}>
                 Remove
               </Button>
             )}
@@ -98,9 +107,9 @@ export function PhotoPicker({
         }}
       />
       {error && (
-        <div className="mt-3">
-          <ErrorNote>{error.message}</ErrorNote>
-        </div>
+        <Alert tone="danger" title="Couldn’t save the photo">
+          {error.message}
+        </Alert>
       )}
     </div>
   );

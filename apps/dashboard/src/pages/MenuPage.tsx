@@ -1,6 +1,14 @@
 import { useMutation, useQuery } from '@tanstack/react-query';
+import { ChevronRight, ImageOff, Plus, UtensilsCrossed } from 'lucide-react';
 import { useState } from 'react';
-import { Link } from 'react-router';
+import { Link, useNavigate } from 'react-router';
+import { Alert } from '@/components/arc/alert/alert';
+import { Badge } from '@/components/arc/badge/badge';
+import { Button } from '@/components/arc/button/button';
+import { EmptyState } from '@/components/arc/empty-state/empty-state';
+import SegmentedControl from '@/components/arc/segmented-control/segmented-control';
+import { Skeleton } from '@/components/ui/skeleton';
+import { cn } from '@/lib/utils';
 import {
   STATION_WORDS,
   fetchMenu,
@@ -15,30 +23,52 @@ import { cedis } from '../lib/money';
 import { saveInPlace } from '../lib/save-in-place';
 import { useSession } from '../lib/session';
 import { useMe } from '../shell/Shell';
-import { Badge, ErrorNote, Spinner, cx } from '../ui/controls';
 import { Page } from '../ui/Page';
 
 const ALL = 'all';
 const NONE = 'none';
+const MARGIN_TONES = { green: 'success', amber: 'warning', red: 'danger' } as const;
 
 export function MenuPage() {
   const me = useMe();
   const { tenantId } = useSession();
+  const navigate = useNavigate();
   const seesMoney = me.capabilities.includes('reports.revenue.view');
   const menu = useQuery({ queryKey: ['menu', tenantId], queryFn: fetchMenu });
   const [category, setCategory] = useState(ALL);
 
+  const addItem = (
+    <Button
+      onClick={() =>
+        navigate(
+          category === ALL || category === NONE
+            ? '/menu/items/new'
+            : `/menu/items/new?category=${category}`,
+        )
+      }
+    >
+      <Plus size={16} strokeWidth={1.75} aria-hidden />
+      Add item
+    </Button>
+  );
+
   if (menu.isPending) {
     return (
-      <div className="flex justify-center py-20">
-        <Spinner />
-      </div>
+      <Page title="Menu">
+        <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3" aria-busy="true">
+          {[0, 1, 2, 3].map((card) => (
+            <Skeleton key={card} className="h-36 w-full rounded-(--radius-surface)" />
+          ))}
+        </div>
+      </Page>
     );
   }
   if (menu.isError) {
     return (
       <Page title="Menu">
-        <ErrorNote>{menu.error.message}</ErrorNote>
+        <Alert tone="danger" title="Couldn’t load the menu">
+          {menu.error.message}
+        </Alert>
       </Page>
     );
   }
@@ -46,77 +76,66 @@ export function MenuPage() {
   const { items, categories } = menu.data;
   if (items.length === 0) {
     return (
-      <div className="flex min-h-[60vh] flex-col items-center justify-center px-8 text-center">
-        <div className="mb-6 flex h-20 w-20 items-center justify-center rounded-2xl bg-tile text-4xl">
-          🍽️
+      <Page title="Menu">
+        <div className="rounded-(--radius-surface) border bg-card">
+          <EmptyState
+            icon={<UtensilsCrossed size={24} strokeWidth={1.75} />}
+            title="No menu items yet"
+            description="Add your first item to start taking orders on the tablet and your online store."
+            action={
+              <Button onClick={() => navigate('/menu/items/new')}>Add your first item</Button>
+            }
+          />
         </div>
-        <h2 className="mb-2 text-xl font-bold">No menu items yet</h2>
-        <p className="mb-8 text-sm text-muted-foreground">
-          Add your first item to start taking orders on the tablet.
-        </p>
-        <Link
-          to="/menu/items/new"
-          className="inline-flex h-11 items-center rounded-xl bg-brand px-5 text-sm font-semibold text-brand-fg"
-        >
-          Add your first item
-        </Link>
-      </div>
+      </Page>
     );
   }
 
   const uncategorised = items.filter((item) => item.categoryId === null);
-  const pills = [
-    { id: ALL, name: 'All', count: items.length },
+  const options = [
+    { value: ALL, name: 'All', count: items.length },
     ...categories.map((c) => ({
-      id: c.id,
+      value: c.id,
       name: c.name,
       count: items.filter((item) => item.categoryId === c.id).length,
     })),
     ...(uncategorised.length
-      ? [{ id: NONE, name: 'No category', count: uncategorised.length }]
+      ? [{ value: NONE, name: 'No category', count: uncategorised.length }]
       : []),
   ];
   const shown =
     category === ALL ? items : items.filter((item) => (item.categoryId ?? NONE) === category);
+  const soldOutCount = items.filter((item) => item.soldOutToday).length;
 
   return (
     <Page
       title="Menu"
-      actions={
-        <Link
-          to={
-            category === ALL || category === NONE
-              ? '/menu/items/new'
-              : `/menu/items/new?category=${category}`
-          }
-          className="inline-flex h-9 items-center rounded-xl bg-brand px-4 text-sm font-semibold text-brand-fg"
-        >
-          + Add item
-        </Link>
+      subtitle={
+        soldOutCount > 0
+          ? `${items.length} items, ${soldOutCount} sold out today`
+          : `${items.length} items`
       }
+      actions={addItem}
     >
-      <div className="no-scrollbar mb-6 flex gap-1 overflow-x-auto rounded-xl bg-tile p-1">
-        {pills.map((pill) => (
-          <button
-            key={pill.id}
-            type="button"
-            aria-pressed={category === pill.id}
-            onClick={() => setCategory(pill.id)}
-            className={cx(
-              'h-8 shrink-0 rounded-lg px-4 text-sm font-medium transition-all',
-              category === pill.id ? 'bg-surface text-text shadow-sm' : 'text-muted-foreground',
-            )}
-          >
-            {pill.name}
-            <span className="ml-1.5 text-xs text-muted-foreground">{pill.count}</span>
-          </button>
-        ))}
-      </div>
+      <div className="flex flex-col gap-6">
+        <SegmentedControl
+          label="Category"
+          value={category}
+          onValueChange={setCategory}
+          options={options.map((option) => ({
+            value: option.value,
+            label: option.name,
+            accessory: (
+              <span className="text-xs text-muted-foreground tabular-nums">{option.count}</span>
+            ),
+          }))}
+        />
 
-      <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
-        {shown.map((item) => (
-          <ItemCard key={item.id} item={item} seesMoney={seesMoney} />
-        ))}
+        <ul className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+          {shown.map((item) => (
+            <ItemCard key={item.id} item={item} seesMoney={seesMoney} />
+          ))}
+        </ul>
       </div>
     </Page>
   );
@@ -136,67 +155,87 @@ function ItemCard({ item, seesMoney }: { item: MenuItem; seesMoney: boolean }) {
     onSettled: () => refreshMenu(),
   });
   const margin = marginOf(item.price, item.costPrice);
+  const details = [
+    STATION_WORDS[item.station],
+    item.prepMinutes !== null && `${item.prepMinutes} min`,
+    item.groups.length > 0 &&
+      (item.groups.length === 1 ? '1 group of extras' : `${item.groups.length} groups of extras`),
+  ].filter(Boolean);
 
   return (
-    <div
-      className={cx(
-        'flex items-start gap-3 rounded-xl border border-border p-4',
-        item.soldOutToday ? 'bg-tile opacity-70' : 'bg-surface',
-      )}
-    >
-      <div className="min-w-0 flex-1">
-        <div className="flex flex-wrap items-start gap-2">
-          <p className="text-sm font-semibold">{item.name}</p>
-          {item.soldOutToday && <Badge tone="amber">Sold out today</Badge>}
-        </div>
-        <div className="mt-1.5 flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-muted-foreground">
-          {item.variants.length > 0 ? (
-            item.variants.map((variant) => (
-              <span key={variant.id} className="font-mono">
-                {variant.name} {cedis(variant.price)}
-              </span>
-            ))
-          ) : (
-            <span className="font-mono">{cedis(item.price)}</span>
+    <li className="flex flex-col overflow-hidden rounded-(--radius-surface) border bg-card">
+      <Link
+        to={`/menu/items/${item.id}`}
+        aria-label={`Edit ${item.name}`}
+        className="flex flex-1 items-start gap-4 p-4 transition-colors hover:bg-muted/60"
+      >
+        <span
+          className={cn(
+            'flex size-16 shrink-0 items-center justify-center overflow-hidden rounded-(--radius-control) bg-muted text-muted-foreground',
+            item.soldOutToday && 'opacity-50 grayscale',
           )}
-          {item.prepMinutes !== null && <span>· ⏱ {item.prepMinutes}m</span>}
-          <span>· {STATION_WORDS[item.station]}</span>
-          {item.groups.length > 0 && (
-            <span>
-              · {item.groups.length} extra{item.groups.length > 1 ? 's' : ''}
+        >
+          {item.photoUrl ? (
+            <img src={item.photoUrl} alt="" className="size-full object-cover" />
+          ) : (
+            <ImageOff size={18} strokeWidth={1.75} aria-hidden />
+          )}
+        </span>
+        <span className="flex min-w-0 flex-1 flex-col gap-1">
+          <span className="flex items-start justify-between gap-2">
+            <span className={cn('font-medium', item.soldOutToday && 'text-muted-foreground')}>
+              {item.name}
+            </span>
+            <ChevronRight
+              size={16}
+              strokeWidth={1.75}
+              className="mt-1 shrink-0 text-muted-foreground"
+              aria-hidden
+            />
+          </span>
+          <span className="flex flex-wrap gap-x-3 font-mono text-sm">
+            {item.variants.length > 0 ? (
+              item.variants.map((variant) => (
+                <span key={variant.id}>
+                  <span className="font-sans text-muted-foreground">{variant.name}</span>{' '}
+                  {cedis(variant.price)}
+                </span>
+              ))
+            ) : (
+              <span>{cedis(item.price)}</span>
+            )}
+          </span>
+          <span className="text-xs text-muted-foreground">{details.join(', ')}</span>
+          {seesMoney && item.costPrice !== null && (
+            <span className="flex items-center gap-2 pt-1 text-xs text-muted-foreground">
+              Costs {cedis(item.costPrice)}
+              {margin !== null && (
+                <Badge tone={MARGIN_TONES[marginTone(margin)]} size="sm">
+                  {margin}% margin
+                </Badge>
+              )}
             </span>
           )}
-        </div>
-        {seesMoney && item.costPrice !== null && (
-          <div className="mt-2 flex items-center gap-2">
-            <span className="text-xs text-muted-foreground">Cost {cedis(item.costPrice)}</span>
-            {margin !== null && <Badge tone={marginTone(margin)}>{margin}% margin</Badge>}
-          </div>
+        </span>
+      </Link>
+      <div className="flex items-center justify-between gap-3 border-t px-4 py-2.5">
+        {item.soldOutToday ? (
+          <Badge tone="warning" size="sm">
+            Sold out today
+          </Badge>
+        ) : (
+          <span className="text-xs text-muted-foreground">On sale</span>
         )}
-      </div>
-      <div className="flex shrink-0 flex-col items-end gap-2">
-        <Link
-          to={`/menu/items/${item.id}`}
-          className="rounded-lg bg-tile px-3 py-1.5 text-xs font-semibold"
-        >
-          Edit
-        </Link>
         {/* An action, so it reads as one: "Sold out" alone looked like every item's status. */}
-        <button
-          type="button"
+        <Button
+          variant={item.soldOutToday ? 'secondary' : 'ghost'}
+          size="sm"
           disabled={soldOut.isPending}
           onClick={() => soldOut.mutate(!item.soldOutToday)}
-          className={cx(
-            'rounded-lg border px-3 py-1.5 text-xs font-semibold transition-colors',
-            item.soldOutToday
-              ? 'border-green/40 text-green'
-              : 'border-border text-muted-foreground hover:border-amber hover:text-amber',
-          )}
         >
           {item.soldOutToday ? 'Back in stock' : 'Mark sold out'}
-        </button>
-        {soldOut.error && <p className="text-right text-xs text-red">{soldOut.error.message}</p>}
+        </Button>
       </div>
-    </div>
+    </li>
   );
 }

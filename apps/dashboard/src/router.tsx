@@ -88,6 +88,8 @@ export const router = createBrowserRouter([
             { path: 'orders/:orderId', Component: OrderPage },
             { path: 'customers', Component: CustomersPage },
             { path: 'customers/:customerId', Component: CustomerPage },
+            { path: 'menu', Component: MenuPage },
+            { path: 'menu/items/:itemId', Component: ItemEditorPage },
           ],
         },
       ]

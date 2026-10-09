@@ -260,6 +260,64 @@ const CUSTOMER_DETAIL = {
   ],
 };
 
+const menuItem = (
+  id: string,
+  name: string,
+  categoryId: string,
+  price: number,
+  extra: Record<string, unknown> = {},
+) => ({
+  id,
+  name,
+  categoryId,
+  price,
+  costPrice: null,
+  prepMinutes: null,
+  station: 'KITCHEN',
+  variants: [],
+  groups: [],
+  soldOutToday: false,
+  photoUrl: null,
+  channelPrices: {},
+  ...extra,
+});
+
+const MENU = {
+  categories: [
+    { id: 'rice', name: 'Rice' },
+    { id: 'local', name: 'Local dishes' },
+    { id: 'drinks', name: 'Drinks' },
+  ],
+  items: [
+    menuItem('jollof', 'Jollof with chicken', 'rice', 4_500, {
+      costPrice: 2_600,
+      prepMinutes: 10,
+      variants: [
+        { id: 'v1', name: 'Regular', price: 4_500, costPrice: 2_600, channelPrices: {} },
+        { id: 'v2', name: 'Large', price: 6_000, costPrice: 3_300, channelPrices: {} },
+      ],
+      groups: [
+        {
+          id: 'g1',
+          name: 'Choose your protein',
+          required: true,
+          maxSelect: 1,
+          options: [
+            { id: 'o1', name: 'Chicken', priceDelta: 0 },
+            { id: 'o2', name: 'Fish', priceDelta: 500 },
+          ],
+          sharedWith: ['Fried rice'],
+        },
+      ],
+    }),
+    menuItem('fried-rice', 'Fried rice', 'rice', 4_000, { costPrice: 2_900, prepMinutes: 12 }),
+    menuItem('waakye', 'Waakye special', 'local', 6_500, { soldOutToday: true }),
+    menuItem('banku', 'Banku and tilapia', 'local', 7_000, { costPrice: 4_200, prepMinutes: 20 }),
+    menuItem('kelewele', 'Kelewele', 'local', 1_500),
+    menuItem('sobolo', 'Sobolo', 'drinks', 1_000, { station: 'DRINKS' }),
+  ],
+};
+
 /** What each screen's queries would have fetched. Keys match the screens' own. */
 function seed(tenant: string | null) {
   // Sample data never goes stale here, so nothing is fetched over it.
@@ -273,6 +331,7 @@ function seed(tenant: string | null) {
   queryClient.setQueryData(['order', tenant, 'order-A35'], ORDER_DETAIL);
   queryClient.setQueryData(['customers', tenant, ''], CUSTOMERS);
   queryClient.setQueryData(['customer', tenant, 'customer-1'], CUSTOMER_DETAIL);
+  queryClient.setQueryData(['menu', tenant], MENU);
 }
 
 export default function Preview() {
