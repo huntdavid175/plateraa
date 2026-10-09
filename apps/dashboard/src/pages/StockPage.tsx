@@ -5,10 +5,11 @@ import { ulid } from 'ulid';
 import { Alert } from '@/components/arc/alert/alert';
 import { Badge } from '@/components/arc/badge/badge';
 import { Button } from '@/components/arc/button/button';
+import { ConfirmMorph } from '@/components/arc/confirm-morph/confirm-morph';
 import { Dialog, DialogContent } from '@/components/arc/dialog/dialog';
 import { EmptyState } from '@/components/arc/empty-state/empty-state';
 import { Input } from '@/components/arc/input/input';
-import { Panel, PanelRows } from '@/components/app/panel';
+import { Bento, Tile } from '@/components/app/bento';
 import { Skeleton } from '@/components/ui/skeleton';
 import { cn } from '@/lib/utils';
 import {
@@ -43,7 +44,6 @@ export function StockPage() {
     <Page
       title="Stock"
       subtitle="Key ingredients. Daily portion counts are on the tablet’s Stock tab."
-      narrow
       actions={
         <Button onClick={() => setOpen({ kind: 'add' })}>
           <Plus size={16} strokeWidth={1.75} aria-hidden />
@@ -51,81 +51,72 @@ export function StockPage() {
         </Button>
       }
     >
-      <div className="flex flex-col gap-6">
+      <div className="flex flex-col gap-4">
         {low.length > 0 && (
           <Alert tone="warning" title="Running low">
             {low.map((item) => item.name).join(', ')}
           </Alert>
         )}
-
-        <Panel title="Ingredients" description="Purchases add to these. A count sets what’s there.">
-          {stock.isPending && (
-            <PanelRows>
-              {[0, 1, 2].map((row) => (
-                <li key={row} className="flex items-center justify-between gap-4 px-5 py-4">
-                  <span className="flex flex-col gap-2">
-                    <Skeleton className="h-3.5 w-28" />
-                    <Skeleton className="h-3.5 w-20" />
-                  </span>
-                  <Skeleton className="h-9 w-32" />
-                </li>
-              ))}
-            </PanelRows>
-          )}
-          {stock.isError && (
-            <div className="px-5 pb-5">
-              <Alert tone="danger" title="Couldn’t load your stock">
-                {stock.error.message}
-              </Alert>
-            </div>
-          )}
-          {stock.data?.length === 0 && (
+        {stock.isError && (
+          <Alert tone="danger" title="Couldn’t load your stock">
+            {stock.error.message}
+          </Alert>
+        )}
+        {stock.data?.length === 0 && (
+          <div className="rounded-(--radius-surface) border bg-card">
             <EmptyState
               icon={<Package size={24} strokeWidth={1.75} />}
               title="No ingredients yet"
               description="Add the ones you buy often, like rice, oil or gas."
             />
-          )}
-          {stock.data && stock.data.length > 0 && (
-            <PanelRows>
-              {stock.data.map((item) => (
-                <li key={item.id} className="flex items-center gap-4 px-5 py-3.5">
-                  <div className="flex min-w-0 flex-1 flex-col gap-0.5">
-                    <span className="flex flex-wrap items-center gap-2">
-                      <span className="text-sm font-medium">{item.name}</span>
-                      {item.low && (
-                        <Badge tone="warning" size="sm">
-                          Running low
-                        </Badge>
-                      )}
-                    </span>
-                    <span className="text-xs text-muted-foreground">
-                      <span className="font-mono text-sm text-foreground">{item.onHand}</span>{' '}
-                      {item.unit}
-                      {item.lowThreshold !== null ? `, low at ${item.lowThreshold}` : ''}
-                    </span>
-                  </div>
-                  <div className="flex shrink-0 gap-2">
-                    <Button
-                      variant="secondary"
-                      size="sm"
-                      onClick={() => setOpen({ kind: 'count', item })}
-                    >
-                      Count
-                    </Button>
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => setOpen({ kind: 'edit', item })}
-                    >
-                      Edit
-                    </Button>
-                  </div>
-                </li>
-              ))}
-            </PanelRows>
-          )}
-        </Panel>
+          </div>
+        )}
+        <Bento>
+          {stock.isPending &&
+            [0, 1, 2, 3].map((tile) => (
+              <Skeleton key={tile} className="h-44 rounded-(--radius-surface)" />
+            ))}
+          {stock.data?.map((item) => (
+            <Tile key={item.id} title={item.name} tone={item.low ? 'warning' : undefined}>
+              <div className="flex items-baseline gap-2">
+                <span className="font-heading text-4xl leading-none tracking-[-0.03em] tabular-nums">
+                  {item.onHand}
+                </span>
+                <span className="text-sm text-muted-foreground">{item.unit}</span>
+              </div>
+              <div className="flex flex-wrap items-center gap-1.5">
+                {item.low ? (
+                  <Badge tone="warning" size="sm">
+                    Running low
+                  </Badge>
+                ) : (
+                  <Badge tone="success" size="sm">
+                    Enough
+                  </Badge>
+                )}
+                {item.lowThreshold !== null && (
+                  <span className="text-xs text-muted-foreground">Low at {item.lowThreshold}</span>
+                )}
+              </div>
+              <div className="mt-auto flex gap-2 pt-2">
+                <Button
+                  variant="secondary"
+                  size="sm"
+                  onClick={() => setOpen({ kind: 'count', item })}
+                >
+                  Count
+                </Button>
+                <Button variant="ghost" size="sm" onClick={() => setOpen({ kind: 'edit', item })}>
+                  Edit
+                </Button>
+              </div>
+            </Tile>
+          ))}
+        </Bento>
+        <p className="text-sm text-muted-foreground">
+          Purchases on the Expenses page add to these. A count sets what’s really there and records
+          the difference.
+        </p>
       </div>
 
       <Dialog open={open !== null} onOpenChange={(next) => !next && close()}>
@@ -143,7 +134,6 @@ function ItemForm({ item, onClose }: { item?: StockItem; onClose: () => void }) 
   const [unit, setUnit] = useState(item?.unit ?? '');
   const [lowText, setLowText] = useState(item?.lowThreshold?.toString() ?? '');
   const [onHandText, setOnHandText] = useState('');
-  const [confirmRemove, setConfirmRemove] = useState(false);
   const lowThreshold = lowText.trim() ? wholeNumber(lowText) : null;
   const onHand = onHandText.trim() ? wholeNumber(onHandText) : 0;
   const problem = !name.trim()
@@ -231,14 +221,14 @@ function ItemForm({ item, onClose }: { item?: StockItem; onClose: () => void }) 
         )}
         <div className="flex flex-wrap items-center justify-between gap-2">
           {item ? (
-            // Two presses: the first asks, the second stops tracking it.
-            <Button
-              variant="danger"
-              loading={removing.isPending}
-              onClick={() => (confirmRemove ? removing.mutate() : setConfirmRemove(true))}
-            >
-              {confirmRemove ? 'Yes, stop tracking' : 'Remove'}
-            </Button>
+            <ConfirmMorph
+              label="Remove"
+              prompt={`Stop tracking ${item.name}?`}
+              confirmLabel="Remove"
+              pendingLabel="Removing"
+              doneLabel="Removed"
+              onConfirm={() => removing.mutateAsync()}
+            />
           ) : (
             <span />
           )}
