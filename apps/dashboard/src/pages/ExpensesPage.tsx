@@ -1,8 +1,23 @@
 import { EXPENSE_CATEGORIES, type ExpenseCategory } from '@plateraa/shared';
 import { useMutation, useQuery } from '@tanstack/react-query';
+import { Plus, Wallet } from 'lucide-react';
 import { useState } from 'react';
 import { useSearchParams } from 'react-router';
 import { ulid } from 'ulid';
+import { Alert } from '@/components/arc/alert/alert';
+import { Badge } from '@/components/arc/badge/badge';
+import { Button } from '@/components/arc/button/button';
+import { Dialog, DialogContent } from '@/components/arc/dialog/dialog';
+import { EmptyState } from '@/components/arc/empty-state/empty-state';
+import { FilterToolbar } from '@/components/arc/filter-toolbar/filter-toolbar';
+import { Input } from '@/components/arc/input/input';
+import { RadioGroup } from '@/components/arc/radio-group/radio-group';
+import SegmentedControl from '@/components/arc/segmented-control/segmented-control';
+import { Select } from '@/components/arc/select/select';
+import { Switch } from '@/components/arc/switch/switch';
+import { DateField } from '@/components/app/day-picker';
+import { MoneyField, PlainField } from '@/components/app/money-field';
+import { Skeleton } from '@/components/ui/skeleton';
 import {
   METHOD_OUT_WORDS,
   addExpense,
@@ -19,18 +34,6 @@ import { cedis, longDate, parseAmount, todayHere } from '../lib/money';
 import { useSession } from '../lib/session';
 import { EXPENSE_WORDS } from '../lib/words';
 import { useMe } from '../shell/Shell';
-import {
-  Button,
-  Card,
-  ErrorNote,
-  FieldLabel,
-  PillFilter,
-  Spinner,
-  Tag,
-  TextInput,
-  Toggle,
-} from '../ui/controls';
-import { Dialog } from '../ui/Dialog';
 import { Page } from '../ui/Page';
 
 const RANGES = [
@@ -50,13 +53,10 @@ function rangeOf(range: Exclude<Range, 'pick'>, today: string): { from: string; 
 const KIND_WORDS = { purchase: 'Purchases only', other: 'Other expenses only' } as const;
 type Kind = keyof typeof KIND_WORDS;
 
-const dateInput =
-  'h-9 rounded-lg border border-border bg-surface px-3 text-sm font-medium text-muted-foreground outline-none focus:border-brand';
-
 /**
  * Money out: purchases, bills and drawer payouts. The days (`?range=`, or `from`/`to`), and a
  * category (`?category=`) or purchases against the rest (`?kind=`), live in the address, so the
- * figures on Today and Reports link straight here.
+ * figures on Home and Reports link straight here.
  */
 export function ExpensesPage() {
   const { tenantId } = useSession();
@@ -104,95 +104,125 @@ export function ExpensesPage() {
   );
   const total = shown.reduce((sum, row) => sum + row.amount, 0);
   const chips = [
-    category && { key: 'category', label: EXPENSE_WORDS[category] },
-    kind && { key: 'kind', label: KIND_WORDS[kind] },
-  ].filter((chip): chip is { key: string; label: string } => Boolean(chip));
+    category && { id: 'category', label: 'For', value: EXPENSE_WORDS[category] },
+    kind && { id: 'kind', label: 'Showing', value: KIND_WORDS[kind] },
+  ].filter((chip): chip is { id: string; label: string; value: string } => Boolean(chip));
 
   return (
     <Page
       title="Expenses"
       subtitle="Money out: purchases, bills and payouts."
       actions={
-        <Button small onClick={() => setAdding(true)}>
-          + Add expense
+        <Button onClick={() => setAdding(true)}>
+          <Plus size={16} strokeWidth={1.75} aria-hidden />
+          Add expense
         </Button>
       }
     >
-      <div className="mb-5 flex flex-wrap items-center justify-between gap-3">
-        <div className="flex flex-wrap items-center gap-2">
-          <PillFilter label="Which days" options={RANGES} value={range} onChange={choose} />
-          {range === 'pick' && (
-            <>
-              <input
-                type="date"
-                aria-label="First day"
-                value={dates.from}
-                max={today}
-                onChange={(event) => event.target.value && change({ from: event.target.value })}
-                className={dateInput}
-              />
-              <span className="text-sm text-muted-foreground">to</span>
-              <input
-                type="date"
-                aria-label="Last day"
-                value={dates.to}
-                max={today}
-                onChange={(event) => event.target.value && change({ to: event.target.value })}
-                className={dateInput}
-              />
-            </>
+      <div className="flex flex-col gap-6">
+        <div className="flex flex-col gap-3">
+          <div className="flex flex-wrap items-end gap-3">
+            <SegmentedControl
+              label="Which days"
+              options={[...RANGES]}
+              value={range}
+              onValueChange={(value) => choose(value as Range)}
+            />
+            {range === 'pick' && (
+              <>
+                <DateField
+                  label="From"
+                  date={dates.from}
+                  max={today}
+                  onPick={(from) => change({ from })}
+                />
+                <DateField label="To" date={dates.to} max={today} onPick={(to) => change({ to })} />
+              </>
+            )}
+          </div>
+          {chips.length > 0 && (
+            <FilterToolbar
+              filters={chips}
+              onRemove={(id) => change({ [id]: null })}
+              onClearAll={() => change({ category: null, kind: null })}
+            />
           )}
-          {chips.map((chip) => (
-            <button
-              key={chip.key}
-              type="button"
-              onClick={() => change({ [chip.key]: null })}
-              aria-label={`${chip.label}: remove this filter`}
-              className="inline-flex h-9 items-center gap-2 rounded-lg border border-brand/30 bg-brand-subtle px-3 text-sm font-medium text-brand"
-            >
-              {chip.label}
-              <span aria-hidden="true">×</span>
-            </button>
-          ))}
         </div>
-        {list.data && (
-          <p className="text-sm text-muted-foreground">
-            Total <span className="font-mono font-semibold text-text">{cedis(total)}</span>
-          </p>
-        )}
+
+        <section
+          aria-label="Expenses"
+          className="overflow-hidden rounded-(--radius-surface) border bg-card"
+        >
+          <div className="flex items-center justify-between gap-4 border-b px-5 py-4">
+            <span className="text-sm text-text-secondary">
+              {dates.from === dates.to
+                ? longDate(dates.from)
+                : `${longDate(dates.from)} to ${longDate(dates.to)}`}
+            </span>
+            {list.data ? (
+              <span className="font-mono text-lg">{cedis(total)}</span>
+            ) : (
+              <Skeleton className="h-6 w-24" />
+            )}
+          </div>
+          {list.isPending && (
+            <ul className="flex flex-col divide-y" aria-busy="true">
+              {[0, 1, 2].map((row) => (
+                <li key={row} className="flex items-center justify-between gap-4 px-5 py-4">
+                  <span className="flex flex-col gap-2">
+                    <Skeleton className="h-3.5 w-28" />
+                    <Skeleton className="h-3.5 w-52" />
+                  </span>
+                  <Skeleton className="h-4 w-16" />
+                </li>
+              ))}
+            </ul>
+          )}
+          {list.isError && (
+            <div className="p-5">
+              <Alert tone="danger" title="Couldn’t load the expenses">
+                {list.error.message}
+              </Alert>
+            </div>
+          )}
+          {list.data && shown.length === 0 && (
+            <EmptyState
+              icon={<Wallet size={24} strokeWidth={1.75} />}
+              title={chips.length ? 'Nothing like that' : 'Nothing spent'}
+              description={
+                chips.length
+                  ? 'No expenses of that kind on these days. Clear the filter to see them all.'
+                  : 'No money went out on these days.'
+              }
+            />
+          )}
+          {shown.length > 0 && (
+            <ul className="flex flex-col divide-y">
+              {shown.map((expense) => (
+                <ExpenseRow key={expense.id} expense={expense} />
+              ))}
+            </ul>
+          )}
+        </section>
       </div>
-      <Card className="overflow-hidden">
-        {list.isPending && (
-          <div className="flex justify-center py-10">
-            <Spinner />
-          </div>
-        )}
-        {list.isError && (
-          <div className="p-4">
-            <ErrorNote>{list.error.message}</ErrorNote>
-          </div>
-        )}
-        {list.data && shown.length === 0 && (
-          <p className="px-5 py-10 text-center text-sm text-muted-foreground">
-            {chips.length ? 'Nothing like that on these days.' : 'Nothing spent on these days.'}
-          </p>
-        )}
-        {shown.map((expense) => (
-          <ExpenseRow key={expense.id} expense={expense} />
-        ))}
-      </Card>
-      {adding && <AddExpenseDialog onClose={() => setAdding(false)} />}
+
+      <Dialog open={adding} onOpenChange={setAdding}>
+        {adding && <AddExpense onClose={() => setAdding(false)} />}
+      </Dialog>
     </Page>
   );
 }
 
 function ExpenseRow({ expense }: { expense: Expense }) {
+  const [confirming, setConfirming] = useState(false);
   const removing = useMutation({
     mutationFn: () => removeExpense(expense.id),
     meta: { ok: 'Expense removed' },
     onSuccess: refreshMoneyOut,
   });
   const detail = [
+    longDate(expense.spentOn),
+    expense.by,
     expense.purchase
       ? `${expense.purchase.quantity} ${expense.purchase.unit} ${expense.purchase.name}`
       : null,
@@ -201,41 +231,30 @@ function ExpenseRow({ expense }: { expense: Expense }) {
   ].filter(Boolean);
 
   return (
-    <div className="flex items-start gap-4 border-b border-border px-5 py-3.5 last:border-b-0">
-      <div className="min-w-0 flex-1">
-        <div className="flex flex-wrap items-center gap-2">
-          <p className="text-sm font-medium">{EXPENSE_WORDS[expense.category]}</p>
-          <Tag>{METHOD_OUT_WORDS[expense.method]}</Tag>
-        </div>
-        <p className="mt-0.5 truncate text-xs text-muted-foreground">
-          {longDate(expense.spentOn)}
-          {expense.by ? ` · ${expense.by}` : ''}
-          {detail.length ? ` · ${detail.join(' · ')}` : ''}
-        </p>
-        {removing.error && <p className="mt-1 text-xs text-red">{removing.error.message}</p>}
+    <li className="flex items-start gap-4 px-5 py-3.5">
+      <div className="flex min-w-0 flex-1 flex-col gap-0.5">
+        <span className="flex flex-wrap items-center gap-2">
+          <span className="text-sm font-medium">{EXPENSE_WORDS[expense.category]}</span>
+          <Badge size="sm">{METHOD_OUT_WORDS[expense.method]}</Badge>
+        </span>
+        <span className="truncate text-xs text-muted-foreground">{detail.join(', ')}</span>
       </div>
-      <div className="shrink-0 text-right">
-        <p className="font-mono text-sm font-semibold">{cedis(expense.amount)}</p>
+      <div className="flex shrink-0 flex-col items-end gap-1">
+        <span className="font-mono text-sm">{cedis(expense.amount)}</span>
         {!expense.fromDrawer && (
-          <button
-            type="button"
-            disabled={removing.isPending}
-            onClick={() => {
-              if (
-                window.confirm(
-                  'Remove this expense?' + (expense.purchase ? ' Its stock comes off too.' : ''),
-                )
-              ) {
-                removing.mutate();
-              }
-            }}
-            className="mt-1 text-xs text-muted-foreground hover:text-red"
+          // Two presses: the first asks, the second removes it.
+          <Button
+            variant={confirming ? 'danger' : 'ghost'}
+            size="sm"
+            loading={removing.isPending}
+            onClick={() => (confirming ? removing.mutate() : setConfirming(true))}
+            onBlur={() => setConfirming(false)}
           >
-            Remove
-          </button>
+            {confirming ? (expense.purchase ? 'Remove, and its stock' : 'Yes, remove') : 'Remove'}
+          </Button>
         )}
       </div>
-    </div>
+    </li>
   );
 }
 
@@ -246,7 +265,10 @@ const METHODS: { value: ManualMethod; label: string }[] = [
   { value: 'OTHER', label: 'Other' },
 ];
 
-function AddExpenseDialog({ onClose }: { onClose: () => void }) {
+/** Radix's select can't hold an empty value, so "no ingredient yet" has a name of its own. */
+const NO_INGREDIENT = '__none__';
+
+function AddExpense({ onClose }: { onClose: () => void }) {
   const me = useMe();
   const { tenantId } = useSession();
   const [id] = useState(() => ulid());
@@ -294,136 +316,117 @@ function AddExpenseDialog({ onClose }: { onClose: () => void }) {
   });
 
   return (
-    <Dialog title="Add expense" onClose={onClose}>
+    <DialogContent
+      title="Add expense"
+      description="Cash paid out of a tablet’s drawer is a payout: record it from the open drawers on Home."
+    >
       <form
-        className="space-y-4"
+        className="flex flex-col gap-4"
         onSubmit={(event) => {
           event.preventDefault();
           if (!problem) saving.mutate();
         }}
       >
-        <p className="text-xs text-muted-foreground">
-          Cash paid out of a tablet’s drawer is a payout: record it from the open drawers on Home.
-        </p>
         <div className="grid grid-cols-2 gap-3">
-          <div>
-            <FieldLabel htmlFor="expense-amount">Amount (GH₵)</FieldLabel>
-            <TextInput
-              id="expense-amount"
-              inputMode="decimal"
-              autoFocus
-              className="font-mono"
-              value={text}
-              onChange={(event) => setText(event.target.value)}
-            />
-          </div>
-          <div>
-            <FieldLabel htmlFor="expense-date">Day</FieldLabel>
-            <TextInput
-              id="expense-date"
-              type="date"
-              max={todayHere()}
-              value={spentOn}
-              onChange={(event) => setSpentOn(event.target.value || todayHere())}
-            />
-          </div>
-        </div>
-        <div>
-          <FieldLabel htmlFor="expense-category">What for</FieldLabel>
-          <select
-            id="expense-category"
-            value={category}
-            onChange={(event) => setCategory(event.target.value as ExpenseCategory)}
-            className="h-11 w-full rounded-xl border border-border bg-surface px-3 text-sm text-text outline-none focus:border-brand"
-          >
-            {EXPENSE_CATEGORIES.map((value) => (
-              <option key={value} value={value}>
-                {EXPENSE_WORDS[value]}
-              </option>
-            ))}
-          </select>
-        </div>
-        <div>
-          <FieldLabel>How it was paid</FieldLabel>
-          <PillFilter
-            label="How it was paid"
-            options={METHODS}
-            value={method}
-            onChange={setMethod}
+          <MoneyField label="Amount" value={text} onChange={setText} />
+          <DateField
+            label="Day"
+            className="w-full"
+            date={spentOn}
+            max={todayHere()}
+            onPick={setSpentOn}
           />
         </div>
+        <Select
+          label="What for"
+          value={category}
+          onValueChange={(value) => setCategory(value as ExpenseCategory)}
+          options={EXPENSE_CATEGORIES.map((value) => ({ value, label: EXPENSE_WORDS[value] }))}
+        />
+        <RadioGroup
+          label="How it was paid"
+          options={METHODS}
+          value={method}
+          onValueChange={(value) => setMethod(value as ManualMethod)}
+        />
         <div className="grid grid-cols-2 gap-3">
-          <div>
-            <FieldLabel htmlFor="expense-supplier">Paid to (optional)</FieldLabel>
-            <TextInput
-              id="expense-supplier"
-              maxLength={80}
-              value={supplier}
-              onChange={(event) => setSupplier(event.target.value)}
-            />
-          </div>
-          <div>
-            <FieldLabel htmlFor="expense-note">Note (optional)</FieldLabel>
-            <TextInput
-              id="expense-note"
-              maxLength={200}
-              value={note}
-              onChange={(event) => setNote(event.target.value)}
-            />
-          </div>
+          <Input
+            label="Paid to"
+            description="Optional."
+            maxLength={80}
+            value={supplier}
+            onChange={(event) => setSupplier(event.target.value)}
+          />
+          <Input
+            label="Note"
+            description="Optional."
+            maxLength={200}
+            value={note}
+            onChange={(event) => setNote(event.target.value)}
+          />
         </div>
         {canStock && (
-          <div className="rounded-xl bg-tile px-4 py-3">
+          <div className="flex flex-col gap-3 rounded-(--radius-panel) border p-4">
             <div className="flex items-center justify-between gap-4">
               <div>
-                <p className="text-sm font-medium">It’s a stock purchase</p>
+                <p className="text-sm font-medium" id="stock-purchase">
+                  It’s a stock purchase
+                </p>
                 <p className="text-xs text-muted-foreground">
                   Adds what was bought to an ingredient’s stock.
                 </p>
               </div>
-              <Toggle on={isPurchase} onChange={setIsPurchase} label="It’s a stock purchase" />
+              <Switch
+                aria-labelledby="stock-purchase"
+                checked={isPurchase}
+                onCheckedChange={setIsPurchase}
+              />
             </div>
             {isPurchase && (
-              <div className="mt-3 grid grid-cols-[1fr_6rem] gap-3">
-                <select
-                  aria-label="Ingredient"
-                  value={stockItemId}
-                  onChange={(event) => setStockItemId(event.target.value)}
-                  className="h-11 w-full rounded-xl border border-border bg-surface px-3 text-sm text-text outline-none focus:border-brand"
-                >
-                  <option value="">
-                    {stock.data?.length === 0
-                      ? 'Add ingredients on the Stock page'
-                      : 'Which ingredient'}
-                  </option>
-                  {stock.data?.map((item) => (
-                    <option key={item.id} value={item.id}>
-                      {item.name} ({item.unit})
-                    </option>
-                  ))}
-                </select>
-                <TextInput
-                  aria-label="How many"
+              <div className="grid grid-cols-[1fr_7rem] items-end gap-3">
+                <Select
+                  label="Ingredient"
+                  value={stockItemId || NO_INGREDIENT}
+                  onValueChange={(value) => setStockItemId(value === NO_INGREDIENT ? '' : value)}
+                  options={[
+                    {
+                      value: NO_INGREDIENT,
+                      label:
+                        stock.data?.length === 0
+                          ? 'Add ingredients on the Stock page'
+                          : 'Which ingredient',
+                      disabled: true,
+                    },
+                    ...(stock.data ?? []).map((item) => ({
+                      value: item.id,
+                      label: `${item.name} (${item.unit})`,
+                    })),
+                  ]}
+                />
+                <PlainField
+                  label="How many"
                   inputMode="numeric"
-                  placeholder="How many"
-                  className="font-mono"
                   value={quantityText}
-                  onChange={(event) => setQuantityText(event.target.value.replace(/\D/g, ''))}
+                  onChange={(value) => setQuantityText(value.replace(/\D/g, ''))}
                 />
               </div>
             )}
           </div>
         )}
-        {saving.error && <ErrorNote>{saving.error.message}</ErrorNote>}
-        <div className="mt-6 flex gap-2">
+        {saving.error && (
+          <Alert tone="danger" title="Couldn’t add the expense">
+            {saving.error.message}
+          </Alert>
+        )}
+        <div className="flex justify-end gap-2">
           <Button variant="ghost" onClick={onClose}>
             Cancel
           </Button>
-          <Button type="submit" full disabled={!!problem} busy={saving.isPending}>
+          <Button type="submit" disabled={!!problem} loading={saving.isPending}>
             Add {amount ? cedis(amount) : 'expense'}
           </Button>
         </div>
       </form>
-    </Dialog>
+    </DialogContent>
   );
 }

@@ -325,7 +325,7 @@ function seed(tenant: string | null) {
   queryClient.setDefaultOptions({ queries: { staleTime: Infinity, retry: false } });
   queryClient.setQueryData(['day', tenant, 'today'], DAY);
   queryClient.setQueryData(['orders', tenant, { limit: 5 }], RECENT);
-  queryClient.setQueryData(['refunds-owed', tenant], [RECENT[4]]);
+  queryClient.setQueryData(['refunds-owed', tenant], [{ ...RECENT[4], paidWith: ['LINK'] }]);
   queryClient.setQueryData(['tablets', tenant], TABLETS);
   queryClient.setQueryData(['drawers', tenant], DRAWERS);
   queryClient.setQueryData(['orders', tenant, { date: today, limit: 500 }], DAY_ORDERS);
@@ -333,6 +333,31 @@ function seed(tenant: string | null) {
   queryClient.setQueryData(['customers', tenant, ''], CUSTOMERS);
   queryClient.setQueryData(['customer', tenant, 'customer-1'], CUSTOMER_DETAIL);
   queryClient.setQueryData(['menu', tenant], MENU);
+  const expense = (id: string, ago: number, category: string, amount: number, extra = {}) => ({
+    id,
+    spentOn: daysAgo(ago),
+    category,
+    amount,
+    method: 'OWNER_CASH',
+    by: 'Ama Owusu',
+    purchase: null,
+    supplierName: null,
+    note: null,
+    fromDrawer: false,
+    ...extra,
+  });
+  queryClient.setQueryData(
+    ['expenses', tenant, { from: daysAgo(6), to: today }],
+    [
+      expense('e1', 0, 'INGREDIENTS', 45_000, {
+        purchase: { quantity: 1, unit: 'bag', name: 'Rice' },
+        supplierName: 'Makola market',
+      }),
+      expense('e2', 0, 'GAS', 19_000, { method: 'CASH_DRAWER', fromDrawer: true, by: 'Kofi' }),
+      expense('e3', 2, 'PACKAGING', 8_500, { method: 'MOMO', note: 'Takeaway boxes' }),
+      expense('e4', 5, 'ELECTRICITY', 30_000, { method: 'BANK' }),
+    ],
+  );
   const day = (open: boolean) => ({ open, from: '08:00', to: '20:00' });
   queryClient.setQueryData(['storefront', tenant], {
     enabled: true,

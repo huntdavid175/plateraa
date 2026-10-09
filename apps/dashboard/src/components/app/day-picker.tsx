@@ -8,6 +8,33 @@ const toDate = (day: string) => {
 };
 const fromDate = (date: Date) => date.toLocaleDateString('en-CA');
 
+/** One day, up to `max`, as YYYY-MM-DD: the first or last of a range, the day of an expense. */
+export function DateField({
+  label,
+  date,
+  max,
+  onPick,
+  className = 'w-44',
+}: {
+  label: string;
+  date: string;
+  max: string;
+  onPick: (day: string) => void;
+  className?: string;
+}) {
+  return (
+    <DatePicker
+      label={label}
+      className={className}
+      value={toDate(date)}
+      maxDate={toDate(max)}
+      locale="en-GB"
+      format={{ weekday: 'short', day: 'numeric', month: 'short' }}
+      onChange={(picked) => picked && onPick(fromDate(picked))}
+    />
+  );
+}
+
 /** Any day up to today, and a way back to today once another is picked. */
 export function DayPicker({
   date,

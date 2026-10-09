@@ -8,47 +8,42 @@ import {
 import { useMutation } from '@tanstack/react-query';
 import { useState, type ReactNode } from 'react';
 import { ulid } from 'ulid';
+import { Alert } from '@/components/arc/alert/alert';
+import { Button } from '@/components/arc/button/button';
+import { Dialog, DialogContent } from '@/components/arc/dialog/dialog';
+import { Input } from '@/components/arc/input/input';
+import { RadioGroup } from '@/components/arc/radio-group/radio-group';
+import SegmentedControl from '@/components/arc/segmented-control/segmented-control';
+import { Select } from '@/components/arc/select/select';
+import { MoneyField, PlainField } from '@/components/app/money-field';
 import { recordPayout, recordRefund, refreshMoney, setDiscount, type Drawer } from '../lib/manager';
 import { amountText, cedis, parseAmount } from '../lib/money';
 import type { OrderDetail } from '../lib/orders';
 import { EXPENSE_WORDS, REFUND_METHOD_WORDS } from '../lib/words';
-import { Button, ErrorNote, FieldLabel, PillFilter, TextInput } from '../ui/controls';
-import { Dialog } from '../ui/Dialog';
 
-function Actions({ children }: { children: ReactNode }) {
-  return <div className="mt-6 flex gap-2">{children}</div>;
-}
-
-function MoneyField({
-  id,
-  label,
-  value,
-  onChange,
+/** A money dialog: open while it's shown, closed by Cancel, Escape or a tap outside. */
+function MoneyDialog({
+  title,
+  description,
+  onClose,
+  children,
 }: {
-  id: string;
-  label: string;
-  value: string;
-  onChange: (value: string) => void;
+  title: string;
+  description?: string;
+  onClose: () => void;
+  children: ReactNode;
 }) {
   return (
-    <div>
-      <FieldLabel htmlFor={id}>{label}</FieldLabel>
-      <div className="relative">
-        <span className="pointer-events-none absolute top-1/2 left-4 -translate-y-1/2 text-sm text-muted-foreground">
-          GH₵
-        </span>
-        <TextInput
-          id={id}
-          inputMode="decimal"
-          autoComplete="off"
-          autoFocus
-          className="pl-14 font-mono"
-          value={value}
-          onChange={(event) => onChange(event.target.value)}
-        />
-      </div>
-    </div>
+    <Dialog open onOpenChange={(open) => !open && onClose()}>
+      <DialogContent title={title} description={description}>
+        {children}
+      </DialogContent>
+    </Dialog>
   );
+}
+
+function Actions({ children }: { children: ReactNode }) {
+  return <div className="flex flex-wrap justify-end gap-2">{children}</div>;
 }
 
 /** Money handed back to a customer, recorded after it's given. It doesn't touch the drawer. */
@@ -86,51 +81,54 @@ export function RecordRefundDialog({
   });
 
   return (
-    <Dialog title={`Refund on order ${order.displayNumber}`} onClose={onClose}>
+    <MoneyDialog
+      title={`Refund on order ${order.displayNumber}`}
+      description="Give the money back first, from outside the drawer. Then record it here."
+      onClose={onClose}
+    >
       <form
-        className="space-y-4"
+        className="flex flex-col gap-4"
         onSubmit={(event) => {
           event.preventDefault();
           if (!problem) saving.mutate();
         }}
       >
-        <p className="text-sm text-muted-foreground">
-          Give the money back first, from outside the drawer. Then record it here.
-        </p>
-        <MoneyField id="refund-amount" label="Amount given back" value={text} onChange={setText} />
-        <div>
-          <FieldLabel>How it went back</FieldLabel>
-          <PillFilter
-            label="How it went back"
-            options={[
-              { value: 'CASH', label: REFUND_METHOD_WORDS.CASH },
-              { value: 'LINK', label: REFUND_METHOD_WORDS.LINK },
-            ]}
-            value={method}
-            onChange={setMethod}
-          />
-        </div>
-        <div>
-          <FieldLabel htmlFor="refund-reason">Why</FieldLabel>
-          <TextInput
-            id="refund-reason"
-            value={reason}
-            maxLength={200}
-            onChange={(event) => setReason(event.target.value)}
-          />
-        </div>
-        {saving.error && <ErrorNote>{saving.error.message}</ErrorNote>}
-        {problem && text !== '' && <p className="text-xs text-muted-foreground">{problem}</p>}
+        <MoneyField
+          label="Amount given back"
+          value={text}
+          onChange={setText}
+          description={problem && text !== '' ? problem : undefined}
+        />
+        <RadioGroup
+          label="How it went back"
+          value={method}
+          onValueChange={(value) => setMethod(value as 'CASH' | 'LINK')}
+          options={[
+            { value: 'CASH', label: REFUND_METHOD_WORDS.CASH },
+            { value: 'LINK', label: REFUND_METHOD_WORDS.LINK },
+          ]}
+        />
+        <Input
+          label="Why"
+          value={reason}
+          maxLength={200}
+          onChange={(event) => setReason(event.target.value)}
+        />
+        {saving.error && (
+          <Alert tone="danger" title="Couldn’t record the refund">
+            {saving.error.message}
+          </Alert>
+        )}
         <Actions>
           <Button variant="ghost" onClick={onClose}>
             Cancel
           </Button>
-          <Button type="submit" variant="danger" full disabled={!!problem} busy={saving.isPending}>
+          <Button type="submit" disabled={!!problem} loading={saving.isPending}>
             Record refund
           </Button>
         </Actions>
       </form>
-    </Dialog>
+    </MoneyDialog>
   );
 }
 
@@ -184,9 +182,9 @@ export function DiscountDialog({ order, onClose }: { order: OrderDetail; onClose
   });
 
   return (
-    <Dialog title={`Discount on order ${order.displayNumber}`} onClose={onClose}>
+    <MoneyDialog title={`Discount on order ${order.displayNumber}`} onClose={onClose}>
       <form
-        className="space-y-4"
+        className="flex flex-col gap-4"
         onSubmit={(event) => {
           event.preventDefault();
           if (discount && !belowPaid)
@@ -195,61 +193,51 @@ export function DiscountDialog({ order, onClose }: { order: OrderDetail; onClose
             );
         }}
       >
-        <PillFilter
+        <SegmentedControl
           label="Discount by"
+          value={kind}
+          onValueChange={(value) => setKind(value as 'percent' | 'amount')}
           options={[
             { value: 'percent', label: 'Percent off' },
             { value: 'amount', label: 'Amount off' },
           ]}
-          value={kind}
-          onChange={setKind}
         />
         {kind === 'percent' ? (
-          <div>
-            <FieldLabel htmlFor="discount-percent">Percent off</FieldLabel>
-            <div className="relative">
-              <TextInput
-                id="discount-percent"
-                inputMode="numeric"
-                autoFocus
-                className="pr-10 font-mono"
-                value={percentText}
-                onChange={(event) => setPercentText(event.target.value)}
-              />
-              <span className="pointer-events-none absolute top-1/2 right-4 -translate-y-1/2 text-sm text-muted-foreground">
-                %
-              </span>
-            </div>
-          </div>
-        ) : (
-          <MoneyField
-            id="discount-amount"
-            label="Amount off"
-            value={amountValue}
-            onChange={setAmountValue}
+          <PlainField
+            label="Percent off"
+            inputMode="numeric"
+            placeholder="For example: 10"
+            value={percentText}
+            onChange={setPercentText}
           />
+        ) : (
+          <MoneyField label="Amount off" value={amountValue} onChange={setAmountValue} />
         )}
-        <div className="rounded-xl bg-tile px-4 py-3 text-sm">
-          <div className="flex justify-between">
-            <span className="text-muted-foreground">Now</span>
-            <span className="font-mono">{cedis(order.total)}</span>
+        <dl className="flex flex-col divide-y rounded-(--radius-panel) border text-sm">
+          <div className="flex justify-between px-4 py-2.5">
+            <dt className="text-text-secondary">Now</dt>
+            <dd className="font-mono">{cedis(order.total)}</dd>
           </div>
-          <div className="mt-1 flex justify-between font-semibold">
-            <span>New total</span>
-            <span className="font-mono">{preview ? cedis(preview.total) : '—'}</span>
+          <div className="flex justify-between px-4 py-2.5">
+            <dt className="font-medium">New total</dt>
+            <dd className="font-mono">{preview ? cedis(preview.total) : 'Type a discount'}</dd>
           </div>
-        </div>
+        </dl>
         {belowPaid && (
-          <ErrorNote>
+          <Alert tone="warning" title="That’s more than is left to pay">
             {cedis(order.amountPaid)} is already paid, so the total can’t go below that.
-          </ErrorNote>
+          </Alert>
         )}
-        {saving.error && <ErrorNote>{saving.error.message}</ErrorNote>}
+        {saving.error && (
+          <Alert tone="danger" title="Couldn’t save the discount">
+            {saving.error.message}
+          </Alert>
+        )}
         <Actions>
           {order.discount > 0 ? (
             <Button
               variant="ghost"
-              busy={saving.isPending && saving.variables?.kind === 'none'}
+              loading={saving.isPending && saving.variables?.kind === 'none'}
               onClick={() => saving.mutate({ kind: 'none' })}
             >
               Remove discount
@@ -261,15 +249,14 @@ export function DiscountDialog({ order, onClose }: { order: OrderDetail; onClose
           )}
           <Button
             type="submit"
-            full
             disabled={!discount || belowPaid}
-            busy={saving.isPending && saving.variables?.kind !== 'none'}
+            loading={saving.isPending && saving.variables?.kind !== 'none'}
           >
             Apply discount
           </Button>
         </Actions>
       </form>
-    </Dialog>
+    </MoneyDialog>
   );
 }
 
@@ -283,6 +270,7 @@ export function PayoutDialog({ drawer, onClose }: { drawer: Drawer; onClose: () 
   const tooMuch = amount !== null && drawer.expectedCash !== null && amount > drawer.expectedCash;
 
   const saving = useMutation({
+    meta: { ok: 'Payout recorded' },
     mutationFn: () =>
       recordPayout(drawer.shiftId, {
         payoutId,
@@ -297,57 +285,55 @@ export function PayoutDialog({ drawer, onClose }: { drawer: Drawer; onClose: () 
   });
 
   return (
-    <Dialog title={`Payout from ${drawer.deviceName}`} onClose={onClose}>
+    <MoneyDialog
+      title={`Payout from ${drawer.deviceName}`}
+      description="For cash already taken out of this drawer to pay for something. It counts as money out today, and the drawer expects that much less at close."
+      onClose={onClose}
+    >
       <form
-        className="space-y-4"
+        className="flex flex-col gap-4"
         onSubmit={(event) => {
           event.preventDefault();
           if (amount && !tooMuch) saving.mutate();
         }}
       >
-        <p className="text-sm text-muted-foreground">
-          For cash already taken out of this drawer to pay for something. It counts as money out
-          today, and the drawer expects that much less at close.
-        </p>
-        <MoneyField id="payout-amount" label="Amount paid out" value={text} onChange={setText} />
-        <div>
-          <FieldLabel htmlFor="payout-category">What for</FieldLabel>
-          <select
-            id="payout-category"
-            value={category}
-            onChange={(event) => setCategory(event.target.value as ExpenseCategory)}
-            className="h-11 w-full rounded-xl border border-border bg-surface px-4 text-sm text-text outline-none focus:border-brand"
-          >
-            {EXPENSE_CATEGORIES.map((value) => (
-              <option key={value} value={value}>
-                {EXPENSE_WORDS[value]}
-              </option>
-            ))}
-          </select>
-        </div>
-        <div>
-          <FieldLabel htmlFor="payout-note">Note (optional)</FieldLabel>
-          <TextInput
-            id="payout-note"
-            value={note}
-            maxLength={200}
-            placeholder="e.g. Gas refill"
-            onChange={(event) => setNote(event.target.value)}
-          />
-        </div>
+        <MoneyField label="Amount paid out" value={text} onChange={setText} />
+        <Select
+          label="What for"
+          value={category}
+          onValueChange={(value) => setCategory(value as ExpenseCategory)}
+          options={EXPENSE_CATEGORIES.map((value) => ({
+            value,
+            label: EXPENSE_WORDS[value],
+          }))}
+        />
+        <Input
+          label="Note"
+          description="Optional."
+          value={note}
+          maxLength={200}
+          placeholder="For example: gas refill"
+          onChange={(event) => setNote(event.target.value)}
+        />
         {tooMuch && drawer.expectedCash !== null && (
-          <ErrorNote>Only {cedis(drawer.expectedCash)} should be in that drawer.</ErrorNote>
+          <Alert tone="warning" title="More than the drawer holds">
+            Only {cedis(drawer.expectedCash)} should be in that drawer.
+          </Alert>
         )}
-        {saving.error && <ErrorNote>{saving.error.message}</ErrorNote>}
+        {saving.error && (
+          <Alert tone="danger" title="Couldn’t record the payout">
+            {saving.error.message}
+          </Alert>
+        )}
         <Actions>
           <Button variant="ghost" onClick={onClose}>
             Cancel
           </Button>
-          <Button type="submit" full disabled={!amount || tooMuch} busy={saving.isPending}>
+          <Button type="submit" disabled={!amount || tooMuch} loading={saving.isPending}>
             Record payout
           </Button>
         </Actions>
       </form>
-    </Dialog>
+    </MoneyDialog>
   );
 }
