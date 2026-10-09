@@ -91,6 +91,7 @@ export const router = createBrowserRouter([
             { path: 'menu', Component: MenuPage },
             { path: 'menu/items/:itemId', Component: ItemEditorPage },
             { path: 'stock', Component: StockPage },
+            { path: 'store', Component: OnlineStorePage },
           ],
         },
       ]

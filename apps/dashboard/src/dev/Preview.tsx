@@ -1,3 +1,4 @@
+import { STOREFRONT_THEMES } from '@plateraa/shared';
 import { useState } from 'react';
 import { Outlet } from 'react-router';
 import { queryClient, type Me } from '../lib/query';
@@ -332,6 +333,31 @@ function seed(tenant: string | null) {
   queryClient.setQueryData(['customers', tenant, ''], CUSTOMERS);
   queryClient.setQueryData(['customer', tenant, 'customer-1'], CUSTOMER_DETAIL);
   queryClient.setQueryData(['menu', tenant], MENU);
+  const day = (open: boolean) => ({ open, from: '08:00', to: '20:00' });
+  queryClient.setQueryData(['storefront', tenant], {
+    enabled: true,
+    takingOrders: true,
+    cashOnPickup: true,
+    acceptFirst: false,
+    theme: STOREFRONT_THEMES[0],
+    area: 'Osu, Accra',
+    phone: '+233241234567',
+    hours: {
+      mon: day(true),
+      tue: day(true),
+      wed: day(true),
+      thu: day(true),
+      fri: day(true),
+      sat: day(true),
+      sun: day(false),
+    },
+    url: 'https://plateraa-storefront-bvos.vercel.app/s/auntie-amas-kitchen',
+    moolreConnected: false,
+    deliveryZones: 0,
+    photosReady: true,
+    coverUrl: null,
+    logoUrl: null,
+  });
   queryClient.setQueryData(
     ['stock', tenant],
     [
