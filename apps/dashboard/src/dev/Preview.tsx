@@ -332,6 +332,15 @@ function seed(tenant: string | null) {
   queryClient.setQueryData(['customers', tenant, ''], CUSTOMERS);
   queryClient.setQueryData(['customer', tenant, 'customer-1'], CUSTOMER_DETAIL);
   queryClient.setQueryData(['menu', tenant], MENU);
+  queryClient.setQueryData(
+    ['stock', tenant],
+    [
+      { id: 's1', name: 'Rice', unit: 'bag', onHand: 3, lowThreshold: 2, low: false },
+      { id: 's2', name: 'Cooking oil', unit: 'gallon', onHand: 1, lowThreshold: 2, low: true },
+      { id: 's3', name: 'Eggs', unit: 'crate', onHand: 6, lowThreshold: null, low: false },
+      { id: 's4', name: 'Gas', unit: 'cylinder', onHand: 1, lowThreshold: 1, low: true },
+    ],
+  );
 }
 
 export default function Preview() {
