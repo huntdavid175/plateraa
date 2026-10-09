@@ -1,5 +1,5 @@
 import type { ReactNode } from 'react';
-import { Card, cx } from './controls';
+import { cn as cx } from '@/lib/utils';
 
 /** A screen's heading and content column, as in the design (wide lists, narrow forms). */
 export function Page({
@@ -30,18 +30,6 @@ export function Page({
       </header>
       {children}
     </div>
-  );
-}
-
-/** Stands in for a screen that's still being built. */
-export function ComingSoon({ title, what }: { title: string; what: string }) {
-  return (
-    <Page title={title}>
-      <Card className="px-5 py-12 text-center">
-        <p className="text-sm font-semibold">Coming soon</p>
-        <p className="mx-auto mt-1 max-w-sm text-sm text-muted-foreground">{what}</p>
-      </Card>
-    </Page>
   );
 }
 

@@ -1,28 +1,12 @@
-import { Suspense, lazy } from 'react';
-import { createBrowserRouter, Navigate } from 'react-router';
+import type { ComponentType } from 'react';
+import { createBrowserRouter, Navigate, type RouteObject } from 'react-router';
 import { ChooseBusinessPage } from './auth/ChooseBusinessPage';
 import { SignInPage } from './auth/SignInPage';
 import { SignUpPage } from './auth/SignUpPage';
-import { CustomerPage } from './pages/CustomerPage';
-import { CustomersPage } from './pages/CustomersPage';
-import { ExpensesPage } from './pages/ExpensesPage';
-import { ItemEditorPage } from './pages/ItemEditorPage';
-import { MenuPage } from './pages/MenuPage';
-import { OnlineStorePage } from './pages/OnlineStorePage';
-import { OrderPage } from './pages/OrderPage';
-import { OrdersPage } from './pages/OrdersPage';
-import { RefundsPage } from './pages/RefundsPage';
-import { ReportsPage } from './pages/ReportsPage';
-import { SettingsPage } from './pages/SettingsPage';
-import { StaffPage } from './pages/StaffPage';
-import { StockPage } from './pages/StockPage';
 import { HomePage } from './pages/HomePage';
 import { Shell } from './shell/Shell';
 import { Button } from '@/components/arc/button/button';
-import { Spinner } from './ui/controls';
-
-/** Loaded on its own: only new owners need it, and it brings the menu templates. */
-const SetupPage = lazy(() => import('./auth/SetupPage'));
+import { ScreenLoading } from '@/components/app/loading';
 import { Centered } from './ui/Page';
 
 function Crashed() {
@@ -35,69 +19,79 @@ function Crashed() {
   );
 }
 
+/**
+ * A screen loaded only when it's first opened, so the first screen (sign-in, then Home) doesn't
+ * wait for all the others on mobile data.
+ */
+const later =
+  (load: () => Promise<ComponentType>): RouteObject['lazy'] =>
+  async () => ({ Component: await load() });
+
+/** Every screen inside the shell. Home comes with the first load; the rest when opened. */
+const SCREENS: RouteObject[] = [
+  { index: true, Component: HomePage },
+  { path: 'orders', lazy: later(async () => (await import('./pages/OrdersPage')).OrdersPage) },
+  {
+    path: 'orders/:orderId',
+    lazy: later(async () => (await import('./pages/OrderPage')).OrderPage),
+  },
+  {
+    path: 'customers',
+    lazy: later(async () => (await import('./pages/CustomersPage')).CustomersPage),
+  },
+  {
+    path: 'customers/:customerId',
+    lazy: later(async () => (await import('./pages/CustomerPage')).CustomerPage),
+  },
+  { path: 'menu', lazy: later(async () => (await import('./pages/MenuPage')).MenuPage) },
+  ...['menu/items/new', 'menu/items/:itemId'].map((path) => ({
+    path,
+    lazy: later(async () => (await import('./pages/ItemEditorPage')).ItemEditorPage),
+  })),
+  {
+    path: 'store',
+    lazy: later(async () => (await import('./pages/OnlineStorePage')).OnlineStorePage),
+  },
+  { path: 'staff', lazy: later(async () => (await import('./pages/StaffPage')).StaffPage) },
+  { path: 'refunds', lazy: later(async () => (await import('./pages/RefundsPage')).RefundsPage) },
+  { path: 'reports', lazy: later(async () => (await import('./pages/ReportsPage')).ReportsPage) },
+  {
+    path: 'expenses',
+    lazy: later(async () => (await import('./pages/ExpensesPage')).ExpensesPage),
+  },
+  { path: 'stock', lazy: later(async () => (await import('./pages/StockPage')).StockPage) },
+  {
+    path: 'settings',
+    lazy: later(async () => (await import('./pages/SettingsPage')).SettingsPage),
+  },
+];
+
 export const router = createBrowserRouter([
   { path: '/sign-in', Component: SignInPage, errorElement: <Crashed /> },
   { path: '/businesses', Component: ChooseBusinessPage, errorElement: <Crashed /> },
   { path: '/sign-up', Component: SignUpPage, errorElement: <Crashed /> },
   {
+    // Only new owners need it, and it brings the menu templates.
     path: '/setup',
-    element: (
-      <Suspense
-        fallback={
-          <div className="flex h-full items-center justify-center">
-            <Spinner />
-          </div>
-        }
-      >
-        <SetupPage />
-      </Suspense>
-    ),
+    lazy: later(async () => (await import('./auth/SetupPage')).default),
+    HydrateFallback: ScreenLoading,
     errorElement: <Crashed />,
   },
   {
     path: '/',
     Component: Shell,
+    HydrateFallback: ScreenLoading,
     errorElement: <Crashed />,
-    children: [
-      { index: true, Component: HomePage },
-      { path: 'orders', Component: OrdersPage },
-      { path: 'orders/:orderId', Component: OrderPage },
-      { path: 'customers', Component: CustomersPage },
-      { path: 'customers/:customerId', Component: CustomerPage },
-      { path: 'menu', Component: MenuPage },
-      { path: 'menu/items/new', Component: ItemEditorPage },
-      { path: 'menu/items/:itemId', Component: ItemEditorPage },
-      { path: 'store', Component: OnlineStorePage },
-      { path: 'staff', Component: StaffPage },
-      { path: 'refunds', Component: RefundsPage },
-      { path: 'reports', Component: ReportsPage },
-      { path: 'expenses', Component: ExpensesPage },
-      { path: 'stock', Component: StockPage },
-      { path: 'settings', Component: SettingsPage },
-    ],
+    children: SCREENS,
   },
   // Development only: the screens with sample data, without signing in (src/dev/Preview.tsx).
   ...(import.meta.env.DEV
     ? [
         {
           path: '/__preview',
-          lazy: async () => ({ Component: (await import('./dev/Preview')).default }),
-          children: [
-            { index: true, Component: HomePage },
-            { path: 'orders', Component: OrdersPage },
-            { path: 'orders/:orderId', Component: OrderPage },
-            { path: 'customers', Component: CustomersPage },
-            { path: 'customers/:customerId', Component: CustomerPage },
-            { path: 'menu', Component: MenuPage },
-            { path: 'menu/items/:itemId', Component: ItemEditorPage },
-            { path: 'stock', Component: StockPage },
-            { path: 'store', Component: OnlineStorePage },
-            { path: 'expenses', Component: ExpensesPage },
-            { path: 'refunds', Component: RefundsPage },
-            { path: 'reports', Component: ReportsPage },
-            { path: 'staff', Component: StaffPage },
-            { path: 'settings', Component: SettingsPage },
-          ],
+          lazy: later(async () => (await import('./dev/Preview')).default),
+          HydrateFallback: ScreenLoading,
+          children: SCREENS,
         },
       ]
     : []),

@@ -1,5 +1,5 @@
 import { useSyncExternalStore } from 'react';
-import { cx } from './controls';
+import { cn as cx } from '@/lib/utils';
 
 type Kind = 'ok' | 'problem';
 

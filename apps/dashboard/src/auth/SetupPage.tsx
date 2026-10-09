@@ -1,7 +1,16 @@
 import { MENU_TEMPLATES, VENDOR_TYPES, pinProblem, type VendorType } from '@plateraa/shared';
 import { useMutation, useQuery } from '@tanstack/react-query';
+import { ArrowLeft, Check, X } from 'lucide-react';
 import { useMemo, useState, type ReactNode } from 'react';
 import { Navigate, useLocation, useNavigate } from 'react-router';
+import { Alert } from '@/components/arc/alert/alert';
+import { Badge } from '@/components/arc/badge/badge';
+import { Button } from '@/components/arc/button/button';
+import { Input } from '@/components/arc/input/input';
+import { RadioCards } from '@/components/arc/radio-cards/radio-cards';
+import { RadioGroup } from '@/components/arc/radio-group/radio-group';
+import { MoneyField, PlainField } from '@/components/app/money-field';
+import { Skeleton } from '@/components/ui/skeleton';
 import { fetchMenu } from '../lib/menu';
 import { parseAmount } from '../lib/money';
 import {
@@ -16,15 +25,14 @@ import { session, useSession } from '../lib/session';
 import { fetchSettings, refreshSettings, saveMoolre } from '../lib/settings';
 import { addStaff, fetchTeam, refreshTeam, resetPin } from '../lib/team';
 import { ROLE_WORDS, VENDOR_TYPE_WORDS } from '../lib/words';
-import { Button, ErrorNote, FieldLabel, PillFilter, Spinner, TextInput, cx } from '../ui/controls';
 
 const TOTAL = 7;
 const BLANK: VendorType = 'OTHER';
 
 /**
- * Setting up a business from a phone (plan.md §3.1), to the design: name, type, a starter menu,
- * its prices, PINs, the owner's own Moolre account, then the tablet. Opened with a business
- * already chosen (Settings → Setup guide), it starts at the menu.
+ * Setting up a business from a phone (plan.md §3.1): name, type, a starter menu, its prices,
+ * PINs, the owner's own Moolre account, then the tablet. Opened with a business already chosen
+ * (Settings → Setup guide), it starts at the menu.
  */
 export default function SetupPage() {
   const { token, tenantId } = useSession();
@@ -40,8 +48,17 @@ export default function SetupPage() {
   if (!token) return <Navigate to="/sign-in" replace />;
   if (step > 2 && !context.data) {
     return (
-      <div className="flex h-full items-center justify-center">
-        {context.isError ? <ErrorNote>{context.error.message}</ErrorNote> : <Spinner />}
+      <div className="mx-auto flex min-h-full max-w-[420px] flex-col gap-4 px-5 pt-24">
+        {context.isError ? (
+          <Alert tone="danger" title="Couldn’t load your business">
+            {context.error.message}
+          </Alert>
+        ) : (
+          <>
+            <Skeleton className="h-9 w-3/4" />
+            <Skeleton className="h-40 w-full rounded-(--radius-surface)" />
+          </>
+        )}
       </div>
     );
   }
@@ -55,41 +72,42 @@ export default function SetupPage() {
   // Opened from Settings (the "Setup guide"), closing it goes back there.
   const from: unknown = (location.state as { back?: unknown } | null)?.back;
   const done = () => navigate(typeof from === 'string' ? from : '/', { replace: true });
+  const iconButton =
+    'flex size-10 shrink-0 items-center justify-center rounded-(--radius-control) text-muted-foreground transition-colors hover:bg-muted hover:text-foreground';
 
   return (
-    <div className="mx-auto flex min-h-full max-w-[390px] flex-col bg-bg">
-      <div className="flex items-center gap-3 px-5 pt-10 pb-4">
+    <div className="mx-auto flex min-h-full max-w-[420px] flex-col bg-background">
+      <div className="flex items-center gap-3 px-5 pt-8 pb-4">
         {back ? (
-          <button
-            type="button"
-            onClick={back}
-            aria-label="Back"
-            className="mr-1 text-2xl leading-none text-muted-foreground"
-          >
-            ‹
+          <button type="button" onClick={back} aria-label="Back" className={iconButton}>
+            <ArrowLeft size={20} strokeWidth={1.75} aria-hidden />
           </button>
         ) : startedWithBusiness ? (
-          <button
-            type="button"
-            onClick={done}
-            aria-label="Close"
-            className="mr-1 text-2xl leading-none text-muted-foreground"
-          >
-            ×
+          <button type="button" onClick={done} aria-label="Close" className={iconButton}>
+            <X size={20} strokeWidth={1.75} aria-hidden />
           </button>
-        ) : null}
-        <div className="h-1.5 flex-1 rounded-full bg-tile">
+        ) : (
+          <img src="/logo.png" alt="" className="size-8 shrink-0 rounded-lg" />
+        )}
+        <div
+          className="h-1.5 flex-1 overflow-hidden rounded-full bg-muted"
+          role="progressbar"
+          aria-label="Setup"
+          aria-valuemin={1}
+          aria-valuemax={TOTAL}
+          aria-valuenow={step}
+        >
           <div
-            className="h-full rounded-full bg-brand transition-all duration-300"
+            className="h-full rounded-full bg-primary transition-[width] duration-300 ease-out motion-reduce:transition-none"
             style={{ width: `${(step / TOTAL) * 100}%` }}
           />
         </div>
-        <span className="shrink-0 font-mono text-xs text-muted-foreground">
+        <span className="shrink-0 text-xs text-muted-foreground tabular-nums">
           {step} of {TOTAL}
         </span>
       </div>
 
-      <div className="flex-1 px-5 pb-40">
+      <div className="flex-1 px-5 pb-44">
         {step === 1 && <NameStep value={name} onChange={setName} onNext={next} />}
         {step === 2 && (
           <TypeStep
@@ -122,14 +140,16 @@ export default function SetupPage() {
 
 function Heading({ title, detail }: { title: string; detail: string }) {
   return (
-    <div className="pt-8">
-      <h1 className="mb-1 text-2xl font-bold">{title}</h1>
-      <p className="mb-8 text-sm text-muted-foreground">{detail}</p>
+    <div className="flex flex-col gap-2 pt-6 pb-8">
+      <h1 className="font-heading text-3xl leading-[1.1] font-medium tracking-[-0.03em]">
+        {title}
+      </h1>
+      <p className="text-text-secondary">{detail}</p>
     </div>
   );
 }
 
-/** The design's fixed button at the bottom of each step. */
+/** The step's one main button, fixed at the bottom where a thumb reaches it. */
 function Footer({
   label,
   onClick,
@@ -144,12 +164,12 @@ function Footer({
   note?: ReactNode;
 }) {
   return (
-    <div className="fixed inset-x-0 bottom-0 border-t border-border bg-bg">
-      <div className="mx-auto max-w-[390px] px-5 pt-4 pb-8">
-        <Button full onClick={onClick} disabled={disabled} busy={busy}>
+    <div className="fixed inset-x-0 bottom-0 border-t bg-background">
+      <div className="mx-auto flex max-w-[420px] flex-col gap-2 px-5 pt-4 pb-[calc(2rem+env(safe-area-inset-bottom))]">
+        <Button size="lg" className="w-full" onClick={onClick} disabled={disabled} loading={busy}>
           {label}
         </Button>
-        {note && <p className="mt-2 text-center text-xs text-muted-foreground">{note}</p>}
+        {note && <p className="text-center text-xs text-muted-foreground">{note}</p>}
       </div>
     </div>
   );
@@ -170,11 +190,12 @@ function NameStep({
         title="What’s your business called?"
         detail="It shows on receipts and in the payment link texts."
       />
-      <TextInput
+      <Input
+        label="Business name"
         autoFocus
         maxLength={80}
         value={value}
-        placeholder="e.g. Ama's Kitchen"
+        placeholder="For example: Ama’s Kitchen"
         onChange={(event) => onChange(event.target.value)}
       />
       <Footer label="Continue" onClick={onNext} disabled={value.trim().length < 2} />
@@ -200,26 +221,19 @@ function TypeStep({
   return (
     <>
       <Heading title="What kind of food business?" detail="It picks a starter menu for you." />
-      <div className="grid grid-cols-2 gap-3">
-        {VENDOR_TYPES.map((type) => (
-          <button
-            key={type}
-            type="button"
-            onClick={() => onChange(type)}
-            className={cx(
-              'h-16 rounded-xl border px-4 text-left text-sm font-medium transition-colors',
-              value === type
-                ? 'border-brand bg-brand-subtle text-brand'
-                : 'border-border bg-surface',
-            )}
-          >
-            {VENDOR_TYPE_WORDS[type]}
-          </button>
-        ))}
-      </div>
+      <RadioCards
+        aria-label="Kind of business"
+        layout="grid"
+        minColumnWidth={150}
+        value={value}
+        onValueChange={(type) => onChange(type as VendorType)}
+        options={VENDOR_TYPES.map((type) => ({ value: type, label: VENDOR_TYPE_WORDS[type] }))}
+      />
       {creating.error && (
         <div className="mt-4">
-          <ErrorNote>{creating.error.message}</ErrorNote>
+          <Alert tone="danger" title="Couldn’t set up your business">
+            {creating.error.message}
+          </Alert>
         </div>
       )}
       <Footer
@@ -254,8 +268,10 @@ function TemplateStep({
 
   if (menu.isPending) {
     return (
-      <div className="flex justify-center pt-20">
-        <Spinner />
+      <div className="flex flex-col gap-3 pt-6" aria-busy="true">
+        <Skeleton className="h-9 w-3/4" />
+        <Skeleton className="h-20 w-full rounded-(--radius-panel)" />
+        <Skeleton className="h-20 w-full rounded-(--radius-panel)" />
       </div>
     );
   }
@@ -274,35 +290,29 @@ function TemplateStep({
   return (
     <>
       <Heading title="Choose a starter menu" detail="You can change everything after setup." />
-      <div className="space-y-3">
-        {order.map((type) => {
+      <RadioCards
+        aria-label="Starter menu"
+        layout="list"
+        value={value}
+        onValueChange={(type) => onChange(type as VendorType)}
+        options={order.map((type) => {
           const template = MENU_TEMPLATES[type];
           const names = template.categories.flatMap((c) => c.items.map((i) => i.name));
-          return (
-            <button
-              key={type}
-              type="button"
-              onClick={() => onChange(type)}
-              className={cx(
-                'w-full rounded-xl border p-4 text-left transition-colors',
-                value === type ? 'border-brand bg-brand-subtle' : 'border-border bg-surface',
-              )}
-            >
-              <p className={cx('text-sm font-semibold', value === type && 'text-brand')}>
-                {type === BLANK ? 'Start blank' : template.label}
-                {type === vendorType && type !== BLANK && (
-                  <span className="ml-2 text-xs font-normal text-muted-foreground">Suggested</span>
-                )}
-              </p>
-              <p className="mt-1 text-xs text-muted-foreground">
-                {names.length
-                  ? `${names.slice(0, 5).join(', ')}${names.length > 5 ? `, and ${names.length - 5} more` : ''}`
-                  : 'Add your own items on the Menu page.'}
-              </p>
-            </button>
-          );
+          return {
+            value: type,
+            label: type === BLANK ? 'Start blank' : template.label,
+            description: names.length
+              ? `${names.slice(0, 5).join(', ')}${names.length > 5 ? `, and ${names.length - 5} more` : ''}`
+              : 'Add your own items on the Menu page.',
+            meta:
+              type === vendorType && type !== BLANK ? (
+                <Badge tone="info" size="sm">
+                  Suggested
+                </Badge>
+              ) : undefined,
+          };
         })}
-      </div>
+      />
       <Footer label="Continue" onClick={() => onNext(false)} />
     </>
   );
@@ -353,30 +363,26 @@ function PricesStep({
         title="Set your prices"
         detail="Type a price for each item you sell. Leave one blank and it stays off the menu."
       />
-      <div className="space-y-2">
+      <ul className="flex flex-col divide-y overflow-hidden rounded-(--radius-surface) border bg-card">
         {rows.map((row) => (
-          <label
-            key={row.key}
-            className="flex h-14 items-center justify-between gap-3 rounded-xl border border-border bg-surface px-4 focus-within:border-brand"
-          >
+          <li key={row.key} className="flex items-center justify-between gap-3 px-4 py-2.5">
             <span className="min-w-0 truncate text-sm">{row.label}</span>
-            <span className="flex shrink-0 items-center gap-1 font-mono">
-              <span className="text-xs text-muted-foreground">GH₵</span>
-              <input
-                inputMode="decimal"
-                aria-label={`${row.label} price`}
-                value={texts[row.key] ?? ''}
-                placeholder="0.00"
-                onChange={(event) => setTexts({ ...texts, [row.key]: event.target.value })}
-                className="w-20 bg-transparent text-right text-base font-medium outline-none placeholder:text-muted-foreground/50"
-              />
-            </span>
-          </label>
+            <MoneyField
+              label={`${row.label} price`}
+              hideLabel
+              className="w-32 shrink-0"
+              placeholder="0.00"
+              value={texts[row.key] ?? ''}
+              onChange={(value) => setTexts({ ...texts, [row.key]: value })}
+            />
+          </li>
         ))}
-      </div>
+      </ul>
       {saving.error && (
         <div className="mt-4">
-          <ErrorNote>{saving.error.message}</ErrorNote>
+          <Alert tone="danger" title="Couldn’t save the menu">
+            {saving.error.message}
+          </Alert>
         </div>
       )}
       <Footer
@@ -394,6 +400,9 @@ function PricesStep({
   );
 }
 
+const digits = (value: string) => value.replace(/\D/g, '').slice(0, 6);
+
+/** A PIN typed twice. It's never shown, so there's no "show" button either. */
 function PinPair({
   pin,
   again,
@@ -407,31 +416,24 @@ function PinPair({
   onAgain: (value: string) => void;
   label: string;
 }) {
-  const digits = (value: string) => value.replace(/\D/g, '').slice(0, 6);
   return (
     <div className="grid grid-cols-2 gap-3">
-      <div>
-        <FieldLabel>{label}</FieldLabel>
-        <TextInput
-          type="password"
-          inputMode="numeric"
-          autoComplete="new-password"
-          className="font-mono tracking-widest"
-          value={pin}
-          onChange={(event) => onPin(digits(event.target.value))}
-        />
-      </div>
-      <div>
-        <FieldLabel>Again</FieldLabel>
-        <TextInput
-          type="password"
-          inputMode="numeric"
-          autoComplete="new-password"
-          className="font-mono tracking-widest"
-          value={again}
-          onChange={(event) => onAgain(digits(event.target.value))}
-        />
-      </div>
+      <PlainField
+        label={label}
+        type="password"
+        inputMode="numeric"
+        autoComplete="new-password"
+        value={pin}
+        onChange={(value) => onPin(digits(value))}
+      />
+      <PlainField
+        label="Again"
+        type="password"
+        inputMode="numeric"
+        autoComplete="new-password"
+        value={again}
+        onChange={(value) => onAgain(digits(value))}
+      />
     </div>
   );
 }
@@ -478,8 +480,9 @@ function StaffStep({ staffId, onNext }: { staffId: string; onNext: () => void })
 
   if (team.isPending) {
     return (
-      <div className="flex justify-center pt-20">
-        <Spinner />
+      <div className="flex flex-col gap-3 pt-6" aria-busy="true">
+        <Skeleton className="h-9 w-3/4" />
+        <Skeleton className="h-32 w-full rounded-(--radius-panel)" />
       </div>
     );
   }
@@ -491,12 +494,17 @@ function StaffStep({ staffId, onNext }: { staffId: string; onNext: () => void })
         detail="Everyone unlocks the tablet with their own 6-digit PIN. PINs aren’t shown again, so tell each person theirs."
       />
 
-      <section className="mb-8">
-        <p className="mb-2 text-sm font-semibold">Your PIN</p>
+      <section className="mb-10 flex flex-col gap-3" aria-labelledby="your-pin">
+        <h2 id="your-pin" className="font-medium">
+          Your PIN
+        </h2>
         {me?.hasPin && !ownerPin ? (
-          <p className="rounded-xl bg-green-bg px-4 py-3 text-sm text-green">Your PIN is set.</p>
+          <p className="flex items-center gap-2 text-sm text-success">
+            <Check size={16} strokeWidth={2} aria-hidden />
+            Your PIN is set.
+          </p>
         ) : (
-          <div className="space-y-3">
+          <>
             <PinPair
               pin={ownerPin}
               again={ownerAgain}
@@ -505,66 +513,82 @@ function StaffStep({ staffId, onNext }: { staffId: string; onNext: () => void })
               label="Your PIN"
             />
             {ownerPin.length === 6 && ownerProblem && (
-              <p className="text-xs text-amber">{ownerProblem}</p>
+              <p className="text-sm text-warning">{ownerProblem}</p>
             )}
-            {savingOwner.error && <ErrorNote>{savingOwner.error.message}</ErrorNote>}
+            {savingOwner.error && (
+              <Alert tone="danger" title="Couldn’t set your PIN">
+                {savingOwner.error.message}
+              </Alert>
+            )}
             <Button
               variant="secondary"
-              full
+              className="w-full"
               disabled={!!ownerProblem}
-              busy={savingOwner.isPending}
+              loading={savingOwner.isPending}
               onClick={() => savingOwner.mutate()}
             >
               Set my PIN
             </Button>
-          </div>
+          </>
         )}
       </section>
 
-      <section>
-        <p className="mb-2 text-sm font-semibold">Your staff</p>
+      <section className="flex flex-col gap-3" aria-labelledby="your-staff">
+        <h2 id="your-staff" className="font-medium">
+          Your staff
+        </h2>
         {others.length > 0 && (
-          <div className="mb-4 divide-y divide-border rounded-xl border border-border bg-surface">
+          <ul className="flex flex-col divide-y overflow-hidden rounded-(--radius-panel) border bg-card">
             {others.map((member) => (
-              <div key={member.id} className="flex items-center justify-between px-4 py-3">
-                <p className="text-sm font-medium">{member.displayName}</p>
-                <p className="text-xs text-muted-foreground">
-                  {ROLE_WORDS[member.role]} · {member.hasPin ? 'PIN set' : 'no PIN'}
-                </p>
-              </div>
+              <li key={member.id} className="flex items-center justify-between gap-3 px-4 py-3">
+                <span className="text-sm font-medium">{member.displayName}</span>
+                <span className="text-xs text-muted-foreground">
+                  {ROLE_WORDS[member.role]}, {member.hasPin ? 'PIN set' : 'no PIN'}
+                </span>
+              </li>
             ))}
-          </div>
+          </ul>
         )}
-        <div className="space-y-3">
-          <TextInput
-            value={name}
-            maxLength={60}
-            placeholder="Their name"
-            onChange={(event) => setName(event.target.value)}
-          />
-          <PillFilter
-            label="Role"
-            options={[
-              { value: 'STAFF', label: 'Staff' },
-              { value: 'RIDER', label: 'Rider' },
-              { value: 'MANAGER', label: 'Manager' },
-            ]}
-            value={role}
-            onChange={setRole}
-          />
-          <PinPair pin={pin} again={again} onPin={setPin} onAgain={setAgain} label="Their PIN" />
-          {pin.length === 6 && staffProblem && <p className="text-xs text-amber">{staffProblem}</p>}
-          {adding.error && <ErrorNote>{adding.error.message}</ErrorNote>}
-          <Button
-            variant="secondary"
-            full
-            disabled={!!staffProblem}
-            busy={adding.isPending}
-            onClick={() => adding.mutate()}
-          >
-            Add staff member
-          </Button>
-        </div>
+        <Input
+          label="Their name"
+          value={name}
+          maxLength={60}
+          onChange={(event) => setName(event.target.value)}
+        />
+        <RadioGroup
+          label="Role"
+          value={role}
+          onValueChange={(value) => setRole(value as 'STAFF' | 'RIDER' | 'MANAGER')}
+          options={[
+            {
+              value: 'STAFF',
+              label: 'Staff',
+              description: 'Take orders and look after the drawer.',
+            },
+            { value: 'RIDER', label: 'Rider', description: 'Only see and update deliveries.' },
+            {
+              value: 'MANAGER',
+              label: 'Manager',
+              description: 'Also refunds, payouts and the menu, on this dashboard.',
+            },
+          ]}
+        />
+        <PinPair pin={pin} again={again} onPin={setPin} onAgain={setAgain} label="Their PIN" />
+        {pin.length === 6 && staffProblem && <p className="text-sm text-warning">{staffProblem}</p>}
+        {adding.error && (
+          <Alert tone="danger" title="Couldn’t add them">
+            {adding.error.message}
+          </Alert>
+        )}
+        <Button
+          variant="secondary"
+          className="w-full"
+          disabled={!!staffProblem}
+          loading={adding.isPending}
+          onClick={() => adding.mutate()}
+        >
+          Add staff member
+        </Button>
       </section>
 
       <Footer
@@ -615,69 +639,48 @@ function MoolreStep({ onNext }: { onNext: () => void }) {
         detail="Payment-link money goes straight into your own Moolre account. Plateraa never holds your money."
       />
       {state === 'connected' ? (
-        <div className="rounded-xl border border-green/20 bg-green-bg p-5 text-center">
-          <div className="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-full bg-green text-xl text-white">
-            ✓
-          </div>
-          <p className="font-semibold text-green">Connected</p>
-          <p className="mt-1 text-xs text-muted-foreground">
-            Payments land in the Moolre account ending {settings.data?.moolre.accountEnding}.
-          </p>
-        </div>
+        <Alert tone="success" title="Connected">
+          Payments land in the Moolre account ending {settings.data?.moolre.accountEnding}.
+        </Alert>
       ) : (
-        <div className="space-y-4">
-          <div>
-            <FieldLabel htmlFor="m-user">Moolre username</FieldLabel>
-            <TextInput
-              id="m-user"
-              autoComplete="off"
-              value={apiUser}
-              onChange={(event) => setApiUser(event.target.value)}
-            />
-          </div>
-          <div>
-            <FieldLabel htmlFor="m-key">Public key</FieldLabel>
-            <TextInput
-              id="m-key"
-              type="password"
-              autoComplete="off"
-              value={publicKey}
-              onChange={(event) => setPublicKey(event.target.value)}
-            />
-          </div>
-          <div>
-            <FieldLabel htmlFor="m-account">Moolre account number</FieldLabel>
-            <TextInput
-              id="m-account"
-              inputMode="numeric"
-              autoComplete="off"
-              value={accountNumber}
-              onChange={(event) => setAccountNumber(event.target.value)}
-            />
-          </div>
-          <div>
-            <FieldLabel htmlFor="m-email">Email on the account</FieldLabel>
-            <TextInput
-              id="m-email"
-              type="email"
-              value={email}
-              onChange={(event) => setEmail(event.target.value)}
-            />
-          </div>
-          <p className="text-xs text-muted-foreground">
-            From app.moolre.com. Only the public key, never the private one.
-          </p>
+        <div className="flex flex-col gap-4">
+          <Input
+            label="Moolre username"
+            autoComplete="off"
+            value={apiUser}
+            onChange={(event) => setApiUser(event.target.value)}
+          />
+          <Input
+            label="Public key"
+            description="From app.moolre.com. Only the public key, never the private one."
+            type="password"
+            autoComplete="off"
+            value={publicKey}
+            onChange={(event) => setPublicKey(event.target.value)}
+          />
+          <Input
+            label="Moolre account number"
+            inputMode="numeric"
+            autoComplete="off"
+            value={accountNumber}
+            onChange={(event) => setAccountNumber(event.target.value)}
+          />
+          <Input
+            label="Email on the account"
+            type="email"
+            value={email}
+            onChange={(event) => setEmail(event.target.value)}
+          />
           {state === 'failed' && (
-            <div className="rounded-xl border border-red/20 bg-red-bg p-4 text-red">
-              <p className="mb-1 text-sm font-semibold">That didn’t connect</p>
-              <p className="text-xs">{connecting.error?.message}</p>
-            </div>
+            <Alert tone="danger" title="That didn’t connect">
+              {connecting.error?.message}
+            </Alert>
           )}
           <Button
             variant="secondary"
-            full
+            className="w-full"
             disabled={!ready}
-            busy={connecting.isPending}
+            loading={connecting.isPending}
             onClick={() => connecting.mutate()}
           >
             {connecting.isPending ? 'Checking with Moolre…' : 'Test connection'}
@@ -710,18 +713,19 @@ function InstallStep({ business, onDone }: { business: string; onDone: () => voi
         title="Set up the tablet"
         detail="The counter runs on your own Android tablet, even without internet."
       />
-      <ol className="space-y-3">
+      {/* A real sequence, so it's numbered. */}
+      <ol className="flex flex-col divide-y overflow-hidden rounded-(--radius-surface) border bg-card">
         {steps.map((text, index) => (
-          <li key={text} className="flex gap-3 rounded-xl border border-border bg-surface p-4">
-            <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-brand-subtle font-mono text-sm font-semibold text-brand">
+          <li key={text} className="flex gap-3 px-4 py-3.5">
+            <span className="flex size-6 shrink-0 items-center justify-center rounded-full bg-accent-subtle text-xs text-accent-strong tabular-nums">
               {index + 1}
             </span>
             <span className="text-sm">{text}</span>
           </li>
         ))}
       </ol>
-      <p className="mt-8 text-center text-sm font-semibold">You’re all set.</p>
-      <Footer label="Go to the dashboard →" onClick={onDone} />
+      <p className="mt-8 text-center font-medium">You’re all set.</p>
+      <Footer label="Go to the dashboard" onClick={onDone} />
     </>
   );
 }

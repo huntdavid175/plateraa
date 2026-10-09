@@ -316,6 +316,9 @@ _11 Sep: the server side is built from Moolre's docs (docs.moolre.com; their `/a
   - _13 Sep: the Customers page lists everyone whose number was taken with an order (the tablet adds them with phone orders and deliveries), most recent first, with a search by name or number. Each customer's page shows their orders, first and last order, and what they spent (only with `reports.revenue.view`). A manager or the owner (new capability `customers.manage`) can fix a name or add notes, which sync to the tablets; the number never changes. An order's page links to its customer (`GET /api/customers`, `GET` and `PUT /api/customers/:id`, audited)._
   - _Left out: flagging a problem customer. The column syncs, but the tablet doesn't show it yet, so a flag would do nothing at the counter._
 
+- [x] Dashboard rework in a new look (user decision, 9 Oct)
+  - _9 Oct: the whole dashboard rebuilt with shadcn/ui (Radix) and Arc (uiarc.dev) components, one screen per commit: shell, sign-in, Home (Today renamed, user request), Orders, Customers, Menu and the item editor, Stock, Online store, Expenses / Refunds / money dialogs, Reports, Staff, Settings, onboarding. Plateraa's palette on Arc's tokens (`apps/dashboard/src/theme.css`), Inter and Geist, light / dark / system. Screens load on demand. A dev-only `/__preview` shows them with sample data. Same API, same behaviour; see `apps/dashboard/AGENTS.md`, Design. Not yet tried by the user on a phone, an iPhone, or through the onboarding._
+
 ### 3.2 Reporting
 
 - [x] Day summary: money in / not yet collected / money out / what's left / profit

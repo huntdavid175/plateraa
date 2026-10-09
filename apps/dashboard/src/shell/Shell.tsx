@@ -50,7 +50,7 @@ import { signOutAndForget, useBusinesses, useContextQuery, type Me } from '../li
 import { session, useSession } from '../lib/session';
 import { setTheme, useThemeChoice } from '../lib/theme';
 import { ROLE_WORDS, VENDOR_TYPE_WORDS } from '../lib/words';
-import { Spinner } from '../ui/controls';
+import { ScreenLoading } from '@/components/app/loading';
 import { Centered } from '../ui/Page';
 
 interface NavItem {
@@ -110,11 +110,7 @@ export function Shell() {
   if (!tenantId) return <Navigate to="/businesses" replace />;
 
   if (context.isPending) {
-    return (
-      <div className="flex h-full items-center justify-center">
-        <Spinner />
-      </div>
-    );
+    return <ScreenLoading />;
   }
 
   if (context.isError) {
