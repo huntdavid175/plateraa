@@ -359,7 +359,7 @@ function seed(tenant: string | null) {
   // Sample data never goes stale here, so nothing is fetched over it.
   queryClient.setDefaultOptions({ queries: { staleTime: Infinity, retry: false } });
   queryClient.setQueryData(['day', tenant, 'today'], DAY);
-  queryClient.setQueryData(['orders', tenant, { limit: 5 }], RECENT);
+  queryClient.setQueryData(['orders', tenant, { limit: 8 }], DAY_ORDERS.slice(0, 8));
   queryClient.setQueryData(['refunds-owed', tenant], [{ ...RECENT[4], paidWith: ['LINK'] }]);
   queryClient.setQueryData(['tablets', tenant], TABLETS);
   queryClient.setQueryData(['team', tenant], TEAM);

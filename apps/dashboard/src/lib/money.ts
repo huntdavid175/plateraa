@@ -3,6 +3,9 @@ import { formatCedis, pesewas } from '@plateraa/shared';
 /** Pesewas from the API, shown as GH₵1,085.00. */
 export const cedis = (amount: number): string => formatCedis(pesewas(amount));
 
+/** Pesewas as whole cedis, "GH₵2,315": for charts, where the exact figure is a tap away. */
+export const wholeCedis = (amount: number): string => cedis(amount).replace(/\.\d\d$/, '');
+
 /**
  * What someone typed ("12", "12.5", "12.50") as pesewas, or null if it isn't an amount.
  * Whole-number maths only, so no float rounding creeps in.
