@@ -6,6 +6,12 @@ export const cedis = (amount: number): string => formatCedis(pesewas(amount));
 /** Pesewas as whole cedis, "GH₵2,315": for charts, where the exact figure is a tap away. */
 export const wholeCedis = (amount: number): string => cedis(amount).replace(/\.\d\d$/, '');
 
+/** A chart's amount: whole cedis, or "GH₵13.5k" from 10,000 cedis, so a donut's centre fits. */
+export const chartCedis = (amount: number): string =>
+  Math.abs(amount) >= 1_000_000 ? `GH₵${COMPACT.format(amount / 100)}` : wholeCedis(amount);
+
+const COMPACT = new Intl.NumberFormat('en-GB', { notation: 'compact', maximumFractionDigits: 1 });
+
 /**
  * What someone typed ("12", "12.5", "12.50") as pesewas, or null if it isn't an amount.
  * Whole-number maths only, so no float rounding creeps in.

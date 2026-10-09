@@ -1,15 +1,28 @@
 import { useQuery } from '@tanstack/react-query';
-import { ChevronRight } from 'lucide-react';
-import { Suspense, lazy } from 'react';
 import { Link, useLocation, useSearchParams } from 'react-router';
+import { ActivityHeatmap } from '@/components/arc/activity-heatmap/activity-heatmap';
 import { Alert } from '@/components/arc/alert/alert';
+import { Avatar } from '@/components/arc/avatar/avatar';
+import { BarChart } from '@/components/arc/bar-chart/bar-chart';
+import { DonutChart } from '@/components/arc/donut-chart/donut-chart';
+import { LineChart } from '@/components/arc/line-chart/line-chart';
 import SegmentedControl from '@/components/arc/segmented-control/segmented-control';
+import { Sparkline } from '@/components/arc/sparkline/sparkline';
 import { DateField } from '@/components/app/day-picker';
-import { Panel, PanelEmpty, PanelLine, PanelRows } from '@/components/app/panel';
+import { Bento, Cedis, Tile, TileRows } from '@/components/app/bento';
+import { PanelLine } from '@/components/app/panel';
 import { Skeleton } from '@/components/ui/skeleton';
-import { cn } from '@/lib/utils';
 import { lastMonth, shiftDays } from '../lib/expenses';
-import { cedis, clock, hourRange, longDate, shortDate, todayHere } from '../lib/money';
+import {
+  cedis,
+  clock,
+  hourLabel,
+  hourRange,
+  longDate,
+  shortDate,
+  todayHere,
+  chartCedis,
+} from '../lib/money';
 import type { BackTo } from '../lib/orders';
 import { busiestHour, fetchPeriod, type Period } from '../lib/reports';
 import { useSession } from '../lib/session';
@@ -23,8 +36,6 @@ const RANGES = [
   { value: 'pick', label: 'Pick days' },
 ] as const;
 type Range = (typeof RANGES)[number]['value'];
-
-const OrdersByHourChart = lazy(() => import('./OrdersByHourChart'));
 
 /** The most the API reports on at once. */
 const MAX_DAYS = 92;
@@ -138,233 +149,281 @@ function linksFor(period: Period) {
   };
 }
 
+/** "GH₵1.2K" on a chart's value axis (the values are pesewas). */
+const compactCedis = (pesewas: number) =>
+  `GH₵${new Intl.NumberFormat('en-GB', { notation: 'compact', maximumFractionDigits: 1 }).format(pesewas / 100)}`;
+
+/** One value per day of the report, oldest first, with the day names for scrubbing. */
+function series(period: Period, pick: (day: Period['byDay'][number]) => number) {
+  return {
+    data: period.byDay.map(pick),
+    labels: period.byDay.map((day) => shortDate(day.date)),
+  };
+}
+
 function Report({ period, back }: { period: Period; back: BackTo }) {
   const { totals } = period;
   const links = linksFor(period);
   const busiest = busiestHour(period.byHour);
+  const days = period.byDay.length;
+  const trends = {
+    sales: series(period, (d) => d.sales),
+    moneyIn: series(period, (d) => d.moneyIn),
+    moneyOut: series(period, (d) => d.moneyOut),
+    left: series(period, (d) => d.moneyIn - d.moneyOut),
+  };
+  const hourBars = (() => {
+    const counts = new Map(
+      period.byHour.filter((r) => r.orders > 0).map((r) => [r.hour, r.orders]),
+    );
+    if (counts.size === 0) return [];
+    const hours = [...counts.keys()];
+    const out = [];
+    for (let hour = Math.min(...hours); hour <= Math.max(...hours); hour++) {
+      out.push({
+        key: String(hour),
+        label: hourRange(hour),
+        axisLabel: hourLabel(hour),
+        value: counts.get(hour) ?? 0,
+      });
+    }
+    return out;
+  })();
+
   return (
-    <>
-      <ul className="grid grid-cols-2 divide-x divide-y overflow-hidden rounded-(--radius-surface) border bg-card md:grid-cols-4 md:divide-y-0">
-        <Figure
-          label="Sales"
-          value={cedis(totals.sales)}
-          note={orderWords(totals.orders)}
-          to={links.orders()}
-        />
-        <Figure
-          label="Money in"
-          value={cedis(totals.moneyIn)}
-          note="Cash and mobile money"
-          to={links.orders({ method: 'CASH,LINK' })}
-        />
-        <Figure
-          label="Money out"
-          value={cedis(totals.moneyOut)}
-          note="Expenses and payouts"
-          to={links.expenses()}
-        />
-        <Figure
-          label="Profit"
-          value={cedis(totals.profit)}
-          note="After expenses"
-          loss={totals.profit < 0}
-        />
-      </ul>
+    <Bento>
+      <FigureTile
+        title="Sales"
+        amount={totals.sales}
+        note={orderWords(totals.orders)}
+        to={links.orders()}
+        trend={days > 1 ? trends.sales : null}
+      />
+      <FigureTile
+        title="Money in"
+        amount={totals.moneyIn}
+        note="Cash and mobile money"
+        to={links.orders({ method: 'CASH,LINK' })}
+        trend={days > 1 ? trends.moneyIn : null}
+      />
+      <FigureTile
+        title="Money out"
+        amount={totals.moneyOut}
+        note="Expenses and payouts"
+        to={links.expenses()}
+        trend={days > 1 ? trends.moneyOut : null}
+      />
+      <FigureTile
+        title="Profit"
+        amount={totals.profit}
+        note="After expenses"
+        trend={days > 1 ? trends.left : null}
+        tone={totals.profit < 0 ? 'danger' : 'success'}
+      />
 
-      <div className="grid gap-6 md:grid-cols-2">
-        <Panel title="Profit and loss">
-          <PanelRows>
+      {days > 1 && (
+        <Tile title="Day by day" className="col-span-2 lg:col-span-4">
+          <LineChart
+            label="Sales and money out, day by day"
+            height={240}
+            formatValue={(value) => cedis(value)}
+            formatTick={compactCedis}
+            categoryLabel="Day"
+            series={[
+              { key: 'sales', label: 'Sales' },
+              { key: 'out', label: 'Money out', dashed: true },
+            ]}
+            data={period.byDay.map((day) => ({
+              key: day.date,
+              label: longDate(day.date),
+              axisLabel: shortDate(day.date),
+              values: { sales: day.sales, out: day.moneyOut },
+            }))}
+          />
+        </Tile>
+      )}
+
+      <Tile title="Profit and loss" className="col-span-2">
+        <TileRows>
+          <PanelLine
+            label="Money in"
+            value={cedis(totals.moneyIn)}
+            to={links.orders({ method: 'CASH,LINK' })}
+          />
+          {totals.platformOwed > 0 && (
             <PanelLine
-              label="Money in"
-              value={cedis(totals.moneyIn)}
-              to={links.orders({ method: 'CASH,LINK' })}
+              label="Owed by Bolt and Chowdeck, after commission"
+              value={`+${cedis(totals.platformOwed - totals.commissionEstimate)}`}
+              to={links.orders({ method: 'PLATFORM' })}
             />
-            {totals.platformOwed > 0 && (
+          )}
+          <PanelLine
+            label="Purchases"
+            value={`-${cedis(totals.purchases)}`}
+            to={links.expenses({ kind: 'purchase' })}
+          />
+          <PanelLine
+            label="Other expenses"
+            value={`-${cedis(totals.otherExpenses)}`}
+            to={links.expenses({ kind: 'other' })}
+          />
+          <PanelLine
+            strong
+            label="Profit"
+            value={cedis(totals.profit)}
+            tone={totals.profit < 0 && 'text-danger'}
+          />
+        </TileRows>
+      </Tile>
+
+      <Tile title="Best sellers" className="col-span-2">
+        {period.byItem.length === 0 ? (
+          <p className="text-sm text-muted-foreground">No sales on these days.</p>
+        ) : (
+          <TileRows>
+            {period.byItem.slice(0, 6).map((item, index) => (
               <PanelLine
-                label="Owed by Bolt and Chowdeck, after commission"
-                value={`+${cedis(totals.platformOwed - totals.commissionEstimate)}`}
-                to={links.orders({ method: 'PLATFORM' })}
+                key={item.name}
+                label={
+                  <span className="flex items-center gap-3">
+                    <span className="w-4 text-xs text-muted-foreground tabular-nums">
+                      {index + 1}
+                    </span>
+                    {item.name}
+                  </span>
+                }
+                note={`${item.quantity} sold`}
+                value={cedis(item.sales)}
+                to={links.orders({ item: item.name })}
               />
-            )}
-            <PanelLine
-              label="Purchases"
-              value={`-${cedis(totals.purchases)}`}
-              to={links.expenses({ kind: 'purchase' })}
-            />
-            <PanelLine
-              label="Other expenses"
-              value={`-${cedis(totals.otherExpenses)}`}
-              to={links.expenses({ kind: 'other' })}
-            />
-            <PanelLine
-              strong
-              label="Profit"
-              value={cedis(totals.profit)}
-              tone={totals.profit < 0 && 'text-danger'}
-            />
-          </PanelRows>
-        </Panel>
-
-        <Panel title="Best sellers">
-          {period.byItem.length === 0 ? (
-            <PanelEmpty>No sales on these days.</PanelEmpty>
-          ) : (
-            <PanelRows>
-              {period.byItem.slice(0, 8).map((item) => (
-                <PanelLine
-                  key={item.name}
-                  label={item.name}
-                  note={`${item.quantity} sold`}
-                  value={cedis(item.sales)}
-                  to={links.orders({ item: item.name })}
-                />
-              ))}
-            </PanelRows>
-          )}
-        </Panel>
-      </div>
-
-      <Panel
-        title="Busy hours"
-        description={
-          busiest
-            ? `Busiest ${hourRange(busiest.hour)}, with ${orderWords(busiest.orders)} over these days.`
-            : undefined
-        }
-      >
-        {busiest ? (
-          <div className="px-3 pb-4">
-            <Suspense fallback={<div className="h-[160px]" />}>
-              <OrdersByHourChart byHour={period.byHour} />
-            </Suspense>
-          </div>
-        ) : (
-          <PanelEmpty>No orders on these days.</PanelEmpty>
+            ))}
+          </TileRows>
         )}
-      </Panel>
+      </Tile>
 
-      <Panel title="Day by day">
-        <div
-          className="hidden grid-cols-[minmax(0,1.5fr)_5rem_minmax(0,1fr)_minmax(0,1fr)_minmax(0,1fr)_1rem] gap-4 border-t px-5 py-3 text-xs text-muted-foreground md:grid"
-          aria-hidden
-        >
-          <span>Day</span>
-          <span className="text-right">Orders</span>
-          <span className="text-right">Sales</span>
-          <span className="text-right">Money in</span>
-          <span className="text-right">Money out</span>
-          <span />
-        </div>
-        <PanelRows>
-          {[...period.byDay].reverse().map((day) => (
-            <li key={day.date}>
-              <Link
-                to={`/orders?date=${day.date}`}
-                state={back}
-                className="grid grid-cols-[1fr_auto] items-center gap-x-4 gap-y-0.5 px-5 py-3 text-sm transition-colors hover:bg-muted/60 md:grid-cols-[minmax(0,1.5fr)_5rem_minmax(0,1fr)_minmax(0,1fr)_minmax(0,1fr)_1rem]"
-              >
-                <span>{shortDate(day.date)}</span>
-                <span className="text-right font-mono text-muted-foreground md:text-foreground">
-                  <span className="font-sans md:hidden">{orderWords(day.orders)}, </span>
-                  <span className="hidden md:inline">{day.orders}</span>
-                  <span className="text-foreground md:hidden">{cedis(day.sales)}</span>
-                </span>
-                <span className="hidden text-right font-mono md:block">{cedis(day.sales)}</span>
-                <span className="hidden text-right font-mono md:block">{cedis(day.moneyIn)}</span>
-                <span className="hidden text-right font-mono md:block">{cedis(day.moneyOut)}</span>
-                <ChevronRight
-                  size={14}
-                  strokeWidth={1.75}
-                  className="hidden text-muted-foreground md:block"
-                  aria-hidden
-                />
-              </Link>
-            </li>
-          ))}
-        </PanelRows>
-      </Panel>
-
-      <div className="grid gap-6 md:grid-cols-2">
-        <Panel title="Dine-in, pickup and delivery">
-          {period.byType.length === 0 ? (
-            <PanelEmpty>No orders.</PanelEmpty>
-          ) : (
-            <PanelRows>
-              {period.byType.map((row) => (
-                <PanelLine
-                  key={row.type}
-                  label={TYPE_WORDS[row.type]}
-                  note={orderWords(row.orders)}
-                  value={cedis(row.sales)}
-                  to={links.orders({ type: row.type })}
-                />
-              ))}
-            </PanelRows>
-          )}
-        </Panel>
-        <Panel title="How they paid">
-          {period.byMethod.length === 0 ? (
-            <PanelEmpty>No payments.</PanelEmpty>
-          ) : (
-            <PanelRows>
-              {period.byMethod.map((row) => (
-                <PanelLine
-                  key={row.method}
-                  label={METHOD_WORDS[row.method]}
-                  value={cedis(row.amount)}
-                  to={links.orders({ method: row.method })}
-                />
-              ))}
-            </PanelRows>
-          )}
-        </Panel>
-        <Panel title="Expenses by kind">
-          {period.byCategory.length === 0 ? (
-            <PanelEmpty>No expenses.</PanelEmpty>
-          ) : (
-            <PanelRows>
-              {period.byCategory.map((row) => (
-                <PanelLine
-                  key={row.category}
-                  label={EXPENSE_WORDS[row.category]}
-                  value={cedis(row.amount)}
-                  to={links.expenses({ category: row.category })}
-                />
-              ))}
-            </PanelRows>
-          )}
-        </Panel>
-        <Panel title="Staff">
-          {period.staff.length === 0 ? (
-            <PanelEmpty>No orders.</PanelEmpty>
-          ) : (
-            <PanelRows>
-              {period.staff.map((row) => (
-                <PanelLine
-                  key={row.staffId}
-                  label={row.name}
-                  note={
-                    row.cash > 0
-                      ? `${orderWords(row.orders)}, ${cedis(row.cash)} cash taken`
-                      : orderWords(row.orders)
-                  }
-                  value={cedis(row.sales)}
-                  to={links.orders({ staff: row.staffId })}
-                />
-              ))}
-            </PanelRows>
-          )}
-        </Panel>
-      </div>
-
-      <Panel
-        title="Drawer closes"
-        description="What each drawer should have held, and what was counted."
+      <Tile
+        title={busiest ? `Busiest ${hourRange(busiest.hour)}` : 'Busy hours'}
+        className={days >= 28 ? 'col-span-2' : 'col-span-2 lg:col-span-4'}
       >
-        {period.drawerCloses.length === 0 ? (
-          <PanelEmpty>No drawer was closed on these days.</PanelEmpty>
+        {hourBars.length > 0 ? (
+          <BarChart
+            data={hourBars}
+            label="Orders"
+            period="Over these days, by hour"
+            unit="orders"
+            averageLabel="An hour, on average"
+            valueLabel="Orders"
+            categoryLabel="Hour"
+            height={170}
+          />
         ) : (
-          <PanelRows>
+          <p className="text-sm text-muted-foreground">No orders on these days.</p>
+        )}
+      </Tile>
+
+      {/* A grid of days says something over weeks, not over a few days. */}
+      {days >= 28 && (
+        <Tile title="Busy days" className="col-span-2">
+          <ActivityHeatmap
+            label="Orders each day"
+            period="these days"
+            unit={{ one: 'order', other: 'orders' }}
+            weekStartsOn={1}
+            locale="en-GB"
+            days={period.byDay.map((day) => ({ date: day.date, count: day.orders }))}
+          />
+        </Tile>
+      )}
+
+      <Tile title="How they paid" className="col-span-2">
+        {period.byMethod.length === 0 ? (
+          <p className="text-sm text-muted-foreground">No payments.</p>
+        ) : (
+          <DonutChart
+            label="Money in by how it was paid"
+            size={200}
+            thickness={18}
+            formatValue={chartCedis}
+            totalLabel="Paid"
+            data={period.byMethod.map((row) => ({
+              key: row.method,
+              label: METHOD_WORDS[row.method],
+              value: row.amount,
+            }))}
+          />
+        )}
+      </Tile>
+
+      <Tile title="Expenses by kind" to={links.expenses()} className="col-span-2">
+        {period.byCategory.length === 0 ? (
+          <p className="text-sm text-muted-foreground">No expenses.</p>
+        ) : (
+          <DonutChart
+            label="Money out by kind"
+            size={200}
+            thickness={18}
+            formatValue={chartCedis}
+            totalLabel="Spent"
+            data={period.byCategory.map((row) => ({
+              key: row.category,
+              label: EXPENSE_WORDS[row.category],
+              value: row.amount,
+            }))}
+          />
+        )}
+      </Tile>
+
+      <Tile title="Dine-in, pickup and delivery" to={links.orders()} className="col-span-2">
+        {period.byType.length === 0 ? (
+          <p className="text-sm text-muted-foreground">No orders.</p>
+        ) : (
+          <DonutChart
+            label="Sales by order type"
+            size={200}
+            thickness={18}
+            formatValue={chartCedis}
+            totalLabel="Sales"
+            data={period.byType.map((row) => ({
+              key: row.type,
+              label: TYPE_WORDS[row.type],
+              value: row.sales,
+            }))}
+          />
+        )}
+      </Tile>
+
+      <Tile title="Staff" className="col-span-2">
+        {period.staff.length === 0 ? (
+          <p className="text-sm text-muted-foreground">No orders.</p>
+        ) : (
+          <TileRows>
+            {period.staff.map((row) => (
+              <PanelLine
+                key={row.staffId}
+                label={
+                  <span className="flex items-center gap-3">
+                    <Avatar name={row.name} size="sm" />
+                    {row.name}
+                  </span>
+                }
+                note={
+                  row.cash > 0
+                    ? `${orderWords(row.orders)}, ${cedis(row.cash)} cash taken`
+                    : orderWords(row.orders)
+                }
+                value={cedis(row.sales)}
+                to={links.orders({ staff: row.staffId })}
+              />
+            ))}
+          </TileRows>
+        )}
+      </Tile>
+
+      <Tile title="Drawer closes" className="col-span-2 lg:col-span-4">
+        {period.drawerCloses.length === 0 ? (
+          <p className="text-sm text-muted-foreground">No drawer was closed on these days.</p>
+        ) : (
+          <TileRows>
             {period.drawerCloses.map((close) => (
               <PanelLine
                 key={close.shiftId}
@@ -396,51 +455,75 @@ function Report({ period, back }: { period: Period; back: BackTo }) {
                 }
               />
             ))}
-          </PanelRows>
+          </TileRows>
         )}
-      </Panel>
-    </>
+      </Tile>
+
+      {/* Day-by-day rows, each opening that day's orders. */}
+      <Tile title="Each day" className="col-span-2 lg:col-span-4">
+        <TileRows>
+          {[...period.byDay].reverse().map((day) => (
+            <li key={day.date}>
+              <Link
+                to={`/orders?date=${day.date}`}
+                state={back}
+                className="grid grid-cols-[1fr_auto] items-center gap-x-4 gap-y-0.5 px-5 py-3 text-sm transition-colors hover:bg-muted/60 md:grid-cols-[minmax(0,1.5fr)_5rem_minmax(0,1fr)_minmax(0,1fr)_minmax(0,1fr)]"
+              >
+                <span>{shortDate(day.date)}</span>
+                <span className="text-right font-mono text-muted-foreground md:text-foreground">
+                  <span className="font-sans md:hidden">{orderWords(day.orders)}, </span>
+                  <span className="hidden md:inline">{orderWords(day.orders)}</span>
+                  <span className="text-foreground md:hidden">{cedis(day.sales)}</span>
+                </span>
+                <span className="hidden text-right font-mono md:block">{cedis(day.sales)}</span>
+                <span className="hidden text-right font-mono md:block">
+                  in {cedis(day.moneyIn)}
+                </span>
+                <span className="hidden text-right font-mono md:block">
+                  out {cedis(day.moneyOut)}
+                </span>
+              </Link>
+            </li>
+          ))}
+        </TileRows>
+      </Tile>
+    </Bento>
   );
 }
 
-/** One of the four figures across the top; it opens the rows behind it. */
-function Figure({
-  label,
-  value,
+/** One of the four figures across the top, with its trend over the report's days. */
+function FigureTile({
+  title,
+  amount,
   note,
   to,
-  loss,
+  trend,
+  tone,
 }: {
-  label: string;
-  value: string;
+  title: string;
+  amount: number;
   note: string;
   to?: string;
-  loss?: boolean;
+  trend: { data: number[]; labels: string[] } | null;
+  tone?: 'success' | 'danger';
 }) {
-  const body = (
-    <>
-      <span className="text-sm text-muted-foreground">{label}</span>
-      <span
-        className={cn(
-          'font-heading text-2xl tracking-[-0.02em] tabular-nums',
-          loss && 'text-danger',
-        )}
-      >
-        {value}
-      </span>
-      <span className="text-xs text-muted-foreground">{note}</span>
-    </>
-  );
-  const cell = 'flex flex-col gap-1 p-5';
   return (
-    <li className="flex">
-      {to ? (
-        <Link to={to} className={cn(cell, 'flex-1 transition-colors hover:bg-muted/60')}>
-          {body}
-        </Link>
-      ) : (
-        <div className={cn(cell, 'flex-1')}>{body}</div>
+    <Tile title={title} {...(to ? { to } : {})}>
+      <Cedis amount={amount} />
+      <span className="text-xs text-muted-foreground">{note}</span>
+      {trend && (
+        <div className="mt-auto">
+          <Sparkline
+            label="Each day"
+            data={trend.data}
+            labels={trend.labels}
+            formatValue={cedis}
+            width={200}
+            height={52}
+            {...(tone ? { tone } : {})}
+          />
+        </div>
       )}
-    </li>
+    </Tile>
   );
 }

@@ -6,7 +6,7 @@ The web dashboard for owners and managers (plan.md §3.1). It uses:
 - React Router 7: not 8, which needs React 19.2.7, while the repo pins 19.2.3 to match Expo;
 - TanStack Query 5;
 - Tailwind 4;
-- recharts 3.
+- Arc's SVG charts (recharts was removed on 9 Oct).
 
 ## Design
 
@@ -16,7 +16,7 @@ The web dashboard for owners and managers (plan.md §3.1). It uses:
   - **Buttons are Arc's** (`components/arc/button`): the main one is ink (near-black; near-white in dark mode), one per screen, with `variant="secondary"` or `"ghost"` on the rest. Orange marks what's active or selected and links (`text-accent-strong`). Fields are Arc's `Input` and `PasswordField`; a form's error is Arc's `Alert tone="danger"` under it. Arc's password strength isn't used: its rules (12 characters, mixed case, a symbol) aren't the server's (8 characters).
   - **Shared pieces** in `components/app`: `SettingRow` and `SwitchRow` (a setting in a panel: name and what it does on the left, its control on the right), `Panel` (a titled bordered region; its rows in `PanelRows`, its heading link `PanelLink`) and `StatusBadge` (Paid, Unpaid, Refund owed… on Arc's badge). Loading is shadcn's `Skeleton` in the final layout; empty is Arc's `EmptyState`; errors are Arc's `Alert`.
   - **Bento grids** (second pass, 9 Oct, user request: "use bento grids and the Arc components that fit"): `Bento` and `Tile` in `components/app/bento.tsx`. Four columns on a laptop and two below, so small tiles pair up on a phone; a tile takes more room with `col-span-2`, `lg:col-span-3`, `lg:row-span-2`. A tile is never itself a link (charts inside stay usable): its arrow at the top right opens what's behind it. `Cedis` shows pesewas through Arc's `AnimatedCounter`; only the screen's one big figure rolls up on view. Arc's counter sizes and colours itself from tokens, so the tile sets `--text-3xl` and `--foreground` on its wrapper rather than restyling Arc.
-  - **Arc's charts** replace recharts screen by screen: `BarChart` (by hour), `DonutChart` (shares; whole cedis, `wholeCedis`, so the centre fits), `Sparkline` (a tile's last 7 days, from the period report, labelled with the week's total), `Gauge` (share of the day's takings collected). The feed of the latest orders is Arc's `Timeline` (Ghana's zone, `Africa/Accra`).
+  - **Arc's charts** replaced recharts (removed with `react-is` on 9 Oct, with `pages/OrdersByHourChart.tsx`): `BarChart` (by hour), `DonutChart` (shares; whole cedis, `wholeCedis`, so the centre fits), `Sparkline` (a tile's last 7 days, from the period report, labelled with the week's total), `Gauge` (share of the day's takings collected). The feed of the latest orders is Arc's `Timeline` (Ghana's zone, `Africa/Accra`).
   - Arc Pro (paid) isn't available, so its bento, KPI drill-down and settings blocks aren't used; the grids are built from free Arc parts. Arc's `PhoneInput` doesn't know Ghana (49 countries, no GH), so phone numbers are a plain `Input` that the server normalises.
   - **The preview** (`src/dev/Preview.tsx`): with `pnpm dev`, `/__preview` shows rebuilt screens inside the real frame with made-up sample data, without signing in. It never touches the saved login, and the built app leaves it out. Screens are checked by screenshotting it with headless Chrome: `chrome --headless=new --window-size=1440,1500 --screenshot=<file> http://localhost:5173/__preview`, adding `--blink-settings=preferredColorScheme=0` for dark or `=1` for light; 500 px wide for a phone, as Chrome won't go narrower. Add each rebuilt screen's route and sample data there.
   - The old Figma Make design (`design/dashboard_design.make`) is no longer the guide. Its wording rules still hold: real order numbers; stations are Kitchen and Drinks only; a PIN is never shown; "Moolre account", not "MoMo account"; "sold out" means it can't be ordered until tomorrow.
@@ -104,7 +104,7 @@ The web dashboard for owners and managers (plan.md §3.1). It uses:
   - **Dine-in, pickup and delivery** replace "where the order came from": Home's "By order type" rows, Reports' "Dine-in, pickup and delivery" box and the Orders filter (`?type=`), with Dine-in only where the owner offers it (`me.offersDineIn`). Orders are worded by `kindWords` ("Dine-in", or "Bolt · Pickup" for one from elsewhere); `?source=` still works as a removable chip.
     - Managers see Appearance, the business name and Delivery zones.
   - The rest are placeholders until their slices.
-- **Keep the first screen light on mobile data.** Every screen but sign-in and Home loads when it's first opened (`lazy` routes in `router.tsx`, 9 Oct: the first load went from 980 KB to 347 KB, 108 KB compressed). Big libraries load lazily too: the recharts chart is `pages/OrdersByHourChart.tsx` (Home and Reports), loaded with `lazy()`. Anything the pages need beside it, like `busiestHour`, lives in `lib/`, so importing it doesn't pull the chart in.
+- **Keep the first screen light on mobile data.** Every screen but sign-in and Home loads when it's first opened (`lazy` routes in `router.tsx`, 9 Oct: the first load went from 980 KB to 347 KB, 108 KB compressed). The charts are Arc's own SVG components (no chart library since recharts was removed on 9 Oct). Helpers a page needs, like `busiestHour`, live in `lib/`.
 
 ## Rules
 

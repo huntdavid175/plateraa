@@ -69,6 +69,13 @@ export function Tile({
   );
 }
 
+/** Rows that run edge to edge across the bottom of a tile (`PanelLine`s, `SwitchRow`s). */
+export function TileRows({ children }: { children: ReactNode }) {
+  return (
+    <ul className="-mx-4 -mb-4 flex flex-col divide-y border-t sm:-mx-5 sm:-mb-5">{children}</ul>
+  );
+}
+
 /**
  * A cedi amount in a tile, from pesewas. The digits roll when it changes (Arc's animated
  * counter); `big` is the one figure a screen is about, which also rolls up the first time it's seen.
