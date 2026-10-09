@@ -20,11 +20,13 @@ function useChartColours() {
     const style = getComputedStyle(document.documentElement);
     const read = (name: string) => style.getPropertyValue(name).trim();
     return {
-      brand: read('--brand'),
+      accent: read('--accent'),
+      bar: read('--border-strong'),
+      grid: read('--border-subtle'),
       border: read('--border'),
-      muted: read('--muted-foreground'),
-      surface: read('--surface'),
-      text: read('--text'),
+      muted: read('--text-muted'),
+      surface: read('--surface-raised'),
+      text: read('--foreground'),
       dark,
     };
   }, [dark]);
@@ -32,7 +34,7 @@ function useChartColours() {
 
 /**
  * Orders taken in each hour, to show the busy hours: one bar per hour from the first order to
- * the last, the busiest one in full colour. Loaded on its own, so the chart library doesn't slow
+ * the last, the busiest one in the accent colour. Loaded on its own, so the chart library doesn't slow
  * down the first screen on mobile data.
  */
 export default function OrdersByHourChart({
@@ -52,9 +54,9 @@ export default function OrdersByHourChart({
   }, [byHour]);
 
   return (
-    <ResponsiveContainer width="100%" height={150}>
+    <ResponsiveContainer width="100%" height={160}>
       <BarChart data={points} margin={{ top: 4, right: 4, bottom: 0, left: -24 }}>
-        <CartesianGrid strokeDasharray="3 3" stroke={colours.border} vertical={false} />
+        <CartesianGrid stroke={colours.grid} vertical={false} />
         <XAxis
           dataKey="hour"
           tickFormatter={(hour: number) => hourLabel(hour)}
@@ -69,24 +71,27 @@ export default function OrdersByHourChart({
           tickLine={false}
         />
         <Tooltip
-          cursor={{ fill: colours.border, opacity: 0.5 }}
+          cursor={{ fill: colours.grid }}
           contentStyle={{
             background: colours.surface,
             border: `1px solid ${colours.border}`,
-            borderRadius: 8,
+            borderRadius: 10,
+            boxShadow: 'none',
             fontSize: 12,
             color: colours.text,
           }}
           labelFormatter={(hour) => hourRange(Number(hour))}
           formatter={(value) => [String(value), 'Orders']}
         />
-        <Bar dataKey="orders" radius={[4, 4, 0, 0]} maxBarSize={32}>
+        <Bar
+          dataKey="orders"
+          radius={[4, 4, 0, 0]}
+          maxBarSize={32}
+          // Home is opened many times a day: the bars are simply there, not grown in.
+          isAnimationActive={false}
+        >
           {points.map((point) => (
-            <Cell
-              key={point.hour}
-              fill={colours.brand}
-              fillOpacity={point.hour === busiest ? 1 : 0.35}
-            />
+            <Cell key={point.hour} fill={point.hour === busiest ? colours.accent : colours.bar} />
           ))}
         </Bar>
       </BarChart>

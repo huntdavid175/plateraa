@@ -16,7 +16,7 @@ import { ReportsPage } from './pages/ReportsPage';
 import { SettingsPage } from './pages/SettingsPage';
 import { StaffPage } from './pages/StaffPage';
 import { StockPage } from './pages/StockPage';
-import { TodayPage } from './pages/TodayPage';
+import { HomePage } from './pages/HomePage';
 import { Shell } from './shell/Shell';
 import { Button } from '@/components/arc/button/button';
 import { Spinner } from './ui/controls';
@@ -59,7 +59,7 @@ export const router = createBrowserRouter([
     Component: Shell,
     errorElement: <Crashed />,
     children: [
-      { index: true, Component: TodayPage },
+      { index: true, Component: HomePage },
       { path: 'orders', Component: OrdersPage },
       { path: 'orders/:orderId', Component: OrderPage },
       { path: 'customers', Component: CustomersPage },
@@ -76,5 +76,15 @@ export const router = createBrowserRouter([
       { path: 'settings', Component: SettingsPage },
     ],
   },
+  // Development only: the screens with sample data, without signing in (src/dev/Preview.tsx).
+  ...(import.meta.env.DEV
+    ? [
+        {
+          path: '/__preview',
+          lazy: async () => ({ Component: (await import('./dev/Preview')).default }),
+          children: [{ index: true, Component: HomePage }],
+        },
+      ]
+    : []),
   { path: '*', element: <Navigate to="/" replace /> },
 ]);

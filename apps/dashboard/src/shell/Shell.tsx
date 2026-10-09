@@ -14,7 +14,7 @@ import {
   Wallet,
   type LucideIcon,
 } from 'lucide-react';
-import { useState } from 'react';
+import { useState, type ReactNode } from 'react';
 import {
   Link,
   Navigate,
@@ -147,18 +147,27 @@ export function Shell() {
   }
 
   const me = context.data;
+
+  return (
+    <ShellFrame me={me}>
+      <Outlet context={me} />
+    </ShellFrame>
+  );
+}
+
+/** The signed-in frame around a screen: sidebar, phone header and bottom bar. */
+export function ShellFrame({ me, children }: { me: Me; children: ReactNode }) {
   const groups = NAV.map((group) =>
     group.filter((item) => !item.needs || me.capabilities.includes(item.needs)),
   ).filter((group) => group.length > 0);
   const flat = groups.flat();
-
   return (
     // The sidebar remembers being folded (shadcn keeps it in a cookie).
     <SidebarProvider defaultOpen={!document.cookie.includes('sidebar_state=false')}>
       <AppSidebar me={me} groups={groups} />
       <SidebarInset className="min-w-0 pb-[calc(4rem+env(safe-area-inset-bottom))] md:pb-0">
         <PhoneHeader me={me} />
-        <Outlet context={me} />
+        {children}
       </SidebarInset>
       <BottomBar bar={flat.slice(0, BOTTOM_BAR_SIZE)} more={flat.slice(BOTTOM_BAR_SIZE)} />
     </SidebarProvider>

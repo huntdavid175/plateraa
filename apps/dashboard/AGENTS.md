@@ -12,8 +12,10 @@ The web dashboard for owners and managers (plan.md §3.1). It uses:
 
 - **The rework (from 9 Oct, user decision).** The whole UI is being rebuilt, one screen per commit, with **shadcn/ui** (Radix base; `components.json`, components in `src/components/ui`, ours to edit) and **Arc** (uiarc.dev; free items in `src/components/arc`, installed as-is with `npx shadcn@latest add @uiarc/<id>`, left out of lint and Prettier). Use the project skills `shadcn`, `arc`, `frontend-design` and `emil-design-eng`, and the `arc` MCP server (`.mcp.json`) to find Arc items. Take an Arc item where one fits the job, a shadcn one otherwise. Arc's paid Pro items aren't available.
   - The look is the plan the user approved on 9 Oct: a clean ledger. The day's money is the one big thing; everything else stays quiet.
-  - Order: 1 shell ✓, 2 sign-in ✓, 3 Home, 4 Orders, 5 Customers, 6 Menu, 7 Stock, 8 Online store, 9 Expenses / Refunds / money dialogs, 10 Reports, 11 Staff, 12 Settings, 13 onboarding. Screens not yet rebuilt keep their old components (`src/ui`) but already wear the new colours.
+  - Order: 1 shell ✓, 2 sign-in ✓, 3 Home ✓, 4 Orders, 5 Customers, 6 Menu, 7 Stock, 8 Online store, 9 Expenses / Refunds / money dialogs, 10 Reports, 11 Staff, 12 Settings, 13 onboarding. Screens not yet rebuilt keep their old components (`src/ui`) but already wear the new colours.
   - **Buttons are Arc's** (`components/arc/button`): the main one is ink (near-black; near-white in dark mode), one per screen, with `variant="secondary"` or `"ghost"` on the rest. Orange marks what's active or selected and links (`text-accent-strong`). Fields are Arc's `Input` and `PasswordField`; a form's error is Arc's `Alert tone="danger"` under it. Arc's password strength isn't used: its rules (12 characters, mixed case, a symbol) aren't the server's (8 characters).
+  - **Shared pieces** in `components/app`: `Panel` (a titled bordered region; its rows in `PanelRows`, its heading link `PanelLink`) and `StatusBadge` (Paid, Unpaid, Refund owed… on Arc's badge). Loading is shadcn's `Skeleton` in the final layout; empty is Arc's `EmptyState`; errors are Arc's `Alert`.
+  - **The preview** (`src/dev/Preview.tsx`): with `pnpm dev`, `/__preview` shows rebuilt screens inside the real frame with made-up sample data, without signing in. It never touches the saved login, and the built app leaves it out. Screens are checked by screenshotting it with headless Chrome: `chrome --headless=new --window-size=1440,1500 --screenshot=<file> http://localhost:5173/__preview`, adding `--blink-settings=preferredColorScheme=0` for dark or `=1` for light; 500 px wide for a phone, as Chrome won't go narrower. Add each rebuilt screen's route and sample data there.
   - The old Figma Make design (`design/dashboard_design.make`) is no longer the guide. Its wording rules still hold: real order numbers; stations are Kitchen and Drinks only; a PIN is never shown; "Moolre account", not "MoMo account"; "sold out" means it can't be ordered until tomorrow.
   - **Today is called Home** (9 Oct, user request): the sidebar, the phone bar, the page title and back links. The address stays `/`.
 - **Colours** come from one place: Arc's token names (`--background`, `--surface`, `--surface-muted`, `--foreground`, `--text-secondary`, `--text-muted`, `--border`, `--accent`, `--success`, `--warning`, `--danger`), set to Plateraa's palette in `src/theme.css`, light and dark.
@@ -52,10 +54,10 @@ The web dashboard for owners and managers (plan.md §3.1). It uses:
 - `lib/orders.ts`, `lib/reports.ts`: fetchers, with row types taken from the generated client, and `paymentState()` (Paid / Unpaid / Refund owed / Cancelled).
 - `lib/money.ts`: `cedis()`, `longDate()`, `hourLabel()`. `lib/words.ts`: plain words for enums.
 - `router.tsx` holds the routes; `pages/` holds the screens.
-  - Today (`TodayPage`): the day summary, orders by hour with the busiest hour (14 Sep; it was money in adding up), the refunds-owed banner and recent orders. The date box opens any past day (`/?date=`), without the open drawers; today itself is left to the server's trading day.
+  - Home (`HomePage`; it was Today until 9 Oct): what needs someone first (refunds owed, tablet warnings, as Arc alerts); then the one big figure, money in, with a bar splitting it into cash and mobile money (`byMethod` CASH and LINK; paying online is LINK), beside rows for not yet collected, money out and profit; then orders by hour (the busiest in orange, not animated: Home is opened many times a day) and by order type; open drawers; recent orders. Arc's date picker opens any past day (`/?date=`), without the open drawers; today itself is left to the server's trading day.
     - Tablet warnings (`devices.manage`): the `alerts` from `GET /api/devices`, checked every minute, worded by `lib/tablet-alerts.ts`. The Staff page's Tablets card shows the same, with each tablet's last finished sync.
   - Orders (`OrdersPage`): a day's orders (`?date=`) or a range's (`?from=&to=`), filtered by source and by paid or not, and by `method`, `item` or `staff` when a figure links there (shown as removable chips). Everything lives in the address, so a view can be shared; the server does the filtering. Totals show only with `reports.revenue.view`.
-  - **Every figure links to its rows**: Today's and Reports' figures open these Orders and Expenses views for their days (`linksFor` in `ReportsPage`).
+  - **Every figure links to its rows**: Home's and Reports' figures open these Orders and Expenses views for their days (`linksFor` in `ReportsPage`).
   - Order (`OrderPage`): one order in full. Links to it pass `state: { back, label }`, so "←" returns to where the person came from. It links to the order's customer.
   - Customers (`CustomersPage`, search in `?q=`) and one customer (`CustomerPage`): their orders, first and last order, what they spent (with `reports.revenue.view`), and name and notes to edit (`customers.manage`). `lib/customers.ts`.
   - Menu (`MenuPage`): category pills, item cards, and one-tap sold out.
@@ -69,7 +71,7 @@ The web dashboard for owners and managers (plan.md §3.1). It uses:
   - `money-dialogs.tsx`: the dialogs for recording a refund, applying a discount (previewed with `priceOrder`, as the server prices it) and recording a payout.
     - Each dialog makes its id with `ulid()` when it opens, so pressing Save again after a lost reply records it once.
     - `refreshMoney()` reloads everything that shows money.
-    - The refund and discount dialogs open from the order page; payouts open from the "Open drawers" card on Today.
+    - The refund and discount dialogs open from the order page; payouts open from the "Open drawers" card on Home.
   - Sign-up and onboarding (`auth/SignUpPage`, `auth/SetupPage`, loaded lazily at `/setup`):
     - the design's 7 steps, sized for a phone;
     - the business is created at step 2;
@@ -98,10 +100,10 @@ The web dashboard for owners and managers (plan.md §3.1). It uses:
     - Payments (the Moolre account, with "Check and save").
     - Setup guide (owners): reopens the onboarding at the menu step.
   - **Bolt Food and Chowdeck are hidden** (user decision, 13 Sep) until their APIs connect: no commissions in Settings, and no platform prices in the item editor, whose "Cost and margin" section now shows only with `reports.revenue.view`. The editor still sends the prices it loaded, so none are lost.
-  - **Dine-in, pickup and delivery** replace "where the order came from": Today's cards, Reports' "Dine-in, pickup and delivery" box and the Orders filter (`?type=`), with Dine-in only where the owner offers it (`me.offersDineIn`). Orders are worded by `kindWords` ("Dine-in", or "Bolt · Pickup" for one from elsewhere); `?source=` still works as a removable chip.
+  - **Dine-in, pickup and delivery** replace "where the order came from": Home's "By order type" rows, Reports' "Dine-in, pickup and delivery" box and the Orders filter (`?type=`), with Dine-in only where the owner offers it (`me.offersDineIn`). Orders are worded by `kindWords` ("Dine-in", or "Bolt · Pickup" for one from elsewhere); `?source=` still works as a removable chip.
     - Managers see Appearance, the business name and Delivery zones.
   - The rest are placeholders until their slices.
-- **Keep the first screen light on mobile data.** Big libraries load lazily: the recharts chart is `pages/OrdersByHourChart.tsx` (Today and Reports), loaded with `lazy()`. Anything the pages need beside it, like `busiestHour`, lives in `lib/`, so importing it doesn't pull the chart in.
+- **Keep the first screen light on mobile data.** Big libraries load lazily: the recharts chart is `pages/OrdersByHourChart.tsx` (Home and Reports), loaded with `lazy()`. Anything the pages need beside it, like `busiestHour`, lives in `lib/`, so importing it doesn't pull the chart in.
 
 ## Rules
 
