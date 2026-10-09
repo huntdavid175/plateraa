@@ -1,7 +1,7 @@
 import { ORDER_TYPES } from '@plateraa/shared';
 import { useQuery } from '@tanstack/react-query';
 import { ReceiptText } from 'lucide-react';
-import { useEffect, useMemo, useState } from 'react';
+import { useMemo, useState } from 'react';
 import { Link, useSearchParams } from 'react-router';
 import { Alert } from '@/components/arc/alert/alert';
 import { BarChart } from '@/components/arc/bar-chart/bar-chart';
@@ -35,6 +35,7 @@ import {
 } from '../lib/orders';
 import { busiestHour, fetchDay, fetchPeriod, type DaySummary, type Period } from '../lib/reports';
 import { useSession } from '../lib/session';
+import { useNow } from '../lib/use-now';
 import { alertTone, tabletAlertWords } from '../lib/tablet-alerts';
 import { fetchTablets, type Tablet } from '../lib/team';
 import { TYPE_WORDS, kindWords } from '../lib/words';
@@ -426,16 +427,6 @@ function ByType({ day, offersDineIn }: { day: DaySummary; offersDineIn: boolean 
       )}
     </Tile>
   );
-}
-
-/** The time now, a minute at a time, for the feed's "5 min ago". */
-function useNow(): number {
-  const [now, setNow] = useState(() => Date.now());
-  useEffect(() => {
-    const timer = setInterval(() => setNow(Date.now()), 60_000);
-    return () => clearInterval(timer);
-  }, []);
-  return now;
 }
 
 const FEED_TONES = {

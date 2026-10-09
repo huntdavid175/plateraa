@@ -5,6 +5,7 @@ import { ChevronRight, ReceiptText } from 'lucide-react';
 import { Link, useLocation, useSearchParams } from 'react-router';
 import { Alert } from '@/components/arc/alert/alert';
 import { Button } from '@/components/arc/button/button';
+import { Drawer, DrawerContent } from '@/components/arc/drawer/drawer';
 import { EmptyState } from '@/components/arc/empty-state/empty-state';
 import { FilterToolbar } from '@/components/arc/filter-toolbar/filter-toolbar';
 import SegmentedControl from '@/components/arc/segmented-control/segmented-control';
@@ -25,6 +26,7 @@ import { fetchTeam } from '../lib/team';
 import { METHOD_WORDS, SOURCE_WORDS, kindWords } from '../lib/words';
 import { useMe } from '../shell/Shell';
 import { Page } from '../ui/Page';
+import { OrderView } from './OrderPage';
 
 const TYPE_FILTERS = [
   { value: 'ALL', label: 'All' },
@@ -122,7 +124,17 @@ export function OrdersPage() {
   const rows = orders.data ?? [];
   const sales = rows.filter((order) => order.status !== 'CANCELLED' && order.status !== 'REFUNDED');
   const salesTotal = sales.reduce((sum, order) => sum + order.amountDue, 0);
-  const back: BackTo = { back: `/orders${search}`, label: 'Orders' };
+  // An order opens in a drawer over the list (`?order=`), so the list and its filters stay put,
+  // the address can be shared, and Back closes it.
+  const openOrder = params.get('order');
+  const drawerLink = (orderId: string) => {
+    const next = new URLSearchParams(search);
+    next.set('order', orderId);
+    return `/orders?${next}`;
+  };
+  const listOnly = new URLSearchParams(search);
+  listOnly.delete('order');
+  const back: BackTo = { back: `/orders?${listOnly}`, label: 'Orders' };
   const filtered = type !== 'ALL' || source || paid !== 'ALL' || method || item || staff;
 
   // Filters that arrive from a figure elsewhere (Home, Reports), each one removable.
@@ -265,7 +277,12 @@ export function OrdersPage() {
           {rows.length > 0 && (
             <ul className="flex flex-col divide-y">
               {rows.map((order) => (
-                <OrderRowLink key={order.id} order={order} back={back} showDay={Boolean(range)} />
+                <OrderRowLink
+                  key={order.id}
+                  order={order}
+                  to={drawerLink(order.id)}
+                  showDay={Boolean(range)}
+                />
               ))}
             </ul>
           )}
@@ -276,6 +293,22 @@ export function OrdersPage() {
           </p>
         )}
       </div>
+      <Drawer open={openOrder !== null} onOpenChange={(open) => !open && change({ order: null })}>
+        {openOrder && (
+          <DrawerContent title="Order" description="Everything about it, without leaving the list.">
+            <div className="flex flex-col gap-4">
+              <OrderView orderId={openOrder} narrow />
+              <Link
+                to={`/orders/${openOrder}`}
+                state={back}
+                className="self-start text-sm font-medium text-accent-strong underline-offset-2 hover:underline"
+              >
+                Open on its own page
+              </Link>
+            </div>
+          </DrawerContent>
+        )}
+      </Drawer>
     </Page>
   );
 }
@@ -295,11 +328,12 @@ function Stat({ label, value }: { label: string; value: string | null }) {
 
 function OrderRowLink({
   order,
-  back,
+  to,
   showDay,
 }: {
   order: OrderRow;
-  back: BackTo;
+  /** Opens the order in the drawer. */
+  to: string;
   /** A range of days: say which day each order was on. */
   showDay: boolean;
 }) {
@@ -309,8 +343,7 @@ function OrderRowLink({
   return (
     <li>
       <Link
-        to={`/orders/${order.id}`}
-        state={back}
+        to={to}
         className={`flex items-center gap-4 px-5 py-3.5 transition-colors hover:bg-muted/60 md:gap-4 ${COLUMNS}`}
       >
         {/* Phones: number, kind and items on the left, amount and badge on the right. */}
