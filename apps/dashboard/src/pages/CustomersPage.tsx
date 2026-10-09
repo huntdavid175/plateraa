@@ -3,6 +3,7 @@ import { ChevronRight, Users } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { Link, useSearchParams } from 'react-router';
 import { Alert } from '@/components/arc/alert/alert';
+import { Avatar } from '@/components/arc/avatar/avatar';
 import { EmptyState } from '@/components/arc/empty-state/empty-state';
 import { SearchField } from '@/components/arc/search-field/search-field';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -144,8 +145,13 @@ function CustomerLink({
 }) {
   const last = customer.lastOrderOn ? shortDate(customer.lastOrderOn) : 'No orders yet';
   const name = (
-    <span className={cn('truncate text-sm font-medium', !customer.name && 'text-muted-foreground')}>
-      {customer.name ?? 'No name'}
+    <span className="flex min-w-0 items-center gap-3">
+      <Avatar name={customer.name ?? 'Customer'} size="sm" />
+      <span
+        className={cn('truncate text-sm font-medium', !customer.name && 'text-muted-foreground')}
+      >
+        {customer.name ?? 'No name'}
+      </span>
     </span>
   );
   return (
