@@ -1,6 +1,19 @@
 import { pinProblem } from '@plateraa/shared';
 import { useMutation, useQuery } from '@tanstack/react-query';
+import { Plus } from 'lucide-react';
 import { useState } from 'react';
+import { Alert } from '@/components/arc/alert/alert';
+import { Badge } from '@/components/arc/badge/badge';
+import { Button } from '@/components/arc/button/button';
+import { Dialog, DialogContent } from '@/components/arc/dialog/dialog';
+import { Input } from '@/components/arc/input/input';
+import { RadioGroup } from '@/components/arc/radio-group/radio-group';
+import { Switch } from '@/components/arc/switch/switch';
+import { PlainField } from '@/components/app/money-field';
+import { Panel, PanelEmpty, PanelRows } from '@/components/app/panel';
+import { SwitchRow } from '@/components/app/setting-row';
+import { Skeleton } from '@/components/ui/skeleton';
+import { cn } from '@/lib/utils';
 import { ago } from '../lib/money';
 import { saveInPlace } from '../lib/save-in-place';
 import { useSession } from '../lib/session';
@@ -20,19 +33,6 @@ import {
 import { alertTone, tabletAlertWords } from '../lib/tablet-alerts';
 import { ROLE_WORDS } from '../lib/words';
 import { useMe } from '../shell/Shell';
-import {
-  Badge,
-  Button,
-  Card,
-  ErrorNote,
-  FieldLabel,
-  PillFilter,
-  Spinner,
-  Tag,
-  TextInput,
-  Toggle,
-} from '../ui/controls';
-import { Dialog } from '../ui/Dialog';
 import { Page } from '../ui/Page';
 
 type StaffRole = 'MANAGER' | 'STAFF' | 'RIDER';
@@ -53,41 +53,58 @@ export function StaffPage() {
   return (
     <Page
       title="Staff"
+      subtitle="Who works the tablet and the dashboard, and the tablets themselves."
+      narrow
       actions={
-        <Button small onClick={() => setAdding(true)}>
-          + Add staff
+        <Button onClick={() => setAdding(true)}>
+          <Plus size={16} strokeWidth={1.75} aria-hidden />
+          Add staff
         </Button>
       }
     >
-      <div className="mx-auto max-w-3xl">
+      <div className="flex flex-col gap-6">
         {team.isPending && (
-          <div className="flex justify-center py-12">
-            <Spinner />
-          </div>
+          <Skeleton className="h-64 w-full rounded-(--radius-surface)" aria-busy="true" />
         )}
-        {team.isError && <ErrorNote>{team.error.message}</ErrorNote>}
+        {team.isError && (
+          <Alert tone="danger" title="Couldn’t load your team">
+            {team.error.message}
+          </Alert>
+        )}
         {team.data && (
           <>
-            <Card className="mb-6 overflow-hidden">
-              {team.data.staff.map((member) => (
-                <StaffRow
-                  key={member.id}
-                  member={member}
-                  canEdit={canEdit(me.role, member)}
-                  onEdit={() => setEditing(member)}
-                />
-              ))}
-            </Card>
-            {isOwner && <RevenueCard byRole={team.data.revenueByRole} />}
+            <Panel title="Team">
+              <PanelRows>
+                {team.data.staff.map((member) => (
+                  <StaffRow
+                    key={member.id}
+                    member={member}
+                    canEdit={canEdit(me.role, member)}
+                    onEdit={() => setEditing(member)}
+                  />
+                ))}
+              </PanelRows>
+            </Panel>
+            {isOwner && <RevenuePanel byRole={team.data.revenueByRole} />}
           </>
         )}
-        {tablets.data && <TabletsCard tablets={tablets.data} />}
+        {tablets.data && <TabletsPanel tablets={tablets.data} />}
       </div>
 
-      {adding && <AddStaffDialog isOwner={isOwner} onClose={() => setAdding(false)} />}
-      {editing && (
-        <EditStaffDialog member={editing} isOwner={isOwner} onClose={() => setEditing(null)} />
-      )}
+      <Dialog
+        open={adding || editing !== null}
+        onOpenChange={(open) => {
+          if (!open) {
+            setAdding(false);
+            setEditing(null);
+          }
+        }}
+      >
+        {adding && <AddStaff isOwner={isOwner} onClose={() => setAdding(false)} />}
+        {editing && (
+          <EditStaff member={editing} isOwner={isOwner} onClose={() => setEditing(null)} />
+        )}
+      </Dialog>
     </Page>
   );
 }
@@ -108,44 +125,48 @@ function StaffRow({
   onEdit: () => void;
 }) {
   return (
-    <div className="flex items-center gap-4 border-b border-border px-5 py-4 last:border-b-0">
-      <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-tile text-sm font-bold text-muted-foreground">
-        {member.displayName.trim().charAt(0).toUpperCase() || '?'}
-      </div>
-      <div className="min-w-0 flex-1">
-        <p className="truncate text-sm font-medium">
-          {member.displayName}
-          {member.you && <span className="text-muted-foreground"> (you)</span>}
-        </p>
-        <div className="mt-1 flex flex-wrap items-center gap-1.5">
-          <Tag>{ROLE_WORDS[member.role]}</Tag>
-          {!member.active && <Badge tone="neutral">Switched off</Badge>}
-          {member.active && member.pinLocked && <Badge tone="amber">PIN locked</Badge>}
-          {member.active && !member.hasPin && <Badge tone="amber">No PIN yet</Badge>}
-        </div>
-      </div>
-      <div className="flex shrink-0 items-center gap-3">
-        <span
-          aria-hidden="true"
-          className={
-            member.active ? 'h-2 w-2 rounded-full bg-green' : 'h-2 w-2 rounded-full bg-tile'
-          }
-        />
-        {editable && (
-          <button
-            type="button"
-            onClick={onEdit}
-            className="text-sm text-muted-foreground hover:text-text"
-          >
-            Edit
-          </button>
+    <li className="flex items-center gap-4 px-5 py-3.5">
+      <span
+        aria-hidden
+        className={cn(
+          'flex size-10 shrink-0 items-center justify-center rounded-full bg-muted text-sm text-text-secondary',
+          !member.active && 'opacity-50',
         )}
+      >
+        {member.displayName.trim().charAt(0).toUpperCase() || '?'}
+      </span>
+      <div className="flex min-w-0 flex-1 flex-col gap-1">
+        <span
+          className={cn('truncate text-sm font-medium', !member.active && 'text-muted-foreground')}
+        >
+          {member.displayName}
+          {member.you && <span className="font-normal text-muted-foreground"> (you)</span>}
+        </span>
+        <span className="flex flex-wrap items-center gap-1.5">
+          <Badge size="sm">{ROLE_WORDS[member.role]}</Badge>
+          {!member.active && <Badge size="sm">Switched off</Badge>}
+          {member.active && member.pinLocked && (
+            <Badge tone="warning" size="sm">
+              PIN locked
+            </Badge>
+          )}
+          {member.active && !member.hasPin && (
+            <Badge tone="warning" size="sm">
+              No PIN yet
+            </Badge>
+          )}
+        </span>
       </div>
-    </div>
+      {editable && (
+        <Button variant="ghost" size="sm" onClick={onEdit}>
+          Edit
+        </Button>
+      )}
+    </li>
   );
 }
 
-function RevenueCard({ byRole }: { byRole: RevenueByRole }) {
+function RevenuePanel({ byRole }: { byRole: RevenueByRole }) {
   const { tenantId } = useSession();
   const saving = useMutation({
     mutationFn: setRevenueVisibility,
@@ -164,158 +185,152 @@ function RevenueCard({ byRole }: { byRole: RevenueByRole }) {
   const set = (role: keyof RevenueByRole, on: boolean) => saving.mutate({ ...shown, [role]: on });
 
   return (
-    <Card className="mb-6 overflow-hidden">
-      <div className="border-b border-border px-5 py-4">
-        <p className="text-sm font-semibold">Who sees sales totals</p>
-        <p className="mt-0.5 text-xs text-muted-foreground">
-          Sales totals, profit and margins, on the dashboard and the tablet. A person can be set
-          differently from their role under Edit.
-        </p>
-      </div>
-      <div className="flex items-center justify-between border-b border-border px-5 py-4">
-        <span className="text-sm">Owner</span>
-        <Toggle on onChange={() => undefined} label="Owner sees sales totals" disabled />
-      </div>
-      {(['MANAGER', 'STAFF', 'RIDER'] as const).map((role) => (
-        <div
-          key={role}
-          className="flex items-center justify-between border-b border-border px-5 py-4 last:border-b-0"
-        >
-          <span className="text-sm">{ROLE_WORDS[role]}</span>
-          <Toggle
+    <Panel
+      title="Who sees sales totals"
+      description="Sales totals, profit and margins, on the dashboard and the tablet. A person can be set differently from their role under Edit."
+    >
+      <PanelRows>
+        <SwitchRow title="Owner" detail="Always." on onChange={() => undefined} disabled />
+        {(['MANAGER', 'STAFF', 'RIDER'] as const).map((role) => (
+          <SwitchRow
+            key={role}
+            title={ROLE_WORDS[role]}
             on={shown[role]}
             onChange={(on) => set(role, on)}
-            label={`${ROLE_WORDS[role]} sees sales totals`}
           />
-        </div>
-      ))}
+        ))}
+      </PanelRows>
       {saving.error && (
-        <div className="p-4">
-          <ErrorNote>{saving.error.message}</ErrorNote>
+        <div className="border-t p-5">
+          <Alert tone="danger" title="Couldn’t save">
+            {saving.error.message}
+          </Alert>
         </div>
       )}
-    </Card>
+    </Panel>
   );
 }
 
-function TabletsCard({ tablets }: { tablets: Tablet[] }) {
+function TabletsPanel({ tablets }: { tablets: Tablet[] }) {
+  return (
+    <Panel
+      title="Tablets"
+      description="To add one: install Plateraa on the tablet, sign in with your email and pick this business."
+    >
+      {tablets.length === 0 ? (
+        <PanelEmpty>No tablet is set up yet.</PanelEmpty>
+      ) : (
+        <PanelRows>
+          {tablets.map((tablet) => (
+            <TabletRow key={tablet.id} tablet={tablet} />
+          ))}
+        </PanelRows>
+      )}
+    </Panel>
+  );
+}
+
+function TabletRow({ tablet }: { tablet: Tablet }) {
+  const [confirming, setConfirming] = useState(false);
   const signingOut = useMutation({
     meta: { ok: 'Tablet signed out' },
     mutationFn: signOutTablet,
     onSuccess: refreshTeam,
   });
+  const seen = tablet.signedOut
+    ? 'Signed out'
+    : tablet.lastSeenAt
+      ? `Last online ${ago(tablet.lastSeenAt)}`
+      : 'Not online yet';
   return (
-    <Card className="overflow-hidden">
-      <div className="border-b border-border px-5 py-4">
-        <p className="text-sm font-semibold">Tablets</p>
-        <p className="mt-0.5 text-xs text-muted-foreground">
-          To add one: install Plateraa on the tablet, sign in with your email and pick this
-          business.
-        </p>
-      </div>
-      {tablets.length === 0 && (
-        <p className="px-5 py-6 text-sm text-muted-foreground">No tablet is set up yet.</p>
-      )}
-      {tablets.map((tablet) => (
-        <div
-          key={tablet.id}
-          className="flex items-center gap-4 border-b border-border px-5 py-4 last:border-b-0"
-        >
-          <div className="min-w-0 flex-1">
-            <p className="text-sm font-medium">
-              {tablet.name}{' '}
-              <span className="text-muted-foreground">
-                · orders {tablet.code}1, {tablet.code}2…
-              </span>
-            </p>
-            <p className="mt-0.5 text-xs text-muted-foreground">
-              {tablet.signedOut
-                ? 'Signed out'
-                : tablet.lastSeenAt
-                  ? `Last online ${ago(tablet.lastSeenAt)}`
-                  : 'Not online yet'}
-              {!tablet.signedOut && tablet.lastSyncedAt
-                ? ` · fully synced ${ago(tablet.lastSyncedAt)}`
-                : ''}
-            </p>
-            {tablet.alerts.map((alert) => (
-              <p
-                key={alert.kind}
-                className={`mt-1 text-xs font-medium ${alertTone(alert) === 'red' ? 'text-red' : 'text-amber'}`}
-              >
-                {tabletAlertWords(tablet.name, alert)}
-              </p>
-            ))}
-          </div>
-          {!tablet.signedOut && (
-            <Button
-              variant="ghost"
-              small
-              busy={signingOut.isPending && signingOut.variables === tablet.id}
-              onClick={() => {
-                if (
-                  window.confirm(
-                    `Sign out ${tablet.name}? It stops syncing at once. Anything it hasn't uploaded stays on it, and it has to be set up again.`,
-                  )
-                ) {
-                  signingOut.mutate(tablet.id);
-                }
-              }}
-            >
-              Sign out
-            </Button>
-          )}
+    <li className="flex flex-col gap-3 px-5 py-4">
+      <div className="flex items-start gap-4">
+        <div className="flex min-w-0 flex-1 flex-col gap-0.5">
+          <span className="text-sm font-medium">{tablet.name}</span>
+          <span className="text-xs text-muted-foreground">
+            Orders {tablet.code}1, {tablet.code}2 and on. {seen}
+            {!tablet.signedOut && tablet.lastSyncedAt
+              ? `, fully synced ${ago(tablet.lastSyncedAt)}`
+              : ''}
+            .
+          </span>
         </div>
+        {!tablet.signedOut && (
+          // Two presses: the first asks, the second signs it out.
+          <Button
+            variant={confirming ? 'danger' : 'ghost'}
+            size="sm"
+            loading={signingOut.isPending}
+            onClick={() => (confirming ? signingOut.mutate(tablet.id) : setConfirming(true))}
+            onBlur={() => setConfirming(false)}
+          >
+            {confirming ? 'Yes, sign it out' : 'Sign out'}
+          </Button>
+        )}
+      </div>
+      {confirming && (
+        <p className="text-xs text-muted-foreground" role="status">
+          It stops syncing at once. Anything it hasn’t uploaded stays on it, and it has to be set up
+          again.
+        </p>
+      )}
+      {tablet.alerts.map((alert) => (
+        <Alert
+          key={alert.kind}
+          tone={alertTone(alert) === 'red' ? 'danger' : 'warning'}
+          title={alertTone(alert) === 'red' ? 'Needs someone now' : 'Probably the connection'}
+        >
+          {tabletAlertWords(tablet.name, alert)}
+        </Alert>
       ))}
       {signingOut.error && (
-        <div className="p-4">
-          <ErrorNote>{signingOut.error.message}</ErrorNote>
-        </div>
+        <Alert tone="danger" title="Couldn’t sign it out">
+          {signingOut.error.message}
+        </Alert>
       )}
-    </Card>
+    </li>
   );
 }
 
+const digits = (value: string) => value.replace(/\D/g, '').slice(0, 6);
+
+/** A new PIN, typed twice. It's never shown, so there's no "show" button either. */
 function PinFields({
   pin,
   again,
   onPin,
   onAgain,
   label,
+  description,
 }: {
   pin: string;
   again: string;
   onPin: (value: string) => void;
   onAgain: (value: string) => void;
   label: string;
+  description: string;
 }) {
-  const digits = (value: string) => value.replace(/\D/g, '').slice(0, 6);
   return (
-    <div className="grid grid-cols-2 gap-3">
-      <div>
-        <FieldLabel htmlFor="pin">{label}</FieldLabel>
-        <TextInput
-          id="pin"
+    <div className="flex flex-col gap-2">
+      <div className="grid grid-cols-2 gap-3">
+        <PlainField
+          label={label}
           type="password"
           inputMode="numeric"
           autoComplete="new-password"
-          className="font-mono tracking-widest"
           value={pin}
-          onChange={(event) => onPin(digits(event.target.value))}
+          onChange={(value) => onPin(digits(value))}
         />
-      </div>
-      <div>
-        <FieldLabel htmlFor="pin-again">Same PIN again</FieldLabel>
-        <TextInput
-          id="pin-again"
+        <PlainField
+          label="Same PIN again"
           type="password"
           inputMode="numeric"
           autoComplete="new-password"
-          className="font-mono tracking-widest"
           value={again}
-          onChange={(event) => onAgain(digits(event.target.value))}
+          onChange={(value) => onAgain(digits(value))}
         />
       </div>
+      <p className="text-xs text-muted-foreground">{description}</p>
     </div>
   );
 }
@@ -338,27 +353,34 @@ function RolePicker({
   onChange: (role: StaffRole) => void;
   isOwner: boolean;
 }) {
-  const options: { value: StaffRole; label: string }[] = [
-    { value: 'STAFF', label: 'Staff' },
-    { value: 'RIDER', label: 'Rider' },
-    ...(isOwner ? [{ value: 'MANAGER' as const, label: 'Manager' }] : []),
-  ];
   return (
-    <div>
-      <FieldLabel>Role</FieldLabel>
-      <PillFilter label="Role" options={options} value={value} onChange={onChange} />
-      <p className="mt-1.5 text-xs text-muted-foreground">
-        {value === 'MANAGER'
-          ? 'Managers can also give refunds, pay out and set up the menu. They sign in to this dashboard with their own email.'
-          : value === 'RIDER'
-            ? 'Riders only see and update deliveries.'
-            : 'Staff take orders, take cash and look after the drawer.'}
-      </p>
-    </div>
+    <RadioGroup
+      label="Role"
+      value={value}
+      onValueChange={(role) => onChange(role as StaffRole)}
+      options={[
+        {
+          value: 'STAFF',
+          label: 'Staff',
+          description: 'Take orders, take cash and look after the drawer.',
+        },
+        { value: 'RIDER', label: 'Rider', description: 'Only see and update deliveries.' },
+        ...(isOwner
+          ? [
+              {
+                value: 'MANAGER',
+                label: 'Manager',
+                description:
+                  'Also give refunds, pay out and set up the menu. They sign in to this dashboard with their own email.',
+              },
+            ]
+          : []),
+      ]}
+    />
   );
 }
 
-function AddStaffDialog({ isOwner, onClose }: { isOwner: boolean; onClose: () => void }) {
+function AddStaff({ isOwner, onClose }: { isOwner: boolean; onClose: () => void }) {
   const [name, setName] = useState('');
   const [role, setRole] = useState<StaffRole>('STAFF');
   const [pin, setPin] = useState('');
@@ -374,53 +396,58 @@ function AddStaffDialog({ isOwner, onClose }: { isOwner: boolean; onClose: () =>
   });
 
   return (
-    <Dialog title="Add staff" onClose={onClose}>
+    <DialogContent title="Add staff">
       <form
-        className="space-y-4"
+        className="flex flex-col gap-4"
         onSubmit={(event) => {
           event.preventDefault();
           if (!problem) saving.mutate();
         }}
       >
-        <div>
-          <FieldLabel htmlFor="staff-name">Name</FieldLabel>
-          <TextInput
-            id="staff-name"
-            autoFocus
-            maxLength={60}
-            value={name}
-            placeholder="As it shows on the tablet"
-            onChange={(event) => setName(event.target.value)}
-          />
-        </div>
+        <Input
+          label="Name"
+          autoFocus
+          maxLength={60}
+          value={name}
+          placeholder="As it shows on the tablet"
+          onChange={(event) => setName(event.target.value)}
+        />
         <RolePicker value={role} onChange={setRole} isOwner={isOwner} />
-        <PinFields pin={pin} again={again} onPin={setPin} onAgain={setAgain} label="Their PIN" />
-        <p className="text-xs text-muted-foreground">
-          They unlock the tablet with it. Tell them in person; it isn’t shown anywhere.
-        </p>
-        {pin.length === 6 && problem && <p className="text-xs text-amber">{problem}</p>}
-        {saving.error && <ErrorNote>{saving.error.message}</ErrorNote>}
-        <div className="mt-6 flex gap-2">
+        <PinFields
+          pin={pin}
+          again={again}
+          onPin={setPin}
+          onAgain={setAgain}
+          label="Their PIN"
+          description="They unlock the tablet with it. Tell them in person; it isn’t shown anywhere."
+        />
+        {pin.length === 6 && problem && <p className="text-sm text-warning">{problem}</p>}
+        {saving.error && (
+          <Alert tone="danger" title="Couldn’t add them">
+            {saving.error.message}
+          </Alert>
+        )}
+        <div className="flex justify-end gap-2">
           <Button variant="ghost" onClick={onClose}>
             Cancel
           </Button>
-          <Button type="submit" full disabled={!!problem} busy={saving.isPending}>
+          <Button type="submit" disabled={!!problem} loading={saving.isPending}>
             Add {name.trim() || 'staff'}
           </Button>
         </div>
       </form>
-    </Dialog>
+    </DialogContent>
   );
 }
 
 const REVENUE_CHOICES = [
-  { value: 'role', label: 'Role setting' },
+  { value: 'role', label: 'As their role is set' },
   { value: 'yes', label: 'Always' },
   { value: 'no', label: 'Never' },
 ] as const;
 type RevenueChoice = (typeof REVENUE_CHOICES)[number]['value'];
 
-function EditStaffDialog({
+function EditStaff({
   member,
   isOwner,
   onClose,
@@ -460,71 +487,71 @@ function EditStaffDialog({
   });
 
   return (
-    <Dialog title={`Edit ${member.displayName}`} onClose={onClose}>
+    <DialogContent title={`Edit ${member.displayName}`}>
       <form
-        className="space-y-4"
+        className="flex flex-col gap-4"
         onSubmit={(event) => {
           event.preventDefault();
           if (!problem) saving.mutate();
         }}
       >
-        <div>
-          <FieldLabel htmlFor="edit-name">Name</FieldLabel>
-          <TextInput
-            id="edit-name"
-            maxLength={60}
-            value={name}
-            onChange={(event) => setName(event.target.value)}
-          />
-        </div>
+        <Input
+          label="Name"
+          maxLength={60}
+          value={name}
+          onChange={(event) => setName(event.target.value)}
+        />
         {!isTheOwner && <RolePicker value={role} onChange={setRole} isOwner={isOwner} />}
         {!isTheOwner && !member.you && (
-          <div className="flex items-center justify-between rounded-xl bg-tile px-4 py-3">
+          <div className="flex items-center justify-between gap-4 rounded-(--radius-panel) border px-4 py-3">
             <div>
-              <p className="text-sm font-medium">Switched on</p>
+              <p className="text-sm font-medium" id="switched-on">
+                Switched on
+              </p>
               <p className="text-xs text-muted-foreground">
                 Switched off, they can’t unlock a tablet or sign in.
               </p>
             </div>
-            <Toggle on={active} onChange={setActive} label="Switched on" />
+            <Switch aria-labelledby="switched-on" checked={active} onCheckedChange={setActive} />
           </div>
         )}
         {isOwner && !isTheOwner && (
-          <div>
-            <FieldLabel>Sees sales totals</FieldLabel>
-            <PillFilter
-              label="Sees sales totals"
-              options={REVENUE_CHOICES}
-              value={revenue}
-              onChange={setRevenue}
-            />
-          </div>
-        )}
-        <div className="border-t border-border pt-4">
-          <PinFields
-            pin={pin}
-            again={again}
-            onPin={setPin}
-            onAgain={setAgain}
-            label={member.hasPin ? 'New PIN (optional)' : 'PIN'}
+          <RadioGroup
+            label="Sees sales totals"
+            value={revenue}
+            onValueChange={(value) => setRevenue(value as RevenueChoice)}
+            options={[...REVENUE_CHOICES]}
           />
-          <p className="mt-1.5 text-xs text-muted-foreground">
-            {member.pinLocked
+        )}
+        <PinFields
+          pin={pin}
+          again={again}
+          onPin={setPin}
+          onAgain={setAgain}
+          label={member.hasPin ? 'New PIN' : 'PIN'}
+          description={
+            member.pinLocked
               ? 'Their PIN is locked after too many wrong tries. A new PIN unlocks it.'
-              : 'Leave blank to keep their PIN.'}
-          </p>
-        </div>
-        {pinTyped && pin.length === 6 && problem && <p className="text-xs text-amber">{problem}</p>}
-        {saving.error && <ErrorNote>{saving.error.message}</ErrorNote>}
-        <div className="mt-6 flex gap-2">
+              : 'Leave both blank to keep their PIN.'
+          }
+        />
+        {pinTyped && pin.length === 6 && problem && (
+          <p className="text-sm text-warning">{problem}</p>
+        )}
+        {saving.error && (
+          <Alert tone="danger" title="Couldn’t save">
+            {saving.error.message}
+          </Alert>
+        )}
+        <div className="flex justify-end gap-2">
           <Button variant="ghost" onClick={onClose}>
             Cancel
           </Button>
-          <Button type="submit" full disabled={!!problem} busy={saving.isPending}>
+          <Button type="submit" disabled={!!problem} loading={saving.isPending}>
             Save
           </Button>
         </div>
       </form>
-    </Dialog>
+    </DialogContent>
   );
 }

@@ -132,11 +132,44 @@ const RECENT = [
 
 const TABLETS = [
   {
+    id: 'tablet-1',
+    name: 'Counter 1',
+    code: 'A',
+    signedOut: false,
+    lastSeenAt: at(13, 39),
+    lastSyncedAt: at(13, 38),
+    alerts: [],
+  },
+  {
     id: 'tablet-2',
     name: 'Counter 2',
+    code: 'B',
+    signedOut: false,
+    lastSeenAt: at(12, 50),
+    lastSyncedAt: at(12, 40),
     alerts: [{ kind: 'WAITING', count: 4, since: at(12, 50) }],
   },
 ] as unknown as Tablet[];
+
+const TEAM = {
+  staff: [
+    ['me', 'Ama Owusu', 'OWNER', true, false, true, true],
+    ['st1', 'Kofi Mensah', 'MANAGER', true, false, true, false],
+    ['st2', 'Esi Asante', 'STAFF', true, true, true, false],
+    ['st3', 'Yaw Boateng', 'RIDER', true, false, false, false],
+    ['st4', 'Abena Darko', 'STAFF', false, false, true, false],
+  ].map(([id, displayName, role, active, pinLocked, hasPin, you]) => ({
+    id,
+    displayName,
+    role,
+    active,
+    pinLocked,
+    hasPin,
+    you,
+    seesRevenue: null,
+  })),
+  revenueByRole: { MANAGER: true, STAFF: false, RIDER: false },
+};
 
 const DRAWERS = [
   {
@@ -327,6 +360,7 @@ function seed(tenant: string | null) {
   queryClient.setQueryData(['orders', tenant, { limit: 5 }], RECENT);
   queryClient.setQueryData(['refunds-owed', tenant], [{ ...RECENT[4], paidWith: ['LINK'] }]);
   queryClient.setQueryData(['tablets', tenant], TABLETS);
+  queryClient.setQueryData(['team', tenant], TEAM);
   queryClient.setQueryData(['drawers', tenant], DRAWERS);
   queryClient.setQueryData(['orders', tenant, { date: today, limit: 500 }], DAY_ORDERS);
   queryClient.setQueryData(['order', tenant, 'order-A35'], ORDER_DETAIL);

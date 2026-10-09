@@ -9,7 +9,10 @@ type Props = {
   onChange: (value: string) => void;
   description?: string;
   className?: string;
-} & Pick<InputHTMLAttributes<HTMLInputElement>, 'placeholder' | 'maxLength' | 'inputMode'>;
+} & Pick<
+  InputHTMLAttributes<HTMLInputElement>,
+  'placeholder' | 'maxLength' | 'inputMode' | 'type' | 'autoComplete' | 'autoFocus'
+>;
 
 /**
  * A field drawn like Arc's `Input` (the same tokens: border, radius, height, focus by border
