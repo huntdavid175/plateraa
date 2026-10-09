@@ -24,7 +24,9 @@ import {
   useNavigate,
   useOutletContext,
 } from 'react-router';
+import { Alert } from '@/components/arc/alert/alert';
 import { BottomSheet } from '@/components/arc/bottom-sheet/bottom-sheet';
+import { Button } from '@/components/arc/button/button';
 import { UserMenu, type UserMenuItem } from '@/components/arc/user-menu/user-menu';
 import {
   Sidebar,
@@ -48,7 +50,7 @@ import { signOutAndForget, useBusinesses, useContextQuery, type Me } from '../li
 import { session, useSession } from '../lib/session';
 import { setTheme, useThemeChoice } from '../lib/theme';
 import { ROLE_WORDS, VENDOR_TYPE_WORDS } from '../lib/words';
-import { Button, ErrorNote, Spinner } from '../ui/controls';
+import { Spinner } from '../ui/controls';
 import { Centered } from '../ui/Page';
 
 interface NavItem {
@@ -119,14 +121,24 @@ export function Shell() {
     const refused = context.error instanceof ApiError && context.error.status === 403;
     return (
       <Centered title={refused ? 'No access to this business' : 'Couldn’t load the dashboard'}>
-        <div className="space-y-3">
-          <ErrorNote>{context.error.message}</ErrorNote>
+        <div className="flex flex-col gap-3">
+          <Alert
+            tone="danger"
+            title={refused ? 'This login can’t open it' : 'Something went wrong'}
+          >
+            {context.error.message}
+          </Alert>
           {!refused && (
-            <Button full onClick={() => context.refetch()}>
+            <Button size="lg" className="w-full" onClick={() => context.refetch()}>
               Try again
             </Button>
           )}
-          <Button variant="secondary" full onClick={() => session.chooseBusiness(null)}>
+          <Button
+            variant="secondary"
+            size="lg"
+            className="w-full"
+            onClick={() => session.chooseBusiness(null)}
+          >
             Choose another business
           </Button>
         </div>

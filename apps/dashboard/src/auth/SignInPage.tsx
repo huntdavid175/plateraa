@@ -1,10 +1,13 @@
 import { useMutation } from '@tanstack/react-query';
 import { useState } from 'react';
 import { Link, Navigate } from 'react-router';
+import { Alert } from '@/components/arc/alert/alert';
+import { Button } from '@/components/arc/button/button';
+import { Input } from '@/components/arc/input/input';
+import { PasswordField } from '@/components/arc/password-field/password-field';
 import { signIn } from '../lib/api';
 import { useSlow } from '../lib/query';
 import { session, useSession } from '../lib/session';
-import { Button, ErrorNote, FieldLabel, TextInput } from '../ui/controls';
 import { Centered } from '../ui/Page';
 
 export function SignInPage() {
@@ -24,50 +27,47 @@ export function SignInPage() {
   return (
     <Centered title="Sign in" subtitle="For owners and managers.">
       <form
-        className="space-y-4"
+        className="flex flex-col gap-4"
         onSubmit={(event) => {
           event.preventDefault();
           signingIn.mutate();
         }}
       >
-        <div>
-          <FieldLabel htmlFor="email">Email</FieldLabel>
-          <TextInput
-            id="email"
-            type="email"
-            autoComplete="email"
-            required
-            value={email}
-            onChange={(event) => setEmail(event.target.value)}
-          />
-        </div>
-        <div>
-          <FieldLabel htmlFor="password">Password</FieldLabel>
-          <TextInput
-            id="password"
-            type="password"
-            autoComplete="current-password"
-            required
-            value={password}
-            onChange={(event) => setPassword(event.target.value)}
-          />
-        </div>
-        {signingIn.error && <ErrorNote>{signingIn.error.message}</ErrorNote>}
-        <Button type="submit" full busy={signingIn.isPending}>
+        <Input
+          label="Email"
+          type="email"
+          autoComplete="email"
+          required
+          value={email}
+          onChange={(event) => setEmail(event.target.value)}
+        />
+        <PasswordField
+          label="Password"
+          autoComplete="current-password"
+          required
+          value={password}
+          onChange={(event) => setPassword(event.target.value)}
+        />
+        {signingIn.error && (
+          <Alert tone="danger" title="Couldn’t sign in">
+            {signingIn.error.message}
+          </Alert>
+        )}
+        <Button type="submit" size="lg" loading={signingIn.isPending} className="w-full">
           Sign in
         </Button>
         {slow && (
-          <p className="text-center text-xs text-muted-foreground">
+          <p className="text-sm text-muted-foreground" role="status">
             Plateraa is waking up. The first sign-in of the day can take up to a minute.
           </p>
         )}
-        <p className="text-center text-sm text-muted-foreground">
-          New to Plateraa?{' '}
-          <Link to="/sign-up" className="font-medium text-brand">
-            Set up your business
-          </Link>
-        </p>
       </form>
+      <p className="text-sm text-muted-foreground">
+        New to Plateraa?{' '}
+        <Link to="/sign-up" className="font-medium text-accent-strong">
+          Set up your business
+        </Link>
+      </p>
     </Centered>
   );
 }

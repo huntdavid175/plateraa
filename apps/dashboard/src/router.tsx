@@ -18,7 +18,8 @@ import { StaffPage } from './pages/StaffPage';
 import { StockPage } from './pages/StockPage';
 import { TodayPage } from './pages/TodayPage';
 import { Shell } from './shell/Shell';
-import { Button, Spinner } from './ui/controls';
+import { Button } from '@/components/arc/button/button';
+import { Spinner } from './ui/controls';
 
 /** Loaded on its own: only new owners need it, and it brings the menu templates. */
 const SetupPage = lazy(() => import('./auth/SetupPage'));
@@ -27,7 +28,7 @@ import { Centered } from './ui/Page';
 function Crashed() {
   return (
     <Centered title="Something went wrong" subtitle="Reload the page to carry on.">
-      <Button full onClick={() => window.location.reload()}>
+      <Button size="lg" className="w-full" onClick={() => window.location.reload()}>
         Reload
       </Button>
     </Centered>
