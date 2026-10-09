@@ -6,17 +6,22 @@ import { useSearchParams } from 'react-router';
 import { ulid } from 'ulid';
 import { Alert } from '@/components/arc/alert/alert';
 import { Badge } from '@/components/arc/badge/badge';
+import { BarChart } from '@/components/arc/bar-chart/bar-chart';
 import { Button } from '@/components/arc/button/button';
+import { ConfirmMorph } from '@/components/arc/confirm-morph/confirm-morph';
 import { Dialog, DialogContent } from '@/components/arc/dialog/dialog';
+import { DonutChart } from '@/components/arc/donut-chart/donut-chart';
 import { EmptyState } from '@/components/arc/empty-state/empty-state';
 import { FilterToolbar } from '@/components/arc/filter-toolbar/filter-toolbar';
 import { Input } from '@/components/arc/input/input';
+import { MoneyInput } from '@/components/arc/money-input/money-input';
 import { RadioGroup } from '@/components/arc/radio-group/radio-group';
 import SegmentedControl from '@/components/arc/segmented-control/segmented-control';
 import { Select } from '@/components/arc/select/select';
 import { Switch } from '@/components/arc/switch/switch';
+import { Bento, Cedis, Tile } from '@/components/app/bento';
 import { DateField } from '@/components/app/day-picker';
-import { MoneyField, PlainField } from '@/components/app/money-field';
+import { PlainField } from '@/components/app/money-field';
 import { Skeleton } from '@/components/ui/skeleton';
 import {
   METHOD_OUT_WORDS,
@@ -30,7 +35,7 @@ import {
   type Expense,
   type ManualMethod,
 } from '../lib/expenses';
-import { cedis, longDate, parseAmount, todayHere } from '../lib/money';
+import { cedis, chartCedis, longDate, shortDate, todayHere } from '../lib/money';
 import { useSession } from '../lib/session';
 import { EXPENSE_WORDS } from '../lib/words';
 import { useMe } from '../shell/Shell';
@@ -149,6 +154,8 @@ export function ExpensesPage() {
           )}
         </div>
 
+        {list.data && shown.length > 0 && <Summary shown={shown} dates={dates} total={total} />}
+
         <section
           aria-label="Expenses"
           className="overflow-hidden rounded-(--radius-surface) border bg-card"
@@ -213,8 +220,74 @@ export function ExpensesPage() {
   );
 }
 
+/** The days at a glance: the total, purchases against the rest, each day, and each kind. */
+function Summary({
+  shown,
+  dates,
+  total,
+}: {
+  shown: Expense[];
+  dates: { from: string; to: string };
+  total: number;
+}) {
+  const purchases = shown.filter((row) => row.purchase).reduce((sum, row) => sum + row.amount, 0);
+  const perDay = new Map<string, number>();
+  for (let day = dates.from; day <= dates.to; day = shiftDays(day, 1)) perDay.set(day, 0);
+  for (const row of shown) perDay.set(row.spentOn, (perDay.get(row.spentOn) ?? 0) + row.amount);
+  const perKind = new Map<ExpenseCategory, number>();
+  for (const row of shown) perKind.set(row.category, (perKind.get(row.category) ?? 0) + row.amount);
+
+  return (
+    <Bento>
+      <Tile title="Spent">
+        <Cedis amount={total} />
+        <span className="text-xs text-muted-foreground">
+          {shown.length === 1 ? '1 expense' : `${shown.length} expenses`}
+        </span>
+      </Tile>
+      <Tile title="Stock purchases">
+        <Cedis amount={purchases} />
+        <span className="text-xs text-muted-foreground">
+          {cedis(total - purchases)} on everything else
+        </span>
+      </Tile>
+      <Tile title="By kind" className="col-span-2 lg:row-span-2">
+        <DonutChart
+          label="Money out by kind"
+          size={200}
+          thickness={18}
+          formatValue={chartCedis}
+          totalLabel="Spent"
+          data={[...perKind].map(([category, amount]) => ({
+            key: category,
+            label: EXPENSE_WORDS[category],
+            value: amount,
+          }))}
+        />
+      </Tile>
+      {perDay.size > 1 && (
+        <Tile title="Each day" className="col-span-2">
+          <BarChart
+            label="Money out"
+            period={`${shortDate(dates.from)} to ${shortDate(dates.to)}`}
+            averageLabel="A day, on average"
+            valueLabel="Spent"
+            formatValue={chartCedis}
+            height={140}
+            data={[...perDay].map(([day, amount]) => ({
+              key: day,
+              label: longDate(day),
+              axisLabel: shortDate(day),
+              value: amount,
+            }))}
+          />
+        </Tile>
+      )}
+    </Bento>
+  );
+}
+
 function ExpenseRow({ expense }: { expense: Expense }) {
-  const [confirming, setConfirming] = useState(false);
   const removing = useMutation({
     mutationFn: () => removeExpense(expense.id),
     meta: { ok: 'Expense removed' },
@@ -242,16 +315,14 @@ function ExpenseRow({ expense }: { expense: Expense }) {
       <div className="flex shrink-0 flex-col items-end gap-1">
         <span className="font-mono text-sm">{cedis(expense.amount)}</span>
         {!expense.fromDrawer && (
-          // Two presses: the first asks, the second removes it.
-          <Button
-            variant={confirming ? 'danger' : 'ghost'}
-            size="sm"
-            loading={removing.isPending}
-            onClick={() => (confirming ? removing.mutate() : setConfirming(true))}
-            onBlur={() => setConfirming(false)}
-          >
-            {confirming ? (expense.purchase ? 'Remove, and its stock' : 'Yes, remove') : 'Remove'}
-          </Button>
+          <ConfirmMorph
+            label="Remove"
+            prompt={expense.purchase ? 'Remove it and its stock?' : 'Remove this expense?'}
+            confirmLabel="Remove"
+            pendingLabel="Removing"
+            doneLabel="Removed"
+            onConfirm={() => removing.mutateAsync()}
+          />
         )}
       </div>
     </li>
@@ -272,7 +343,8 @@ function AddExpense({ onClose }: { onClose: () => void }) {
   const me = useMe();
   const { tenantId } = useSession();
   const [id] = useState(() => ulid());
-  const [text, setText] = useState('');
+  // Arc's money input gives pesewas directly (minor units), or null when empty.
+  const [amount, setAmount] = useState<number | null>(null);
   const [category, setCategory] = useState<ExpenseCategory>('INGREDIENTS');
   const [method, setMethod] = useState<ManualMethod>('OWNER_CASH');
   const [spentOn, setSpentOn] = useState(todayHere());
@@ -288,7 +360,6 @@ function AddExpense({ onClose }: { onClose: () => void }) {
     enabled: isPurchase && canStock,
   });
 
-  const amount = parseAmount(text);
   const quantity = /^\d{1,6}$/.test(quantityText) ? Number(quantityText) : null;
   const problem = !amount
     ? 'Type the amount.'
@@ -327,8 +398,16 @@ function AddExpense({ onClose }: { onClose: () => void }) {
           if (!problem) saving.mutate();
         }}
       >
+        <MoneyInput
+          label="Amount"
+          value={amount}
+          onValueChange={(next) => setAmount(next)}
+          currencies={['GHS']}
+          locale="en-GB"
+          quickAdd={[10, 50, 100]}
+          min={1}
+        />
         <div className="grid grid-cols-2 gap-3">
-          <MoneyField label="Amount" value={text} onChange={setText} />
           <DateField
             label="Day"
             className="w-full"
