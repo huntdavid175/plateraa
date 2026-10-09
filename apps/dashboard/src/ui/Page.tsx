@@ -16,10 +16,14 @@ export function Page({
   children: ReactNode;
 }) {
   return (
-    <div className={cx('mx-auto px-4 py-6 md:px-8', narrow ? 'max-w-2xl' : 'max-w-5xl')}>
+    <div
+      className={cx('mx-auto w-full px-4 py-6 md:px-8 md:py-8', narrow ? 'max-w-2xl' : 'max-w-6xl')}
+    >
       <header className="mb-6 flex flex-wrap items-start justify-between gap-3">
         <div>
-          <h1 className="text-2xl font-bold">{title}</h1>
+          <h1 className="font-heading text-2xl font-medium tracking-[-0.03em] md:text-3xl">
+            {title}
+          </h1>
           {subtitle && <p className="mt-1 text-sm text-muted-foreground">{subtitle}</p>}
         </div>
         {actions && <div className="flex gap-2">{actions}</div>}

@@ -16,6 +16,8 @@ export default defineConfig([
       'apps/mobile/android/**',
       'apps/mobile/ios/**',
       'packages/api-client/src/schema.ts',
+      // Arc (uiarc.dev) components, installed as-is by the shadcn CLI.
+      'apps/dashboard/src/components/arc/**',
     ],
   },
   js.configs.recommended,

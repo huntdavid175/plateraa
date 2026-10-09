@@ -1,0 +1,71 @@
+/*
+ * Plateraa's look (9 Oct, the dashboard rework). These are Arc's own token names
+ * (components/arc/foundation.css), set to our palette, so Arc's components, shadcn's (mapped in
+ * index.css) and our screens all draw from the same few colours.
+ *
+ * - The page is a cool off-white, cards are white, text is near-black ink.
+ * - The accent is a burnt orange from the logo's #FC5102, deep enough for white text on it
+ *   (4.6:1). The logo itself keeps #FC5102. In dark mode the orange is lighter and carries dark
+ *   ink instead, as white on a light orange can't be read.
+ * - Green, amber and red only for real status (paid, needs attention, failed), always with a word.
+ * - Corners are modest: this is a ledger, not a toy.
+ */
+
+:root {
+  --background: #f4f5f2;
+  --surface: #ffffff;
+  --surface-raised: #ffffff;
+  --surface-muted: #eceeea;
+  --foreground: #14161a;
+  --text-secondary: #464b52;
+  --text-muted: #5c6168;
+  --border: #e1e3df;
+  --border-subtle: #eceeea;
+  --border-strong: #c6cac3;
+
+  --accent: #d44000;
+  --accent-strong: #a83300;
+  --accent-subtle: rgb(212 64 0 / 0.1);
+  --accent-foreground: #ffffff;
+
+  --control-on: #d44000;
+  --control-glyph: #ffffff;
+  --control-thumb-on: #ffffff;
+
+  --success: #0e7a4b;
+  --warning: #8a5a00;
+  --danger: #b42318;
+  /* Not an Arc token: neutral information that isn't the accent (a delivery, a note). */
+  --info: #1c5594;
+
+  --radius-control: 0.625rem;
+  --radius-panel: 0.875rem;
+  --radius-surface: 1.125rem;
+}
+
+:root[data-theme='dark'] {
+  --background: #0f1012;
+  --surface: #17191c;
+  --surface-raised: #1d2023;
+  --surface-muted: #23262a;
+  --foreground: #f2f3f1;
+  --text-secondary: #babec4;
+  --text-muted: #9a9fa6;
+  --border: #2a2d32;
+  --border-subtle: #222529;
+  --border-strong: #3d4147;
+
+  --accent: #ff7a3d;
+  --accent-strong: #ffa477;
+  --accent-subtle: rgb(255 122 61 / 0.16);
+  --accent-foreground: #14161a;
+
+  --control-on: #ff7a3d;
+  --control-glyph: #14161a;
+  --control-thumb-on: #ffffff;
+
+  --success: #3dd68c;
+  --warning: #f2b33d;
+  --danger: #ff8a7a;
+  --info: #7cb6fb;
+}

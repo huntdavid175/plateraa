@@ -70,7 +70,7 @@ export function TodayPage() {
 
   return (
     <Page
-      title={isToday ? 'Today' : shortDate(date)}
+      title={isToday ? 'Home' : shortDate(date)}
       subtitle={longDate(date)}
       actions={
         <>
@@ -388,7 +388,7 @@ function RecentOrders({
 }) {
   const back: BackTo = date
     ? { back: `/?date=${date}`, label: shortDate(date) }
-    : { back: '/', label: 'Today' };
+    : { back: '/', label: 'Home' };
   let body: ReactNode;
   if (loading) {
     body = (

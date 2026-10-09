@@ -12,3 +12,5 @@ packages/api-client/openapi.json
 packages/api-client/src/schema.ts
 # Installed as-is from its source; not our code to reformat.
 .claude/skills
+# Arc (uiarc.dev) components, installed as-is by the shadcn CLI.
+apps/dashboard/src/components/arc

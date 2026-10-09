@@ -1,133 +1,96 @@
 @import 'tailwindcss';
 @import 'tw-animate-css';
 @import 'shadcn/tailwind.css';
+@import '@fontsource-variable/geist';
+@import '@fontsource-variable/inter';
+@import './components/arc/foundation.css';
+@import './theme.css';
 
-/* Dark mode follows the `dark` class on <html> (see src/lib/theme.ts). */
+/* Dark mode follows the `dark` class on <html>, set with data-theme="dark" (src/lib/theme.ts). */
 @custom-variant dark (&:where(.dark, .dark *));
 
-/* Colours from the Figma Make design (design/dashboard_design.make). The status inks and the
-   muted grey were strengthened on 16 Sep (user report: alerts were hard to read): every one now
-   clears 5.6:1 on the page, a card and a tile, in both looks. Check with the numbers in
-   apps/dashboard/AGENTS.md before changing one. */
+/*
+ * Colours come from one place: Arc's token names, set to Plateraa's palette in theme.css. The
+ * names below only point at them:
+ * - shadcn's names (bg-background, bg-card, bg-primary, text-muted-foreground, bg-sidebar, …);
+ * - the names the screens built before the rework use (bg-surface, bg-tile, text-text, bg-brand,
+ *   bg-green-bg text-green, …), until each is rebuilt.
+ * shadcn's `accent` is the grey behind a hovered item; Arc's `--accent` is the brand colour. The
+ * Tailwind name keeps shadcn's meaning; the variable keeps Arc's.
+ */
 :root {
-  --bg: #f6f5f3;
-  --surface: #ffffff;
-  --tile: #eceae7;
-  --border: #e2dfd9;
-  --text: #1a1917;
-  --muted-foreground: #5e5b54;
-  --brand: #e8701a;
-  --brand-fg: #ffffff;
-  --brand-subtle: #fdf0e7;
-  --green: #146138;
-  --green-bg: #e6f4ed;
-  --amber: #7a4a06;
-  --amber-bg: #fef3e2;
-  --red: #991111;
-  --red-bg: #fee2e2;
-  --blue: #17508f;
-  --blue-bg: #e3edfa;
-  --background: oklch(1 0 0);
-  --foreground: oklch(0.145 0 0);
-  --card: oklch(1 0 0);
-  --card-foreground: oklch(0.145 0 0);
-  --popover: oklch(1 0 0);
-  --popover-foreground: oklch(0.145 0 0);
-  --primary: oklch(0.205 0 0);
-  --primary-foreground: oklch(0.985 0 0);
-  --secondary: oklch(0.97 0 0);
-  --secondary-foreground: oklch(0.205 0 0);
-  --muted: oklch(0.97 0 0);
-  --accent: oklch(0.97 0 0);
-  --accent-foreground: oklch(0.205 0 0);
-  --destructive: oklch(0.577 0.245 27.325);
-  --input: oklch(0.922 0 0);
-  --ring: oklch(0.708 0 0);
-  --chart-1: oklch(0.87 0 0);
-  --chart-2: oklch(0.556 0 0);
-  --chart-3: oklch(0.439 0 0);
-  --chart-4: oklch(0.371 0 0);
-  --chart-5: oklch(0.269 0 0);
-  --radius: 0.625rem;
-  --sidebar: oklch(0.985 0 0);
-  --sidebar-foreground: oklch(0.145 0 0);
-  --sidebar-primary: oklch(0.205 0 0);
-  --sidebar-primary-foreground: oklch(0.985 0 0);
-  --sidebar-accent: oklch(0.97 0 0);
-  --sidebar-accent-foreground: oklch(0.205 0 0);
-  --sidebar-border: oklch(0.922 0 0);
-  --sidebar-ring: oklch(0.708 0 0);
+  --muted-foreground: var(--text-muted);
+  --radius: var(--radius-control);
+  /* Read by name in the item editor and the orders-by-hour chart, until they're rebuilt. */
+  --brand: var(--accent);
+  --text: var(--foreground);
 }
 
-html.dark {
-  --bg: #111110;
-  --surface: #1c1a18;
-  --tile: #252220;
-  --border: #35302b;
-  --text: #f0ede8;
-  --muted-foreground: #aba7a1;
-  --brand-subtle: #2a1808;
-  --green: #34d07a;
-  --green-bg: #0d2318;
-  --amber: #f5a623;
-  --amber-bg: #241605;
-  --red: #f99494;
-  --red-bg: #2a0c0c;
-  --blue: #7cb6fb;
-  --blue-bg: #0d1e35;
-}
-
-/* Tailwind classes for the colours above: bg-surface, text-muted-foreground, border-border, bg-brand, … */
 @theme inline {
-  --color-bg: var(--bg);
-  --color-surface: var(--surface);
-  --color-tile: var(--tile);
-  --color-border: var(--border);
-  --color-text: var(--text);
-  --color-muted-foreground: var(--muted-foreground);
-  --color-brand: var(--brand);
-  --color-brand-fg: var(--brand-fg);
-  --color-brand-subtle: var(--brand-subtle);
-  --color-green: var(--green);
-  --color-green-bg: var(--green-bg);
-  --color-amber: var(--amber);
-  --color-amber-bg: var(--amber-bg);
-  --color-red: var(--red);
-  --color-red-bg: var(--red-bg);
-  --color-blue: var(--blue);
-  --color-blue-bg: var(--blue-bg);
-  --font-sans: 'DM Sans', system-ui, sans-serif;
-  --font-mono: 'DM Mono', ui-monospace, monospace;
-  --font-heading: var(--font-sans);
-  --color-sidebar-ring: var(--sidebar-ring);
-  --color-sidebar-border: var(--sidebar-border);
-  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
-  --color-sidebar-accent: var(--sidebar-accent);
-  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
-  --color-sidebar-primary: var(--sidebar-primary);
-  --color-sidebar-foreground: var(--sidebar-foreground);
-  --color-sidebar: var(--sidebar);
-  --color-chart-5: var(--chart-5);
-  --color-chart-4: var(--chart-4);
-  --color-chart-3: var(--chart-3);
-  --color-chart-2: var(--chart-2);
-  --color-chart-1: var(--chart-1);
-  --color-ring: var(--ring);
-  --color-input: var(--input);
-  --color-destructive: var(--destructive);
-  --color-accent-foreground: var(--accent-foreground);
-  --color-accent: var(--accent);
-  --color-muted: var(--muted);
-  --color-secondary-foreground: var(--secondary-foreground);
-  --color-secondary: var(--secondary);
-  --color-primary-foreground: var(--primary-foreground);
-  --color-primary: var(--primary);
-  --color-popover-foreground: var(--popover-foreground);
-  --color-popover: var(--popover);
-  --color-card-foreground: var(--card-foreground);
-  --color-card: var(--card);
-  --color-foreground: var(--foreground);
   --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--surface);
+  --color-card-foreground: var(--foreground);
+  --color-popover: var(--surface-raised);
+  --color-popover-foreground: var(--foreground);
+  --color-primary: var(--accent);
+  --color-primary-foreground: var(--accent-foreground);
+  --color-secondary: var(--surface-muted);
+  --color-secondary-foreground: var(--foreground);
+  --color-muted: var(--surface-muted);
+  --color-muted-foreground: var(--text-muted);
+  --color-accent: var(--surface-muted);
+  --color-accent-foreground: var(--foreground);
+  --color-destructive: var(--danger);
+  --color-border: var(--border);
+  --color-input: var(--border-strong);
+  --color-ring: var(--accent);
+  --color-chart-1: var(--series-1);
+  --color-chart-2: var(--series-2);
+  --color-chart-3: var(--series-3);
+  --color-chart-4: var(--series-4);
+  --color-chart-5: var(--text-muted);
+  --color-sidebar: var(--surface);
+  --color-sidebar-foreground: var(--foreground);
+  --color-sidebar-primary: var(--accent-strong);
+  --color-sidebar-primary-foreground: var(--accent-foreground);
+  --color-sidebar-accent: var(--surface-muted);
+  --color-sidebar-accent-foreground: var(--foreground);
+  --color-sidebar-border: var(--border);
+  --color-sidebar-ring: var(--accent);
+
+  /* Ours, beside Arc's own. */
+  --color-surface: var(--surface);
+  --color-accent-strong: var(--accent-strong);
+  --color-accent-subtle: var(--accent-subtle);
+  --color-text-secondary: var(--text-secondary);
+  --color-success: var(--success);
+  --color-warning: var(--warning);
+  --color-danger: var(--danger);
+  --color-info: var(--info);
+  --color-brand-mark: #fc5102;
+
+  /* The names from before the rework. */
+  --color-bg: var(--background);
+  --color-tile: var(--surface-muted);
+  --color-text: var(--foreground);
+  --color-brand: var(--accent);
+  --color-brand-fg: var(--accent-foreground);
+  --color-brand-subtle: var(--accent-subtle);
+  --color-green: var(--success);
+  --color-green-bg: color-mix(in oklab, var(--success) 12%, var(--surface));
+  --color-amber: var(--warning);
+  --color-amber-bg: color-mix(in oklab, var(--warning) 12%, var(--surface));
+  --color-red: var(--danger);
+  --color-red-bg: color-mix(in oklab, var(--danger) 12%, var(--surface));
+  --color-blue: var(--info);
+  --color-blue-bg: color-mix(in oklab, var(--info) 12%, var(--surface));
+
+  /* Inter for text, Geist for headings and figures (money, order numbers) with even digits. */
+  --font-sans: var(--font-body);
+  --font-heading: var(--font-display);
+  --font-mono: var(--font-display);
+
   --radius-sm: calc(var(--radius) * 0.6);
   --radius-md: calc(var(--radius) * 0.8);
   --radius-lg: var(--radius);
@@ -144,13 +107,17 @@ body,
 }
 
 body {
-  background: var(--bg);
-  color: var(--text);
-  font-family: var(--font-sans);
+  background: var(--background);
+  color: var(--foreground);
+  font-family: var(--font-body);
+  letter-spacing: var(--tracking-body);
   -webkit-font-smoothing: antialiased;
-  transition:
-    background 0.2s,
-    color 0.2s;
+}
+
+/* Money and order numbers: figures of even width, so columns line up and totals don't jiggle. */
+.font-mono,
+.tabular-nums {
+  font-variant-numeric: tabular-nums;
 }
 
 /*
@@ -179,46 +146,8 @@ body {
   scrollbar-color: var(--border) transparent;
 }
 
-.dark {
-  --background: oklch(0.145 0 0);
-  --foreground: oklch(0.985 0 0);
-  --card: oklch(0.205 0 0);
-  --card-foreground: oklch(0.985 0 0);
-  --popover: oklch(0.205 0 0);
-  --popover-foreground: oklch(0.985 0 0);
-  --primary: oklch(0.922 0 0);
-  --primary-foreground: oklch(0.205 0 0);
-  --secondary: oklch(0.269 0 0);
-  --secondary-foreground: oklch(0.985 0 0);
-  --muted: oklch(0.269 0 0);
-  --accent: oklch(0.269 0 0);
-  --accent-foreground: oklch(0.985 0 0);
-  --destructive: oklch(0.704 0.191 22.216);
-  --input: oklch(1 0 0 / 15%);
-  --ring: oklch(0.556 0 0);
-  --chart-1: oklch(0.87 0 0);
-  --chart-2: oklch(0.556 0 0);
-  --chart-3: oklch(0.439 0 0);
-  --chart-4: oklch(0.371 0 0);
-  --chart-5: oklch(0.269 0 0);
-  --sidebar: oklch(0.205 0 0);
-  --sidebar-foreground: oklch(0.985 0 0);
-  --sidebar-primary: oklch(0.488 0.243 264.376);
-  --sidebar-primary-foreground: oklch(0.985 0 0);
-  --sidebar-accent: oklch(0.269 0 0);
-  --sidebar-accent-foreground: oklch(0.985 0 0);
-  --sidebar-border: oklch(1 0 0 / 10%);
-  --sidebar-ring: oklch(0.556 0 0);
-}
-
 @layer base {
   * {
-    @apply border-border outline-ring/50;
-  }
-  body {
-    @apply bg-background text-foreground;
-  }
-  html {
-    @apply font-sans;
+    @apply border-border;
   }
 }

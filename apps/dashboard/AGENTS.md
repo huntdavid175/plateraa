@@ -10,19 +10,19 @@ The web dashboard for owners and managers (plan.md §3.1). It uses:
 
 ## Design
 
-- **Follow the user's Figma Make design** in `design/dashboard_design.make`, which is a zip. Read `src/App.tsx` and `src/index.css` from the repo inside it.
-  - Copy its look: colours, spacing and components.
-  - Don't copy its made-up data.
-  - Where its wording clashes with a settled decision, the decision wins:
-    - real order numbers;
-    - stations are Kitchen and Drinks only;
-    - a PIN is never shown;
-    - it's "Moolre account", not "MoMo account";
-    - "sold out" means it can't be ordered until tomorrow.
-- **Colours** are CSS variables in `src/index.css`, exposed as Tailwind colour names: `bg-surface`, `bg-tile`, `text-muted`, `border-border`, `bg-brand`, `bg-brand-subtle`, `bg-green-bg text-green`, and so on.
-  - Use those names, never hex values, so dark mode keeps working.
-  - Dark mode is the `dark` class on `<html>` (`lib/theme.ts`). It starts from the device's own setting and is then remembered per browser.
-- **Fonts:** DM Sans for text; DM Mono (`font-mono`) for money and order numbers.
+- **The rework (from 9 Oct, user decision).** The whole UI is being rebuilt, one screen per commit, with **shadcn/ui** (Radix base; `components.json`, components in `src/components/ui`, ours to edit) and **Arc** (uiarc.dev; free items in `src/components/arc`, installed as-is with `npx shadcn@latest add @uiarc/<id>`, left out of lint and Prettier). Use the project skills `shadcn`, `arc`, `frontend-design` and `emil-design-eng`, and the `arc` MCP server (`.mcp.json`) to find Arc items. Take an Arc item where one fits the job, a shadcn one otherwise. Arc's paid Pro items aren't available.
+  - The look is the plan the user approved on 9 Oct: a clean ledger. The day's money is the one big thing; everything else stays quiet.
+  - Order: 1 shell ✓, 2 sign-in, 3 Home, 4 Orders, 5 Customers, 6 Menu, 7 Stock, 8 Online store, 9 Expenses / Refunds / money dialogs, 10 Reports, 11 Staff, 12 Settings, 13 onboarding. Screens not yet rebuilt keep their old components (`src/ui`) but already wear the new colours.
+  - The old Figma Make design (`design/dashboard_design.make`) is no longer the guide. Its wording rules still hold: real order numbers; stations are Kitchen and Drinks only; a PIN is never shown; "Moolre account", not "MoMo account"; "sold out" means it can't be ordered until tomorrow.
+  - **Today is called Home** (9 Oct, user request): the sidebar, the phone bar, the page title and back links. The address stays `/`.
+- **Colours** come from one place: Arc's token names (`--background`, `--surface`, `--surface-muted`, `--foreground`, `--text-secondary`, `--text-muted`, `--border`, `--accent`, `--success`, `--warning`, `--danger`), set to Plateraa's palette in `src/theme.css`, light and dark.
+  - `src/index.css` points shadcn's Tailwind names at them (`bg-background`, `bg-card`, `bg-primary`, `text-muted-foreground`, `bg-sidebar`, …), plus ours (`text-accent-strong`, `bg-accent-subtle`, `text-success`, `text-danger`, `text-info`), plus the old screens' names (`bg-surface`, `bg-tile`, `bg-brand`, `bg-green-bg text-green`, …) until they're rebuilt.
+  - shadcn's `accent` (Tailwind `bg-accent`) is the grey behind a hovered item; Arc's `--accent` (the variable) is the brand orange. Tailwind `primary` is the brand orange.
+  - The accent is `#D44000`, deepened from the logo's `#FC5102` so white text on it reads (4.6:1); the logo keeps `#FC5102` (`bg-brand-mark`). In dark mode the accent is a lighter orange carrying dark text.
+  - Never hex values in a screen, so dark mode keeps working.
+  - Dark mode: `lib/theme.ts` sets both the `dark` class (Tailwind) and `data-theme="dark"` (Arc) on `<html>`. The choice is Light, Dark or System (the device's setting), from the account menu, remembered per browser.
+- **Fonts:** Inter for text, Geist for headings (`font-heading`) and figures. Weights 400 and 500 only. `font-mono` is now Geist with even-width digits (`tabular-nums`), for money and order numbers.
+- **The shell** (`shell/Shell.tsx`): shadcn's `Sidebar` (folds to icons; `Ctrl+B` or the edge rail), in four groups (Home · Orders · Customers / Menu · Stock · Online store / Expenses · Refunds · Reports / Staff · Settings), with Arc's `UserMenu` at its foot (theme, switching business, sign out). On a phone: a header with the business and the account, a bottom bar with the first four pages the person may open, and More, which opens the rest in Arc's `BottomSheet`. The window scrolls, not an inner box.
 - **A dialog holds the page still** behind it: `Dialog` and the phone's More sheet call `useLockScroll` (`lib/lock-scroll.ts`, 16 Sep, user request), which fixes the page where it stands rather than only hiding the overflow (an iPhone ignores that) and puts it back on close. The storefront has its own copy: the two apps share no web code yet. Use it in anything new that covers the page.
 - **Toasts** (16 Sep, user request): `toast.ok('Saved')` / `toast.problem(…)` from `ui/Toast.tsx`, shown bottom-right (bottom-centre on a phone) for 4 s, or 8 s for a problem; tap to close, three at most. They're wired once in `lib/query.ts`: **every mutation that fails says why by itself**, and one that works says so when it carries `meta: { ok: 'Expense added' }`. A form that already prints its own error underneath (sign-in, sign-up) sets `meta: { quiet: true }` so it isn't said twice. The toast is ink-coloured with the page colour on it (16:1 in both looks), with a green or red dot.
 - **Alert colours** (16 Sep, after the user reported they were hard to read): the status inks (`--green`, `--amber`, `--red`, `--blue`) and `--muted` in `index.css` were strengthened. Every one now clears **6.2:1** on the page, a card and its own tint in light mode, and 7.3:1 in dark (the old light values were 4.45–5.9). Check a new value against the page, a card (`--surface`), a tile and its tint before changing it.

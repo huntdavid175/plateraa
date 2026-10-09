@@ -36,6 +36,7 @@ A solo founder (GitHub `huntdavid175`) builds it with an AI agent. Work started 
   - 15 Sep: the tablet rings a chime and shows a note for each new online order, and notes each payment link texted, paid or failed (`apps/mobile/AGENTS.md`, Alerts).
   - Still open: trying the chime (needs the EAS build of 15 Sep) and Accept on the tablet, and a real order placed from a phone.
 - **Phase 3.1–3.2, the dashboard** (12 Sep), built slice by slice to the user's Figma Make design. See `apps/dashboard/AGENTS.md`.
+  - **Being rebuilt from 9 Oct** (user decision) with shadcn/ui and Arc (uiarc.dev) in a new look, one screen per commit; Today is now called Home. See `apps/dashboard/AGENTS.md`, Design.
   - Pages:
     - sign-in, sign-up and the 7-step onboarding;
     - Today;

@@ -303,7 +303,7 @@ function AddExpenseDialog({ onClose }: { onClose: () => void }) {
         }}
       >
         <p className="text-xs text-muted-foreground">
-          Cash paid out of a tablet’s drawer is a payout: record it from Today’s open drawers.
+          Cash paid out of a tablet’s drawer is a payout: record it from the open drawers on Home.
         </p>
         <div className="grid grid-cols-2 gap-3">
           <div>

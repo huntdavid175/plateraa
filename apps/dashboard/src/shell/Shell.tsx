@@ -1,28 +1,54 @@
 import type { Capability } from '@plateraa/shared';
-import { useState, type ComponentType } from 'react';
-import { Link, Navigate, NavLink, Outlet, useOutletContext } from 'react-router';
+import {
+  ChartColumn,
+  Ellipsis,
+  House,
+  Package,
+  ReceiptText,
+  Settings,
+  Store,
+  Undo2,
+  UserCog,
+  Users,
+  UtensilsCrossed,
+  Wallet,
+  type LucideIcon,
+} from 'lucide-react';
+import { useState } from 'react';
+import {
+  Link,
+  Navigate,
+  NavLink,
+  Outlet,
+  useMatch,
+  useNavigate,
+  useOutletContext,
+} from 'react-router';
+import { BottomSheet } from '@/components/arc/bottom-sheet/bottom-sheet';
+import { UserMenu, type UserMenuItem } from '@/components/arc/user-menu/user-menu';
+import {
+  Sidebar,
+  SidebarContent,
+  SidebarFooter,
+  SidebarGroup,
+  SidebarGroupContent,
+  SidebarHeader,
+  SidebarInset,
+  SidebarMenu,
+  SidebarMenuButton,
+  SidebarMenuItem,
+  SidebarProvider,
+  SidebarRail,
+  SidebarSeparator,
+  useSidebar,
+} from '@/components/ui/sidebar';
+import { cn } from '@/lib/utils';
 import { ApiError } from '../lib/api';
-import { useLockScroll } from '../lib/lock-scroll';
 import { signOutAndForget, useBusinesses, useContextQuery, type Me } from '../lib/query';
 import { session, useSession } from '../lib/session';
-import { setDark, useDark } from '../lib/theme';
+import { setTheme, useThemeChoice } from '../lib/theme';
 import { ROLE_WORDS, VENDOR_TYPE_WORDS } from '../lib/words';
-import { Button, ErrorNote, Spinner, Toggle, cx } from '../ui/controls';
-import {
-  BoxIcon,
-  ChartIcon,
-  CustomersIcon,
-  HomeIcon,
-  MenuIcon,
-  MoreIcon,
-  OrdersIcon,
-  RefundIcon,
-  SettingsIcon,
-  SignOutIcon,
-  StaffIcon,
-  StoreIcon,
-  WalletIcon,
-} from '../ui/icons';
+import { Button, ErrorNote, Spinner } from '../ui/controls';
 import { Centered } from '../ui/Page';
 
 interface NavItem {
@@ -30,33 +56,44 @@ interface NavItem {
   label: string;
   /** A shorter label for the phone's bottom bar, where five share the width. */
   short?: string;
-  Icon: ComponentType<{ size?: number }>;
+  Icon: LucideIcon;
   /** Hidden from people without this permission (the server refuses them anyway). */
   needs?: Capability;
 }
 
-const NAV: NavItem[] = [
-  { to: '/', label: 'Today', Icon: HomeIcon },
-  { to: '/orders', label: 'Orders', Icon: OrdersIcon },
-  { to: '/customers', label: 'Customers', Icon: CustomersIcon },
-  { to: '/menu', label: 'Menu', Icon: MenuIcon, needs: 'catalog.manage' },
-  {
-    to: '/store',
-    label: 'Online store',
-    short: 'Store',
-    Icon: StoreIcon,
-    needs: 'storefront.manage',
-  },
-  { to: '/staff', label: 'Staff', Icon: StaffIcon, needs: 'staff.manage' },
-  { to: '/refunds', label: 'Refunds', Icon: RefundIcon, needs: 'refunds.record' },
-  { to: '/reports', label: 'Reports', Icon: ChartIcon, needs: 'reports.revenue.view' },
-  { to: '/expenses', label: 'Expenses', Icon: WalletIcon, needs: 'expenses.manage' },
-  { to: '/stock', label: 'Stock', Icon: BoxIcon, needs: 'catalog.manage' },
-  { to: '/settings', label: 'Settings', Icon: SettingsIcon },
+/** The sidebar, in groups: the day, the food, the money, the team. */
+const NAV: NavItem[][] = [
+  [
+    { to: '/', label: 'Home', Icon: House },
+    { to: '/orders', label: 'Orders', Icon: ReceiptText },
+    { to: '/customers', label: 'Customers', Icon: Users },
+  ],
+  [
+    { to: '/menu', label: 'Menu', Icon: UtensilsCrossed, needs: 'catalog.manage' },
+    { to: '/stock', label: 'Stock', Icon: Package, needs: 'catalog.manage' },
+    {
+      to: '/store',
+      label: 'Online store',
+      short: 'Store',
+      Icon: Store,
+      needs: 'storefront.manage',
+    },
+  ],
+  [
+    { to: '/expenses', label: 'Expenses', Icon: Wallet, needs: 'expenses.manage' },
+    { to: '/refunds', label: 'Refunds', Icon: Undo2, needs: 'refunds.record' },
+    { to: '/reports', label: 'Reports', Icon: ChartColumn, needs: 'reports.revenue.view' },
+  ],
+  [
+    { to: '/staff', label: 'Staff', Icon: UserCog, needs: 'staff.manage' },
+    { to: '/settings', label: 'Settings', Icon: Settings },
+  ],
 ];
 
-/** The phone's bottom bar fits five; the rest go under "More". */
-const BOTTOM_BAR_SIZE = 5;
+/** The phone's bottom bar holds four places and More; the rest open from More. */
+const BOTTOM_BAR_SIZE = 4;
+
+const ICON = { size: 18, strokeWidth: 1.75, 'aria-hidden': true } as const;
 
 /** The signed-in person, for any screen inside the shell. */
 export function useMe(): Me {
@@ -98,192 +135,178 @@ export function Shell() {
   }
 
   const me = context.data;
-  const nav = NAV.filter((item) => !item.needs || me.capabilities.includes(item.needs));
+  const groups = NAV.map((group) =>
+    group.filter((item) => !item.needs || me.capabilities.includes(item.needs)),
+  ).filter((group) => group.length > 0);
+  const flat = groups.flat();
 
   return (
-    <div className="flex h-full">
-      <Sidebar me={me} nav={nav} />
-      <div className="flex min-w-0 flex-1 flex-col">
-        <PhoneHeader me={me} overflow={nav.slice(BOTTOM_BAR_SIZE)} />
-        <main className="page-scroll flex-1 overflow-y-auto pb-20 md:pb-0">
-          <Outlet context={me} />
-        </main>
-      </div>
-      <BottomBar nav={nav.slice(0, BOTTOM_BAR_SIZE)} />
-    </div>
+    // The sidebar remembers being folded (shadcn keeps it in a cookie).
+    <SidebarProvider defaultOpen={!document.cookie.includes('sidebar_state=false')}>
+      <AppSidebar me={me} groups={groups} />
+      <SidebarInset className="min-w-0 pb-[calc(4rem+env(safe-area-inset-bottom))] md:pb-0">
+        <PhoneHeader me={me} />
+        <Outlet context={me} />
+      </SidebarInset>
+      <BottomBar bar={flat.slice(0, BOTTOM_BAR_SIZE)} more={flat.slice(BOTTOM_BAR_SIZE)} />
+    </SidebarProvider>
   );
 }
 
-function Sidebar({ me, nav }: { me: Me; nav: NavItem[] }) {
-  const dark = useDark();
+/** Laptops and tablets: the business at the top, the pages in groups, the account at the foot. */
+function AppSidebar({ me, groups }: { me: Me; groups: NavItem[][] }) {
   return (
-    <aside className="sticky top-0 hidden h-full w-56 shrink-0 flex-col border-r border-border bg-surface md:flex">
-      <div className="border-b border-border px-5 py-5">
-        <BusinessBlock me={me} />
-      </div>
+    <Sidebar collapsible="icon">
+      <SidebarHeader>
+        <SidebarMenu>
+          <SidebarMenuItem>
+            <SidebarMenuButton size="lg" asChild tooltip={me.businessName}>
+              <Link to="/">
+                <img src="/logo.png" alt="" className="size-8 shrink-0 rounded-lg" />
+                <span className="flex min-w-0 flex-col">
+                  <span className="truncate font-medium">{me.businessName}</span>
+                  <span className="truncate text-xs text-muted-foreground">
+                    {VENDOR_TYPE_WORDS[me.vendorType]}
+                  </span>
+                </span>
+              </Link>
+            </SidebarMenuButton>
+          </SidebarMenuItem>
+        </SidebarMenu>
+      </SidebarHeader>
 
-      <nav className="no-scrollbar flex-1 space-y-0.5 overflow-y-auto px-3 py-3">
-        {nav.map(({ to, label, Icon }) => (
-          <NavLink
-            key={to}
-            to={to}
-            end={to === '/'}
-            className={({ isActive }) =>
-              cx(
-                'flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition-colors',
-                isActive
-                  ? 'bg-brand-subtle text-brand'
-                  : 'text-muted-foreground hover:bg-tile hover:text-text',
-              )
-            }
-          >
-            <Icon size={18} />
-            {label}
-          </NavLink>
+      <SidebarContent>
+        {groups.map((group, index) => (
+          <div key={group[0]!.to} className="contents">
+            {index > 0 && <SidebarSeparator className="mx-0" />}
+            <SidebarGroup>
+              <SidebarGroupContent>
+                <SidebarMenu>
+                  {group.map((item) => (
+                    <SidebarNavItem key={item.to} item={item} />
+                  ))}
+                </SidebarMenu>
+              </SidebarGroupContent>
+            </SidebarGroup>
+          </div>
         ))}
-      </nav>
+      </SidebarContent>
 
-      <div className="border-t border-border px-3 py-3">
-        <div className="mb-1 flex items-center justify-between rounded-xl bg-tile px-3 py-2.5">
-          <span className="text-sm font-medium">{dark ? '🌙 Dark' : '☀️ Light'}</span>
-          <Toggle on={dark} onChange={setDark} label="Dark mode" />
-        </div>
-        <div className="flex items-center gap-3 px-3 py-2.5">
-          <Avatar name={me.displayName} />
-          <div className="min-w-0 flex-1">
-            <div className="truncate text-sm font-medium">{me.displayName}</div>
-            <div className="text-xs text-muted-foreground">{ROLE_WORDS[me.role]}</div>
-          </div>
-          <button
-            type="button"
-            onClick={signOutAndForget}
-            title="Sign out"
-            aria-label="Sign out"
-            className="rounded-lg p-1.5 text-muted-foreground transition-colors hover:bg-tile hover:text-text"
-          >
-            <SignOutIcon size={16} />
-          </button>
-        </div>
-      </div>
-    </aside>
+      <SidebarFooter>
+        <Account me={me} />
+      </SidebarFooter>
+      <SidebarRail />
+    </Sidebar>
   );
 }
 
-function BusinessBlock({ me }: { me: Me }) {
-  const businesses = useBusinesses();
-  const canSwitch = (businesses.data?.length ?? 0) > 1;
+function SidebarNavItem({ item: { to, label, Icon } }: { item: NavItem }) {
+  // Orders stays lit on an order's own page; Home only on itself.
+  const active = useMatch({ path: to, end: to === '/' }) !== null;
   return (
-    <div>
-      <div className="flex items-center gap-2.5">
-        <img src="/logo.png" alt="" className="h-8 w-8 shrink-0" />
-        <div className="min-w-0">
-          <div className="truncate text-sm font-semibold">{me.businessName}</div>
-          <div className="text-xs text-muted-foreground">{VENDOR_TYPE_WORDS[me.vendorType]}</div>
-        </div>
-      </div>
-      {canSwitch && (
-        <Link to="/businesses" className="mt-3 inline-block text-xs font-medium text-brand">
-          Switch business
+    <SidebarMenuItem>
+      <SidebarMenuButton asChild isActive={active} tooltip={label}>
+        <Link to={to}>
+          <Icon {...ICON} />
+          <span>{label}</span>
         </Link>
-      )}
-    </div>
+      </SidebarMenuButton>
+    </SidebarMenuItem>
   );
 }
 
-function Avatar({ name }: { name: string }) {
+/** The person signed in: light or dark, switching business, signing out. */
+function Account({ me, compact }: { me: Me; compact?: boolean }) {
+  const navigate = useNavigate();
+  const theme = useThemeChoice();
+  const businesses = useBusinesses();
+  const sidebar = useSidebar();
+  const items: UserMenuItem[] =
+    (businesses.data?.length ?? 0) > 1
+      ? [{ label: 'Switch business', onSelect: () => navigate('/businesses') }]
+      : [];
   return (
-    <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-tile text-xs font-bold text-muted-foreground">
-      {name.trim().charAt(0).toUpperCase() || '?'}
-    </div>
+    <UserMenu
+      user={{ name: me.displayName, email: ROLE_WORDS[me.role] }}
+      items={items}
+      theme={theme}
+      onThemeChange={setTheme}
+      onSignOut={signOutAndForget}
+      showName={!compact && sidebar.state === 'expanded'}
+      align={compact ? 'end' : 'start'}
+    />
   );
 }
 
-/** Phones: the business name, and "More" for everything that isn't in the bottom bar. */
-function PhoneHeader({ me, overflow }: { me: Me; overflow: NavItem[] }) {
+/** Phones: the business, and the account behind its avatar. */
+function PhoneHeader({ me }: { me: Me }) {
+  return (
+    <header className="sticky top-0 z-30 flex h-14 items-center justify-between gap-3 border-b bg-surface px-4 md:hidden">
+      <Link to="/" className="flex min-w-0 items-center gap-2.5">
+        <img src="/logo.png" alt="" className="size-7 shrink-0 rounded-md" />
+        <span className="truncate text-sm font-medium">{me.businessName}</span>
+      </Link>
+      <Account me={me} compact />
+    </header>
+  );
+}
+
+/** Phones: four places at the bottom, and More for the rest. */
+function BottomBar({ bar, more }: { bar: NavItem[]; more: NavItem[] }) {
   const [open, setOpen] = useState(false);
-  const dark = useDark();
-  // The page behind the sheet stays where it is (16 Sep, user request).
-  useLockScroll(open);
+  const tab = 'flex min-h-14 flex-1 flex-col items-center justify-center gap-1 text-xs';
   return (
-    <>
-      <header className="flex items-center justify-between border-b border-border bg-surface px-4 py-3 md:hidden">
-        <div className="flex min-w-0 items-center gap-2.5">
-          <img src="/logo.png" alt="" className="h-7 w-7 shrink-0" />
-          <span className="truncate text-sm font-semibold">{me.businessName}</span>
-        </div>
-        <button
-          type="button"
-          onClick={() => setOpen(true)}
-          aria-label="More"
-          className="rounded-lg p-2 text-muted-foreground hover:bg-tile"
-        >
-          <MoreIcon size={20} />
-        </button>
-      </header>
-
-      {open && (
-        <div className="fixed inset-0 z-50 md:hidden" role="dialog" aria-modal="true">
-          <button
-            type="button"
-            aria-label="Close"
-            className="absolute inset-0 bg-black/40"
-            onClick={() => setOpen(false)}
-          />
-          <div className="absolute inset-x-0 bottom-0 rounded-t-2xl border-t border-border bg-surface px-4 pt-5 pb-8">
-            <div className="mb-4 px-1">
-              <BusinessBlock me={me} />
-            </div>
-            {overflow.map(({ to, label, Icon }) => (
-              <NavLink
-                key={to}
-                to={to}
-                onClick={() => setOpen(false)}
-                className="flex items-center gap-3 rounded-xl px-3 py-3 text-sm font-medium hover:bg-tile"
-              >
-                <Icon size={18} />
-                {label}
-              </NavLink>
-            ))}
-            <div className="my-2 flex items-center justify-between rounded-xl bg-tile px-3 py-3">
-              <span className="text-sm font-medium">Dark mode</span>
-              <Toggle on={dark} onChange={setDark} label="Dark mode" />
-            </div>
-            <div className="flex items-center gap-3 px-3 py-3">
-              <Avatar name={me.displayName} />
-              <div className="min-w-0 flex-1">
-                <div className="truncate text-sm font-medium">{me.displayName}</div>
-                <div className="text-xs text-muted-foreground">{ROLE_WORDS[me.role]}</div>
-              </div>
-              <Button variant="ghost" small onClick={signOutAndForget}>
-                Sign out
-              </Button>
-            </div>
-          </div>
-        </div>
-      )}
-    </>
-  );
-}
-
-function BottomBar({ nav }: { nav: NavItem[] }) {
-  return (
-    <nav className="fixed inset-x-0 bottom-0 z-40 flex border-t border-border bg-surface pb-[env(safe-area-inset-bottom)] md:hidden">
-      {nav.map(({ to, label, short, Icon }) => (
+    <nav
+      aria-label="Pages"
+      className="fixed inset-x-0 bottom-0 z-30 flex border-t bg-surface pb-[env(safe-area-inset-bottom)] md:hidden"
+    >
+      {bar.map(({ to, label, short, Icon }) => (
         <NavLink
           key={to}
           to={to}
           end={to === '/'}
           className={({ isActive }) =>
-            cx(
-              'flex flex-1 flex-col items-center gap-1 py-2.5 text-xs font-medium',
-              isActive ? 'text-brand' : 'text-muted-foreground',
-            )
+            cn(tab, isActive ? 'font-medium text-accent-strong' : 'text-muted-foreground')
           }
         >
-          <Icon size={20} />
+          <Icon {...ICON} size={20} />
           {short ?? label}
         </NavLink>
       ))}
+      {more.length > 0 && (
+        <BottomSheet
+          open={open}
+          onOpenChange={setOpen}
+          title="More"
+          detents={[0.6]}
+          trigger={
+            <button type="button" className={cn(tab, 'text-muted-foreground')}>
+              <Ellipsis {...ICON} size={20} />
+              More
+            </button>
+          }
+        >
+          <ul className="flex flex-col">
+            {more.map(({ to, label, Icon }) => (
+              <li key={to}>
+                <NavLink
+                  to={to}
+                  onClick={() => setOpen(false)}
+                  className={({ isActive }) =>
+                    cn(
+                      'flex min-h-12 items-center gap-3 rounded-lg px-3 text-base',
+                      isActive ? 'bg-accent-subtle font-medium text-accent-strong' : '',
+                    )
+                  }
+                >
+                  <Icon {...ICON} size={20} />
+                  {label}
+                </NavLink>
+              </li>
+            ))}
+          </ul>
+        </BottomSheet>
+      )}
     </nav>
   );
 }

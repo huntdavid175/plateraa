@@ -2,42 +2,64 @@ import { useSyncExternalStore } from 'react';
 
 const KEY = 'plateraa.theme';
 
-function initial(): boolean {
+/** Light, dark, or whatever the device is set to. Remembered on this browser. */
+export type ThemeChoice = 'light' | 'dark' | 'system';
+
+const deviceDark = window.matchMedia('(prefers-color-scheme: dark)');
+
+function saved(): ThemeChoice {
   try {
-    const saved = localStorage.getItem(KEY);
-    if (saved) return saved === 'dark';
+    const value = localStorage.getItem(KEY);
+    if (value === 'light' || value === 'dark') return value;
   } catch {
-    // storage blocked: fall back to the device setting
+    // storage blocked: follow the device
   }
-  return window.matchMedia('(prefers-color-scheme: dark)').matches;
+  return 'system';
 }
 
-let dark = initial();
+let choice = saved();
+let dark = false;
 const listeners = new Set<() => void>();
 
 function apply() {
-  document.documentElement.classList.toggle('dark', dark);
+  dark = choice === 'dark' || (choice === 'system' && deviceDark.matches);
+  const html = document.documentElement;
+  // Tailwind's `dark:` reads the class; Arc's tokens read data-theme.
+  html.classList.toggle('dark', dark);
+  html.dataset.theme = dark ? 'dark' : 'light';
+  listeners.forEach((listener) => listener());
 }
 apply();
+deviceDark.addEventListener('change', () => {
+  if (choice === 'system') apply();
+});
 
-/** Light or dark, remembered on this browser. Starts from the device's own setting. */
-export function setDark(next: boolean) {
-  dark = next;
-  apply();
+export function setTheme(next: ThemeChoice) {
+  choice = next;
   try {
-    localStorage.setItem(KEY, next ? 'dark' : 'light');
+    if (next === 'system') localStorage.removeItem(KEY);
+    else localStorage.setItem(KEY, next);
   } catch {
     // storage blocked: the choice lasts until the tab closes
   }
-  listeners.forEach((listener) => listener());
+  apply();
 }
 
+/** Turns dark on or off outright (the Settings switch). */
+export function setDark(next: boolean) {
+  setTheme(next ? 'dark' : 'light');
+}
+
+function subscribe(listener: () => void) {
+  listeners.add(listener);
+  return () => listeners.delete(listener);
+}
+
+export function useThemeChoice(): ThemeChoice {
+  return useSyncExternalStore(subscribe, () => choice);
+}
+
+/** Whether the page is dark right now, whichever way it got there. */
 export function useDark(): boolean {
-  return useSyncExternalStore(
-    (listener) => {
-      listeners.add(listener);
-      return () => listeners.delete(listener);
-    },
-    () => dark,
-  );
+  return useSyncExternalStore(subscribe, () => dark);
 }
