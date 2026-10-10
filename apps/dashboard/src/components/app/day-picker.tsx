@@ -14,7 +14,9 @@ export function DateField({
   date,
   max,
   onPick,
-  className = 'w-44',
+  // As wide as the calendar it opens (320px, left-aligned under the field by Arc), so the
+  // calendar never runs off the screen, wherever the field sits.
+  className = 'w-80 max-w-full',
 }: {
   label: string;
   date: string;
@@ -48,7 +50,7 @@ export function DayPicker({
   onPick: (day: string) => void;
 }) {
   return (
-    <div className="flex items-end gap-2">
+    <div className="flex flex-wrap items-end justify-end gap-2">
       {date < today && (
         <Button variant="secondary" onClick={() => onPick('')}>
           Back to today
@@ -56,7 +58,7 @@ export function DayPicker({
       )}
       <DatePicker
         label="Day"
-        className="w-44"
+        className="w-80 max-w-full"
         value={toDate(date)}
         maxDate={toDate(today)}
         locale="en-GB"

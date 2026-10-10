@@ -14,14 +14,13 @@ import { DonutChart } from '@/components/arc/donut-chart/donut-chart';
 import { EmptyState } from '@/components/arc/empty-state/empty-state';
 import { FilterToolbar } from '@/components/arc/filter-toolbar/filter-toolbar';
 import { Input } from '@/components/arc/input/input';
-import { MoneyInput } from '@/components/arc/money-input/money-input';
 import { RadioGroup } from '@/components/arc/radio-group/radio-group';
 import SegmentedControl from '@/components/arc/segmented-control/segmented-control';
 import { Select } from '@/components/arc/select/select';
 import { Switch } from '@/components/arc/switch/switch';
 import { Bento, Cedis, Tile } from '@/components/app/bento';
 import { DateField } from '@/components/app/day-picker';
-import { PlainField } from '@/components/app/money-field';
+import { CediInput, PlainField } from '@/components/app/money-field';
 import { Skeleton } from '@/components/ui/skeleton';
 import {
   METHOD_OUT_WORDS,
@@ -398,24 +397,8 @@ function AddExpense({ onClose }: { onClose: () => void }) {
           if (!problem) saving.mutate();
         }}
       >
-        <MoneyInput
-          label="Amount"
-          value={amount}
-          onValueChange={(next) => setAmount(next)}
-          currencies={['GHS']}
-          locale="en-GB"
-          quickAdd={[10, 50, 100]}
-          min={1}
-        />
-        <div className="grid grid-cols-2 gap-3">
-          <DateField
-            label="Day"
-            className="w-full"
-            date={spentOn}
-            max={todayHere()}
-            onPick={setSpentOn}
-          />
-        </div>
+        <CediInput label="Amount" value={amount} onChange={setAmount} quickAdd={[10, 50, 100]} />
+        <DateField label="Day" date={spentOn} max={todayHere()} onPick={setSpentOn} />
         <Select
           label="What for"
           value={category}
