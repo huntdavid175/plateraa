@@ -15,9 +15,9 @@ import { Input } from '@/components/arc/input/input';
 import { RadioGroup } from '@/components/arc/radio-group/radio-group';
 import SegmentedControl from '@/components/arc/segmented-control/segmented-control';
 import { Select } from '@/components/arc/select/select';
-import { MoneyField, PlainField } from '@/components/app/money-field';
+import { CediInput, PlainField } from '@/components/app/money-field';
 import { recordPayout, recordRefund, refreshMoney, setDiscount, type Drawer } from '../lib/manager';
-import { amountText, cedis, parseAmount } from '../lib/money';
+import { cedis } from '../lib/money';
 import type { OrderDetail } from '../lib/orders';
 import { EXPENSE_WORDS, REFUND_METHOD_WORDS } from '../lib/words';
 
@@ -55,12 +55,11 @@ export function RecordRefundDialog({
   onClose: () => void;
 }) {
   const [refundId] = useState(() => ulid());
-  const [text, setText] = useState(amountText(order.refundOwed));
+  const [amount, setAmount] = useState<number | null>(order.refundOwed);
   const [method, setMethod] = useState<'CASH' | 'LINK'>('CASH');
   const [reason, setReason] = useState(
     order.status === 'CANCELLED' ? 'Order cancelled' : 'Paid more than the order cost',
   );
-  const amount = parseAmount(text);
   const problem =
     amount === null || amount === 0
       ? 'Type the amount you gave back.'
@@ -93,11 +92,13 @@ export function RecordRefundDialog({
           if (!problem) saving.mutate();
         }}
       >
-        <MoneyField
+        <CediInput
           label="Amount given back"
-          value={text}
-          onChange={setText}
-          description={problem && text !== '' ? problem : undefined}
+          value={amount}
+          onChange={setAmount}
+          max={order.refundOwed}
+          quickAdd={[]}
+          description={problem && amount !== null ? problem : undefined}
         />
         <RadioGroup
           label="How it went back"
@@ -140,12 +141,11 @@ export function DiscountDialog({ order, onClose }: { order: OrderDetail; onClose
   const [percentText, setPercentText] = useState(
     order.discountBps !== null ? String(order.discountBps / 100) : '',
   );
-  const [amountValue, setAmountValue] = useState(
-    order.discount > 0 && order.discountBps === null ? amountText(order.discount) : '',
+  const [amount, setAmount] = useState<number | null>(
+    order.discount > 0 && order.discountBps === null ? order.discount : null,
   );
 
   const percent = /^\d{1,3}$/.test(percentText.trim()) ? Number(percentText) : null;
-  const amount = parseAmount(amountValue);
   const discount: Discount | null =
     kind === 'percent'
       ? percent && percent <= 100
@@ -211,7 +211,7 @@ export function DiscountDialog({ order, onClose }: { order: OrderDetail; onClose
             onChange={setPercentText}
           />
         ) : (
-          <MoneyField label="Amount off" value={amountValue} onChange={setAmountValue} />
+          <CediInput label="Amount off" value={amount} onChange={setAmount} quickAdd={[1, 5, 10]} />
         )}
         <dl className="flex flex-col divide-y rounded-(--radius-panel) border text-sm">
           <div className="flex justify-between px-4 py-2.5">
@@ -263,10 +263,9 @@ export function DiscountDialog({ order, onClose }: { order: OrderDetail; onClose
 /** Cash paid out of a tablet's open drawer, booked as an expense for today. */
 export function PayoutDialog({ drawer, onClose }: { drawer: Drawer; onClose: () => void }) {
   const [payoutId] = useState(() => ulid());
-  const [text, setText] = useState('');
+  const [amount, setAmount] = useState<number | null>(null);
   const [category, setCategory] = useState<ExpenseCategory>('INGREDIENTS');
   const [note, setNote] = useState('');
-  const amount = parseAmount(text);
   const tooMuch = amount !== null && drawer.expectedCash !== null && amount > drawer.expectedCash;
 
   const saving = useMutation({
@@ -297,7 +296,7 @@ export function PayoutDialog({ drawer, onClose }: { drawer: Drawer; onClose: () 
           if (amount && !tooMuch) saving.mutate();
         }}
       >
-        <MoneyField label="Amount paid out" value={text} onChange={setText} />
+        <CediInput label="Amount paid out" value={amount} onChange={setAmount} />
         <Select
           label="What for"
           value={category}

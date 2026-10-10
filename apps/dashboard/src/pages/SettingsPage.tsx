@@ -1,8 +1,8 @@
 import { VENDOR_TYPES, type VendorType } from '@plateraa/shared';
 import { useMutation, useQuery } from '@tanstack/react-query';
 import { Plus } from 'lucide-react';
-import { useState } from 'react';
-import { useNavigate } from 'react-router';
+import { useState, type ReactNode } from 'react';
+import { useNavigate, useSearchParams } from 'react-router';
 import { ulid } from 'ulid';
 import { Alert } from '@/components/arc/alert/alert';
 import { Badge } from '@/components/arc/badge/badge';
@@ -12,11 +12,12 @@ import { Input } from '@/components/arc/input/input';
 import SegmentedControl from '@/components/arc/segmented-control/segmented-control';
 import { Select } from '@/components/arc/select/select';
 import { Switch } from '@/components/arc/switch/switch';
-import { MoneyField } from '@/components/app/money-field';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/arc/tabs/tabs';
+import { CediInput } from '@/components/app/money-field';
 import { Panel, PanelEmpty, PanelRows } from '@/components/app/panel';
 import { SettingRow, SwitchRow } from '@/components/app/setting-row';
 import { Skeleton } from '@/components/ui/skeleton';
-import { amountText, cedis, parseAmount } from '../lib/money';
+import { cedis } from '../lib/money';
 import { saveInPlace } from '../lib/save-in-place';
 import { useSession } from '../lib/session';
 import {
@@ -40,6 +41,7 @@ const IDLE_CHOICES = [60, 180, 300, 600, 900];
 export function SettingsPage() {
   const me = useMe();
   const { tenantId } = useSession();
+  const [params, setParams] = useSearchParams();
   const isOwner = me.capabilities.includes('settings.manage');
   const setsUpMenu = me.capabilities.includes('catalog.manage');
   const settings = useQuery({
@@ -48,45 +50,95 @@ export function SettingsPage() {
     enabled: isOwner,
   });
 
+  // The sections a person may open, in order; the chosen one lives in the address (`?tab=`),
+  // so the Online store can link straight to Payments or Delivery.
+  const tabs = [
+    { value: 'business', label: 'Business' },
+    ...(isOwner ? [{ value: 'orders', label: 'Orders' }] : []),
+    ...(setsUpMenu ? [{ value: 'delivery', label: 'Delivery' }] : []),
+    ...(isOwner ? [{ value: 'payments', label: 'Payments' }] : []),
+    { value: 'appearance', label: 'Appearance' },
+  ];
+  const asked = params.get('tab');
+  const tab = tabs.some((each) => each.value === asked) ? asked! : 'business';
+  const needsSettings = (body: (data: Settings) => ReactNode) =>
+    settings.isPending ? (
+      <Skeleton className="h-48 w-full rounded-(--radius-surface)" aria-busy="true" />
+    ) : settings.isError ? (
+      <Alert tone="danger" title="Couldn’t load your settings">
+        {settings.error.message}
+      </Alert>
+    ) : (
+      body(settings.data)
+    );
+
   return (
     <Page title="Settings" narrow>
-      <div className="flex flex-col gap-6">
-        {isOwner && settings.isPending && (
-          <Skeleton className="h-48 w-full rounded-(--radius-surface)" aria-busy="true" />
-        )}
-        {settings.isError && (
-          <Alert tone="danger" title="Couldn’t load your settings">
-            {settings.error.message}
-          </Alert>
-        )}
-        {settings.data && <BusinessPanel business={settings.data.business} />}
-        {!isOwner && (
-          <Panel title="Business">
-            <PanelRows>
-              <SettingRow title="Business name">
-                <span className="text-sm text-text-secondary">{me.businessName}</span>
-              </SettingRow>
-              <SettingRow title="Type">
-                <span className="text-sm text-text-secondary">
-                  {VENDOR_TYPE_WORDS[me.vendorType]}
-                </span>
-              </SettingRow>
-            </PanelRows>
-          </Panel>
-        )}
+      <Tabs
+        value={tab}
+        onValueChange={(next) =>
+          setParams(next === 'business' ? {} : { tab: next }, { replace: true })
+        }
+      >
+        <TabsList aria-label="Settings">
+          {tabs.map((each) => (
+            <TabsTrigger key={each.value} value={each.value}>
+              {each.label}
+            </TabsTrigger>
+          ))}
+        </TabsList>
 
-        <AppearancePanel />
-
-        {settings.data && <OrdersPanel orders={settings.data.orders} />}
-        {setsUpMenu && <DeliveryPanel />}
-        {settings.data && <PaymentsPanel settings={settings.data} />}
-        {isOwner && <SetupGuidePanel />}
-        {!isOwner && (
-          <p className="text-sm text-muted-foreground">
-            Only the owner changes how orders and payments work.
-          </p>
+        <TabsContent value="business" className="flex flex-col gap-6 pt-6">
+          {isOwner ? (
+            <>
+              {needsSettings((data) => (
+                <BusinessPanel business={data.business} />
+              ))}
+              <SetupGuidePanel />
+            </>
+          ) : (
+            <>
+              <Panel title="Business">
+                <PanelRows>
+                  <SettingRow title="Business name">
+                    <span className="text-sm text-text-secondary">{me.businessName}</span>
+                  </SettingRow>
+                  <SettingRow title="Type">
+                    <span className="text-sm text-text-secondary">
+                      {VENDOR_TYPE_WORDS[me.vendorType]}
+                    </span>
+                  </SettingRow>
+                </PanelRows>
+              </Panel>
+              <p className="text-sm text-muted-foreground">
+                Only the owner changes how orders and payments work.
+              </p>
+            </>
+          )}
+        </TabsContent>
+        {isOwner && (
+          <TabsContent value="orders" className="pt-6">
+            {needsSettings((data) => (
+              <OrdersPanel orders={data.orders} />
+            ))}
+          </TabsContent>
         )}
-      </div>
+        {setsUpMenu && (
+          <TabsContent value="delivery" className="pt-6">
+            <DeliveryPanel />
+          </TabsContent>
+        )}
+        {isOwner && (
+          <TabsContent value="payments" className="pt-6">
+            {needsSettings((data) => (
+              <PaymentsPanel settings={data} />
+            ))}
+          </TabsContent>
+        )}
+        <TabsContent value="appearance" className="pt-6">
+          <AppearancePanel />
+        </TabsContent>
+      </Tabs>
     </Page>
   );
 }
@@ -289,10 +341,9 @@ function ZoneForm({ zone, onClose }: { zone: Zone | null; onClose: () => void })
   // Made once, when the dialog opens, so pressing Save again after a lost reply adds it once.
   const [id] = useState(() => zone?.id ?? ulid());
   const [name, setName] = useState(zone?.name ?? '');
-  const [feeText, setFeeText] = useState(zone ? amountText(zone.fee) : '');
+  const [fee, setFee] = useState<number | null>(zone ? zone.fee : null);
   const [active, setActive] = useState(zone?.active ?? true);
   const [confirmRemove, setConfirmRemove] = useState(false);
-  const fee = parseAmount(feeText);
   const ready = name.trim().length > 0 && fee !== null;
   const done = () => {
     refreshZones();
@@ -328,15 +379,11 @@ function ZoneForm({ zone, onClose }: { zone: Zone | null; onClose: () => void })
           value={name}
           onChange={(event) => setName(event.target.value)}
         />
-        <MoneyField
+        <CediInput
           label="Delivery fee"
-          description={
-            feeText.trim() !== '' && fee === null
-              ? 'Type the fee as an amount, like 15 or 15.50.'
-              : 'Staff can still change it on the tablet for one order.'
-          }
-          value={feeText}
-          onChange={setFeeText}
+          description="Staff can still change it on the tablet for one order."
+          value={fee}
+          onChange={setFee}
         />
         <div className="flex items-center justify-between gap-4 rounded-(--radius-panel) border px-4 py-3">
           <div>

@@ -91,7 +91,13 @@ export const router = createBrowserRouter([
           path: '/__preview',
           lazy: later(async () => (await import('./dev/Preview')).default),
           HydrateFallback: ScreenLoading,
-          children: SCREENS,
+          children: [
+            ...SCREENS,
+            {
+              path: 'fields',
+              lazy: later(async () => (await import('./dev/FieldsPreview')).default),
+            },
+          ],
         },
       ]
     : []),

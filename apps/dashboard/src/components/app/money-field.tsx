@@ -1,4 +1,5 @@
 import { useId, type InputHTMLAttributes } from 'react';
+import { MoneyInput } from '@/components/arc/money-input/money-input';
 import { cn } from '@/lib/utils';
 
 type Props = {
@@ -74,4 +75,45 @@ export function MoneyField({ prefix = 'GH₵', ...props }: Props & { prefix?: st
 
 export function PlainField(props: Props) {
   return <Field {...props} />;
+}
+
+/**
+ * An amount on its own (a refund, a payout, an expense, a fee): Arc's money input in cedis. It
+ * gives pesewas directly (minor units), or null while it's empty, with quick-add chips. Rows of
+ * prices (sizes, options) keep the slimmer `MoneyField`.
+ */
+export function CediInput({
+  label,
+  value,
+  onChange,
+  description,
+  error,
+  max,
+  quickAdd = [5, 10, 20],
+}: {
+  label: string;
+  /** Pesewas, or null when empty. */
+  value: number | null;
+  onChange: (pesewas: number | null) => void;
+  description?: string | undefined;
+  error?: string | undefined;
+  /** Pesewas: typing past it is refused. */
+  max?: number | undefined;
+  /** Chips in whole cedis; [] hides them. */
+  quickAdd?: number[];
+}) {
+  return (
+    <MoneyInput
+      label={label}
+      value={value}
+      onValueChange={(next) => onChange(next)}
+      currency="GHS"
+      currencies={['GHS']}
+      locale="en-GB"
+      quickAdd={quickAdd}
+      {...(description ? { description } : {})}
+      {...(error ? { error } : {})}
+      {...(max !== undefined ? { max } : {})}
+    />
+  );
 }

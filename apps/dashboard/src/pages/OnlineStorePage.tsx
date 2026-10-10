@@ -439,7 +439,7 @@ function PaymentsTile({
   return (
     <Tile
       title="Payments"
-      {...(isOwner ? { to: '/settings', toLabel: 'Open payments in Settings' } : {})}
+      {...(isOwner ? { to: '/settings?tab=payments', toLabel: 'Open payments in Settings' } : {})}
       tone={store.moolreConnected ? undefined : 'warning'}
     >
       {store.moolreConnected ? (
@@ -469,7 +469,7 @@ function DeliveryTile({ zones }: { zones: number }) {
   return (
     <Tile
       title="Delivery"
-      to="/settings"
+      to="/settings?tab=delivery"
       toLabel="Open delivery zones in Settings"
       className="col-span-2 lg:col-span-1"
     >
