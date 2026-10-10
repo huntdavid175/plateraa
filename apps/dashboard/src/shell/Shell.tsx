@@ -14,6 +14,7 @@ import {
   Wallet,
   type LucideIcon,
 } from 'lucide-react';
+import { motion, useReducedMotion } from 'motion/react';
 import { useState, type ReactNode } from 'react';
 import {
   Link,
@@ -27,6 +28,7 @@ import {
 import { Alert } from '@/components/arc/alert/alert';
 import { BottomSheet } from '@/components/arc/bottom-sheet/bottom-sheet';
 import { Button } from '@/components/arc/button/button';
+import { motionTokens } from '@/components/arc/lib/motion-tokens';
 import { UserMenu, type UserMenuItem } from '@/components/arc/user-menu/user-menu';
 import {
   Sidebar,
@@ -220,10 +222,26 @@ function AppSidebar({ me, groups }: { me: Me; groups: NavItem[][] }) {
 function SidebarNavItem({ item: { to, label, Icon } }: { item: NavItem }) {
   // Orders stays lit on an order's own page; Home only on itself.
   const active = useMatch({ path: to, end: to === '/' }) !== null;
+  const reduce = useReducedMotion();
   return (
     <SidebarMenuItem>
-      <SidebarMenuButton asChild isActive={active} tooltip={label}>
+      <SidebarMenuButton
+        asChild
+        isActive={active}
+        tooltip={label}
+        // Arc's own selected row: a quiet grey fill in ink, not orange, that glides to the page
+        // just opened.
+        className="relative isolate data-active:bg-transparent data-active:text-sidebar-accent-foreground"
+      >
         <Link to={to}>
+          {active && (
+            <motion.span
+              layoutId="sidebar-selected"
+              className="absolute inset-0 -z-10 rounded-md bg-sidebar-accent"
+              transition={reduce ? { duration: 0 } : motionTokens.spring.morph}
+              aria-hidden="true"
+            />
+          )}
           <Icon {...ICON} />
           <span>{label}</span>
         </Link>
@@ -283,7 +301,7 @@ function BottomBar({ bar, more }: { bar: NavItem[]; more: NavItem[] }) {
           to={to}
           end={to === '/'}
           className={({ isActive }) =>
-            cn(tab, isActive ? 'font-medium text-accent-strong' : 'text-muted-foreground')
+            cn(tab, isActive ? 'font-medium text-foreground' : 'text-muted-foreground')
           }
         >
           <Icon {...ICON} size={20} />
@@ -312,7 +330,7 @@ function BottomBar({ bar, more }: { bar: NavItem[]; more: NavItem[] }) {
                   className={({ isActive }) =>
                     cn(
                       'flex min-h-12 items-center gap-3 rounded-lg px-3 text-base',
-                      isActive ? 'bg-accent-subtle font-medium text-accent-strong' : '',
+                      isActive ? 'bg-surface-muted font-medium' : '',
                     )
                   }
                 >
