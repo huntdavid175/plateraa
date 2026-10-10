@@ -63,14 +63,15 @@ export function Toasts() {
           key={note.id}
           type="button"
           onClick={() => dismiss(note.id)}
-          // Ink on the page's own colour, so it reads at full contrast in both looks.
-          className="pointer-events-auto flex w-full max-w-md items-start gap-3 rounded-xl bg-text px-4 py-3 text-left text-sm font-medium text-bg shadow-lg"
+          // Ink on the page's own colour, so it reads at full contrast in both looks. As wide as
+          // its words (user report, 10 Oct: it was always 448px), wrapping past 24rem.
+          className="pointer-events-auto flex w-fit max-w-sm items-start gap-2.5 rounded-(--radius-panel) bg-foreground px-3.5 py-2.5 text-left text-sm font-medium text-background shadow-(--shadow-floating)"
         >
           <span
             aria-hidden="true"
             className={cx(
-              'mt-1.5 h-2.5 w-2.5 shrink-0 rounded-full',
-              note.kind === 'ok' ? 'bg-green' : 'bg-red',
+              'mt-1.5 size-2 shrink-0 rounded-full',
+              note.kind === 'ok' ? 'bg-success' : 'bg-danger',
             )}
           />
           <span className="min-w-0 flex-1">{note.text}</span>
