@@ -37,7 +37,7 @@ export default function HomePage() {
       <OnboardStrip />
       <OnlineStore />
       <OrderSources />
-      <BusinessTypes />
+      <BusinessTypes more />
       <Everything />
       <MidRush />
       <Pricing />

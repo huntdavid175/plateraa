@@ -100,7 +100,7 @@ function Footer() {
               <span className="text-[22px] font-semibold tracking-[-0.02em]">Plateraa</span>
             </Link>
             <p className="mt-4 max-w-xs text-[15px] leading-relaxed text-muted">
-              Orders, money and profit for food vendors in Ghana.
+              Easy ordering for customers, easy orders for food vendors in Ghana.
             </p>
           </div>
           {columns.map((col) => (

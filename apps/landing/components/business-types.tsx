@@ -1,5 +1,5 @@
 import { PHOTOS, type Photo } from '../content/photos';
-import { Container, PhotoSlot, SectionHeading } from './ui';
+import { ButtonLink, Container, PhotoSlot, SectionHeading } from './ui';
 
 const TYPES: { name: string; line: string; image: Photo }[] = [
   { name: 'Chop bars', line: 'Fufu, banku and soups by the portion', image: PHOTOS.typeChopBar },
@@ -25,14 +25,20 @@ const TYPES: { name: string; line: string; image: Photo }[] = [
 ];
 
 /** The kinds of food business Plateraa is made for, as photo tiles (user request, 15 Oct). */
-export function BusinessTypes() {
+export function BusinessTypes({
+  title = 'Made for every kind of food business',
+  intro = 'From a single waakye pot to a busy chop bar with a team, Plateraa fits the way you already serve.',
+  more = false,
+}: {
+  title?: string;
+  intro?: string;
+  /** Adds a link to the Who it's for page under the tiles. */
+  more?: boolean;
+}) {
   return (
     <section className="reveal py-16 sm:py-24">
       <Container>
-        <SectionHeading
-          title="Made for every kind of food business"
-          intro="From a single waakye pot to a busy chop bar with a team, Plateraa fits the way you already serve."
-        />
+        <SectionHeading title={title} intro={intro} />
         <ul className="mt-12 grid grid-cols-2 gap-3 sm:gap-5 lg:grid-cols-4">
           {TYPES.map((t) => (
             <li key={t.name}>
@@ -50,6 +56,13 @@ export function BusinessTypes() {
             </li>
           ))}
         </ul>
+        {more && (
+          <div className="mt-10">
+            <ButtonLink href="/who-its-for" kind="outline">
+              See who Plateraa is for
+            </ButtonLink>
+          </div>
+        )}
       </Container>
     </section>
   );
