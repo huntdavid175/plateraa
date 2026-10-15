@@ -1,0 +1,7 @@
+@import 'tailwindcss';
+
+/* The landing page's look comes from the user's design system, still to come. */
+
+body {
+  -webkit-font-smoothing: antialiased;
+}

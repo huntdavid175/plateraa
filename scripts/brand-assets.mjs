@@ -209,6 +209,11 @@ const outputs = {
   'apps/storefront/app/icon.png': () => icon(192),
   'apps/storefront/app/apple-icon.png': () => icon(180, { background: 'full' }),
   'apps/storefront/public/logo.png': () => icon(256),
+  // The landing page (same as the store).
+  'apps/landing/app/favicon.ico': () => ico([16, 32, 48]),
+  'apps/landing/app/icon.png': () => icon(192),
+  'apps/landing/app/apple-icon.png': () => icon(180, { background: 'full' }),
+  'apps/landing/public/logo.png': () => icon(256),
 };
 
 for (const [path, make] of Object.entries(outputs)) {
