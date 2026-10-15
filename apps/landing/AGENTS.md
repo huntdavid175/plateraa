@@ -1,13 +1,45 @@
 # Landing page (`@plateraa/landing`)
 
-Plateraa's own website, for selling Plateraa to vendors. It's kept apart from the storefront (user decision, 15 Oct): stores sit at the top level there (`/<slug>`), which would clash with pages such as `/pricing`, and the two are for different people. Next.js 16 (App Router, Turbopack), React 19, Tailwind 4.
+Plateraa's own website, for selling Plateraa to vendors. It's kept apart from the storefront (user decision, 15 Oct): stores sit at the top level there (`/<slug>`), which would clash with pages such as `/pricing`, and the two are for different people. Next.js 16 (App Router, Turbopack), React 19, Tailwind 4. Every page is static.
 
 ## Design
 
-- To follow the user's design system (not yet given, 15 Oct). Until then `app/page.tsx` is a stand-in.
+- **`DESIGN.md` is the design system**, drawn on 15 Oct from the screenshots in `design_inspiration/` (Toast mostly, plus Fountain, Shopify and Clover). It covers the direction, colour tokens with their contrast, type, components, motion, imagery, copy and SEO. Read it before changing a page.
+- **The look:** Toast's warm orange on white and cream, with Shopify-style dark sections (user decision, 15 Oct). **No shadcn here** (user decision): components are hand-written with Tailwind in `components/`, with icons from `lucide-react`.
+- **Keep the product private** (user, 15 Oct): illustrations are abstract fragments (`components/art.tsx`: an order chip, a "Paid by MoMo" note, a sold-out tag), never the real tablet, store or dashboard layouts, and never screenshots.
+- **Photos come last** (user, 15 Oct): every photo spot is a `PhotoSlot` with a warm gradient, naming the photo it wants in development only. Pass `src` once a stock photo is added to `public/`.
 - **The Plateraa logo:** `app/favicon.ico`, `app/icon.png`, `app/apple-icon.png` and `public/logo.png` are made by `pnpm brand:assets` from `public/images/logo.png` at the repo root, so don't edit them by hand.
+
+## Copy
+
+- `.agents/product-marketing.md` at the repo root holds the positioning, audience, objections and words to use or avoid. The marketing skills in `.claude/skills` (copywriting, pricing, seo-audit, schema and others, installed 15 Oct) read it first.
+- **Pricing** (user decision, 15 Oct): free to start, no monthly fee, and **2% only on payments a customer makes online through Plateraa** (payment links and the online store); cash sales are free. Always add that Moolre charges its own fee. The rate is `ONLINE_FEE_BPS` in `lib/site.ts`, and the calculator (`components/fee-calculator.tsx`) works in whole pesewas with `@plateraa/shared`.
+- No invented customers, figures, logos or testimonials. Check every claim against what the product does today.
+- `/privacy` and `/terms` are plain-language summaries written from the code, and say so. **The lawyer must review or replace them before the site goes live.**
+
+## How it works
+
+- `lib/site.ts` holds the settings:
+  - the dashboard's address (`NEXT_PUBLIC_DASHBOARD_URL`; the laptop's `http://localhost:5173` until it's deployed), which builds the sign-up and log-in links;
+  - the site's own address (`NEXT_PUBLIC_SITE_URL`, `https://plateraa.com` by default);
+  - the contact details (`CONTACT`, still empty on 15 Oct). Empty ones are left off the footer and Contact page.
+- SEO:
+  - each page sets its own `metadata` with a canonical path;
+  - `app/sitemap.ts`, `app/robots.ts` and `app/opengraph-image.tsx`;
+  - JSON-LD: `Organization` and `SoftwareApplication` in the layout, and `FAQPage` from `components/faq.tsx`.
+- Motion is CSS only (`app/globals.css`): the circled word draws in, sections rise with `animation-timeline: view()` where the browser supports it, and the business-type pills scroll sideways. All of it stops under `prefers-reduced-motion`.
 
 ## Running
 
 - `pnpm --filter @plateraa/landing dev` serves http://localhost:3002.
-- Not deployed yet. It's meant for its own Vercel project.
+- Not deployed yet. It's meant for its own Vercel project, with `NEXT_PUBLIC_DASHBOARD_URL` and `NEXT_PUBLIC_SITE_URL` set there.
+
+<!-- BEGIN:nextjs-agent-rules -->
+
+# This is NOT the Next.js you know
+
+This version has breaking changes — APIs, conventions, and file structure may all differ from your training data. Read the relevant guide in `node_modules/next/dist/docs/` (resolved from this file's directory; in monorepos the `next` package may not be visible from the repo root) before writing any code. Heed deprecation notices.
+
+This block is written and re-added by `next dev` — verify at `node_modules/next/dist/server/lib/generate-agent-files.js`. Removing it from a diff only re-creates the uncommitted change; committing it with your work keeps the tree clean.
+
+<!-- END:nextjs-agent-rules -->

@@ -43,3 +43,6 @@ Thumbs.db
 !.vscode/extensions.json
 !.vscode/settings.json
 .idea/
+
+# design references kept on the laptop (third-party screenshots, ~50 MB)
+apps/landing/design_inspiration/

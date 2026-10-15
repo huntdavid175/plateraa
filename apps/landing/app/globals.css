@@ -1,7 +1,92 @@
 @import 'tailwindcss';
 
-/* The landing page's look comes from the user's design system, still to come. */
+/* The site's colours and type, from DESIGN.md. Contrast for each pairing is listed there. */
+@theme {
+  --color-brand: #fc5102;
+  --color-brand-strong: #c93f00;
+  --color-brand-deep: #7a2a06;
+  --color-brand-tint: #ffe9dc;
+  --color-ink: #1f1a17;
+  --color-muted: #5e5650;
+  --color-page: #ffffff;
+  --color-cream: #f7f3ee;
+  --color-line: #e8e1d9;
+  --color-night: #15110e;
+  --color-night-card: #211b17;
+  --color-night-line: #3a312b;
+  --color-on-night: #f5efe9;
+  --color-night-muted: #a8a098;
+  --color-momo: #ffcc00;
+
+  --font-sans: 'Figtree Variable', ui-sans-serif, system-ui, sans-serif;
+  --font-script: 'Caveat', 'Segoe Print', cursive;
+}
+
+html {
+  scroll-behavior: smooth;
+}
 
 body {
+  font-family: var(--font-sans);
+  background-color: var(--color-page);
+  color: var(--color-ink);
   -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+/* Keyboard focus only; a mouse click leaves no ring. */
+:focus-visible {
+  outline: 2px solid var(--color-brand-strong);
+  outline-offset: 3px;
+}
+
+/* The hand-drawn circle around the hero's one word draws itself in once. */
+.draw-in {
+  stroke-dasharray: 1;
+  stroke-dashoffset: 1;
+  animation: draw 0.8s 0.3s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+}
+@keyframes draw {
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+
+/* The business-type pills drift sideways; the list is doubled so the loop has no seam. */
+.marquee {
+  animation: marquee 50s linear infinite;
+}
+@keyframes marquee {
+  to {
+    transform: translateX(-50%);
+  }
+}
+
+/* Sections rise a little as they come into view, where the browser can do it without script. */
+@supports (animation-timeline: view()) {
+  .reveal {
+    animation: reveal linear both;
+    animation-timeline: view();
+    animation-range: entry 0% entry 35%;
+  }
+}
+@keyframes reveal {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+  .draw-in {
+    animation: none;
+    stroke-dashoffset: 0;
+  }
+  .marquee,
+  .reveal {
+    animation: none;
+  }
 }
