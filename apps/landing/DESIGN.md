@@ -10,23 +10,23 @@ The design system for Plateraa's own website (`apps/landing`), drawn from the sc
 - large, light, friendly headings;
 - pill buttons;
 - rounded photo cards with words over them;
-- one word that matters, set apart (a tilted orange sticker since 15 Oct; Toast circles it by hand).
+- one word that matters, set apart (a highlighter stroke since 15 Oct; Toast circles it by hand).
 
 One or two **full-bleed dark sections**, as on Shopify, break the page's rhythm and carry the "works when things go wrong" story. Ideas taken from the others:
 
-| From    | What we take                                                                 | Where                     |
-| ------- | ---------------------------------------------------------------------------- | ------------------------- |
-| Toast   | Hero over a full-bleed photo, one highlighted word (now a sticker), pill CTA | Home hero                 |
-| Toast   | Grid of orange cards, title and line at the foot                             | "Everything you need"     |
-| Toast   | Cream panel with a list of big lines, one lit, and a dark card beside it     | "Mid-rush" (dark variant) |
-| Toast   | Label pill, headline with a script line, CTAs on the right                   | Inner page heroes         |
-| Toast   | FAQ: rounded cream rows, the open one turns dark                             | FAQ on every page         |
-| Toast   | Orange closing band with ticks; footer as a white rounded card on it         | Every page's end          |
-| Toast   | Pills of business types                                                      | "Built for"               |
-| Clover  | Feature cards drawn as simplified UI (an order chip, a paid note)            | Feature and store cards   |
-| Shopify | Sentence with some words dim and some bright, on dark                        | Dark section intro        |
-| Shopify | Big stat figures with a small label above                                    | Pricing                   |
-| Shopify | Numbered steps 01, 02, 03 with hairlines                                     | "How it works"            |
+| From    | What we take                                                                       | Where                     |
+| ------- | ---------------------------------------------------------------------------------- | ------------------------- |
+| Toast   | Hero over a full-bleed photo, one highlighted word (now a marker stroke), pill CTA | Home hero                 |
+| Toast   | Grid of orange cards, title and line at the foot                                   | "Everything you need"     |
+| Toast   | Cream panel with a list of big lines, one lit, and a dark card beside it           | "Mid-rush" (dark variant) |
+| Toast   | Label pill, headline with a script line, CTAs on the right                         | Inner page heroes         |
+| Toast   | FAQ: rounded cream rows, the open one turns dark                                   | FAQ on every page         |
+| Toast   | Orange closing band with ticks; footer as a white rounded card on it               | Every page's end          |
+| Toast   | Pills of business types                                                            | "Built for"               |
+| Clover  | Feature cards drawn as simplified UI (an order chip, a paid note)                  | Feature and store cards   |
+| Shopify | Sentence with some words dim and some bright, on dark                              | Dark section intro        |
+| Shopify | Big stat figures with a small label above                                          | Pricing                   |
+| Shopify | Numbered steps 01, 02, 03 with hairlines                                           | "How it works"            |
 
 **Not taken:**
 
@@ -75,7 +75,7 @@ Tokens live in `app/globals.css` as CSS variables and are exposed to Tailwind (`
   - Card titles: 22–26 px.
   - Body: 17–18 px, line height 1.6, `muted`.
 - **Caveat** (`@fontsource/caveat`, 600–700), in `brand`, only for **one script line per page**, as in Toast's "for modern hospitality". It's never used for body text or for anything a vendor must read to act.
-- **The sticker word** (`<Sticker>`, 15 Oct, replacing the hand-drawn circle at the user's request): one word in a tilted orange tag (`brand-strong`, white text, 5.0:1), like a price sticker on food. It pops in once on load and shows at most once per page, on the hero.
+- **The highlighted word** (`<Highlight>`, 15 Oct, replacing the hand-drawn circle at the user's request, chosen over a sticker label): a soft orange marker stroke behind the lower half of one word, slightly tilted, swept in left to right once on load. On dark photos it's `brand` at 85%; on light pages pass `soft` (35%) so it reads as a highlighter. At most once per page, on the hero.
 - Sentence case everywhere. No all-caps headings. Small labels (`Eyebrow`) may be capitals with wide tracking, at 12–13 px.
 
 ## Shape and space
@@ -101,7 +101,7 @@ All are hand-written with Tailwind; **there's no shadcn on this site** (user dec
   The main one always says what you get ("Create my free account"), never "Submit".
 
 - **Eyebrow:** a small cream pill above a heading (Toast's "RESTAURANT POS SYSTEM").
-- **Sticker / Script:** the two accents above.
+- **Highlight / Script:** the two accents above.
 - **PhotoSlot:** a rounded frame for a stock photo, with a warm gradient until one is added. It names the photo it's waiting for only in development.
 - **Illustration fragments** (`components/art.tsx`): the abstract UI pieces listed under "Keep the product private".
 - **Faq:** `<details>` rows, keyboard-friendly with no script. Closed rows are cream with a ⊕; the open row is `ink` with white text and ⊖.
@@ -112,7 +112,7 @@ All are hand-written with Tailwind; **there's no shadcn on this site** (user dec
 
 Toast and Shopify move gently; so do we.
 
-- The sticker word pops in once (about 500 ms, with a slight overshoot).
+- The highlighter stroke sweeps in once (about 700 ms, ease-out).
 - Sections fade up 12 px on first view.
 - The business-type pills scroll slowly sideways.
 - **Everything stops under `prefers-reduced-motion`.** Nothing loops except the pills, and they stop too. There's no parallax, scroll-jacking or autoplaying video.

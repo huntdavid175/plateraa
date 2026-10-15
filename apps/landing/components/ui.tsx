@@ -72,12 +72,20 @@ export function Eyebrow({ children, dark = false }: { children: ReactNode; dark?
 }
 
 /**
- * One word in a tilted orange tag, like a price sticker on food (user choice, 15 Oct; it replaced
- * the hand-drawn circle). It pops in once on load. Once per page, on the hero.
+ * One word with a soft orange marker stroke behind its lower half, swept in left to right once on
+ * load, like a highlighter pen (user choice, 15 Oct; it replaced the hand-drawn circle). Once per
+ * page, on the hero. `soft` is for light pages, where a solid stroke is too heavy.
  */
-export function Sticker({ children }: { children: ReactNode }) {
+export function Highlight({ children, soft = false }: { children: ReactNode; soft?: boolean }) {
   return (
-    <span className="sticker relative mx-[0.06em] inline-block -rotate-3 rounded-[0.18em] bg-brand-strong px-[0.2em] pb-[0.08em] leading-[1.05] whitespace-nowrap text-white shadow-[0_0.08em_0_rgba(0,0,0,0.18)]">
+    <span className="relative isolate inline-block whitespace-nowrap">
+      <span
+        aria-hidden
+        className={cx(
+          'highlight-band absolute -inset-x-[0.1em] top-[0.45em] bottom-[0.02em] -z-10 -rotate-1 rounded-[0.1em_0.35em_0.15em_0.4em]',
+          soft ? 'bg-brand/35' : 'bg-brand/85',
+        )}
+      />
       {children}
     </span>
   );

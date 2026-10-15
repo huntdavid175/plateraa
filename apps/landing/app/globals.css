@@ -40,14 +40,14 @@ body {
   outline-offset: 3px;
 }
 
-/* The sticker word pops in once: a small drop and a settle into its tilt. */
-.sticker {
-  animation: sticker-in 0.5s 0.25s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+/* The highlighter stroke sweeps in once, left to right. */
+.highlight-band {
+  transform-origin: left center;
+  animation: highlight-in 0.7s 0.3s cubic-bezier(0.22, 1, 0.36, 1) both;
 }
-@keyframes sticker-in {
+@keyframes highlight-in {
   from {
-    opacity: 0;
-    transform: translateY(-0.15em) rotate(-9deg) scale(0.85);
+    transform: scaleX(0);
   }
 }
 
@@ -80,7 +80,7 @@ body {
   html {
     scroll-behavior: auto;
   }
-  .sticker {
+  .highlight-band {
     animation: none;
   }
   .marquee,

@@ -19,7 +19,7 @@ import { Faq } from '../components/faq';
 import { OnboardStrip } from '../components/onboard-strip';
 import { OrderSources } from '../components/order-sources';
 import { RushList } from '../components/rush-list';
-import { ButtonLink, Container, cx, PhotoSlot, SectionHeading, Sticker } from '../components/ui';
+import { ButtonLink, Container, cx, PhotoSlot, SectionHeading, Highlight } from '../components/ui';
 import { HOME_FAQ } from '../content/faq';
 import { PHOTOS } from '../content/photos';
 import { ONLINE_FEE_BPS, SIGN_UP_URL } from '../lib/site';
@@ -66,7 +66,7 @@ function Hero() {
               Free to start. 2% only on online payments.
             </span>
             <h1 className="mt-8 text-[44px] leading-[1.02] font-normal tracking-[-0.03em] text-balance text-white sm:text-[64px] lg:text-[80px]">
-              Make ordering <Sticker>easy</Sticker> for your customers and your kitchen
+              Make ordering <Highlight>easy</Highlight> for your customers and your kitchen
             </h1>
             <p className="mt-6 max-w-xl text-[18px] leading-relaxed text-white/85 sm:text-[20px]">
               Customers order and pay from your own store link. Walk-ins, phone calls and online
