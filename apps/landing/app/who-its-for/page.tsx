@@ -8,9 +8,9 @@ import { Container, PhotoSlot, SectionHeading } from '../../components/ui';
 import { PHOTOS } from '../../content/photos';
 
 export const metadata: Metadata = {
-  title: 'Who it’s for: cafés, pizzerias, bars, hotels and kitchens in Ghana',
+  title: 'Who it’s for: restaurants, cafés, pizzerias, bars and hotels in Ghana',
   description:
-    'Plateraa is for food businesses in Ghana that want ordering to be easy for customers and every order easy to manage: quick service restaurants, pizzerias, cafés and bakeries, juice bars, bars and lounges, hotels and cloud kitchens.',
+    'Plateraa is for food businesses in Ghana that want ordering to be easy for customers and every order easy to manage: quick service restaurants, pizzerias, cafés and bakeries, juice bars, bars and lounges, hotels, cloud kitchens and restaurants.',
   alternates: { canonical: '/who-its-for' },
 };
 
@@ -70,7 +70,7 @@ export default function WhoItsForPage() {
         label="Who it’s for"
         title="Built for the people who feed Ghana"
         script="one counter at a time"
-        intro="Cafés, pizzerias, bars, hotels and kitchens serve the country every day. Plateraa makes it easy for their customers to order, and easy for them to handle every order that comes in."
+        intro="Restaurants, cafés, pizzerias, bars and hotels serve the country every day. Plateraa makes it easy for their customers to order, and easy for them to handle every order that comes in."
       />
 
       <Container>

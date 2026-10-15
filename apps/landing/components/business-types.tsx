@@ -1,9 +1,9 @@
 import { PHOTOS, type Photo } from '../content/photos';
-import { ButtonLink, Container, cx, PhotoSlot, SectionHeading } from './ui';
+import { ButtonLink, Container, PhotoSlot, SectionHeading } from './ui';
 
 /*
  * The kinds of business shown (user, 15 Oct: cafés and bakeries, juice bars, cloud kitchens,
- * pizzerias, hotels, bars and lounges, quick service). The first tile is wide.
+ * pizzerias, hotels, bars and lounges, quick service, and restaurants last).
  */
 const TYPES: { name: string; line: string; image: Photo }[] = [
   {
@@ -29,12 +29,17 @@ const TYPES: { name: string; line: string; image: Photo }[] = [
     line: 'Online orders straight to the kitchen',
     image: PHOTOS.typeCloudKitchen,
   },
+  {
+    name: 'Restaurants',
+    line: 'Dine-in, pickup and delivery in one list',
+    image: PHOTOS.typeRestaurant,
+  },
 ];
 
 /** The kinds of food business Plateraa is made for, as photo tiles (user request, 15 Oct). */
 export function BusinessTypes({
   title = 'Made for every kind of food business',
-  intro = 'From a corner café to a busy hotel kitchen, Plateraa fits the way you already serve.',
+  intro = 'From a corner café to a busy restaurant or hotel kitchen, Plateraa fits the way you already serve.',
   more = false,
 }: {
   title?: string;
@@ -47,16 +52,9 @@ export function BusinessTypes({
       <Container>
         <SectionHeading title={title} intro={intro} />
         <ul className="mt-12 grid grid-cols-2 gap-3 sm:gap-5 lg:grid-cols-4">
-          {TYPES.map((t, i) => (
-            <li key={t.name} className={i === 0 ? 'col-span-2' : undefined}>
-              <PhotoSlot
-                photo={t.name}
-                image={t.image}
-                className={cx(
-                  'rounded-[24px]',
-                  i === 0 ? 'aspect-[16/10] lg:aspect-auto lg:h-full' : 'aspect-[4/5]',
-                )}
-              >
+          {TYPES.map((t) => (
+            <li key={t.name}>
+              <PhotoSlot photo={t.name} image={t.image} className="aspect-[4/5] rounded-[24px]">
                 <div className="absolute inset-0 bg-[linear-gradient(180deg,transparent_45%,rgba(21,17,14,0.88)_100%)]" />
                 <div className="absolute inset-x-4 bottom-4 sm:inset-x-5 sm:bottom-5">
                   <h3 className="text-[18px] leading-tight tracking-[-0.01em] text-white sm:text-[22px]">

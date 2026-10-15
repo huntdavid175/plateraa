@@ -71,7 +71,7 @@ function Hero() {
             <p className="mt-6 max-w-xl text-[18px] leading-relaxed text-white/85 sm:text-[20px]">
               Customers order and pay from your own store link. Walk-ins, phone calls and online
               orders land in one list on your tablet, so your staff handle every order from one
-              place. Made for cafés, pizzerias, bars, hotels and kitchens across Ghana.
+              place. Made for restaurants, cafés, pizzerias, bars and hotels across Ghana.
             </p>
             <div className="mt-9 flex flex-wrap gap-3">
               <ButtonLink href={SIGN_UP_URL} size="lg">

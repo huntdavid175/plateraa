@@ -19,7 +19,7 @@
 
 ## Target Audience
 
-**Target companies:** Food businesses in Ghana (Accra first) that the site names (user, 15 Oct): quick service restaurants, pizzerias, cafés and bakeries, juice bars, bars and lounges, hotels and cloud kitchens. The marketing site no longer names chop bars, waakye spots or street stalls, though the product still works for them.
+**Target companies:** Food businesses in Ghana (Accra first) that the site names (user, 15 Oct): quick service restaurants, pizzerias, cafés and bakeries, juice bars, bars and lounges, hotels, cloud kitchens and restaurants. The marketing site no longer names chop bars, waakye spots or street stalls, though the product still works for them.
 
 **Decision-makers:** The owner (often also cooking or at the counter); sometimes a manager they trust.
 

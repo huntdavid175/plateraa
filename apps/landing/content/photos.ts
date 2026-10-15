@@ -103,4 +103,10 @@ export const PHOTOS = {
     by: 'Andy Kennedy',
     byUrl: 'https://unsplash.com/@packetdiscards',
   },
+  typeRestaurant: {
+    src: '/photos/type-restaurant.webp',
+    alt: 'Diners at a restaurant table in warm evening light',
+    by: 'Ben Iwara',
+    byUrl: 'https://unsplash.com/@1hundredimages',
+  },
 } satisfies Record<string, Photo>;
