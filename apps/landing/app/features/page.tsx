@@ -33,16 +33,16 @@ interface Feature {
   body: string;
   points: string[];
   art: ReactNode;
-  /** Not built yet: shows "Coming soon" beside the title. */
-  soon?: boolean;
+  /** Not built yet: a badge above the title, "Coming soon" unless a label is given. */
+  soon?: boolean | string;
 }
 
 const FEATURES: Feature[] = [
   {
     id: 'orders',
-    short: 'Omnichannel',
-    title: 'Omnichannel ordering',
-    body: 'Walk-ins, phone calls and orders from your online store land in the same list on the tablet. Mark each one dine-in, pickup or delivery, and the kitchen sees what to cook next.',
+    short: 'Counter',
+    title: 'Fast orders at the counter',
+    body: 'Take walk-ins and phone orders in a few taps. Mark each one dine-in, pickup or delivery, and the kitchen sees what to cook next.',
     points: [
       'Sizes and extras for any item',
       'Hold an order and come back to it',
@@ -55,6 +55,38 @@ const FEATURES: Feature[] = [
         <OrderChip code="A22" kind="Delivery" amount="GH₵95.00" />
       </div>
     ),
+  },
+  {
+    id: 'omnichannel',
+    short: 'Omnichannel',
+    title: 'Omnichannel ordering',
+    body: 'Accept orders from the food apps you already sell on, like Bolt Food and Chowdeck, alongside your own online store, walk-ins and phone calls. Every order lands in one list on your tablet, so nobody retypes orders or watches three phones at once.',
+    points: [
+      'Bolt Food and Chowdeck orders in your list (coming soon)',
+      'Your own online store orders, live today',
+      'Walk-ins and phone calls in the same list',
+    ],
+    art: (
+      <div className="flex w-full max-w-72 flex-col gap-3">
+        <OrderChip code="B12" kind="Bolt Food · Delivery" amount="GH₵72.00" />
+        <OrderChip code="C08" kind="Chowdeck · Pickup" amount="GH₵48.00" className="ml-6" />
+        <OrderChip code="W14" kind="Online store · Pickup" amount="GH₵54.00" />
+      </div>
+    ),
+    soon: 'Food apps coming soon',
+  },
+  {
+    id: 'riders',
+    short: 'Riders',
+    title: 'Delivery riders',
+    body: 'Book a rider from a delivery partner for any delivery order, straight from the tablet, so your customer gets their food without you hunting for a driver.',
+    points: [
+      'Book a rider for a delivery order',
+      'The order and the address go with it',
+      'Works for orders from every channel',
+    ],
+    art: <OrderChip code="A32" kind="Delivery · Rider booked" amount="GH₵88.00" />,
+    soon: true,
   },
   {
     id: 'store',
@@ -122,24 +154,6 @@ const FEATURES: Feature[] = [
       'Tap a figure to see the orders behind it',
     ],
     art: <ProfitNote />,
-  },
-  {
-    id: 'delivery',
-    short: 'Delivery apps',
-    title: 'Delivery apps and riders',
-    body: 'Connect the delivery apps you already sell on, so their orders land in the same list on your tablet. Then book a rider from a delivery partner for any delivery order, without hunting for a driver.',
-    points: [
-      'Bolt Food orders in the same list',
-      'Chowdeck orders in the same list',
-      'Riders from delivery partners, booked from the tablet',
-    ],
-    art: (
-      <div className="flex w-full max-w-72 flex-col gap-3">
-        <OrderChip code="B12" kind="Bolt Food · Delivery" amount="GH₵72.00" />
-        <OrderChip code="C08" kind="Chowdeck · Delivery" amount="GH₵48.00" className="ml-6" />
-      </div>
-    ),
-    soon: true,
   },
   {
     id: 'staff',
@@ -214,7 +228,7 @@ export default function FeaturesPage() {
               <div className={i % 2 === 1 ? 'lg:order-2' : undefined}>
                 {f.soon && (
                   <span className="mb-4 inline-block rounded-full bg-ink px-3 py-1 text-[13px] font-medium text-white">
-                    Coming soon
+                    {f.soon === true ? 'Coming soon' : f.soon}
                   </span>
                 )}
                 <SectionHeading title={f.title} intro={f.body} />

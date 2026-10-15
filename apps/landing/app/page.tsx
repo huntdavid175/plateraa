@@ -106,15 +106,15 @@ function OrangeCard({
 }: {
   title: string;
   line: string;
-  /** Not built yet: a "Coming soon" badge in the corner. */
-  soon?: boolean;
+  /** Not built yet: a badge in the corner, "Coming soon" unless a label is given. */
+  soon?: boolean | string;
   children: ReactNode;
 }) {
   return (
     <li className="relative flex min-h-[260px] flex-col sm:min-h-[340px] overflow-hidden rounded-[24px] bg-[linear-gradient(160deg,#ff7a3d_0%,var(--color-brand)_45%,var(--color-brand-deep)_100%)] p-6 text-center">
       {soon && (
         <span className="absolute top-4 right-4 rounded-full bg-ink px-3 py-1 text-[12px] font-medium text-white">
-          Coming soon
+          {soon === true ? 'Coming soon' : soon}
         </span>
       )}
       <div className="flex flex-1 items-center justify-center py-6">{children}</div>
@@ -135,12 +135,13 @@ function Everything() {
         <ul className="mt-12 grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
           <OrangeCard
             title="Omnichannel ordering"
-            line="Walk-ins, phone calls and your online store, in one list."
+            line="Orders from Bolt Food, Chowdeck and your own store, in one list."
+            soon="Apps coming soon"
           >
             <OrderChip
-              code="A15"
-              kind="Dine-in"
-              amount="GH₵42.00"
+              code="B12"
+              kind="Bolt Food · Delivery"
+              amount="GH₵72.00"
               className="w-full max-w-64 text-left"
             />
           </OrangeCard>
@@ -157,14 +158,14 @@ function Everything() {
             <DrawerNote className="text-left" />
           </OrangeCard>
           <OrangeCard
-            title="Delivery integration"
-            line="Bolt Food, Chowdeck and delivery riders, in the same list."
+            title="Delivery riders"
+            line="Book a rider for any delivery order, from the tablet."
             soon
           >
             <OrderChip
-              code="B12"
-              kind="Bolt Food · Delivery"
-              amount="GH₵72.00"
+              code="A32"
+              kind="Rider booked"
+              amount="GH₵88.00"
               className="w-full max-w-64 text-left"
             />
           </OrangeCard>

@@ -42,8 +42,8 @@ export function OrderSources() {
       <Container>
         <div className="rounded-[32px] bg-cream px-4 py-8 sm:p-12">
           <SectionHeading
-            title="Every order in one list, wherever it comes from"
-            intro="Your staff work from a single list on the tablet, so nobody has to watch three phones at once. Orders from the delivery apps you already sell on are on the way."
+            title="Omnichannel ordering: every app’s orders in one list"
+            intro="Accept orders from Bolt Food, Chowdeck and the other food apps you already sell on, alongside your own store, walk-ins and calls. Your staff work from one list on the tablet instead of watching three phones at once."
           />
 
           <div className="mt-12 grid items-start gap-8 lg:grid-cols-[1.1fr_1fr]">

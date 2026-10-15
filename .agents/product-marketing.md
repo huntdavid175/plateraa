@@ -108,7 +108,7 @@
 
 **How they describe the problem:** _To gather from pilot vendors (verbatim quotes not yet collected)._
 **How they describe us:** _To gather from pilot vendors._
-**Words to use:** omnichannel (user, 15 Oct: market taking orders from every channel in one list as "omnichannel ordering"), orders, sales, money, cash, MoMo / mobile money, profit, counter, tablet, store link, customers, chop bar, today, free, "every cedi".
+**Words to use:** omnichannel (user, 15 Oct: "omnichannel ordering" means accepting orders from the food apps vendors already sell on, such as Bolt Food and Chowdeck, alongside their own store and counter, in one list; delivery riders are a separate feature), orders, sales, money, cash, MoMo / mobile money, profit, counter, tablet, store link, customers, chop bar, today, free, "every cedi".
 **Words to avoid:** POS jargon (SKU, modifiers), "solution", "leverage", "seamless", "revolutionise", "phone" for the counter device (it's a tablet), anything implying we hold their money.
 **Glossary:**
 
