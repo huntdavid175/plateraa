@@ -13,8 +13,11 @@ import {
   SoldOutTag,
   StoreLinkNote,
 } from '../components/art';
+import { BusinessTypes } from '../components/business-types';
 import { Closing } from '../components/closing';
 import { Faq } from '../components/faq';
+import { OnboardStrip } from '../components/onboard-strip';
+import { OrderSources } from '../components/order-sources';
 import { RushList } from '../components/rush-list';
 import { ButtonLink, Circled, Container, cx, PhotoSlot, SectionHeading } from '../components/ui';
 import { HOME_FAQ } from '../content/faq';
@@ -25,29 +28,18 @@ export const metadata: Metadata = {
   alternates: { canonical: '/' },
 };
 
-const BUSINESS_TYPES = [
-  'Chop bars',
-  'Waakye spots',
-  'Fast food',
-  'Cafés and bakeries',
-  'Juice bars',
-  'Cloud kitchens',
-  'Food trucks',
-  'Grills',
-  'Kenkey and banku',
-  'Restaurants',
-];
-
 const EXAMPLE_ORDER = pesewas(10000);
 
 export default function HomePage() {
   return (
     <>
       <Hero />
-      <BuiltFor />
+      <OnboardStrip />
+      <OnlineStore />
+      <OrderSources />
+      <BusinessTypes />
       <Everything />
       <MidRush />
-      <OnlineStore />
       <Pricing />
       <HowItWorks />
       <YourMoney />
@@ -74,12 +66,12 @@ function Hero() {
               Free to start. 2% only on online payments.
             </span>
             <h1 className="mt-8 text-[44px] leading-[1.02] font-normal tracking-[-0.03em] text-balance text-white sm:text-[64px] lg:text-[80px]">
-              Know where <Circled>every cedi</Circled> went
+              Make ordering <Circled>easy</Circled> for your customers and your kitchen
             </h1>
             <p className="mt-6 max-w-xl text-[18px] leading-relaxed text-white/85 sm:text-[20px]">
-              Plateraa puts your counter, phone and online orders on one tablet, checks the cash
-              drawer at close and shows the day’s profit. Made for chop bars, cafés and kitchens
-              across Ghana.
+              Customers order and pay from your own store link. Walk-ins, phone calls and online
+              orders land in one list on your tablet, so your staff handle every order from one
+              place. Made for chop bars, cafés and kitchens across Ghana.
             </p>
             <div className="mt-9 flex flex-wrap gap-3">
               <ButtonLink href={SIGN_UP_URL} size="lg">
@@ -99,36 +91,10 @@ function Hero() {
               className="absolute top-0 right-6 w-72"
             />
             <PaidNote amount="GH₵85.00" className="absolute top-28 left-4 w-64" />
-            <ProfitNote className="absolute right-0 bottom-0" />
+            <NewOrderNote className="absolute right-0 bottom-6 w-64" />
           </div>
         </Container>
       </PhotoSlot>
-    </section>
-  );
-}
-
-function BuiltFor() {
-  const row = [...BUSINESS_TYPES, ...BUSINESS_TYPES];
-  return (
-    <section className="py-12 sm:py-16" aria-labelledby="built-for">
-      <Container>
-        <h2 id="built-for" className="text-center text-[15px] text-muted">
-          Made for every kind of food business
-        </h2>
-      </Container>
-      <div className="mt-6 overflow-hidden [mask-image:linear-gradient(90deg,transparent,black_8%,black_92%,transparent)]">
-        <ul className="marquee flex w-max gap-3">
-          {row.map((type, i) => (
-            <li
-              key={i}
-              aria-hidden={i >= BUSINESS_TYPES.length}
-              className="rounded-full bg-cream px-6 py-3 text-[20px] whitespace-nowrap text-ink sm:text-[24px]"
-            >
-              {type}
-            </li>
-          ))}
-        </ul>
-      </div>
     </section>
   );
 }

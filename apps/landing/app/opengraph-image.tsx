@@ -1,6 +1,6 @@
 import { ImageResponse } from 'next/og';
 
-export const alt = 'Plateraa: orders, money and profit for food vendors in Ghana';
+export const alt = 'Plateraa: online ordering and order management for food vendors in Ghana';
 export const size = { width: 1200, height: 630 };
 export const contentType = 'image/png';
 
@@ -23,7 +23,7 @@ export default function OpengraphImage() {
       <div style={{ fontSize: 40, fontWeight: 700, letterSpacing: -1 }}>Plateraa</div>
       <div style={{ display: 'flex', flexDirection: 'column' }}>
         <div style={{ fontSize: 84, lineHeight: 1.02, letterSpacing: -3, maxWidth: 900 }}>
-          Know where every cedi went
+          Easy ordering for your customers and your kitchen
         </div>
         <div style={{ fontSize: 32, marginTop: 28, opacity: 0.92 }}>
           Free to start. 2% only on online payments.

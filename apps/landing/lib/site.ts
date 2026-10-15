@@ -17,7 +17,7 @@ export const ONLINE_FEE_WORDS = '2%';
 
 export const SITE_NAME = 'Plateraa';
 export const SITE_DESCRIPTION =
-  'Plateraa puts counter, phone and online orders on one tablet, counts the cash drawer and shows the day’s profit. Free to start for food vendors in Ghana: 2% only on online payments.';
+  'Your customers order and pay from your own store link, and every order lands in one list on your tablet. Free to start for food vendors in Ghana: 2% only on online payments.';
 
 /**
  * How vendors reach us. Empty values are left off the site. Still to come from the user (15 Oct).

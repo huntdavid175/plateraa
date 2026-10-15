@@ -33,6 +33,8 @@ interface Feature {
   body: string;
   points: string[];
   art: ReactNode;
+  /** Not built yet: shows "Coming soon" beside the title. */
+  soon?: boolean;
 }
 
 const FEATURES: Feature[] = [
@@ -122,6 +124,24 @@ const FEATURES: Feature[] = [
     art: <ProfitNote />,
   },
   {
+    id: 'delivery',
+    short: 'Delivery apps',
+    title: 'Delivery apps and riders',
+    body: 'Connect the delivery apps you already sell on, so their orders land in the same list on your tablet. Then book a rider from a delivery partner for any delivery order, without hunting for a driver.',
+    points: [
+      'Bolt Food orders in the same list',
+      'Chowdeck orders in the same list',
+      'Riders from delivery partners, booked from the tablet',
+    ],
+    art: (
+      <div className="flex w-full max-w-72 flex-col gap-3">
+        <OrderChip code="B12" kind="Bolt Food · Delivery" amount="GH₵72.00" />
+        <OrderChip code="C08" kind="Chowdeck · Delivery" amount="GH₵48.00" className="ml-6" />
+      </div>
+    ),
+    soon: true,
+  },
+  {
     id: 'staff',
     short: 'Staff',
     title: 'Staff, roles and PINs',
@@ -192,6 +212,11 @@ export default function FeaturesPage() {
           <section key={f.id} id={f.id} className="reveal scroll-mt-32 py-10 sm:py-14">
             <Container className="grid gap-10 lg:grid-cols-2 lg:items-center">
               <div className={i % 2 === 1 ? 'lg:order-2' : undefined}>
+                {f.soon && (
+                  <span className="mb-4 inline-block rounded-full bg-ink px-3 py-1 text-[13px] font-medium text-white">
+                    Coming soon
+                  </span>
+                )}
                 <SectionHeading title={f.title} intro={f.body} />
                 <ul className="mt-6 space-y-2">
                   {f.points.map((p) => (

@@ -12,6 +12,10 @@ Plateraa's own website, for selling Plateraa to vendors. It's kept apart from th
 
 ## Copy
 
+- **Positioning** (user, 15 Oct): easy ordering for customers and easy order management for restaurants. The hero says "Make ordering easy for your customers and your kitchen". Money tracking and profit are supporting points.
+- **Delivery apps and delivery partners** (user, 15 Oct): Bolt Food, Chowdeck and rider booking show as "Coming soon" (`components/order-sources.tsx`, the Features page's `soon` entry, an FAQ answer). Name the apps, never use their logos, and leave delivery partners unnamed until a partnership is agreed. Switch a source to live only once its connection works.
+- **Business types** are photo tiles (`components/business-types.tsx`). **The looping strip is for businesses already on Plateraa** (`components/onboard-strip.tsx`, fed by `content/vendors.ts`), and it stays hidden until the user adds real, approved names.
+
 - `.agents/product-marketing.md` at the repo root holds the positioning, audience, objections and words to use or avoid. The marketing skills in `.claude/skills` (copywriting, pricing, seo-audit, schema and others, installed 15 Oct) read it first.
 - **Pricing** (user decision, 15 Oct): free to start, no monthly fee, and **2% only on payments a customer makes online through Plateraa** (payment links and the online store); cash sales are free. Always add that Moolre charges its own fee. The rate is `ONLINE_FEE_BPS` in `lib/site.ts`, and the calculator (`components/fee-calculator.tsx`) works in whole pesewas with `@plateraa/shared`.
 - No invented customers, figures, logos or testimonials. Check every claim against what the product does today.

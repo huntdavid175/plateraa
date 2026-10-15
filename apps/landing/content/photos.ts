@@ -61,4 +61,52 @@ export const PHOTOS = {
     by: 'Ali Mkumbwa',
     byUrl: 'https://unsplash.com/@mkumbwajr',
   },
+  typeChopBar: {
+    src: '/photos/type-chop-bar.webp',
+    alt: 'A plate of fufu, plantain and chicken with bowls of soup',
+    by: 'Gourmet Lenz',
+    byUrl: 'https://unsplash.com/@gourmetlenz',
+  },
+  typeRice: {
+    src: '/photos/type-rice.webp',
+    alt: 'Rice with fried chicken, pepper sauce and a boiled egg',
+    by: 'Kevin kevin',
+    byUrl: 'https://unsplash.com/@0x00kevin',
+  },
+  typeFastFood: {
+    src: '/photos/type-fast-food.webp',
+    alt: 'Fried chicken on a tray of rice',
+    by: 'Dr Muhammad Amer',
+    byUrl: 'https://unsplash.com/@drxyz',
+  },
+  typeGrill: {
+    src: '/photos/type-grill.webp',
+    alt: 'A grilled tilapia on a banana leaf',
+    by: 'Michael Lock',
+    byUrl: 'https://unsplash.com/@milo_photo',
+  },
+  typeStreetFood: {
+    src: '/photos/type-street-food.webp',
+    alt: 'A street vendor lifts fried snacks out of a pan over a fire',
+    by: 'Emmanuel Offei',
+    byUrl: 'https://unsplash.com/@immanuel_offei',
+  },
+  typeCafe: {
+    src: '/photos/type-cafe.webp',
+    alt: 'Bread and pastries on the shelves of a bakery counter',
+    by: 'Yeh Xintong',
+    byUrl: 'https://unsplash.com/@blsnki',
+  },
+  typeJuice: {
+    src: '/photos/type-juice.webp',
+    alt: 'A row of bottled fruit juices at a market stall',
+    by: 'Hailey Tong',
+    byUrl: 'https://unsplash.com/@haileytong',
+  },
+  typeCloudKitchen: {
+    src: '/photos/type-cloud-kitchen.webp',
+    alt: 'A takeaway box of food ready for delivery',
+    by: 'Ambitious Studio* | Rick Barrett',
+    byUrl: 'https://unsplash.com/@weareambitious',
+  },
 } satisfies Record<string, Photo>;

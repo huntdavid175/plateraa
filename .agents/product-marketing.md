@@ -1,11 +1,13 @@
 # Product Marketing Context
 
-**Document version:** v1
+**Document version:** v2
 **Last updated:** 2026-10-15
 
 ## Product Overview
 
-**One-liner:** Plateraa runs a small food business from one tablet: every order in one place, every cedi counted, and a clear view of profit.
+**One-liner:** Plateraa makes ordering easy for customers and managing orders easy for food businesses: customers order and pay from the vendor's own store link, and every order lands in one list on the counter tablet.
+
+**Positioning (user, 15 Oct 2026):** lead with easy ordering for customers and easy order management for the restaurant. Money tracking, the drawer and profit are supporting benefits, not the headline.
 
 **What it does:** An offline-first counter app on the vendor's own Android tablet takes walk-in, phone and online orders, tracks the cash drawer and stock, and keeps working without internet. Each vendor gets an online store link to share on WhatsApp and Instagram, where customers order and pay by mobile money straight into the vendor's own Moolre account. A web dashboard shows the owner today's sales, expenses and profit from anywhere.
 
@@ -21,7 +23,7 @@
 
 **Decision-makers:** The owner (often also cooking or at the counter); sometimes a manager they trust.
 
-**Primary use case:** Know exactly what was sold, what came in and what's left, without a notebook, while taking orders from walk-ins, calls and WhatsApp/Instagram.
+**Primary use case:** Take orders from every channel (walk-ins, calls, the online store, and soon Bolt Food, Chowdeck and delivery partners) in one list, while customers order and pay online without friction.
 
 **Jobs to be done:**
 
@@ -148,4 +150,5 @@
 
 _Newest first. One line per revision: what changed and why._
 
+- v2 (2026-10-15) — Repositioned: the headline is easy ordering for customers and easy order management for restaurants, not "know where every cedi went". Added delivery apps (Bolt Food, Chowdeck) and delivery partners as coming soon.
 - v1 (2026-10-15) — Initial context, drafted from the repo (AGENTS.md, plan.md) and the user's landing-page answers (pricing: free + 2% on online payments only).

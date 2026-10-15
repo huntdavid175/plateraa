@@ -12,7 +12,7 @@ import './globals.css';
 export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),
   title: {
-    default: 'Plateraa: orders, money and profit for food vendors in Ghana',
+    default: 'Plateraa: online ordering and order management for food vendors in Ghana',
     template: '%s | Plateraa',
   },
   description: SITE_DESCRIPTION,
@@ -22,7 +22,7 @@ export const metadata: Metadata = {
     siteName: SITE_NAME,
     locale: 'en_GH',
     url: '/',
-    title: 'Plateraa: orders, money and profit for food vendors in Ghana',
+    title: 'Plateraa: online ordering and order management for food vendors in Ghana',
     description: SITE_DESCRIPTION,
   },
   twitter: { card: 'summary_large_image' },

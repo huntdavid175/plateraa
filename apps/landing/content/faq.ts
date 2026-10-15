@@ -19,6 +19,10 @@ export const HOME_FAQ: Question[] = [
     a: 'The tablet keeps taking orders, cash and stock changes. They’re saved on the tablet and sent up once it’s back online, so you can keep serving through the outage.',
   },
   {
+    q: 'Does Plateraa work with Bolt Food and Chowdeck?',
+    a: 'Not yet. Connecting Bolt Food and Chowdeck is coming soon, so their orders land in the same list as your counter and online orders. Booking riders from delivery partners is coming too. Today, Plateraa handles walk-ins, phone calls and orders from your own online store.',
+  },
+  {
     q: 'Does Plateraa hold my money?',
     a: 'No. Mobile money from your customers goes straight into your own Moolre merchant account. Plateraa records the payment so your figures add up, but the money never passes through us.',
   },
