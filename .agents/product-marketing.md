@@ -108,8 +108,8 @@
 
 **How they describe the problem:** _To gather from pilot vendors (verbatim quotes not yet collected)._
 **How they describe us:** _To gather from pilot vendors._
-**Words to use:** orders, sales, money, cash, MoMo / mobile money, profit, counter, tablet, store link, customers, chop bar, today, free, "every cedi".
-**Words to avoid:** POS jargon (SKU, modifiers, omnichannel), "solution", "leverage", "seamless", "revolutionise", "phone" for the counter device (it's a tablet), anything implying we hold their money.
+**Words to use:** omnichannel (user, 15 Oct: market taking orders from every channel in one list as "omnichannel ordering"), orders, sales, money, cash, MoMo / mobile money, profit, counter, tablet, store link, customers, chop bar, today, free, "every cedi".
+**Words to avoid:** POS jargon (SKU, modifiers), "solution", "leverage", "seamless", "revolutionise", "phone" for the counter device (it's a tablet), anything implying we hold their money.
 **Glossary:**
 
 | Term                      | Meaning                                                          |

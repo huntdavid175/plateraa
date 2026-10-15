@@ -10,7 +10,6 @@ import {
   PaidNote,
   PinNote,
   ProfitNote,
-  SoldOutTag,
   StoreLinkNote,
 } from '../components/art';
 import { BusinessTypes } from '../components/business-types';
@@ -102,14 +101,22 @@ function Hero() {
 function OrangeCard({
   title,
   line,
+  soon = false,
   children,
 }: {
   title: string;
   line: string;
+  /** Not built yet: a "Coming soon" badge in the corner. */
+  soon?: boolean;
   children: ReactNode;
 }) {
   return (
     <li className="relative flex min-h-[260px] flex-col sm:min-h-[340px] overflow-hidden rounded-[24px] bg-[linear-gradient(160deg,#ff7a3d_0%,var(--color-brand)_45%,var(--color-brand-deep)_100%)] p-6 text-center">
+      {soon && (
+        <span className="absolute top-4 right-4 rounded-full bg-ink px-3 py-1 text-[12px] font-medium text-white">
+          Coming soon
+        </span>
+      )}
       <div className="flex flex-1 items-center justify-center py-6">{children}</div>
       <h3 className="text-[24px] leading-tight tracking-[-0.01em] text-white">{title}</h3>
       <p className="mt-1 text-[15px] text-white/90">{line}</p>
@@ -127,8 +134,8 @@ function Everything() {
         />
         <ul className="mt-12 grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
           <OrangeCard
-            title="Every order in one place"
-            line="Walk-ins, phone calls and your online store."
+            title="Omnichannel ordering"
+            line="Walk-ins, phone calls and your online store, in one list."
           >
             <OrderChip
               code="A15"
@@ -149,8 +156,17 @@ function Everything() {
           <OrangeCard title="A drawer that adds up" line="Counted at close, checked by the tablet.">
             <DrawerNote className="text-left" />
           </OrangeCard>
-          <OrangeCard title="Sold out in one tap" line="Off the menu everywhere at once.">
-            <SoldOutTag item="Fried rice" />
+          <OrangeCard
+            title="Delivery integration"
+            line="Bolt Food, Chowdeck and delivery riders, in the same list."
+            soon
+          >
+            <OrderChip
+              code="B12"
+              kind="Bolt Food · Delivery"
+              amount="GH₵72.00"
+              className="w-full max-w-64 text-left"
+            />
           </OrangeCard>
           <OrangeCard title="A PIN for each person" line="Know who took which order.">
             <PinNote />

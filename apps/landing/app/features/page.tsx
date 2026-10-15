@@ -40,8 +40,8 @@ interface Feature {
 const FEATURES: Feature[] = [
   {
     id: 'orders',
-    short: 'Orders',
-    title: 'Take every order in one place',
+    short: 'Omnichannel',
+    title: 'Omnichannel ordering',
     body: 'Walk-ins, phone calls and orders from your online store land in the same list on the tablet. Mark each one dine-in, pickup or delivery, and the kitchen sees what to cook next.',
     points: [
       'Sizes and extras for any item',
