@@ -1,6 +1,8 @@
 import Link from 'next/link';
 import type { ReactNode } from 'react';
 
+import type { Photo } from '../content/photos';
+
 /** Joins class names, skipping the empty ones. */
 export function cx(...names: (string | false | null | undefined)[]): string {
   return names.filter(Boolean).join(' ');
@@ -100,17 +102,20 @@ export function Script({ children, className }: { children: ReactNode; className
 }
 
 /**
- * Where a stock photo will go (DESIGN.md, Imagery). Until one is added it's a warm gradient; in
- * development it also names the photo it's waiting for.
+ * A rounded frame for one of the site's photos (`content/photos.ts`). Without `image` it's a warm
+ * gradient that, in development, names the photo it's waiting for. `priority` is for the photo at
+ * the top of a page, which loads first.
  */
 export function PhotoSlot({
   photo,
-  src,
+  image,
+  priority = false,
   className,
   children,
 }: {
   photo: string;
-  src?: string;
+  image?: Photo;
+  priority?: boolean;
   className?: string;
   children?: ReactNode;
 }) {
@@ -121,12 +126,15 @@ export function PhotoSlot({
         className,
       )}
     >
-      {src ? (
-        // A plain <img>: stock photos are sized before they're added, so Next's optimiser isn't needed.
+      {image ? (
+        // A plain <img>: the photos are sized and compressed before they're added.
         <img
-          src={src}
-          alt=""
-          loading="lazy"
+          src={image.src}
+          alt={image.alt}
+          loading={priority ? 'eager' : 'lazy'}
+          fetchPriority={priority ? 'high' : 'auto'}
+          decoding="async"
+          style={image.position ? { objectPosition: image.position } : undefined}
           className="absolute inset-0 h-full w-full object-cover"
         />
       ) : (

@@ -1,8 +1,12 @@
 import { CircleCheck, Mail, MessageCircle, Phone, type LucideIcon } from 'lucide-react';
 import Link from 'next/link';
 
+import { PHOTOS } from '../content/photos';
 import { CONTACT, NAV, SIGN_IN_URL, SIGN_UP_URL } from '../lib/site';
 import { ButtonLink, Container } from './ui';
+
+/** Each photographer once, in the order their photos appear. */
+const PHOTOGRAPHERS = [...new Map(Object.values(PHOTOS).map((p) => [p.byUrl, p])).values()];
 
 const PROMISES = [
   'Free to start, with nothing to pay each month',
@@ -153,6 +157,18 @@ function Footer() {
           <p>© {new Date().getFullYear()} Plateraa</p>
           <p>Mobile money payments are processed by Moolre into each vendor’s own account.</p>
         </div>
+        <p className="mt-3 text-[12px] text-muted">
+          Photos on Unsplash by{' '}
+          {PHOTOGRAPHERS.map((p, i) => (
+            <span key={p.byUrl}>
+              {i > 0 && (i === PHOTOGRAPHERS.length - 1 ? ' and ' : ', ')}
+              <a href={p.byUrl} className="underline underline-offset-2 hover:text-brand-strong">
+                {p.by}
+              </a>
+            </span>
+          ))}
+          .
+        </p>
       </div>
       <p
         aria-hidden

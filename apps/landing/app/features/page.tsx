@@ -17,6 +17,7 @@ import { Faq } from '../../components/faq';
 import { PageHero } from '../../components/page-hero';
 import { Container, PhotoSlot, SectionHeading } from '../../components/ui';
 import { HOME_FAQ } from '../../content/faq';
+import { PHOTOS } from '../../content/photos';
 
 export const metadata: Metadata = {
   title: 'Features: orders, online store, mobile money and reports',
@@ -167,6 +168,8 @@ export default function FeaturesPage() {
       <Container>
         <PhotoSlot
           photo="staff serving customers at a chop bar"
+          image={PHOTOS.featuresHero}
+          priority
           className="h-[320px] rounded-[32px] sm:h-[520px]"
         />
       </Container>

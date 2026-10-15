@@ -3,6 +3,7 @@
 import { ArrowRight } from 'lucide-react';
 import { useState, type ReactNode } from 'react';
 
+import { PHOTOS } from '../content/photos';
 import { DrawerNote, KitchenNote, NewOrderNote, OfflineNote, PinNote, SoldOutTag } from './art';
 import { cx, PhotoSlot } from './ui';
 
@@ -86,7 +87,11 @@ export function RushList() {
         })}
       </ul>
 
-      <PhotoSlot photo="a busy counter at lunchtime" className="min-h-[420px] rounded-[32px]">
+      <PhotoSlot
+        photo="a busy counter at lunchtime"
+        image={PHOTOS.homeRush}
+        className="min-h-[420px] rounded-[32px]"
+      >
         <div className="absolute inset-0 bg-[linear-gradient(180deg,transparent_30%,rgba(21,17,14,0.92)_100%)]" />
         <div key={active} className="absolute inset-x-6 bottom-6 sm:inset-x-10 sm:bottom-10">
           <div className="mb-6 inline-block">{moment.art}</div>

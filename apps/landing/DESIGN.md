@@ -119,7 +119,7 @@ Toast and Shopify move gently; so do we.
 
 ## Imagery
 
-- Stock photos come last (user, 15 Oct): West African food vendors, chop bars, a counter with a tablet, a customer paying by phone. Until then every photo spot is a `PhotoSlot`. Photos are warm and real, never posed office shots.
+- Photos come from Unsplash (added 15 Oct; see `content/photos.ts`): West African food vendors, grills and stalls, a counter with a tablet, a customer paying by phone. Warm and real, never posed office shots. A spot without a photo shows a warm gradient. Keep private details (phone numbers, number plates, names on signs) out of the crop.
 - Photos with words over them get a dark gradient at the foot, so white text stays above 4.5:1.
 
 ## Copy

@@ -18,6 +18,7 @@ import { Faq } from '../components/faq';
 import { RushList } from '../components/rush-list';
 import { ButtonLink, Circled, Container, cx, PhotoSlot, SectionHeading } from '../components/ui';
 import { HOME_FAQ } from '../content/faq';
+import { PHOTOS } from '../content/photos';
 import { ONLINE_FEE_BPS, SIGN_UP_URL } from '../lib/site';
 
 export const metadata: Metadata = {
@@ -61,6 +62,8 @@ function Hero() {
     <section className="px-0 sm:px-3 sm:pt-3">
       <PhotoSlot
         photo="a vendor at a busy counter, tablet beside them"
+        image={PHOTOS.homeHero}
+        priority
         className="sm:rounded-br-[64px] sm:rounded-bl-[24px]"
       >
         <div className="absolute inset-0 bg-[linear-gradient(90deg,rgba(21,17,14,0.88)_0%,rgba(21,17,14,0.55)_55%,rgba(21,17,14,0.2)_100%)]" />
@@ -355,11 +358,16 @@ function HowItWorks() {
           <div className="absolute top-0 left-0 h-[70%] w-[62%]">
             <PhotoSlot
               photo="an owner setting up on their phone"
+              image={PHOTOS.homeSetupPhone}
               className="h-full rounded-[24px]"
             />
           </div>
           <div className="absolute right-0 bottom-0 h-[70%] w-[55%] rounded-[24px] ring-8 ring-white">
-            <PhotoSlot photo="a tablet on a food counter" className="h-full rounded-[24px]" />
+            <PhotoSlot
+              photo="a tablet on a food counter"
+              image={PHOTOS.homeSetupTablet}
+              className="h-full rounded-[24px]"
+            />
           </div>
         </div>
         <div>
@@ -407,7 +415,11 @@ function YourMoney() {
               <li>Refunds and payouts recorded by you or your manager</li>
             </ul>
           </div>
-          <PhotoSlot photo="a customer paying by phone at a food stall" className="min-h-[320px]" />
+          <PhotoSlot
+            photo="a customer paying by phone at a food stall"
+            image={PHOTOS.homeMoney}
+            className="min-h-[320px]"
+          />
         </div>
       </Container>
     </section>

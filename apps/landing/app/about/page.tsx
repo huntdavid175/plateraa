@@ -3,6 +3,7 @@ import type { Metadata } from 'next';
 import { Closing } from '../../components/closing';
 import { PageHero } from '../../components/page-hero';
 import { Container, PhotoSlot, SectionHeading } from '../../components/ui';
+import { PHOTOS } from '../../content/photos';
 
 export const metadata: Metadata = {
   title: 'About Plateraa',
@@ -39,6 +40,8 @@ export default function AboutPage() {
       <Container>
         <PhotoSlot
           photo="a food vendor smiling behind their counter"
+          image={PHOTOS.aboutHero}
+          priority
           className="h-[320px] rounded-[32px] sm:h-[520px]"
         />
       </Container>
