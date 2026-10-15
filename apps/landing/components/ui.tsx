@@ -71,27 +71,14 @@ export function Eyebrow({ children, dark = false }: { children: ReactNode; dark?
   );
 }
 
-/** One word with a hand-drawn orange ring around it. Once per page, on the hero. */
-export function Circled({ children }: { children: ReactNode }) {
+/**
+ * One word in a tilted orange tag, like a price sticker on food (user choice, 15 Oct; it replaced
+ * the hand-drawn circle). It pops in once on load. Once per page, on the hero.
+ */
+export function Sticker({ children }: { children: ReactNode }) {
   return (
-    <span className="relative inline-block whitespace-nowrap">
-      <span className="relative z-10">{children}</span>
-      <svg
-        aria-hidden
-        viewBox="0 0 200 80"
-        preserveAspectRatio="none"
-        className="pointer-events-none absolute -inset-x-[5%] -inset-y-[22%] h-[144%] w-[110%] sm:-inset-x-[9%] sm:w-[118%] overflow-visible text-brand"
-      >
-        <path
-          className="draw-in"
-          pathLength={1}
-          d="M118 9C72 4 22 12 9 34c-11 19 22 37 82 40 63 3 109-12 105-36C192 15 145 3 88 7c-26 2-47 7-60 15"
-          fill="none"
-          stroke="currentColor"
-          strokeWidth={4}
-          strokeLinecap="round"
-        />
-      </svg>
+    <span className="sticker relative mx-[0.06em] inline-block -rotate-3 rounded-[0.18em] bg-brand-strong px-[0.2em] pb-[0.08em] leading-[1.05] whitespace-nowrap text-white shadow-[0_0.08em_0_rgba(0,0,0,0.18)]">
+      {children}
     </span>
   );
 }

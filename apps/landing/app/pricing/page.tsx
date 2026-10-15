@@ -5,7 +5,7 @@ import type { Metadata } from 'next';
 import { Closing } from '../../components/closing';
 import { Faq } from '../../components/faq';
 import { FeeCalculator } from '../../components/fee-calculator';
-import { ButtonLink, Circled, Container, Eyebrow, SectionHeading } from '../../components/ui';
+import { ButtonLink, Container, Eyebrow, SectionHeading, Sticker } from '../../components/ui';
 import { PRICING_FAQ } from '../../content/faq';
 import { ONLINE_FEE_BPS, SIGN_UP_URL } from '../../lib/site';
 
@@ -35,7 +35,7 @@ export default function PricingPage() {
         <Container>
           <Eyebrow>Pricing</Eyebrow>
           <h1 className="mx-auto mt-6 max-w-4xl text-[44px] leading-[1.04] font-normal tracking-[-0.03em] text-balance sm:text-[72px]">
-            <Circled>Free</Circled> to start. You pay only when you get paid.
+            <Sticker>Free</Sticker> to start. You pay only when you get paid.
           </h1>
           <p className="mx-auto mt-6 max-w-2xl text-[18px] leading-relaxed text-muted">
             One plan with everything in it. Plateraa’s share is 2% of the money customers pay you
