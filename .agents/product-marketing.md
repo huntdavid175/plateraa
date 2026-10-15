@@ -1,6 +1,6 @@
 # Product Marketing Context
 
-**Document version:** v2
+**Document version:** v3
 **Last updated:** 2026-10-15
 
 ## Product Overview
@@ -19,7 +19,7 @@
 
 ## Target Audience
 
-**Target companies:** Small, mostly informal food businesses in Ghana (Accra first): chop bars, fast food spots, cafés and bakeries, juice bars, cloud kitchens, food trucks. Usually 1–10 staff, mostly cash, often tracked in a notebook.
+**Target companies:** Food businesses in Ghana (Accra first) that the site names (user, 15 Oct): quick service restaurants, pizzerias, cafés and bakeries, juice bars, bars and lounges, hotels and cloud kitchens. The marketing site no longer names chop bars, waakye spots or street stalls, though the product still works for them.
 
 **Decision-makers:** The owner (often also cooking or at the counter); sometimes a manager they trust.
 
@@ -150,5 +150,6 @@
 
 _Newest first. One line per revision: what changed and why._
 
+- v3 (2026-10-15) — Target audience on the site changed to quick service, pizzerias, cafés and bakeries, juice bars, bars and lounges, hotels and cloud kitchens; chop bars, waakye spots and street stalls removed from the site copy.
 - v2 (2026-10-15) — Repositioned: the headline is easy ordering for customers and easy order management for restaurants, not "know where every cedi went". Added delivery apps (Bolt Food, Chowdeck) and delivery partners as coming soon.
 - v1 (2026-10-15) — Initial context, drafted from the repo (AGENTS.md, plan.md) and the user's landing-page answers (pricing: free + 2% on online payments only).

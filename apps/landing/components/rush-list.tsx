@@ -21,8 +21,8 @@ const MOMENTS: Moment[] = [
   },
   {
     title: 'Sold out in one tap',
-    body: 'Out of tilapia? One tap takes it off the tablet and your online store, so nobody orders what you can’t serve.',
-    art: <SoldOutTag item="Grilled tilapia" />,
+    body: 'Out of chicken wings? One tap takes it off the tablet and your online store, so nobody orders what you can’t serve.',
+    art: <SoldOutTag item="Chicken wings" />,
   },
   {
     title: 'Paid before it’s cooked',

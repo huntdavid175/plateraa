@@ -8,9 +8,9 @@ import { Container, PhotoSlot, SectionHeading } from '../../components/ui';
 import { PHOTOS } from '../../content/photos';
 
 export const metadata: Metadata = {
-  title: 'Who it’s for: chop bars, cafés, grills and kitchens in Ghana',
+  title: 'Who it’s for: cafés, pizzerias, bars, hotels and kitchens in Ghana',
   description:
-    'Plateraa is for food businesses in Ghana that want ordering to be easy for customers and every order easy to manage: chop bars, rice and waakye spots, grills, cafés, juice bars and cloud kitchens.',
+    'Plateraa is for food businesses in Ghana that want ordering to be easy for customers and every order easy to manage: quick service restaurants, pizzerias, cafés and bakeries, juice bars, bars and lounges, hotels and cloud kitchens.',
   alternates: { canonical: '/who-its-for' },
 };
 
@@ -70,7 +70,7 @@ export default function WhoItsForPage() {
         label="Who it’s for"
         title="Built for the people who feed Ghana"
         script="one counter at a time"
-        intro="Chop bars, waakye spots, grills and kitchens serve the country every day. Plateraa makes it easy for their customers to order, and easy for them to handle every order that comes in."
+        intro="Cafés, pizzerias, bars, hotels and kitchens serve the country every day. Plateraa makes it easy for their customers to order, and easy for them to handle every order that comes in."
       />
 
       <Container>
@@ -84,7 +84,7 @@ export default function WhoItsForPage() {
 
       <BusinessTypes
         title="Whatever you serve"
-        intro="If you sell food in Ghana, from one pot by the roadside to a busy kitchen with a team, Plateraa fits the way you already work."
+        intro="From a corner café or juice bar to a hotel kitchen or a busy lounge, Plateraa fits the way you already work."
       />
 
       <section className="reveal bg-cream py-20 sm:py-28">

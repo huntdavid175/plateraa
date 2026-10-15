@@ -1,22 +1,29 @@
 import { PHOTOS, type Photo } from '../content/photos';
-import { ButtonLink, Container, PhotoSlot, SectionHeading } from './ui';
+import { ButtonLink, Container, cx, PhotoSlot, SectionHeading } from './ui';
 
+/*
+ * The kinds of business shown (user, 15 Oct: cafés and bakeries, juice bars, cloud kitchens,
+ * pizzerias, hotels, bars and lounges, quick service). The first tile is wide.
+ */
 const TYPES: { name: string; line: string; image: Photo }[] = [
-  { name: 'Chop bars', line: 'Fufu, banku and soups by the portion', image: PHOTOS.typeChopBar },
   {
-    name: 'Rice and waakye spots',
-    line: 'Busy mornings, extras on every plate',
-    image: PHOTOS.typeRice,
+    name: 'Quick service',
+    line: 'Fast counter orders, combos and pickups',
+    image: PHOTOS.typeQuick,
   },
-  { name: 'Fast food', line: 'Fried rice, chicken and combos', image: PHOTOS.typeFastFood },
-  { name: 'Grills', line: 'Tilapia, chicken and kebabs to order', image: PHOTOS.typeGrill },
+  { name: 'Pizzerias', line: 'Sizes, toppings and deliveries', image: PHOTOS.typePizzeria },
   {
-    name: 'Street food stalls',
-    line: 'One tablet, wherever you set up',
-    image: PHOTOS.typeStreetFood,
+    name: 'Cafés and bakeries',
+    line: 'Coffee to order and pastries that sell out',
+    image: PHOTOS.typeCafe,
   },
-  { name: 'Cafés and bakeries', line: 'Pastries, bread and coffee', image: PHOTOS.typeCafe },
   { name: 'Juice bars', line: 'Sizes, flavours and quick pickups', image: PHOTOS.typeJuice },
+  {
+    name: 'Bars and lounges',
+    line: 'Food and drinks through the night',
+    image: PHOTOS.typeBar,
+  },
+  { name: 'Hotels', line: 'Restaurant and takeaway in one list', image: PHOTOS.typeHotel },
   {
     name: 'Cloud kitchens',
     line: 'Online orders straight to the kitchen',
@@ -27,7 +34,7 @@ const TYPES: { name: string; line: string; image: Photo }[] = [
 /** The kinds of food business Plateraa is made for, as photo tiles (user request, 15 Oct). */
 export function BusinessTypes({
   title = 'Made for every kind of food business',
-  intro = 'From a single waakye pot to a busy chop bar with a team, Plateraa fits the way you already serve.',
+  intro = 'From a corner café to a busy hotel kitchen, Plateraa fits the way you already serve.',
   more = false,
 }: {
   title?: string;
@@ -40,9 +47,16 @@ export function BusinessTypes({
       <Container>
         <SectionHeading title={title} intro={intro} />
         <ul className="mt-12 grid grid-cols-2 gap-3 sm:gap-5 lg:grid-cols-4">
-          {TYPES.map((t) => (
-            <li key={t.name}>
-              <PhotoSlot photo={t.name} image={t.image} className="aspect-[4/5] rounded-[24px]">
+          {TYPES.map((t, i) => (
+            <li key={t.name} className={i === 0 ? 'col-span-2' : undefined}>
+              <PhotoSlot
+                photo={t.name}
+                image={t.image}
+                className={cx(
+                  'rounded-[24px]',
+                  i === 0 ? 'aspect-[16/10] lg:aspect-auto lg:h-full' : 'aspect-[4/5]',
+                )}
+              >
                 <div className="absolute inset-0 bg-[linear-gradient(180deg,transparent_45%,rgba(21,17,14,0.88)_100%)]" />
                 <div className="absolute inset-x-4 bottom-4 sm:inset-x-5 sm:bottom-5">
                   <h3 className="text-[18px] leading-tight tracking-[-0.01em] text-white sm:text-[22px]">

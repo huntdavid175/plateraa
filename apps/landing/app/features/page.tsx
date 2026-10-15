@@ -106,8 +106,8 @@ const FEATURES: Feature[] = [
     points: ['One-tap sold out', 'Optional portion counts', 'Changes reach every screen'],
     art: (
       <div className="flex flex-col items-start gap-3">
-        <SoldOutTag item="Banku and okro" />
-        <SoldOutTag item="Grilled tilapia" className="ml-8" />
+        <SoldOutTag item="Pepperoni pizza" />
+        <SoldOutTag item="Chicken wings" className="ml-8" />
       </div>
     ),
   },
@@ -187,7 +187,7 @@ export default function FeaturesPage() {
 
       <Container>
         <PhotoSlot
-          photo="staff serving customers at a chop bar"
+          photo="staff serving customers"
           image={PHOTOS.featuresHero}
           priority
           className="h-[320px] rounded-[32px] sm:h-[520px]"
