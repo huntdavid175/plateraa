@@ -2,7 +2,6 @@ import { useState } from 'react';
 import { ActivityIndicator, ScrollView, Text, View } from 'react-native';
 import { useTablet } from '../tablet/TabletProvider';
 import { Button } from '../ui/Button';
-import { Badge } from '../ui/controls';
 import { Label } from '../ui/Field';
 import { cedis, colors, font, radii, space, text, themed, themedStyles, timeOf } from '../ui/theme';
 import { closeDrawer, moveCash, openDrawer, type Counter } from './actions';
@@ -28,6 +27,8 @@ const TONE_COLOURS = themed(() => ({
 /**
  * The cash drawer: open it with a float, take cash out to the safe or put some in, and close it
  * with a count. Closing is a blind count: what the tablet expected shows only after counting.
+ * Open, it's two panes like the rest of the counter: the drawer and what can be done with it on
+ * the left, the cash taken out and put in on the right.
  */
 export function DrawerScreen({ counter }: { counter: Counter }) {
   const { staff } = useTablet();
@@ -46,43 +47,61 @@ export function DrawerScreen({ counter }: { counter: Counter }) {
 
   return (
     <View style={styles.screen}>
-      <ScrollView contentContainerStyle={styles.content}>
-        {open ? (
-          <>
+      {open ? (
+        <View style={styles.panes}>
+          <ScrollView style={styles.main} contentContainerStyle={styles.mainContent}>
             <View style={styles.card}>
-              <View style={styles.cardHead}>
-                <Text style={styles.title}>Drawer open</Text>
-                <Badge label="Open" tone="good" />
+              <State open />
+              <View style={styles.float}>
+                <Label text="Float" />
+                <Text style={styles.floatValue}>{cedis(open.float)}</Text>
+                <Text style={styles.meta}>
+                  Opened by {open.openedByName ?? 'someone'} at {timeOf(open.openedAt)}
+                </Text>
               </View>
-              <Text style={styles.meta}>
-                Opened by {open.openedByName ?? 'someone'} at {timeOf(open.openedAt)} with{' '}
-                <Text style={styles.money}>{cedis(open.float)}</Text>
-              </Text>
               <View style={styles.actions}>
                 <Button
                   label="Take cash out"
                   kind="secondary"
-                  size="md"
                   grow
                   onPress={() => setSheet('DROP')}
                 />
                 <Button
                   label="Put cash in"
                   kind="secondary"
-                  size="md"
                   grow
                   onPress={() => setSheet('PAY_IN')}
                 />
               </View>
             </View>
 
-            <View style={styles.card}>
-              <Label text="Taken out and put in" />
-              {open.movements.length === 0 ? (
-                <Text style={styles.none}>Nothing yet.</Text>
-              ) : (
-                open.movements.map((movement) => (
-                  <View key={movement.id} style={styles.movement}>
+            <View style={styles.closeBlock}>
+              <Button label="Close the drawer" onPress={() => setSheet('close')} />
+              <Text style={styles.hint}>
+                At the end of a shift, count the cash. The tablet then shows what it expected and
+                any difference.
+              </Text>
+            </View>
+          </ScrollView>
+
+          <View style={styles.side}>
+            <View style={styles.sideHead}>
+              <Text style={styles.sideTitle}>Taken out and put in</Text>
+              {open.movements.length > 0 && (
+                <Text style={styles.sideCount}>{open.movements.length}</Text>
+              )}
+            </View>
+            {open.movements.length === 0 ? (
+              <View style={styles.none}>
+                <Text style={styles.noneTitle}>Nothing yet</Text>
+                <Text style={styles.noneHint}>
+                  Cash going to the safe, or change brought in, shows here.
+                </Text>
+              </View>
+            ) : (
+              <ScrollView contentContainerStyle={styles.movements}>
+                {open.movements.map((movement, index) => (
+                  <View key={movement.id} style={[styles.movement, index > 0 && styles.rule]}>
                     <View style={styles.grow}>
                       <Text style={styles.movementTitle}>
                         {MOVEMENT_WORDS[movement.type]}
@@ -99,38 +118,29 @@ export function DrawerScreen({ counter }: { counter: Counter }) {
                       {cedis(movement.amount)}
                     </Text>
                   </View>
-                ))
-              )}
-            </View>
-
-            <Button label="Close the drawer" onPress={() => setSheet('close')} />
-            <Text style={styles.hint}>
-              At the end of a shift, count the cash. The tablet then shows what it expected and any
-              difference.
-            </Text>
-          </>
-        ) : (
-          <>
-            <View style={styles.card}>
-              <View style={styles.cardHead}>
-                <Text style={styles.title}>Drawer closed</Text>
-                <Badge label="Closed" />
-              </View>
-              {lastClosed ? (
-                <LastClose
-                  closed={lastClosed}
-                  showFigures={seesDrawerResult(staff, lastClosed.closedBy)}
-                />
-              ) : (
-                <Text style={styles.meta}>
-                  Count the float into the drawer before the first cash sale.
-                </Text>
-              )}
-            </View>
-            <Button label="Open the drawer" onPress={() => setSheet('open')} />
-          </>
-        )}
-      </ScrollView>
+                ))}
+              </ScrollView>
+            )}
+          </View>
+        </View>
+      ) : (
+        <ScrollView contentContainerStyle={styles.closedContent}>
+          <View style={styles.card}>
+            <State open={false} />
+            {lastClosed ? (
+              <LastClose
+                closed={lastClosed}
+                showFigures={seesDrawerResult(staff, lastClosed.closedBy)}
+              />
+            ) : (
+              <Text style={styles.meta}>
+                Count the float into the drawer before the first cash sale.
+              </Text>
+            )}
+          </View>
+          <Button label="Open the drawer" onPress={() => setSheet('open')} />
+        </ScrollView>
+      )}
 
       <DrawerSheet
         visible={sheet === 'open'}
@@ -188,6 +198,16 @@ export function DrawerScreen({ counter }: { counter: Counter }) {
   );
 }
 
+/** "Drawer open" or "Drawer closed", with a dot: green while cash is being taken. */
+function State({ open }: { open: boolean }) {
+  return (
+    <View style={styles.state}>
+      <View style={[styles.dot, open && styles.dotOpen]} />
+      <Text style={styles.title}>{open ? 'Drawer open' : 'Drawer closed'}</Text>
+    </View>
+  );
+}
+
 function LastClose({ closed, showFigures }: { closed: ClosedDrawer; showFigures: boolean }) {
   const difference = varianceWords(closed.variance);
   return (
@@ -227,9 +247,12 @@ function Figure({ label, value, colour }: { label: string; value: string; colour
 const styles = themedStyles(() => ({
   screen: { flex: 1, backgroundColor: colors.ground },
   loading: { marginTop: space.xl },
-  content: {
+  panes: { flex: 1, flexDirection: 'row' },
+  main: { flex: 55 },
+  mainContent: { flexGrow: 1, padding: space.lg, gap: space.lg },
+  closedContent: {
     width: '100%',
-    maxWidth: 720,
+    maxWidth: 560,
     alignSelf: 'center',
     padding: space.lg,
     gap: space.md,
@@ -238,29 +261,59 @@ const styles = themedStyles(() => ({
     backgroundColor: colors.canvas,
     borderRadius: radii.xl,
     padding: space.lg,
-    gap: 12,
+    gap: 20,
   },
-  cardHead: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
+  state: { flexDirection: 'row', alignItems: 'center', gap: 10 },
+  dot: { width: 10, height: 10, borderRadius: 5, backgroundColor: colors.disabled },
+  dotOpen: { backgroundColor: colors.online },
   title: { fontFamily: font.semibold, fontSize: text.heading, color: colors.ink },
+  float: { gap: 4 },
+  floatValue: {
+    fontFamily: font.monoMedium,
+    fontSize: text.huge,
+    lineHeight: 48,
+    color: colors.ink,
+  },
   meta: { fontFamily: font.regular, fontSize: text.body, lineHeight: 23, color: colors.text2 },
-  money: { fontFamily: font.monoMedium, color: colors.ink },
-  actions: { flexDirection: 'row', gap: space.sm, marginTop: space.xs },
-  none: { fontFamily: font.regular, fontSize: text.body, color: colors.muted },
-  grow: { flex: 1 },
-  movement: {
+  actions: { flexDirection: 'row', gap: space.sm },
+  /** At the foot of the pane: the end of the shift, kept apart from the moves during it. */
+  closeBlock: { marginTop: 'auto', gap: space.sm },
+  side: {
+    flex: 45,
+    backgroundColor: colors.canvas,
+    borderLeftWidth: 1,
+    borderLeftColor: colors.line,
+  },
+  sideHead: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: space.md,
-    paddingVertical: 10,
-    borderTopWidth: 1,
-    borderTopColor: colors.divider,
+    gap: space.sm,
+    paddingHorizontal: space.lg,
+    paddingTop: 20,
+    paddingBottom: 12,
+    borderBottomWidth: 1,
+    borderBottomColor: colors.divider,
   },
+  sideTitle: { fontFamily: font.semibold, fontSize: 18, color: colors.ink },
+  sideCount: { fontFamily: font.monoMedium, fontSize: text.small, color: colors.muted },
+  none: { flex: 1, alignItems: 'center', justifyContent: 'center', gap: 4, padding: space.xl },
+  noneTitle: { fontFamily: font.medium, fontSize: text.body, color: colors.text2 },
+  noneHint: {
+    fontFamily: font.regular,
+    fontSize: text.small,
+    color: colors.muted,
+    textAlign: 'center',
+  },
+  movements: { paddingHorizontal: space.lg, paddingBottom: space.md },
+  grow: { flex: 1 },
+  movement: { flexDirection: 'row', alignItems: 'center', gap: space.md, paddingVertical: 14 },
+  rule: { borderTopWidth: 1, borderTopColor: colors.divider },
   movementTitle: { fontFamily: font.medium, fontSize: text.body, color: colors.ink },
   movementMeta: { fontFamily: font.regular, fontSize: text.small, color: colors.muted },
   movementAmount: { fontFamily: font.monoMedium, fontSize: text.body, color: colors.ink },
   cashIn: { color: colors.goodInk },
   hint: { fontFamily: font.regular, fontSize: text.small, lineHeight: 20, color: colors.muted },
-  figures: { flexDirection: 'row', gap: space.md, flexWrap: 'wrap', marginTop: space.xs },
+  figures: { flexDirection: 'row', gap: space.md, flexWrap: 'wrap' },
   figure: { flexGrow: 1, gap: 4 },
   figureValue: { fontFamily: font.monoMedium, fontSize: 22, color: colors.ink },
 }));
