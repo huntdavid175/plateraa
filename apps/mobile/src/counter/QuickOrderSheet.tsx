@@ -52,13 +52,16 @@ export function QuickOrderSheet({
           {order.lines.map((line) => {
             const extras = extrasText(line);
             return (
-              <View key={line.id}>
-                <Text style={styles.line}>
-                  {line.quantity} × {line.name}
-                  {line.variant_name ? ` (${line.variant_name})` : ''}
-                </Text>
-                {extras ? <Text style={styles.extras}>{extras}</Text> : null}
-                {line.note ? <Text style={styles.note}>“{line.note}”</Text> : null}
+              <View key={line.id} style={styles.lineRow}>
+                <Text style={styles.qty}>{line.quantity}×</Text>
+                <View style={styles.grow}>
+                  <Text style={styles.line}>
+                    {line.name}
+                    {line.variant_name ? ` (${line.variant_name})` : ''}
+                  </Text>
+                  {extras ? <Text style={styles.extras}>{extras}</Text> : null}
+                  {line.note ? <Text style={styles.note}>“{line.note}”</Text> : null}
+                </View>
               </View>
             );
           })}
@@ -79,6 +82,9 @@ const styles = themedStyles(() => ({
   source: { fontFamily: font.medium, fontSize: 14, color: colors.muted },
   minutes: { fontFamily: font.mono, fontSize: 14, color: colors.muted },
   lines: { gap: 8, paddingVertical: space.xs },
+  lineRow: { flexDirection: 'row', gap: 10 },
+  grow: { flex: 1 },
+  qty: { minWidth: 30, fontFamily: font.monoMedium, fontSize: 19, color: colors.ink },
   line: { fontFamily: font.medium, fontSize: 19, color: colors.ink },
   extras: { fontFamily: font.regular, fontSize: 15, color: colors.muted },
   note: { fontFamily: font.medium, fontSize: 15, color: colors.amberInk },

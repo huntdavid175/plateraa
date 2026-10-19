@@ -6,7 +6,7 @@ import { useEngineState } from '../tablet/TabletProvider';
 import { Button } from '../ui/Button';
 import { Badge, Chip } from '../ui/controls';
 import { Field, Label } from '../ui/Field';
-import { cedis, colors, font, radii, space, text, themed, themedStyles } from '../ui/theme';
+import { cedis, colors, font, radii, space, text, themed, themedStyles, timeOf } from '../ui/theme';
 import {
   advance,
   cancelOrder,
@@ -29,14 +29,7 @@ import {
   stillToPay,
   type OrderFilter,
 } from './views';
-import {
-  CANCEL_REASONS,
-  STATUS_LABELS,
-  TYPE_LABELS,
-  kindLabel,
-  linkWords,
-  nextStepLabel,
-} from './words';
+import { CANCEL_REASONS, STATUS_LABELS, kindLabel, linkWords, nextStepLabel } from './words';
 
 /** A payment link's state is always a sentence; the colour only backs it up. */
 const LINK_COLOURS = themed(() => ({
@@ -47,6 +40,15 @@ const LINK_COLOURS = themed(() => ({
 }));
 
 type Tone = 'neutral' | 'good' | 'amber' | 'red' | 'info';
+
+/** A status said as a coloured word, not a pill: the pills are kept for what must not be missed. */
+const TONE_INK = themed(() => ({
+  neutral: colors.muted,
+  good: colors.goodInk,
+  amber: colors.amberInk,
+  red: colors.redInk,
+  info: colors.infoInk,
+}));
 
 /** What an empty tab says, so it's clear which list is empty. */
 const EMPTY: Record<OrderFilter, string> = {
@@ -189,6 +191,11 @@ export function OrdersScreen({
   );
 }
 
+/**
+ * One order in the list, in two lines: who (or what) and the flags that must not be missed, then
+ * how it came in and what's in it; the total, and where it stands, on the right. The chosen
+ * order is raised off the list, the way a chosen segment is.
+ */
 function OrderRow({
   order,
   now,
@@ -204,17 +211,20 @@ function OrderRow({
   const unpaid = open && stillToPay(order) > 0;
   const refundOwed = refundOwedOf(order) > 0;
   const late = urgency(order.created_at_device, order.prepMinutes, now);
-  const who = order.customer_name ?? order.customer_phone ?? TYPE_LABELS[order.type];
+  const who = order.customer_name ?? order.customer_phone;
   const summary = order.lines
     .map((line) => `${line.quantity > 1 ? `${line.quantity}× ` : ''}${line.name}`)
     .join(', ');
+  const held = order.on_hold && open;
+  const status = held ? 'On hold' : STATUS_LABELS[order.status];
+  const tone = held ? 'amber' : statusTone(order.status);
 
   return (
     <Pressable
       accessibilityRole="button"
       accessibilityState={{ selected }}
       onPress={onPress}
-      style={[styles.row, selected && styles.rowOn]}
+      style={({ pressed }) => [styles.row, selected && styles.rowOn, pressed && styles.rowPressed]}
     >
       <View
         style={[
@@ -223,43 +233,34 @@ function OrderRow({
           selected && !unpaid && !refundOwed && styles.edgeBrand,
         ]}
       />
+      <Text style={styles.rowNumber}>{order.display_number}</Text>
       <View style={styles.rowBody}>
         <View style={styles.rowTop}>
-          <Text style={styles.rowNumber}>{order.display_number}</Text>
-          <Badge label={kindLabel(order)} tone={order.source === 'POS' ? 'neutral' : 'info'} />
+          <Text style={styles.who} numberOfLines={1}>
+            {who ?? summary}
+          </Text>
           {unpaid && <Badge label="Unpaid" tone="red" strong />}
           {refundOwed && <Badge label="Refund owed" tone="amber" strong />}
-          <View style={styles.grow} />
-          {open && (
-            <Text
-              style={[
-                styles.age,
-                late === 'amber' && styles.amberText,
-                late === 'red' && styles.redText,
-              ]}
-            >
+          {order.provisional ? <Badge label="Not synced yet" tone="offline" /> : null}
+        </View>
+        <Text style={styles.summary} numberOfLines={1}>
+          {kindLabel(order)}
+          {who ? ` · ${summary}` : ''}
+        </Text>
+      </View>
+      <View style={styles.rowEnd}>
+        <Text style={styles.rowTotal}>{cedis(order.total)}</Text>
+        <Text style={styles.rowStatus} numberOfLines={1}>
+          <Text style={{ color: TONE_INK[tone] }}>{status}</Text>
+          {' · '}
+          {open ? (
+            <Text style={[late === 'amber' && styles.amberText, late === 'red' && styles.redText]}>
               {minutesSince(order.created_at_device, now)}m
             </Text>
+          ) : (
+            timeOf(order.created_at_device)
           )}
-        </View>
-        <View style={styles.rowMid}>
-          <Text style={styles.who} numberOfLines={1}>
-            {who}
-          </Text>
-          <Text style={styles.summary} numberOfLines={1}>
-            {summary}
-          </Text>
-        </View>
-        <View style={styles.rowBottom}>
-          <Badge
-            label={order.on_hold && open ? 'On hold' : STATUS_LABELS[order.status]}
-            tone={order.on_hold && open ? 'amber' : statusTone(order.status)}
-          />
-          <View style={styles.rowTotalBox}>
-            {order.provisional ? <Badge label="Not synced yet" tone="offline" /> : null}
-            <Text style={styles.rowTotal}>{cedis(order.total)}</Text>
-          </View>
-        </View>
+        </Text>
       </View>
     </Pressable>
   );
@@ -328,12 +329,13 @@ function OrderDetail({
       <View style={styles.detailHead}>
         <View style={styles.detailTitle}>
           <Text style={styles.detailNumber}>{order.display_number}</Text>
-          <Badge label={kindLabel(order)} tone={order.source === 'POS' ? 'neutral' : 'info'} />
+          <Text style={styles.detailKind}>{kindLabel(order)}</Text>
           <View style={styles.grow} />
-          <Badge
-            label={order.on_hold && open ? 'On hold' : STATUS_LABELS[order.status]}
-            tone={order.on_hold && open ? 'amber' : statusTone(order.status)}
-          />
+          <Text style={styles.age}>
+            {open
+              ? `${minutesSince(order.created_at_device, now)} min ago`
+              : timeOf(order.created_at_device)}
+          </Text>
         </View>
         {(order.customer_name || order.customer_phone) && (
           <Text style={styles.detailLine}>
@@ -348,12 +350,14 @@ function OrderDetail({
           <Text style={[styles.detailLine, styles.mono]}>Ref {order.external_reference}</Text>
         )}
         {order.note && <Badge label={order.note} tone="amber" />}
+        {/* Where it stands is on the steps below; up here only what they don't show. */}
         <View style={styles.payRow}>
+          {order.status === 'CANCELLED' && <Badge label="Cancelled" tone="red" />}
+          {order.on_hold && open && <Badge label="On hold" tone="amber" />}
           {open && toPay > 0 && <Badge label="Unpaid" tone="red" strong />}
           {open && toPay <= 0 && order.amount_paid > 0 && <Badge label="Paid" tone="good" />}
           {refundOwed > 0 && <Badge label="Refund owed" tone="amber" strong />}
           {order.provisional ? <Badge label="Not synced yet" tone="offline" /> : null}
-          <Text style={styles.age}>{minutesSince(order.created_at_device, now)} min ago</Text>
         </View>
       </View>
 
@@ -380,7 +384,13 @@ function OrderDetail({
                     ]}
                   />
                 )}
-                <View style={[styles.stepDot, index <= reached && styles.stepDotOn]} />
+                <View
+                  style={[
+                    styles.stepDot,
+                    index <= reached && styles.stepDotOn,
+                    index === reached && styles.stepDotNow,
+                  ]}
+                />
                 <Text style={[styles.stepLabel, index <= reached && styles.stepLabelOn]}>
                   {STATUS_LABELS[status]}
                 </Text>
@@ -634,31 +644,34 @@ const styles = themedStyles(() => ({
   countOn: { backgroundColor: colors.brand },
   countLabel: { fontFamily: font.monoMedium, fontSize: 12, lineHeight: 18, color: colors.muted },
   countLabelOn: { color: colors.onBrand },
-  rows: { padding: space.md, gap: 6 },
+  rows: { paddingHorizontal: space.sm, paddingVertical: space.sm, gap: 2 },
   empty: { fontFamily: font.regular, fontSize: 15, color: colors.muted, padding: space.md },
   row: {
+    minHeight: 68,
     flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+    paddingRight: space.md,
     borderRadius: radii.lg,
-    backgroundColor: colors.tileMuted,
-    borderWidth: 1.5,
-    borderColor: 'transparent',
     overflow: 'hidden',
   },
-  rowOn: { backgroundColor: colors.raised, borderColor: colors.line },
-  edge: { width: 4 },
+  rowOn: { backgroundColor: colors.raised },
+  rowPressed: { backgroundColor: colors.tile },
+  /** Red for money owed either way; the brand colour for the chosen order. */
+  edge: { alignSelf: 'stretch', width: 4 },
   edgeRed: { backgroundColor: colors.red },
   edgeBrand: { backgroundColor: colors.brand },
-  rowBody: { flex: 1, paddingHorizontal: 14, paddingVertical: 12, gap: 6 },
+  rowNumber: { minWidth: 48, fontFamily: font.monoMedium, fontSize: 17, color: colors.ink },
+  rowBody: { flex: 1, gap: 3, paddingVertical: 12 },
   rowTop: { flexDirection: 'row', alignItems: 'center', gap: 6 },
-  rowNumber: { fontFamily: font.monoMedium, fontSize: 15, color: colors.ink },
+  who: { flexShrink: 1, fontFamily: font.medium, fontSize: 15, color: colors.ink },
+  summary: { fontFamily: font.regular, fontSize: 13, color: colors.muted },
+  rowEnd: { alignItems: 'flex-end', gap: 3, maxWidth: '38%' },
+  rowTotal: { fontFamily: font.monoMedium, fontSize: 15, color: colors.ink },
+  rowStatus: { fontFamily: font.medium, fontSize: 13, color: colors.muted },
   age: { fontFamily: font.monoMedium, fontSize: 13, color: colors.muted },
   amberText: { color: colors.amberInk },
   redText: { color: colors.redInk },
-  rowMid: { flexDirection: 'row', alignItems: 'baseline', gap: space.sm },
-  who: { fontFamily: font.medium, fontSize: 14, color: colors.ink, maxWidth: '45%' },
-  summary: { flex: 1, fontFamily: font.regular, fontSize: 13, color: colors.muted },
-  rowBottom: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
-  rowTotal: { fontFamily: font.monoMedium, fontSize: 15, color: colors.ink },
   detail: { flex: 42, backgroundColor: colors.canvas },
   detailEmpty: {
     flex: 42,
@@ -675,7 +688,8 @@ const styles = themedStyles(() => ({
     borderBottomColor: colors.divider,
   },
   detailTitle: { flexDirection: 'row', alignItems: 'center', gap: space.sm },
-  detailNumber: { fontFamily: font.monoMedium, fontSize: text.heading, color: colors.ink },
+  detailNumber: { fontFamily: font.monoMedium, fontSize: text.total, color: colors.ink },
+  detailKind: { fontFamily: font.medium, fontSize: text.small, color: colors.muted },
   detailLine: { fontFamily: font.regular, fontSize: 14, color: colors.muted },
   mono: { fontFamily: font.mono },
   payRow: { flexDirection: 'row', alignItems: 'center', gap: space.sm, flexWrap: 'wrap' },
@@ -696,6 +710,16 @@ const styles = themedStyles(() => ({
     backgroundColor: colors.track,
   },
   stepDotOn: { backgroundColor: colors.brand, borderColor: colors.brand },
+  /** Where the order is now: a halo, so it reads apart from the steps already done. */
+  stepDotNow: {
+    width: 22,
+    height: 22,
+    borderRadius: 11,
+    borderWidth: 5,
+    borderColor: colors.brandTint,
+    marginTop: -3,
+    marginBottom: -3,
+  },
   /**
    * The line joining one step to the next. Each step draws its own half, from its edge to the
    * middle, so the halves of neighbouring steps meet; the dot is opaque and covers the ends.
@@ -705,7 +729,7 @@ const styles = themedStyles(() => ({
   stepTrackBefore: { left: 0, right: '50%' },
   stepTrackAfter: { left: '50%', right: 0 },
   stepTrackOn: { backgroundColor: colors.brand },
-  stepLabel: { fontFamily: font.regular, fontSize: 12, color: colors.faint, textAlign: 'center' },
+  stepLabel: { fontFamily: font.regular, fontSize: 12, color: colors.muted, textAlign: 'center' },
   stepLabelOn: { fontFamily: font.semibold, color: colors.ink },
   section: { paddingVertical: space.md, gap: 10 },
   itemRow: { flexDirection: 'row', gap: space.sm, alignItems: 'flex-start' },

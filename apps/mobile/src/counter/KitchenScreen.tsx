@@ -18,7 +18,8 @@ const LATE_WORDS = { normal: null, amber: 'getting late', red: 'late' } as const
 
 /**
  * The kitchen's view, readable from two metres: big order numbers and lines, a running time
- * that turns amber then red (with a word), and one tap to move each order on.
+ * whose band across the top of the card turns amber then red (with a word), and one tap to move
+ * each order on. Cards in a row are the same height, so their buttons line up along the bottom.
  */
 export function KitchenScreen({
   orders,
@@ -88,9 +89,16 @@ export function KitchenScreen({
 
       <ScrollView contentContainerStyle={styles.grid}>
         {shown.length === 0 ? (
-          <Text style={styles.empty}>
-            {view === 'cooking' ? 'Nothing to cook right now.' : 'Nothing waiting to go out.'}
-          </Text>
+          <View style={styles.empty}>
+            <Text style={styles.emptyTitle}>
+              {view === 'cooking' ? 'Nothing to cook right now' : 'Nothing waiting to go out'}
+            </Text>
+            <Text style={styles.emptyHint}>
+              {view === 'cooking'
+                ? 'Orders show up here as soon as they can be cooked.'
+                : 'Orders marked ready wait here until they’re handed over.'}
+            </Text>
+          </View>
         ) : (
           shown.map((order) => {
             const since = view === 'cooking' ? kitchenSince(order) : order.created_at_device;
@@ -103,14 +111,15 @@ export function KitchenScreen({
             return (
               <View
                 key={order.id}
-                style={[
-                  styles.card,
-                  cardWidth ? { width: cardWidth } : styles.cardFallback,
-                  late === 'amber' && styles.cardAmber,
-                  late === 'red' && styles.cardRed,
-                ]}
+                style={[styles.card, cardWidth ? { width: cardWidth } : styles.cardFallback]}
               >
-                <View style={styles.cardHead}>
+                <View
+                  style={[
+                    styles.cardHead,
+                    late === 'amber' && styles.headAmber,
+                    late === 'red' && styles.headRed,
+                  ]}
+                >
                   <Text style={styles.number}>{order.display_number}</Text>
                   <Text style={styles.source} numberOfLines={1}>
                     {kindLabel(order)}
@@ -142,24 +151,29 @@ export function KitchenScreen({
                   {lines.map((line) => {
                     const extras = extrasText(line);
                     return (
-                      <View key={line.id}>
-                        <Text style={styles.line}>
-                          {line.quantity} × {line.name}
-                          {line.variant_name ? ` (${line.variant_name})` : ''}
-                        </Text>
-                        {extras ? <Text style={styles.extras}>{extras}</Text> : null}
-                        {line.note ? <Text style={styles.lineNote}>“{line.note}”</Text> : null}
+                      <View key={line.id} style={styles.lineRow}>
+                        <Text style={styles.qty}>{line.quantity}×</Text>
+                        <View style={styles.grow}>
+                          <Text style={styles.line}>
+                            {line.name}
+                            {line.variant_name ? ` (${line.variant_name})` : ''}
+                          </Text>
+                          {extras ? <Text style={styles.extras}>{extras}</Text> : null}
+                          {line.note ? <Text style={styles.lineNote}>“{line.note}”</Text> : null}
+                        </View>
                       </View>
                     );
                   })}
                   {order.note ? <Text style={styles.lineNote}>{order.note}</Text> : null}
                 </View>
                 {next && (
-                  <Button
-                    label={next}
-                    onPress={() => void step(order)}
-                    busy={busyId === order.id}
-                  />
+                  <View style={styles.cardFoot}>
+                    <Button
+                      label={next}
+                      onPress={() => void step(order)}
+                      busy={busyId === order.id}
+                    />
+                  </View>
                 )}
               </View>
             );
@@ -188,28 +202,46 @@ const styles = themedStyles(() => ({
     paddingHorizontal: space.lg,
     paddingBottom: space.lg,
   },
-  empty: { fontFamily: font.regular, fontSize: 18, color: colors.muted, paddingTop: space.lg },
+  grow: { flex: 1 },
+  empty: { width: '100%', alignItems: 'center', gap: 6, paddingTop: 96 },
+  emptyTitle: { fontFamily: font.medium, fontSize: 20, color: colors.text2 },
+  emptyHint: { fontFamily: font.regular, fontSize: 15, color: colors.muted },
   card: {
     backgroundColor: colors.canvas,
     borderRadius: 16,
-    borderWidth: 3,
-    borderColor: colors.canvas,
-    padding: space.md,
-    gap: 12,
+    overflow: 'hidden',
   },
   cardFallback: { width: '48%' },
-  cardAmber: { borderColor: colors.amber },
-  cardRed: { borderColor: colors.red },
-  cardHead: { flexDirection: 'row', alignItems: 'center', gap: 10 },
-  number: { fontFamily: font.monoMedium, fontSize: 32, color: colors.ink },
-  source: { flex: 1, fontFamily: font.medium, fontSize: 14, color: colors.muted },
+  /** The band says how long it's been: grey, then amber, then red, always with a word. */
+  cardHead: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+    paddingHorizontal: space.md,
+    paddingVertical: 10,
+    backgroundColor: colors.track,
+  },
+  headAmber: { backgroundColor: colors.amberBg },
+  headRed: { backgroundColor: colors.redTint },
+  number: { fontFamily: font.monoMedium, fontSize: 36, lineHeight: 44, color: colors.ink },
+  source: { flex: 1, fontFamily: font.medium, fontSize: 15, color: colors.text2 },
   time: { alignItems: 'flex-end' },
-  minutes: { fontFamily: font.monoMedium, fontSize: 20, color: colors.muted },
-  lateWord: { fontFamily: font.semibold, fontSize: 13 },
+  minutes: { fontFamily: font.monoMedium, fontSize: 22, color: colors.text2 },
+  lateWord: { fontFamily: font.semibold, fontSize: 14 },
   amberText: { color: colors.amberInk },
   redText: { color: colors.redInk },
-  lines: { gap: 8 },
+  lines: { gap: 10, paddingHorizontal: space.md, paddingTop: 14, paddingBottom: space.md },
+  lineRow: { flexDirection: 'row', gap: 10 },
+  qty: {
+    minWidth: 34,
+    fontFamily: font.monoMedium,
+    fontSize: 20,
+    lineHeight: 26,
+    color: colors.ink,
+  },
   line: { fontFamily: font.medium, fontSize: 20, lineHeight: 26, color: colors.ink },
+  /** Pushed to the bottom, so the buttons of a row of cards line up. */
+  cardFoot: { marginTop: 'auto', paddingHorizontal: space.md, paddingBottom: space.md },
   extras: { fontFamily: font.regular, fontSize: 16, color: colors.muted },
   lineNote: {
     alignSelf: 'flex-start',
