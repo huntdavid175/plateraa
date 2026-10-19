@@ -173,10 +173,6 @@ export function PaymentSheet({
 
             {mode === 'cash' && (
               <>
-                <View>
-                  <Label text="To pay" />
-                  <Text style={styles.toPay}>{cedis(due)}</Text>
-                </View>
                 <View style={styles.quick}>
                   <View style={styles.grow}>
                     <Button
@@ -201,6 +197,8 @@ export function PaymentSheet({
                 </View>
                 <View style={styles.cashRow}>
                   <View style={styles.cashSide}>
+                    <Label text="To pay" />
+                    <Text style={styles.toPay}>{cedis(due)}</Text>
                     <Label text="Cash given" />
                     <Text style={[styles.display, typed ? styles.displayOn : null]}>
                       GH₵ {typed || '0.00'}
@@ -246,7 +244,7 @@ export function PaymentSheet({
             )}
             {mode === 'cash' && (
               <Button
-                label="Done"
+                label={enough ? `Take ${cedis(given!)} cash` : 'Take cash'}
                 onPress={() => run(() => onCash(given!, shiftId!))}
                 busy={busy}
                 disabled={!enough || !shiftId}
@@ -312,14 +310,20 @@ const styles = themedStyles(() => ({
     paddingTop: 20,
   },
   payTitle: { fontFamily: font.semibold, fontSize: 18, color: colors.ink },
-  payBody: { paddingHorizontal: 28, paddingTop: 20, paddingBottom: space.md, gap: 20 },
+  payBody: { paddingHorizontal: 28, paddingTop: 20, paddingBottom: space.md, gap: 18 },
   body: { fontFamily: font.regular, fontSize: 15, lineHeight: 22, color: colors.muted },
   note: { fontFamily: font.medium, fontSize: 14, color: colors.brandInk },
   known: { fontFamily: font.medium, fontSize: 14, color: colors.goodInk, marginTop: -12 },
-  toPay: { fontFamily: font.monoMedium, fontSize: text.huge, color: colors.ink, marginTop: 6 },
+  toPay: {
+    fontFamily: font.monoMedium,
+    fontSize: text.huge,
+    lineHeight: 48,
+    color: colors.ink,
+    marginBottom: space.sm,
+  },
   quick: { flexDirection: 'row', gap: 10 },
   cashRow: { flexDirection: 'row', gap: 20, alignItems: 'flex-start' },
-  cashSide: { flex: 1, gap: 8 },
+  cashSide: { flex: 1, gap: 6 },
   display: {
     minHeight: 56,
     borderRadius: radii.md,
@@ -331,11 +335,11 @@ const styles = themedStyles(() => ({
     fontFamily: font.monoMedium,
     fontSize: 22,
     lineHeight: 52,
-    color: colors.disabled,
+    color: colors.faint,
     marginBottom: space.sm,
   },
   displayOn: { borderColor: colors.brand, color: colors.ink },
-  change: { fontFamily: font.monoMedium, fontSize: 36, color: colors.disabled },
+  change: { fontFamily: font.monoMedium, fontSize: 36, lineHeight: 44, color: colors.faint },
   changeOn: { color: colors.good },
   short: { fontFamily: font.medium, fontSize: 14, color: colors.redInk },
   problem: { fontFamily: font.medium, fontSize: 15, color: colors.redInk },

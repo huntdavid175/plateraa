@@ -106,7 +106,7 @@ export function NavBar({ tab, onTab }: { tab: CounterTab; onTab: (tab: CounterTa
               count ? `${option.label}, ${plural(count, 'online order')} to accept` : option.label
             }
             onPress={() => onTab(option.value)}
-            style={({ pressed }) => [styles.item, pressed && styles.pressed]}
+            style={({ pressed }) => [styles.item, on ? styles.itemOn : pressed && styles.pressed]}
           >
             <View style={styles.glyph}>
               <option.Icon color={on ? colors.brand : colors.muted} />
@@ -220,6 +220,7 @@ const styles = themedStyles(() => ({
     borderRadius: radii.md,
   },
   pressed: { backgroundColor: colors.track },
+  itemOn: { backgroundColor: colors.brandTint },
   glyph: { width: 22, height: 22, alignItems: 'center', justifyContent: 'center' },
   avatar: {
     width: 28,
@@ -230,7 +231,7 @@ const styles = themedStyles(() => ({
   },
   initials: { fontFamily: font.semibold, fontSize: 13 },
   label: { fontFamily: font.medium, fontSize: 15, color: colors.muted },
-  labelOn: { fontFamily: font.semibold, color: colors.brand },
+  labelOn: { fontFamily: font.semibold, color: colors.brandInk },
   count: {
     position: 'absolute',
     top: -7,

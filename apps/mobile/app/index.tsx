@@ -79,6 +79,12 @@ export default function CounterScreen() {
     () => new Map((menu ?? []).flatMap((category) => category.items).map((i) => [i.id, i])),
     [menu],
   );
+  const onTicket = useMemo(() => {
+    const counts = new Map<string, number>();
+    for (const line of lines)
+      counts.set(line.itemId, (counts.get(line.itemId) ?? 0) + line.quantity);
+    return counts;
+  }, [lines]);
   const cooking = useMemo(
     () => (orders ?? []).filter((order) => laneOf(order, payBeforePrep) === 'kitchen'),
     [orders, payBeforePrep],
@@ -238,7 +244,7 @@ export default function CounterScreen() {
 
       {tab === 'counter' && (
         <View style={styles.body}>
-          <MenuPane menu={menu} onPick={pick} />
+          <MenuPane menu={menu} onTicket={onTicket} onPick={pick} />
           <OrderPane
             number={number}
             lines={lines}

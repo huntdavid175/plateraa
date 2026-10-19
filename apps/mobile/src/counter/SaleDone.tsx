@@ -33,6 +33,9 @@ export function SaleDone({ done, onDismiss }: { done: Done | null; onDismiss: ()
       >
         {done && (
           <View style={styles.card}>
+            <View style={styles.tick} accessibilityElementsHidden>
+              <Text style={styles.tickMark}>✓</Text>
+            </View>
             <Label text="Order" />
             <Text style={styles.number}>{done.number}</Text>
             {done.change !== null && (
@@ -69,6 +72,16 @@ const styles = themedStyles(() => ({
     paddingHorizontal: space.xl,
     paddingVertical: 28,
   },
+  tick: {
+    width: 56,
+    height: 56,
+    borderRadius: 28,
+    backgroundColor: colors.goodBg,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: space.xs,
+  },
+  tickMark: { fontSize: 28, lineHeight: 32, color: colors.goodInk },
   number: { fontFamily: font.monoMedium, fontSize: 88, lineHeight: 96, color: colors.ink },
   change: { alignItems: 'center', gap: 4, marginTop: space.sm },
   changeValue: { fontFamily: font.monoMedium, fontSize: 52, lineHeight: 60, color: colors.good },

@@ -1,6 +1,7 @@
 import { useState } from 'react';
-import { ActivityIndicator, Pressable, ScrollView, Text, View } from 'react-native';
+import { ActivityIndicator, Animated, Pressable, ScrollView, Text, View } from 'react-native';
 import { Badge, Chip } from '../ui/controls';
+import { usePressScale } from '../ui/press';
 import { cedis, colors, font, radii, space, text, themedStyles } from '../ui/theme';
 import type { MenuCategory, MenuItem } from './menu';
 
@@ -23,13 +24,17 @@ function priceLabel(item: MenuItem): string {
 
 /**
  * The menu: category chips and a quiet grid of text tiles (four across on a 10" tablet, three
- * on an 8"). What the kitchen is cooking sits in the bar across the top of the screen.
+ * on an 8"). A tile shows how many of it are on the order, so each tap is seen to land. What
+ * the kitchen is cooking sits in the bar across the top of the screen.
  */
 export function MenuPane({
   menu,
+  onTicket,
   onPick,
 }: {
   menu: MenuCategory[] | null;
+  /** How many of each item (by id) are on the order being typed in. */
+  onTicket: ReadonlyMap<string, number>;
   onPick: (item: MenuItem) => void;
 }) {
   const [category, setCategory] = useState<string>(ALL);
@@ -83,6 +88,7 @@ export function MenuPane({
                 <MenuTile
                   key={item.id}
                   item={item}
+                  count={onTicket.get(item.id) ?? 0}
                   width={tileWidth}
                   onPress={() => onPick(item)}
                 />
@@ -97,37 +103,56 @@ export function MenuPane({
 
 function MenuTile({
   item,
+  count,
   width,
   onPress,
 }: {
   item: MenuItem;
+  /** How many are on the order already. */
+  count: number;
   /** Unknown until the pane is measured (the first frame). */
   width: number | undefined;
   onPress: () => void;
 }) {
+  const press = usePressScale();
   const low = !item.soldOut && item.left !== null && item.left <= LOW_STOCK;
   return (
-    <Pressable
-      accessibilityRole="button"
-      accessibilityState={{ disabled: item.soldOut }}
-      disabled={item.soldOut}
-      onPress={onPress}
-      style={({ pressed }) => [
-        styles.tile,
-        width ? { width } : styles.tileFallback,
-        pressed && styles.tilePressed,
-        item.soldOut && styles.tileSoldOut,
-      ]}
-    >
-      <View style={styles.tileTop}>
-        <Text style={[styles.tileName, item.soldOut && styles.faded]} numberOfLines={2}>
-          {item.name}
-        </Text>
-        {low && <Badge label={`${item.left} left`} tone="stock" />}
-      </View>
-      <Text style={[styles.tilePrice, item.soldOut && styles.faded]}>{priceLabel(item)}</Text>
-      {item.soldOut && <Text style={styles.soldOut}>Sold out</Text>}
-    </Pressable>
+    <Animated.View style={[press.style, width ? { width } : styles.tileFallback]}>
+      <Pressable
+        accessibilityRole="button"
+        accessibilityLabel={`${item.name}, ${priceLabel(item)}${count ? `, ${count} on the order` : ''}${item.soldOut ? ', sold out' : ''}`}
+        accessibilityState={{ disabled: item.soldOut }}
+        disabled={item.soldOut}
+        onPress={onPress}
+        onPressIn={press.onPressIn}
+        onPressOut={press.onPressOut}
+        style={({ pressed }) => [
+          styles.tile,
+          count > 0 && styles.tileOn,
+          pressed && styles.tilePressed,
+          item.soldOut && styles.tileSoldOut,
+        ]}
+      >
+        <View style={styles.tileTop}>
+          <Text style={[styles.tileName, item.soldOut && styles.faded]} numberOfLines={2}>
+            {item.name}
+          </Text>
+          {count > 0 && (
+            <View style={styles.count}>
+              <Text style={styles.countText}>{count > 99 ? '99+' : count}</Text>
+            </View>
+          )}
+        </View>
+        <View style={styles.tileFoot}>
+          {item.soldOut ? (
+            <Text style={styles.soldOut}>Sold out</Text>
+          ) : (
+            <Text style={styles.tilePrice}>{priceLabel(item)}</Text>
+          )}
+          {low && <Badge label={`${item.left} left`} tone="stock" />}
+        </View>
+      </Pressable>
+    </Animated.View>
   );
 }
 
@@ -139,24 +164,29 @@ const styles = themedStyles(() => ({
     gap: space.sm,
     paddingHorizontal: GUTTER,
     paddingTop: space.md,
-    paddingBottom: 12,
+    paddingBottom: space.md,
   },
-  grid: { gap: GAP, paddingHorizontal: GUTTER, paddingBottom: space.md },
+  grid: { gap: GAP, paddingHorizontal: GUTTER, paddingBottom: space.lg },
   row: { flexDirection: 'row', gap: GAP },
   empty: { fontFamily: font.regular, fontSize: text.body, color: colors.muted, maxWidth: 480 },
   tile: {
-    minHeight: 88,
+    minHeight: 96,
     overflow: 'hidden',
     borderRadius: radii.lg,
+    borderWidth: 2,
+    borderColor: 'transparent',
     backgroundColor: colors.tile,
     paddingHorizontal: 14,
-    paddingTop: 14,
-    paddingBottom: 12,
-    gap: 4,
+    paddingTop: 12,
+    paddingBottom: 10,
+    justifyContent: 'space-between',
+    gap: space.sm,
   },
   tileFallback: { flex: 1 },
+  /** On the order already: outlined in the brand colour, with its count. */
+  tileOn: { borderColor: colors.brand },
   tilePressed: { backgroundColor: colors.tilePressed },
-  tileSoldOut: { backgroundColor: colors.tileMuted, opacity: 0.55 },
+  tileSoldOut: { backgroundColor: colors.tileMuted, opacity: 0.6 },
   tileTop: { flexDirection: 'row', justifyContent: 'space-between', gap: space.xs },
   tileName: {
     flexShrink: 1,
@@ -165,7 +195,23 @@ const styles = themedStyles(() => ({
     lineHeight: 21,
     color: colors.ink,
   },
+  count: {
+    minWidth: 26,
+    height: 26,
+    paddingHorizontal: 7,
+    borderRadius: 13,
+    backgroundColor: colors.brand,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  countText: { fontFamily: font.monoMedium, fontSize: 13, color: colors.onBrand },
+  tileFoot: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    gap: space.xs,
+  },
   tilePrice: { fontFamily: font.mono, fontSize: text.small, color: colors.muted },
   faded: { color: colors.faint },
-  soldOut: { fontFamily: font.medium, fontSize: text.label, color: colors.muted },
+  soldOut: { fontFamily: font.medium, fontSize: text.small, color: colors.muted },
 }));

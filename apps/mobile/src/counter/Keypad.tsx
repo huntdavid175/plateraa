@@ -45,20 +45,18 @@ export function AmountDisplay({ label, typed }: { label: string; typed: string }
 }
 
 const styles = themedStyles(() => ({
-  keypad: { width: 216, flexDirection: 'row', flexWrap: 'wrap', gap: space.sm },
+  keypad: { width: 232, flexDirection: 'row', flexWrap: 'wrap', gap: space.sm },
   key: {
-    width: 66,
-    height: 56,
+    width: 72,
+    height: 58,
     borderRadius: radii.md,
-    borderWidth: 1.5,
-    borderColor: colors.line,
-    backgroundColor: colors.field,
+    backgroundColor: colors.tile,
     justifyContent: 'center',
     alignItems: 'center',
   },
-  keyPressed: { backgroundColor: colors.tile },
-  blank: { width: 66, height: 56 },
-  keyLabel: { fontFamily: font.monoMedium, fontSize: 20, color: colors.ink },
+  keyPressed: { backgroundColor: colors.tilePressed },
+  blank: { width: 72, height: 58 },
+  keyLabel: { fontFamily: font.monoMedium, fontSize: 22, color: colors.ink },
   block: { gap: 8 },
   display: {
     minHeight: 56,
@@ -70,7 +68,7 @@ const styles = themedStyles(() => ({
     fontFamily: font.monoMedium,
     fontSize: 22,
     lineHeight: 52,
-    color: colors.disabled,
+    color: colors.faint,
   },
   displayOn: { borderColor: colors.brand, color: colors.ink },
 }));

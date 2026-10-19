@@ -117,14 +117,16 @@ export function OrderPane({
             <Button label="Stop" kind="secondary" size="md" onPress={onStopEditing} />
           </View>
         ) : (
-          <>
+          // One row where the choices fit beside the number (a 10" tablet, or no dine-in);
+          // otherwise the choices wrap underneath.
+          <View style={styles.headRow}>
             <Text style={styles.title}>Order {number}</Text>
             <Segmented
               options={types.map((value) => ({ value, label: TYPE_LABELS[value] }))}
               value={type}
               onChange={setPicked}
             />
-          </>
+          </View>
         )}
       </View>
 
@@ -198,6 +200,7 @@ export function OrderPane({
         />
       </ScrollView>
 
+      {/* The total is on the Charge button; a total row above it would only say it twice. */}
       <View style={styles.foot}>
         {priced && priced.deliveryFee > 0 && (
           <View style={styles.subRow}>
@@ -205,16 +208,23 @@ export function OrderPane({
             <Text style={styles.subValue}>{cedis(priced.deliveryFee)}</Text>
           </View>
         )}
-        <View style={styles.totalRow}>
-          <Text style={styles.totalLabel}>Total</Text>
-          <Text style={styles.total}>{cedis(priced?.total ?? 0)}</Text>
-        </View>
         {editing ? (
-          <Button label="Save changes" onPress={onSaveEdit} busy={busy} disabled={!lines.length} />
+          <>
+            <View style={styles.totalRow}>
+              <Text style={styles.totalLabel}>Total</Text>
+              <Text style={styles.total}>{cedis(priced?.total ?? 0)}</Text>
+            </View>
+            <Button
+              label="Save changes"
+              onPress={onSaveEdit}
+              busy={busy}
+              disabled={!lines.length}
+            />
+          </>
         ) : (
           <View style={styles.actions}>
             <Button
-              label={`Charge ${cedis(priced?.total ?? 0)}`}
+              label={priced ? `Charge ${cedis(priced.total)}` : 'Charge'}
               onPress={() => onCharge(checkout())}
               busy={busy}
               disabled={!lines.length}
@@ -242,11 +252,17 @@ const styles = themedStyles(() => ({
   },
   head: {
     paddingHorizontal: space.lg,
-    paddingTop: 18,
-    paddingBottom: 14,
-    gap: 14,
+    paddingVertical: 12,
     borderBottomWidth: 1,
     borderBottomColor: colors.divider,
+  },
+  headRow: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    columnGap: space.md,
+    rowGap: 10,
   },
   titleRow: {
     flexDirection: 'row',
@@ -256,22 +272,27 @@ const styles = themedStyles(() => ({
   },
   title: { fontFamily: font.semibold, fontSize: 18, color: colors.ink },
   body: { flex: 1 },
-  bodyContent: { paddingHorizontal: space.lg, paddingTop: 12, paddingBottom: space.md },
-  fields: { gap: 12, paddingBottom: 4 },
+  bodyContent: {
+    flexGrow: 1,
+    paddingHorizontal: space.lg,
+    paddingTop: space.sm,
+    paddingBottom: space.md,
+  },
+  fields: { gap: 12, paddingTop: space.sm, paddingBottom: space.sm },
   known: { fontFamily: font.medium, fontSize: 13, color: colors.goodInk },
   zoneBlock: { gap: 6 },
   zones: { flexDirection: 'row', flexWrap: 'wrap', gap: space.sm },
   foot: {
     paddingHorizontal: space.lg,
-    paddingTop: 14,
-    paddingBottom: space.lg,
+    paddingTop: 12,
+    paddingBottom: space.md,
     borderTopWidth: 1,
     borderTopColor: colors.divider,
     gap: 12,
   },
   subRow: { flexDirection: 'row', justifyContent: 'space-between' },
-  subLabel: { fontFamily: font.regular, fontSize: 13, color: colors.muted },
-  subValue: { fontFamily: font.mono, fontSize: 13, color: colors.muted },
+  subLabel: { fontFamily: font.regular, fontSize: text.small, color: colors.muted },
+  subValue: { fontFamily: font.mono, fontSize: text.small, color: colors.muted },
   totalRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
