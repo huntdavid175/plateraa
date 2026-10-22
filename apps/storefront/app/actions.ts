@@ -1,6 +1,15 @@
 'use server';
 
-import { OFFLINE, api, messageOf, type PlaceOrderBody, type TrackedOrder } from '../lib/api';
+import {
+  OFFLINE,
+  api,
+  fetchStore,
+  messageOf,
+  type PlaceOrderBody,
+  type TrackedOrder,
+} from '../lib/api';
+import type { CartLine } from '../lib/cart';
+import { chatTurn, type ChatMessage, type ChatResult } from '../lib/chat';
 
 /**
  * What the customer's browser asks the storefront's server to do. Each passes the request on to
@@ -68,6 +77,22 @@ export async function refreshOrder(
     });
     if (!data) return { ok: false, message: messageOf(error, response.status) };
     return { ok: true, order: data };
+  } catch {
+    return { ok: false, message: OFFLINE };
+  }
+}
+
+/** Ordering by chat (a test): one turn, against the menu as it is right now. */
+export async function chat(
+  slug: string,
+  history: ChatMessage[],
+  cart: CartLine[],
+  orderId: string,
+): Promise<ChatResult> {
+  try {
+    const store = await fetchStore(slug);
+    if (!store) return { ok: false, message: 'There is no such store.' };
+    return await chatTurn(store, history, cart, orderId);
   } catch {
     return { ok: false, message: OFFLINE };
   }

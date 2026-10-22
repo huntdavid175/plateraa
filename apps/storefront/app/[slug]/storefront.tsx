@@ -200,6 +200,7 @@ function StoreScreen({
   return (
     <div className="min-h-screen bg-page">
       <StoreHero store={store} onInfo={onInfo} />
+      <StoreHead store={store} onInfo={onInfo} />
       <StoreFacts store={store} onInfo={onInfo} />
 
       <div className="border-b border-border">
@@ -423,19 +424,24 @@ async function shareStore(name: string): Promise<'shared' | 'copied' | 'no'> {
   }
 }
 
-/** The cover picture, with the store's name over it and the way into its details. */
-function StoreHero({ store, onInfo }: { store: Store; onInfo: () => void }) {
+/** Shares the store's link, and says "Link copied" for a moment when it had to copy. */
+function useShareStore(name: string) {
   const [copied, setCopied] = useState(false);
-  const onCover = Boolean(store.coverUrl);
-
   const share = async () => {
-    if ((await shareStore(store.name)) !== 'copied') return;
+    if ((await shareStore(name)) !== 'copied') return;
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
   };
+  return { copied, share };
+}
+
+/** The cover picture, with the store's name over it and the way into its details. Phones only. */
+function StoreHero({ store, onInfo }: { store: Store; onInfo: () => void }) {
+  const { copied, share } = useShareStore(store.name);
+  const onCover = Boolean(store.coverUrl);
 
   return (
-    <header className="relative h-56 overflow-hidden bg-hero sm:h-64 lg:h-80">
+    <header className="relative h-56 overflow-hidden bg-hero sm:h-64 lg:hidden">
       {store.coverUrl && (
         <>
           <img
@@ -465,13 +471,11 @@ function StoreHero({ store, onInfo }: { store: Store; onInfo: () => void }) {
           <img
             src={store.logoUrl}
             alt=""
-            className="mb-3 h-16 w-16 rounded-2xl bg-card object-cover shadow-md lg:h-20 lg:w-20"
+            className="mb-3 h-16 w-16 rounded-2xl bg-card object-cover shadow-md"
           />
         ) : null}
         <h1
-          className={`text-2xl leading-tight font-bold lg:text-4xl ${
-            onCover ? 'text-white' : 'text-on-hero'
-          }`}
+          className={`text-2xl leading-tight font-bold ${onCover ? 'text-white' : 'text-on-hero'}`}
         >
           {store.name}
         </h1>
@@ -490,10 +494,84 @@ function StoreHero({ store, onInfo }: { store: Store; onInfo: () => void }) {
   );
 }
 
+/**
+ * The store's heading on a laptop (22 Oct): a full-width cover stretched too far, so the cover
+ * is a picture beside the name, on the page itself, with the facts under the name.
+ */
+function StoreHead({ store, onInfo }: { store: Store; onInfo: () => void }) {
+  const { copied, share } = useShareStore(store.name);
+
+  return (
+    <header className="hidden border-b border-border lg:block">
+      <div className="mx-auto flex w-full max-w-6xl items-center gap-8 px-8 py-8">
+        {store.coverUrl ? (
+          <div className="relative shrink-0">
+            <img
+              src={store.coverUrl}
+              alt=""
+              className="aspect-[4/3] w-56 rounded-2xl object-cover"
+            />
+            {store.logoUrl && (
+              <img
+                src={store.logoUrl}
+                alt=""
+                className="absolute -right-3 -bottom-3 h-16 w-16 rounded-xl bg-card object-cover ring-4 ring-page"
+              />
+            )}
+          </div>
+        ) : store.logoUrl ? (
+          <img
+            src={store.logoUrl}
+            alt=""
+            className="h-24 w-24 shrink-0 rounded-2xl bg-card object-cover"
+          />
+        ) : null}
+
+        <div className="min-w-0 flex-1">
+          <div className="flex items-start justify-between gap-4">
+            <div className="min-w-0">
+              <h1 className="text-4xl leading-tight font-bold tracking-tight text-ink">
+                {store.name}
+              </h1>
+              <div className="mt-1 flex items-center gap-3 text-sm">
+                {store.area && <span className="text-muted">{store.area}</span>}
+                <button
+                  type="button"
+                  onClick={onInfo}
+                  className="flex items-center gap-0.5 font-semibold text-ink hover:text-brand"
+                >
+                  More info
+                  <ChevronRight />
+                </button>
+              </div>
+            </div>
+            <div className="flex shrink-0 items-center gap-2">
+              {copied && <span className="text-xs text-muted">Link copied</span>}
+              <RoundButton label="Share this store" onClick={() => void share()}>
+                <Share />
+              </RoundButton>
+              <DarkToggle className="bg-card/85 text-ink shadow-sm backdrop-blur hover:bg-card" />
+            </div>
+          </div>
+
+          <div className="mt-5 flex divide-x divide-border">
+            {storeFacts(store).map((fact) => (
+              <div key={fact.label} className="px-6 first:pl-0">
+                <p className="text-sm font-semibold text-ink">{fact.label}</p>
+                <p className="mt-0.5 text-xs text-muted">{fact.value}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+    </header>
+  );
+}
+
 /** What a customer checks before ordering: whether it's open, how they can get it, how they pay. */
-function StoreFacts({ store, onInfo }: { store: Store; onInfo: () => void }) {
+function storeFacts(store: Store): { label: string; value: string }[] {
   const cheapest = store.zones.length ? Math.min(...store.zones.map((zone) => zone.fee)) : null;
-  const facts: { label: string; value: string }[] = [
+  return [
     {
       label: store.open ? 'Open' : 'Closed',
       value: store.open
@@ -507,11 +585,14 @@ function StoreFacts({ store, onInfo }: { store: Store; onInfo: () => void }) {
       ? { label: 'Pay online', value: store.cashOnPickup ? 'or cash on pickup' : 'by MoMo' }
       : { label: 'Cash', value: 'when you collect' },
   ];
+}
 
+/** The facts under the cover on a phone; on a laptop they sit in `StoreHead`. */
+function StoreFacts({ store, onInfo }: { store: Store; onInfo: () => void }) {
   return (
-    <div className="border-b border-border">
-      <div className="mx-auto flex w-full max-w-6xl items-stretch divide-x divide-border px-4 lg:px-8">
-        {facts.map((fact) => (
+    <div className="border-b border-border lg:hidden">
+      <div className="mx-auto flex w-full max-w-6xl items-stretch divide-x divide-border px-4">
+        {storeFacts(store).map((fact) => (
           <div key={fact.label} className="flex-1 px-2 py-4 text-center first:pl-0 last:pr-0">
             <p className="text-sm font-semibold text-ink">{fact.label}</p>
             <p className="mt-0.5 text-xs text-muted">{fact.value}</p>
@@ -519,7 +600,7 @@ function StoreFacts({ store, onInfo }: { store: Store; onInfo: () => void }) {
         ))}
       </div>
       {store.area && (
-        <div className="mx-auto w-full max-w-6xl px-4 pb-3 lg:px-8">
+        <div className="mx-auto w-full max-w-6xl px-4 pb-3">
           <button
             type="button"
             onClick={onInfo}

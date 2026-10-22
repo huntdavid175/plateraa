@@ -31,8 +31,20 @@ The online store customers order from (plan.md §4.0): one link per business, `S
 - **Checkout** keeps one `orderId` per visit, so a retry records the order once. Paying online: the page's address is swapped for the order's status page, then the customer goes to Moolre's page, so Back lands on the status page.
 - `app/[slug]/o/[token]/` is the order's status page. It asks Moolre at once when the customer comes back from paying, then looks again every 15 s while the order is open. "Pay" opens a fresh payment page when the last one lapsed.
 - **Photos** come from Cloudflare R2's public address (the API gives full URLs: `photoUrl` on items, `coverUrl` and `logoUrl` on the store). They're plain `<img>` tags: the dashboard already made them small, so Next's image optimiser isn't needed. Without a photo a card shows the item's initials; without a cover the header band is the store's colour, and without a logo the store's initials show.
+- **The store's heading** differs by screen (22 Oct, user request). On a phone, `StoreHero` is the cover across the top with the name over it and `StoreFacts` under it. On a laptop, a full-width cover stretched too far, and a coloured band with the photo framed in it looked cut off from the page, so `StoreHead` stands on the page itself: a small cover with the logo on its corner, the name, area and More info beside it, and the facts in a row under the name, closed by a hairline like every other section.
+- **Ordering by chat** (`app/[slug]/chat`, `lib/chat.ts`, the `chat` action; a test, 21 Oct) is **switched off** (22 Oct, user decision): its page is not found and the action refuses unless `STOREFRONT_CHAT=on`. To try it on the laptop, set that and `OPENAI_API_KEY` in `apps/storefront/.env.local`. Only the storefront's server talks to OpenAI.
 
 ## Running
 
 - `pnpm --filter @plateraa/storefront dev` serves http://localhost:3001. To use an API on the laptop, set `PLATERAA_API_URL=http://localhost:3000` in `apps/storefront/.env.local`. After changing `@plateraa/shared` or the API client, build them first.
 - **Deployed on Vercel** (13 Sep) at `https://plateraa-storefront-bvos.vercel.app`, built from `main` by Vercel's GitHub link (each build shows as a GitHub deployment; a build's own long address needs a Vercel login, the short one is public). `STOREFRONT_URL` on Render must be this address, so the dashboard shows the right store link and QR code. `PLATERAA_API_URL` isn't set there, so it uses the Render API. Until `plateraa.com` is set up, store links are `<that address>/<slug>`.
+
+<!-- BEGIN:nextjs-agent-rules -->
+
+# This is NOT the Next.js you know
+
+This version has breaking changes — APIs, conventions, and file structure may all differ from your training data. Read the relevant guide in `node_modules/next/dist/docs/` (resolved from this file's directory; in monorepos the `next` package may not be visible from the repo root) before writing any code. Heed deprecation notices.
+
+This block is written and re-added by `next dev` — verify at `node_modules/next/dist/server/lib/generate-agent-files.js`. Removing it from a diff only re-creates the uncommitted change; committing it with your work keeps the tree clean.
+
+<!-- END:nextjs-agent-rules -->
