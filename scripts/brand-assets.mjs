@@ -5,7 +5,8 @@
 // - brixx-logo.png: the orange B mark and the "brixx" name beside it, on a transparent background.
 //   The icons are rebuilt from it rather than scaled: a clean orange rounded square in the logo's
 //   measured colour, with the B lifted out of the logo and set in white in the middle. The whole
-//   logo, trimmed, is the wordmark shown where the name is spelled out.
+//   logo, trimmed, is the wordmark shown where the name is spelled out, and the B alone in orange
+//   stands on black in the landing page's share picture.
 import { mkdirSync, writeFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -131,6 +132,14 @@ const plain = (size) =>
 const wordmark = (height) =>
   sharp(source).trim().resize({ height }).png({ compressionLevel: 9 }).toBuffer();
 
+/** The B alone in its own orange, `height` pixels tall: the landing page's share picture. */
+const mark = (height) =>
+  sharp(source)
+    .extract({ left: bLeft, top: bTop, width: bW, height: bH })
+    .resize({ height })
+    .png({ compressionLevel: 9 })
+    .toBuffer();
+
 /** A .ico holding PNGs, which every current browser reads. */
 async function ico(sizes) {
   const images = await Promise.all(sizes.map((size) => icon(size)));
@@ -182,6 +191,7 @@ const outputs = {
   'apps/landing/app/apple-icon.png': () => icon(180, { background: 'full' }),
   'apps/landing/public/logo.png': () => icon(256),
   'apps/landing/public/wordmark.png': () => wordmark(132),
+  'apps/landing/assets/mark.png': () => mark(440),
 };
 
 for (const [path, make] of Object.entries(outputs)) {
