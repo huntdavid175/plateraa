@@ -9,7 +9,7 @@ An operating system for small informal Ghanaian food vendors. They take orders f
 
 A solo founder (GitHub `huntdavid175`) builds it with an AI agent. Work started Thu 10 Sep 2026.
 
-**Renamed from Plateraa to Brixx on 23 Oct 2026.** Outside services keep the old name until they're renamed or recreated: the Render API (`plateraa-api.onrender.com`), the Vercel storefront, the R2 bucket `plateraa-photos`, the EAS project slug `plateraa` and the GitHub repo `huntdavid175/plateraa`. The Android package became `com.brixx.pos`, and the saved keys (`brixx.sqlite`, `brixx.device`, `brixx.token`, …) and the PIN token's issuer were renamed with no move-over, so everyone signs in again and the tablet is set up afresh.
+**Renamed from Plateraa to Brixx on 23 Oct 2026.** Outside services keep the old name until they're renamed or recreated: the Render API (`plateraa-api.onrender.com`), the Vercel storefront, the R2 bucket `plateraa-photos`, the EAS project slug `plateraa` and the GitHub repo `huntdavid175/plateraa`. The Android package became `com.brixx.pos`, and the saved keys (`brixx.sqlite`, `brixx.device`, `brixx.token`, …) and the PIN token's issuer were renamed with no move-over, so everyone signs in again and the tablet is set up afresh. **What's still to do for the rebrand is in `rebrand.md` (repo root).** Tick items there as they're done, and change the names above once a service is renamed.
 
 ## Where things stand
 
