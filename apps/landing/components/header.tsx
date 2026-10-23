@@ -20,8 +20,7 @@ export function Header() {
       <Container className="flex h-16 items-center gap-8">
         <Link href="/" className="flex shrink-0 items-center gap-2" aria-label="Brixx home">
           {/* A plain <img>: the logo is a small fixed-size PNG made by `pnpm brand:assets`. */}
-          <img src="/logo.png" alt="" width={32} height={32} className="rounded-[9px]" />
-          <span className="text-[20px] font-semibold tracking-[-0.02em]">Brixx</span>
+          <img src="/wordmark.png" alt="" width={90} height={28} />
         </Link>
 
         <nav className="hidden items-center gap-7 md:flex" aria-label="Main">

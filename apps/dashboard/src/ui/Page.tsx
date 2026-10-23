@@ -49,8 +49,7 @@ export function Centered({
   return (
     <div className="flex min-h-full flex-col px-4 py-6 md:px-8">
       <div className="flex items-center gap-2.5">
-        <img src="/logo.png" alt="" className="size-8 rounded-lg" />
-        <span className="font-medium">Brixx</span>
+        <img src="/wordmark.png" alt="Brixx" className="h-7 w-auto" />
       </div>
       <main className="flex flex-1 items-center justify-center py-10">
         <div className="flex w-full max-w-sm flex-col gap-8">

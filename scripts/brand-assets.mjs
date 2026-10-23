@@ -1,17 +1,18 @@
-// Makes every Brixx icon and logo from the one source picture, public/images/logo.png: the
-// tablet's app icons and splash, the dashboard's favicons and mark, and the online store's.
+// Makes every Brixx icon and logo from public/images/brixx-logo.png: the tablet's app
+// icons and splash, the dashboard's favicons and logos, the online store's and the landing page's.
 // Run it again whenever the logo changes: `pnpm brand:assets`.
 //
-// The source is an orange rounded square with a white "P". Rather than scaling the picture itself
-// (which has stray specks outside the square), each icon is rebuilt: a clean orange square in the
-// measured colour and corner, with the white P lifted out of the source and placed where it was.
+// - brixx-logo.png: the orange B mark and the "brixx" name beside it, on a transparent background.
+//   The icons are rebuilt from it rather than scaled: a clean orange rounded square in the logo's
+//   measured colour, with the B lifted out of the logo and set in white in the middle. The whole
+//   logo, trimmed, is the wordmark shown where the name is spelled out.
 import { mkdirSync, writeFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import sharp from 'sharp';
 
 const root = join(dirname(fileURLToPath(import.meta.url)), '..');
-const source = join(root, 'public/images/logo.png');
+const source = join(root, 'public/images/brixx-logo.png');
 
 const { data, info } = await sharp(source)
   .ensureAlpha()
@@ -20,52 +21,42 @@ const { data, info } = await sharp(source)
 const W = info.width;
 const H = info.height;
 const at = (x, y) => (y * W + x) * 4;
-const solid = (x, y) => data[at(x, y) + 3] > 200;
+const solid = (x, y) => data[at(x, y) + 3] > 128;
 
-// The orange square: the rows and columns that are mostly solid (specks outside are thin).
-function span(length, count, across) {
-  let first = -1;
-  let last = -1;
-  for (let i = 0; i < length; i++) {
-    if (count(i) > across * 0.3) {
-      if (first < 0) first = i;
-      last = i;
+// The B: the first block of solid columns from the left, ending at the gap before the name.
+const colSolid = (x) => {
+  for (let y = 0; y < H; y++) if (solid(x, y)) return true;
+  return false;
+};
+const gap = Math.round(W * 0.02);
+let left = 0;
+while (left < W && !colSolid(left)) left++;
+let right = left;
+for (let x = left, empty = 0; x < W && empty < gap; x++) {
+  if (colSolid(x)) {
+    right = x;
+    empty = 0;
+  } else empty++;
+}
+let top = H;
+let bottom = 0;
+for (let y = 0; y < H; y++) {
+  for (let x = left; x <= right; x++) {
+    if (solid(x, y)) {
+      top = Math.min(top, y);
+      bottom = Math.max(bottom, y);
+      break;
     }
   }
-  return [first, last];
 }
-const rowCount = (y) => {
-  let n = 0;
-  for (let x = 0; x < W; x++) if (solid(x, y)) n++;
-  return n;
-};
-const colCount = (x) => {
-  let n = 0;
-  for (let y = 0; y < H; y++) if (solid(x, y)) n++;
-  return n;
-};
-const [top, bottom] = span(H, rowCount, W);
-const [left, right] = span(W, colCount, H);
-const squareW = right - left + 1;
-const squareH = bottom - top + 1;
-const side = (squareW + squareH) / 2;
 
-// Its corner: along the diagonal from a corner, the edge is r(1 − 1/√2) in. Top corners only,
-// as the bottom edge is where the specks are.
-function diagonalIn(x0, y0, dx) {
-  for (let d = 0; d < side / 2; d++) if (solid(x0 + dx * d, y0 + d)) return d;
-  return 0;
-}
-const inset = (diagonalIn(left, top, 1) + diagonalIn(right, top, -1)) / 2;
-const radius = inset / (1 - Math.SQRT1_2) / side;
-
-// Its colour: the average of the solid, clearly orange pixels inside it.
+// Its colour: the average of the fully solid pixels in the B.
 let sum = [0, 0, 0];
 let count = 0;
-for (let y = top; y <= bottom; y += 2) {
-  for (let x = left; x <= right; x += 2) {
+for (let y = top; y <= bottom; y++) {
+  for (let x = left; x <= right; x++) {
     const i = at(x, y);
-    if (data[i + 3] === 255 && data[i + 2] < 60) {
+    if (data[i + 3] === 255) {
       sum = [sum[0] + data[i], sum[1] + data[i + 1], sum[2] + data[i + 2]];
       count++;
     }
@@ -74,57 +65,32 @@ for (let y = top; y <= bottom; y += 2) {
 const orange = sum.map((v) => Math.round(v / count));
 const hex = `#${orange.map((v) => v.toString(16).padStart(2, '0')).join('')}`.toUpperCase();
 
-// The white P: how far each pixel is from orange towards white, read from the blue channel (near
-// 0 in the orange, full in the white), with the texture in the orange cut away.
-const mask = Buffer.alloc(W * H);
-let pLeft = W;
-let pRight = 0;
-let pTop = H;
-let pBottom = 0;
-for (let y = top; y <= bottom; y++) {
-  for (let x = left; x <= right; x++) {
-    const i = at(x, y);
-    const white = (data[i + 2] - orange[2]) / (255 - orange[2]);
-    const alpha = Math.min(1, Math.max(0, (white - 0.12) / 0.76)) * (data[i + 3] / 255);
-    const value = Math.round(alpha * 255);
-    mask[y * W + x] = value;
-    if (value > 128) {
-      pLeft = Math.min(pLeft, x);
-      pRight = Math.max(pRight, x);
-      pTop = Math.min(pTop, y);
-      pBottom = Math.max(pBottom, y);
-    }
+// The B in white, its shape taken from the logo's transparency: solid wherever the logo is nearly
+// solid (so no faint spots show the orange through), soft only at the edges, with a little room
+// around it for them.
+const pad = 4;
+const bLeft = Math.max(0, left - pad);
+const bTop = Math.max(0, top - pad);
+const bW = Math.min(W - 1, right + pad) - bLeft + 1;
+const bH = Math.min(H - 1, bottom + pad) - bTop + 1;
+const bCrop = Buffer.alloc(bW * bH * 4);
+for (let y = 0; y < bH; y++) {
+  for (let x = 0; x < bW; x++) {
+    const o = (y * bW + x) * 4;
+    bCrop[o] = bCrop[o + 1] = bCrop[o + 2] = 255;
+    const a = data[at(bLeft + x, bTop + y) + 3];
+    bCrop[o + 3] = Math.round(Math.min(1, Math.max(0, (a - 30) / 170)) * 255);
   }
 }
-// A little room around the P for its soft edges.
-pLeft -= 4;
-pTop -= 4;
-pRight += 4;
-pBottom += 4;
-const pW = pRight - pLeft + 1;
-const pH = pBottom - pTop + 1;
-const pCrop = Buffer.alloc(pW * pH * 4);
-for (let y = 0; y < pH; y++) {
-  for (let x = 0; x < pW; x++) {
-    const o = (y * pW + x) * 4;
-    pCrop[o] = pCrop[o + 1] = pCrop[o + 2] = 255;
-    pCrop[o + 3] = mask[(pTop + y) * W + (pLeft + x)];
-  }
-}
-// Where the P sits, as fractions of the square, from the square's centre.
-const centreX = (left + right) / 2;
-const centreY = (top + bottom) / 2;
-const place = {
-  x: (pLeft - centreX) / side,
-  y: (pTop - centreY) / side,
-  w: pW / side,
-  h: pH / side,
-};
+
+/** How much of the square the B's height takes, and the square's corner as a share of its side. */
+const MARK = 0.58;
+const RADIUS = 0.225;
 
 /**
  * One icon, `size` pixels square. `square`: how much of the canvas the orange square takes (the
- * P is sized to it). `background`: 'rounded' (transparent corners), 'full' (edge to edge, for
- * icons the system rounds itself) or 'none' (the P alone, for Android's adaptive icon).
+ * B is sized to it). `background`: 'rounded' (transparent corners), 'full' (edge to edge, for
+ * icons the system rounds itself) or 'none' (the B alone, for Android's adaptive icon).
  */
 async function icon(size, { square = 1, background = 'rounded' } = {}) {
   const s = size * square;
@@ -133,24 +99,20 @@ async function icon(size, { square = 1, background = 'rounded' } = {}) {
     const inner =
       background === 'full'
         ? `<rect width="${size}" height="${size}" fill="${hex}"/>`
-        : `<rect x="${(size - s) / 2}" y="${(size - s) / 2}" width="${s}" height="${s}" rx="${s * radius}" fill="${hex}"/>`;
+        : `<rect x="${(size - s) / 2}" y="${(size - s) / 2}" width="${s}" height="${s}" rx="${s * RADIUS}" fill="${hex}"/>`;
     layers.push({
       input: Buffer.from(
         `<svg xmlns="http://www.w3.org/2000/svg" width="${size}" height="${size}">${inner}</svg>`,
       ),
     });
   }
-  const w = Math.max(1, Math.round(place.w * s));
-  const h = Math.max(1, Math.round(place.h * s));
-  const p = await sharp(pCrop, { raw: { width: pW, height: pH, channels: 4 } })
+  const h = Math.max(1, Math.round(s * MARK * (bH / (bottom - top + 1))));
+  const w = Math.max(1, Math.round((h * bW) / bH));
+  const b = await sharp(bCrop, { raw: { width: bW, height: bH, channels: 4 } })
     .resize(w, h, { fit: 'fill', kernel: 'lanczos3' })
     .png()
     .toBuffer();
-  layers.push({
-    input: p,
-    left: Math.round(size / 2 + place.x * s),
-    top: Math.round(size / 2 + place.y * s),
-  });
+  layers.push({ input: b, left: Math.round((size - w) / 2), top: Math.round((size - h) / 2) });
   return sharp({
     create: { width: size, height: size, channels: 4, background: { r: 0, g: 0, b: 0, alpha: 0 } },
   })
@@ -164,6 +126,10 @@ const plain = (size) =>
   sharp({ create: { width: size, height: size, channels: 3, background: hex } })
     .png()
     .toBuffer();
+
+/** The whole logo, trimmed to its edges, `height` pixels tall (shown at a third of that). */
+const wordmark = (height) =>
+  sharp(source).trim().resize({ height }).png({ compressionLevel: 9 }).toBuffer();
 
 /** A .ico holding PNGs, which every current browser reads. */
 async function ico(sizes) {
@@ -187,7 +153,7 @@ async function ico(sizes) {
 }
 
 // Android's adaptive icons show the middle 72 of 108 dp, and round launchers crop to a circle
-// inside that: the P is sized for a square 60% of the canvas so none of it is cut.
+// inside that: the B is sized for a square 60% of the canvas so none of it is cut.
 const ADAPTIVE = { square: 0.6, background: 'none' };
 
 const outputs = {
@@ -204,6 +170,7 @@ const outputs = {
   'apps/dashboard/public/icon-192.png': () => icon(192),
   'apps/dashboard/public/apple-touch-icon.png': () => icon(180, { background: 'full' }),
   'apps/dashboard/public/logo.png': () => icon(256),
+  'apps/dashboard/public/wordmark.png': () => wordmark(96),
   // The online store (Next picks up favicon.ico, icon.png and apple-icon.png in app/).
   'apps/storefront/app/favicon.ico': () => ico([16, 32, 48]),
   'apps/storefront/app/icon.png': () => icon(192),
@@ -214,6 +181,7 @@ const outputs = {
   'apps/landing/app/icon.png': () => icon(192),
   'apps/landing/app/apple-icon.png': () => icon(180, { background: 'full' }),
   'apps/landing/public/logo.png': () => icon(256),
+  'apps/landing/public/wordmark.png': () => wordmark(132),
 };
 
 for (const [path, make] of Object.entries(outputs)) {
@@ -224,5 +192,5 @@ for (const [path, make] of Object.entries(outputs)) {
   console.log(`${path}  ${Math.round(bytes.length / 1024)} KB`);
 }
 console.log(
-  `\nsource ${W}×${H}; square ${squareW}×${squareH} at ${left},${top}; corner ${(radius * 100).toFixed(1)}% of its side; orange ${hex}`,
+  `\nsource ${W}×${H}; B ${right - left + 1}×${bottom - top + 1} at ${left},${top}; orange ${hex}`,
 );

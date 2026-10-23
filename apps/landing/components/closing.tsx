@@ -96,8 +96,7 @@ function Footer() {
         <div className="grid gap-10 md:grid-cols-[1.3fr_repeat(3,1fr)]">
           <div>
             <Link href="/" className="inline-flex items-center gap-2" aria-label="Brixx home">
-              <img src="/logo.png" alt="" width={44} height={44} className="rounded-[12px]" />
-              <span className="text-[22px] font-semibold tracking-[-0.02em]">Brixx</span>
+              <img src="/wordmark.png" alt="" width={109} height={34} />
             </Link>
             <p className="mt-4 max-w-xs text-[15px] leading-relaxed text-muted">
               Easy ordering for customers, easy orders for food vendors in Ghana.
