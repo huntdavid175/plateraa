@@ -4,7 +4,7 @@ import {
   type DeliveryFeeCollector,
   type OrderStatus,
   type Pesewas,
-} from '@plateraa/shared';
+} from '@brixx/shared';
 
 /** Where an order shows in the orders list on the counter screen. */
 export type Lane = 'awaiting-payment' | 'kitchen' | 'ready' | 'on-hold' | 'done';

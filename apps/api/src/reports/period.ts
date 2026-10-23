@@ -10,7 +10,7 @@ import {
   sql,
   staffMembers,
   withTenant,
-} from '@plateraa/db';
+} from '@brixx/db';
 import {
   EXPENSE_CATEGORIES,
   ORDER_SOURCES,
@@ -21,7 +21,7 @@ import {
   type OrderSource,
   type OrderType,
   type PaymentMethod,
-} from '@plateraa/shared';
+} from '@brixx/shared';
 import { ApiBearerAuth, ApiOkResponse } from '@nestjs/swagger';
 import { createZodDto } from 'nestjs-zod';
 import { z } from 'zod';

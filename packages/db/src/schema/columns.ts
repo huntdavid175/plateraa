@@ -1,4 +1,4 @@
-import type { Pesewas } from '@plateraa/shared';
+import type { Pesewas } from '@brixx/shared';
 import { sql } from 'drizzle-orm';
 import { bigint, customType, text, timestamp } from 'drizzle-orm/pg-core';
 import { tenants } from './tenants.js';

@@ -1,4 +1,4 @@
-import { PIN_LENGTH } from '@plateraa/shared';
+import { PIN_LENGTH } from '@brixx/shared';
 import { useEffect, useState } from 'react';
 import { Pressable, Text, View } from 'react-native';
 import { colors, font, radii, space, themedStyles } from './theme';

@@ -1,6 +1,6 @@
 import { useSyncExternalStore } from 'react';
 
-const KEY = 'plateraa.theme';
+const KEY = 'brixx.theme';
 
 /** Light, dark, or whatever the device is set to. Remembered on this browser. */
 export type ThemeChoice = 'light' | 'dark' | 'system';

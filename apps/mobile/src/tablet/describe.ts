@@ -4,7 +4,7 @@ import {
   type Pesewas,
   type SyncCommandOf,
   type SyncCommandType,
-} from '@plateraa/shared';
+} from '@brixx/shared';
 
 const STATUS_WORDS: Partial<Record<OrderStatus, string>> = {
   CONFIRMED: 'confirmed',

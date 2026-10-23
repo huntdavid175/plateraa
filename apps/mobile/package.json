@@ -1,5 +1,5 @@
 {
-  "name": "@plateraa/mobile",
+  "name": "@brixx/mobile",
   "version": "0.0.0",
   "private": true,
   "main": "expo-router/entry",
@@ -9,14 +9,14 @@
     "typecheck": "tsc --noEmit && tsc --noEmit -p tsconfig.test.json",
     "test": "vitest run",
     "stress": "vitest run -c vitest.stress.config.mts --reporter=verbose",
-    "eas-build-post-install": "pnpm --filter \"@plateraa/mobile^...\" build"
+    "eas-build-post-install": "pnpm --filter \"@brixx/mobile^...\" build"
   },
   "dependencies": {
     "@expo-google-fonts/dm-mono": "0.4.2",
     "@expo-google-fonts/dm-sans": "0.4.2",
     "@op-engineering/op-sqlite": "18.2.1",
-    "@plateraa/api-client": "workspace:*",
-    "@plateraa/shared": "workspace:*",
+    "@brixx/api-client": "workspace:*",
+    "@brixx/shared": "workspace:*",
     "expo": "~57.0.22",
     "expo-asset": "~57.0.17",
     "expo-audio": "~57.0.5",

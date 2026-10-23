@@ -58,12 +58,12 @@ export function SignInPage() {
         </Button>
         {slow && (
           <p className="text-sm text-muted-foreground" role="status">
-            Plateraa is waking up. The first sign-in of the day can take up to a minute.
+            Brixx is waking up. The first sign-in of the day can take up to a minute.
           </p>
         )}
       </form>
       <p className="text-sm text-muted-foreground">
-        New to Plateraa?{' '}
+        New to Brixx?{' '}
         <Link to="/sign-up" className="font-medium text-accent-strong">
           Set up your business
         </Link>

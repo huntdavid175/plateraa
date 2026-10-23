@@ -1,5 +1,5 @@
-import { createApiClient } from '@plateraa/api-client';
-import { resolveCapabilities, type Capability, type Role } from '@plateraa/shared';
+import { createApiClient } from '@brixx/api-client';
+import { resolveCapabilities, type Capability, type Role } from '@brixx/shared';
 import {
   createContext,
   useCallback,

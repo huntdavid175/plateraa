@@ -1,4 +1,4 @@
-import type { ExpenseCategory } from '@plateraa/shared';
+import type { ExpenseCategory } from '@brixx/shared';
 import { api, call } from './api';
 import { queryClient } from './query';
 

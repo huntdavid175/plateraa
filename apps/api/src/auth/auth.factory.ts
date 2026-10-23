@@ -1,4 +1,4 @@
-import { account, session, user, verification, type Database } from '@plateraa/db';
+import { account, session, user, verification, type Database } from '@brixx/db';
 import { betterAuth } from 'better-auth';
 import { drizzleAdapter } from 'better-auth/adapters/drizzle';
 import { bearer } from 'better-auth/plugins';
@@ -14,7 +14,7 @@ export const AUTH = Symbol('AUTH');
  */
 export function createAuth(db: Database, env: Env) {
   return betterAuth({
-    appName: 'Plateraa',
+    appName: 'Brixx',
     baseURL: env.BETTER_AUTH_URL,
     basePath: '/api/auth',
     secret: env.BETTER_AUTH_SECRET,

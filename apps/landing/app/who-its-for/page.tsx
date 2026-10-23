@@ -10,12 +10,12 @@ import { PHOTOS } from '../../content/photos';
 export const metadata: Metadata = {
   title: 'Who it’s for: restaurants, cafés, pizzerias, bars and hotels in Ghana',
   description:
-    'Plateraa is for food businesses in Ghana that want ordering to be easy for customers and every order easy to manage: quick service restaurants, pizzerias, cafés and bakeries, juice bars, bars and lounges, hotels, cloud kitchens and restaurants.',
+    'Brixx is for food businesses in Ghana that want ordering to be easy for customers and every order easy to manage: quick service restaurants, pizzerias, cafés and bakeries, juice bars, bars and lounges, hotels, cloud kitchens and restaurants.',
   alternates: { canonical: '/who-its-for' },
 };
 
 /*
- * Who Plateraa is for, with the About story folded in (user request, 15 Oct: "Who it's for" in the
+ * Who Brixx is for, with the About story folded in (user request, 15 Oct: "Who it's for" in the
  * menu instead of "About"; /about redirects here).
  */
 
@@ -59,7 +59,7 @@ const BELIEFS = [
   },
   {
     title: 'Your money stays yours',
-    body: 'Customer payments go into your own Moolre account. Plateraa keeps the record, and you keep the money.',
+    body: 'Customer payments go into your own Moolre account. Brixx keeps the record, and you keep the money.',
   },
 ];
 
@@ -70,7 +70,7 @@ export default function WhoItsForPage() {
         label="Who it’s for"
         title="Built for the people who feed Ghana"
         script="one counter at a time"
-        intro="Restaurants, cafés, pizzerias, bars and hotels serve the country every day. Plateraa makes it easy for their customers to order, and easy for them to handle every order that comes in."
+        intro="Restaurants, cafés, pizzerias, bars and hotels serve the country every day. Brixx makes it easy for their customers to order, and easy for them to handle every order that comes in."
       />
 
       <Container>
@@ -84,7 +84,7 @@ export default function WhoItsForPage() {
 
       <BusinessTypes
         title="Whatever you serve"
-        intro="From a corner café or juice bar to a hotel kitchen or a busy lounge, Plateraa fits the way you already work."
+        intro="From a corner café or juice bar to a hotel kitchen or a busy lounge, Brixx fits the way you already work."
       />
 
       <section className="reveal bg-cream py-20 sm:py-28">
@@ -106,7 +106,7 @@ export default function WhoItsForPage() {
 
       <section className="reveal py-20 sm:py-28">
         <Container>
-          <SectionHeading title="Is Plateraa right for you?" />
+          <SectionHeading title="Is Brixx right for you?" />
           <div className="mt-12 grid gap-5 lg:grid-cols-[1.4fr_1fr]">
             <div className="rounded-[24px] border border-line p-8">
               <h3 className="text-[20px]">A good fit if</h3>
@@ -153,7 +153,7 @@ export default function WhoItsForPage() {
               orders but take a large share of each one.
             </p>
             <p>
-              We started building Plateraa in September 2026 to make ordering easy for customers and
+              We started building Brixx in September 2026 to make ordering easy for customers and
               easy for the people taking the orders, beginning with a small group of vendors we set
               up ourselves and learn from every week.
             </p>

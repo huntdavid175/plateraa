@@ -22,7 +22,7 @@ import {
   withPlatform,
   withTenant,
   type Tx,
-} from '@plateraa/db';
+} from '@brixx/db';
 import * as Sentry from '@sentry/nestjs';
 import { ENV, type Env } from '../config/env';
 import { DATABASE, type DatabaseHandle } from '../database/database.module';

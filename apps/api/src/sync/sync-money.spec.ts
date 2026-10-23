@@ -10,7 +10,7 @@ import {
   tenantSettings,
   withTenant,
   type Database,
-} from '@plateraa/db';
+} from '@brixx/db';
 import request from 'supertest';
 import { ulid } from 'ulid';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';

@@ -15,7 +15,7 @@ export interface DeviceCredentials {
   businessName: string;
 }
 
-const KEY = 'plateraa.device';
+const KEY = 'brixx.device';
 
 export async function loadCredentials(): Promise<DeviceCredentials | null> {
   const stored = await SecureStore.getItemAsync(KEY);

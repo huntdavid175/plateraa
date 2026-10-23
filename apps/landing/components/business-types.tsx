@@ -36,10 +36,10 @@ const TYPES: { name: string; line: string; image: Photo }[] = [
   },
 ];
 
-/** The kinds of food business Plateraa is made for, as photo tiles (user request, 15 Oct). */
+/** The kinds of food business Brixx is made for, as photo tiles (user request, 15 Oct). */
 export function BusinessTypes({
   title = 'Made for every kind of food business',
-  intro = 'From a corner café to a busy restaurant or hotel kitchen, Plateraa fits the way you already serve.',
+  intro = 'From a corner café to a busy restaurant or hotel kitchen, Brixx fits the way you already serve.',
   more = false,
 }: {
   title?: string;
@@ -71,7 +71,7 @@ export function BusinessTypes({
         {more && (
           <div className="mt-10">
             <ButtonLink href="/who-its-for" kind="outline">
-              See who Plateraa is for
+              See who Brixx is for
             </ButtonLink>
           </div>
         )}

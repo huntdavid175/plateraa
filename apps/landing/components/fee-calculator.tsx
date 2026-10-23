@@ -1,6 +1,6 @@
 'use client';
 
-import { bpsOf, formatCedis, parseCedis, pesewas } from '@plateraa/shared';
+import { bpsOf, formatCedis, parseCedis, pesewas } from '@brixx/shared';
 import { useId, useState } from 'react';
 
 import { ONLINE_FEE_BPS, ONLINE_FEE_WORDS } from '../lib/site';
@@ -31,7 +31,7 @@ export function FeeCalculator() {
       </div>
       <div id={`${id}-result`} aria-live="polite" className="mt-6 grid gap-4 sm:grid-cols-2">
         <div className="rounded-2xl bg-brand-tint p-5">
-          <p className="text-[14px] text-muted">Plateraa’s {ONLINE_FEE_WORDS}</p>
+          <p className="text-[14px] text-muted">Brixx’s {ONLINE_FEE_WORDS}</p>
           <p className="mt-1 text-[28px] font-medium tabular-nums">
             {fee === null ? 'Type an amount' : formatCedis(fee)}
           </p>
@@ -42,7 +42,7 @@ export function FeeCalculator() {
         </div>
       </div>
       <p className="mt-4 text-[14px] leading-relaxed text-muted">
-        Moolre charges its own fee on each mobile money payment, separate from Plateraa’s.
+        Moolre charges its own fee on each mobile money payment, separate from Brixx’s.
       </p>
     </div>
   );

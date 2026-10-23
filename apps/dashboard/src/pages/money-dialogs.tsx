@@ -4,7 +4,7 @@ import {
   priceOrder,
   type Discount,
   type ExpenseCategory,
-} from '@plateraa/shared';
+} from '@brixx/shared';
 import { useMutation } from '@tanstack/react-query';
 import { useState, type ReactNode } from 'react';
 import { ulid } from 'ulid';

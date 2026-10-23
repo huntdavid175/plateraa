@@ -15,12 +15,12 @@ export const nullableFlag = () => z.nullable(z.boolean()).meta({ type: 'boolean'
 
 /**
  * The API contract. The typed clients for the tablet, dashboard and storefront are generated from
- * it (`pnpm --filter @plateraa/api openapi`, then `pnpm --filter @plateraa/api-client generate`).
+ * it (`pnpm --filter @brixx/api openapi`, then `pnpm --filter @brixx/api-client generate`).
  * Better Auth's /api/auth/* routes aren't included; clients use Better Auth's own client for those.
  */
 export function buildOpenApiDocument(app: INestApplication): OpenAPIObject {
   const config = new DocumentBuilder()
-    .setTitle('Plateraa API')
+    .setTitle('Brixx API')
     .setVersion('1')
     .addApiKey({ type: 'apiKey', in: 'header', name: 'x-device-token' }, 'device')
     .addBearerAuth()

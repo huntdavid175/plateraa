@@ -1,4 +1,4 @@
-import { pinProblem } from '@plateraa/shared';
+import { pinProblem } from '@brixx/shared';
 import { useMutation, useQuery } from '@tanstack/react-query';
 import { Plus } from 'lucide-react';
 import { useState } from 'react';
@@ -218,8 +218,7 @@ function TabletsPanel({ tablets }: { tablets: Tablet[] }) {
           Tablets
         </h2>
         <p className="text-sm text-muted-foreground">
-          To add one: install Plateraa on the tablet, sign in with your email and pick this
-          business.
+          To add one: install Brixx on the tablet, sign in with your email and pick this business.
         </p>
       </div>
       {tablets.length === 0 ? (

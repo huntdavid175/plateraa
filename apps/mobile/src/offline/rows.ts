@@ -7,7 +7,7 @@ import type {
   ShiftStatus,
   StockKind,
   SyncCommandType,
-} from '@plateraa/shared';
+} from '@brixx/shared';
 
 /** Rows as the tablet stores them (schema.ts): booleans are 0/1, lists are JSON text. */
 

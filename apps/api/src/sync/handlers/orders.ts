@@ -15,7 +15,7 @@ import {
   orders,
   priceHistory,
   type Tx,
-} from '@plateraa/db';
+} from '@brixx/db';
 import {
   PricingError,
   canEditItems,
@@ -28,7 +28,7 @@ import {
   type OrderSource,
   type PricedOrder,
   type SyncCommandOf,
-} from '@plateraa/shared';
+} from '@brixx/shared';
 import { recordAudit } from '../../audit/audit';
 import { CommandRejected, type CommandHandler, type HandlerContext } from '../sync.types';
 import {

@@ -1,5 +1,5 @@
 {
-  "name": "@plateraa/db",
+  "name": "@brixx/db",
   "version": "0.0.0",
   "private": true,
   "type": "module",
@@ -19,7 +19,7 @@
     "db:migrate:production": "node scripts/migrate-production.mjs"
   },
   "dependencies": {
-    "@plateraa/shared": "workspace:*",
+    "@brixx/shared": "workspace:*",
     "drizzle-orm": "0.45.2",
     "pg": "8.23.0"
   },

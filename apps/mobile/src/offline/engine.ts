@@ -5,7 +5,7 @@ import {
   type SyncCommand,
   type SyncCommandInput,
   type SyncCommandType,
-} from '@plateraa/shared';
+} from '@brixx/shared';
 import { ulid } from 'ulid';
 import { LocalRejection, applyCommand } from './commands';
 import type { OutboxRow } from './rows';

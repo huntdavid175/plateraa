@@ -1,4 +1,4 @@
-import type { Station } from '@plateraa/shared';
+import type { Station } from '@brixx/shared';
 import { useState } from 'react';
 import { Alert, ScrollView, Text, View } from 'react-native';
 import { problemText } from '../tablet/api';

@@ -56,10 +56,10 @@ importers:
       '@node-rs/argon2':
         specifier: 2.2.1
         version: 2.2.1
-      '@plateraa/db':
+      '@brixx/db':
         specifier: workspace:*
         version: link:../../packages/db
-      '@plateraa/shared':
+      '@brixx/shared':
         specifier: workspace:*
         version: link:../../packages/shared
       '@sentry/nestjs':
@@ -132,10 +132,10 @@ importers:
       '@fontsource-variable/inter':
         specifier: 5.3.0
         version: 5.3.0
-      '@plateraa/api-client':
+      '@brixx/api-client':
         specifier: workspace:*
         version: link:../../packages/api-client
-      '@plateraa/shared':
+      '@brixx/shared':
         specifier: workspace:*
         version: link:../../packages/shared
       '@radix-ui/react-checkbox':
@@ -223,7 +223,7 @@ importers:
       '@fontsource/caveat':
         specifier: 5.3.0
         version: 5.3.0
-      '@plateraa/shared':
+      '@brixx/shared':
         specifier: workspace:*
         version: link:../../packages/shared
       lucide-react:
@@ -269,10 +269,10 @@ importers:
       '@op-engineering/op-sqlite':
         specifier: 18.2.1
         version: 18.2.1(react-native@0.86.3(@babel/core@7.29.7)(@react-native/metro-config@0.87.1(@babel/core@7.29.7))(@types/react@19.2.18)(react@19.2.3))(react@19.2.3)
-      '@plateraa/api-client':
+      '@brixx/api-client':
         specifier: workspace:*
         version: link:../../packages/api-client
-      '@plateraa/shared':
+      '@brixx/shared':
         specifier: workspace:*
         version: link:../../packages/shared
       expo:
@@ -348,10 +348,10 @@ importers:
       '@fontsource/dm-sans':
         specifier: 5.3.0
         version: 5.3.0
-      '@plateraa/api-client':
+      '@brixx/api-client':
         specifier: workspace:*
         version: link:../../packages/api-client
-      '@plateraa/shared':
+      '@brixx/shared':
         specifier: workspace:*
         version: link:../../packages/shared
       next:
@@ -404,7 +404,7 @@ importers:
 
   packages/db:
     dependencies:
-      '@plateraa/shared':
+      '@brixx/shared':
         specifier: workspace:*
         version: link:../shared
       drizzle-orm:

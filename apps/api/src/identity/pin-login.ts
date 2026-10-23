@@ -11,7 +11,7 @@ import {
   UnauthorizedException,
   UseGuards,
 } from '@nestjs/common';
-import { and, eq, isNull, staffMembers, withTenant } from '@plateraa/db';
+import { and, eq, isNull, staffMembers, withTenant } from '@brixx/db';
 import { ApiOkResponse, ApiSecurity } from '@nestjs/swagger';
 import {
   CAPABILITIES,
@@ -19,7 +19,7 @@ import {
   ROLES,
   pinLockout,
   type Role,
-} from '@plateraa/shared';
+} from '@brixx/shared';
 import { createZodDto } from 'nestjs-zod';
 import { z } from 'zod';
 import { recordAudit } from '../audit/audit';

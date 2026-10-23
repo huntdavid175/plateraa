@@ -1,5 +1,5 @@
 {
-  "name": "@plateraa/api",
+  "name": "@brixx/api",
   "version": "0.0.0",
   "private": true,
   "scripts": {
@@ -20,8 +20,8 @@
     "@nestjs/platform-express": "11.2.3",
     "@nestjs/swagger": "11.4.7",
     "@node-rs/argon2": "2.2.1",
-    "@plateraa/db": "workspace:*",
-    "@plateraa/shared": "workspace:*",
+    "@brixx/db": "workspace:*",
+    "@brixx/shared": "workspace:*",
     "@sentry/nestjs": "10.74.0",
     "aws4fetch": "1.0.20",
     "better-auth": "1.7.4",

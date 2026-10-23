@@ -20,7 +20,7 @@ export function tabletAlertWords(name: string, alert: TabletAlert): string {
         ? `${name} hasn’t been in touch ${since(alert.since)}, though its drawer is open. Sales taken on it meanwhile aren’t in these figures yet.`
         : `${name} has its drawer open but hasn’t been in touch yet.`;
     case 'STUCK':
-      return `${name} is online, but ${changes(alert.count)} on it aren’t going through${alert.since ? ` (last full sync ${since(alert.since).replace('since ', '')})` : ''}. Plateraa has been alerted.`;
+      return `${name} is online, but ${changes(alert.count)} on it aren’t going through${alert.since ? ` (last full sync ${since(alert.since).replace('since ', '')})` : ''}. Brixx has been alerted.`;
     case 'WAITING':
       return `${name} has ${changes(alert.count)} waiting to upload${alert.since ? ` ${since(alert.since)}` : ''}. Check its internet connection.`;
     case 'REFUSED':

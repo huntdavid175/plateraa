@@ -1,5 +1,5 @@
-import type { paths } from '@plateraa/api-client';
-import type { Station } from '@plateraa/shared';
+import type { paths } from '@brixx/api-client';
+import type { Station } from '@brixx/shared';
 import { api, call } from './api';
 import { queryClient } from './query';
 

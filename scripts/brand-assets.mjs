@@ -1,4 +1,4 @@
-// Makes every Plateraa icon and logo from the one source picture, public/images/logo.png: the
+// Makes every Brixx icon and logo from the one source picture, public/images/logo.png: the
 // tablet's app icons and splash, the dashboard's favicons and mark, and the online store's.
 // Run it again whenever the logo changes: `pnpm brand:assets`.
 //

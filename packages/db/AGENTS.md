@@ -1,4 +1,4 @@
-# Database (`@plateraa/db`)
+# Database (`@brixx/db`)
 
 Neon Postgres 18.6 (AWS eu-central-1), drizzle-orm 0.45.2 with `casing: 'snake_case'`. Three Neon branches: `test` (the automated tests only), `dev` (Render, the tablet and the laptop during development) and `production` (untouched, kept for the pilot; Render moves to it before R1a). No branch per PR yet.
 
@@ -10,9 +10,9 @@ Neon Postgres 18.6 (AWS eu-central-1), drizzle-orm 0.45.2 with `casing: 'snake_c
 - `src/index.ts` also re-exports the drizzle operators, so apps never import `drizzle-orm` directly (`notInArray` joined them on 16 Sep).
 - `0012_storefront` (13 Sep): the online store's settings on `tenant_settings`, `staff_members.system` (the hidden "Online store" member, one per business), and `orders.pay_on_collection` / `orders.track_token`.
 - `0013_store_photos` (13 Sep): `tenant_settings.storefront_cover_key` / `storefront_logo_key`, the photo storage names of the store's cover picture and logo (item photos use `items.photo_key`, there from the start).
-- `0014_store_hours` (16 Sep): `tenant_settings.storefront_hours` becomes a `jsonb` week of opening times (`StoreHours` in `@plateraa/shared`), replacing the free-text line, which can't be turned into JSON — the old column is dropped and every store starts on 8am–8pm, seven days.
+- `0014_store_hours` (16 Sep): `tenant_settings.storefront_hours` becomes a `jsonb` week of opening times (`StoreHours` in `@brixx/shared`), replacing the free-text line, which can't be turned into JSON — the old column is dropped and every store starts on 8am–8pm, seven days.
 - `migrations/`: `0000`–`0014`, all applied to `dev`. `production` gets them all with `db:migrate:production` when it's set up for the pilot.
-- `0011_dine_in` (13 Sep): order types are `DINE_IN` / `PICKUP` / `DELIVERY` (walk-ins became pickups), and `tenant_settings.offers_dine_in`, on for chop bars, fast food places and cafés (`DINE_IN_VENDOR_TYPES` in `@plateraa/shared`).
+- `0011_dine_in` (13 Sep): order types are `DINE_IN` / `PICKUP` / `DELIVERY` (walk-ins became pickups), and `tenant_settings.offers_dine_in`, on for chop bars, fast food places and cafés (`DINE_IN_VENDOR_TYPES` in `@brixx/shared`).
 - `daily_reports` (0009) keeps finished days' report figures. It's server only: no `sync_xid`, never pulled. `expenses` has a `sync_xid` although it never syncs, so the kept reports can tell a day's money out has changed.
 
 ## Tenant isolation (don't break it)
@@ -24,8 +24,8 @@ Neon Postgres 18.6 (AWS eu-central-1), drizzle-orm 0.45.2 with `casing: 'snake_c
 
 ## Migrations
 
-- `pnpm --filter @plateraa/db db:generate`, review the SQL, then `pnpm --filter @plateraa/db db:migrate`. Both read `DATABASE_URL_DIRECT` (unpooled) from the repo-root `.env`, which on the laptop is the `dev` branch.
-- Once Render uses the `production` branch, also run `pnpm --filter @plateraa/db db:migrate:production` before pushing code that needs the migration. It migrates `PRODUCTION_DATABASE_URL_DIRECT` (via `scripts/migrate-production.mjs`) and prints which host it's migrating.
+- `pnpm --filter @brixx/db db:generate`, review the SQL, then `pnpm --filter @brixx/db db:migrate`. Both read `DATABASE_URL_DIRECT` (unpooled) from the repo-root `.env`, which on the laptop is the `dev` branch.
+- Once Render uses the `production` branch, also run `pnpm --filter @brixx/db db:migrate:production` before pushing code that needs the migration. It migrates `PRODUCTION_DATABASE_URL_DIRECT` (via `scripts/migrate-production.mjs`) and prints which host it's migrating.
 - drizzle-kit asks interactively when it suspects a rename, and an agent shell can't answer. Split it into two generates (drop, then add) or write the SQL by hand.
 - Changing a Postgres enum means recreating it in SQL (see `0005_tablet_decisions.sql`).
 

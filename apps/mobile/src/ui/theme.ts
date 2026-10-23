@@ -1,4 +1,4 @@
-import { formatCedis, type Pesewas } from '@plateraa/shared';
+import { formatCedis, type Pesewas } from '@brixx/shared';
 import { useSyncExternalStore } from 'react';
 import type { StyleSheet } from 'react-native';
 

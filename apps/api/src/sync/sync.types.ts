@@ -1,5 +1,5 @@
-import type { Tx } from '@plateraa/db';
-import type { SyncCommandOf, SyncCommandType } from '@plateraa/shared';
+import type { Tx } from '@brixx/db';
+import type { SyncCommandOf, SyncCommandType } from '@brixx/shared';
 import type { ResolvedStaff } from '../identity/directories.service';
 import type { DeviceContext } from '../identity/request-context';
 

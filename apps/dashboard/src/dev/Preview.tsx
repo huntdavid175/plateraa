@@ -1,4 +1,4 @@
-import { STOREFRONT_THEMES } from '@plateraa/shared';
+import { STOREFRONT_THEMES } from '@brixx/shared';
 import { useState } from 'react';
 import { Outlet } from 'react-router';
 import { queryClient, type Me } from '../lib/query';

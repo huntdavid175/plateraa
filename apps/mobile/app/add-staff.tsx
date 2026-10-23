@@ -1,4 +1,4 @@
-import { pinProblem } from '@plateraa/shared';
+import { pinProblem } from '@brixx/shared';
 import { useState } from 'react';
 import { Pressable, ScrollView, Text, View } from 'react-native';
 import { addStaffAtCounter, problemText } from '../src/tablet/api';

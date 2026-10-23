@@ -1,4 +1,4 @@
-import { bpsOf, formatCedis, pesewas } from '@plateraa/shared';
+import { bpsOf, formatCedis, pesewas } from '@brixx/shared';
 import type { Metadata } from 'next';
 import type { ReactNode } from 'react';
 
@@ -130,7 +130,7 @@ function Everything() {
       <Container>
         <SectionHeading
           title="Everything your counter needs, on the tablet you already own"
-          intro="Plateraa runs on an ordinary Android tablet. Staff sign in with their PIN and take orders in a few taps, and you can check on everything from anywhere."
+          intro="Brixx runs on an ordinary Android tablet. Staff sign in with their PIN and take orders in a few taps, and you can check on everything from anywhere."
         />
         <ul className="mt-12 grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
           <OrangeCard
@@ -189,7 +189,7 @@ function MidRush() {
           <span className="text-night-muted/70">
             The lunch rush won’t wait for the Wi-Fi to come back.
           </span>{' '}
-          <span className="text-on-night">Plateraa keeps up with it.</span>
+          <span className="text-on-night">Brixx keeps up with it.</span>
         </p>
         <div className="reveal mt-12 sm:mt-16">
           <RushList />
@@ -293,7 +293,7 @@ function Pricing() {
         <SectionHeading
           dark
           title="Free until a customer pays you online"
-          intro="You don’t pay to join or to keep using Plateraa. We earn a small share when money comes to you through it."
+          intro="You don’t pay to join or to keep using Brixx. We earn a small share when money comes to you through it."
         />
         <div className="reveal mt-14 grid gap-10 sm:grid-cols-3">
           <Stat label="Every month" figure="GH₵0" note="To sign up and to keep going" />
@@ -302,7 +302,7 @@ function Pricing() {
         </div>
         <div className="reveal mt-14 flex flex-col gap-6 rounded-[24px] bg-night-card p-6 sm:flex-row sm:items-center sm:justify-between sm:p-8">
           <p className="max-w-2xl text-[18px] leading-relaxed text-on-night">
-            On a {formatCedis(EXAMPLE_ORDER)} order paid through your store, Plateraa’s share is{' '}
+            On a {formatCedis(EXAMPLE_ORDER)} order paid through your store, Brixx’s share is{' '}
             {share}. On a {formatCedis(EXAMPLE_ORDER)} cash order, it’s nothing.
             <span className="mt-2 block text-[14px] text-night-muted">
               Moolre charges its own fee on mobile money payments.
@@ -390,7 +390,7 @@ function YourMoney() {
           <div className="p-8 sm:p-14">
             <SectionHeading
               title="Your money goes straight to you"
-              intro="Every mobile money payment lands in your own Moolre merchant account. Plateraa keeps the record so your figures add up, and never holds the money itself."
+              intro="Every mobile money payment lands in your own Moolre merchant account. Brixx keeps the record so your figures add up, and never holds the money itself."
             />
             <ul className="mt-8 space-y-3 text-[16px] text-ink">
               <li>Your account, opened in your name with Moolre</li>

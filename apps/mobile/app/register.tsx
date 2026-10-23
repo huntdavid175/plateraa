@@ -1,4 +1,4 @@
-import { pinProblem } from '@plateraa/shared';
+import { pinProblem } from '@brixx/shared';
 import { useState } from 'react';
 import { Image, ScrollView, Text, View } from 'react-native';
 import logo from '../assets/logo.png';
@@ -61,7 +61,7 @@ export default function RegisterScreen() {
       setPassword('');
       if (businesses.length === 0) {
         throw new Error(
-          "This login doesn't run a business on Plateraa yet. Set the business up first, then register the tablet.",
+          "This login doesn't run a business on Brixx yet. Set the business up first, then register the tablet.",
         );
       }
       setStep(
@@ -147,7 +147,7 @@ export default function RegisterScreen() {
       <View style={styles.card}>
         {step.name === 'sign-in' && (
           <>
-            <Text style={styles.heading}>Sign in with your Plateraa email</Text>
+            <Text style={styles.heading}>Sign in with your Brixx email</Text>
             <Field
               label="Email"
               value={email}

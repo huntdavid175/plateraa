@@ -18,13 +18,13 @@ import {
   tenantSettings,
   tenants,
   withTenant,
-} from '@plateraa/db';
+} from '@brixx/db';
 import {
   DEFAULT_STORE_HOURS,
   STOREFRONT_THEMES,
   normalizeGhanaPhone,
   storeHoursSchema,
-} from '@plateraa/shared';
+} from '@brixx/shared';
 import { ApiBearerAuth, ApiNoContentResponse, ApiOkResponse } from '@nestjs/swagger';
 import { createZodDto } from 'nestjs-zod';
 import { z } from 'zod';

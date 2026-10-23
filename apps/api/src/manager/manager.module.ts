@@ -30,7 +30,7 @@ import {
   tenantSettings,
   withTenant,
   type Tx,
-} from '@plateraa/db';
+} from '@brixx/db';
 import {
   EXPENSE_CATEGORIES,
   ORDER_STATUSES,
@@ -43,7 +43,7 @@ import {
   priceOrder,
   refundOwed,
   type Discount,
-} from '@plateraa/shared';
+} from '@brixx/shared';
 import { ApiBearerAuth, ApiCreatedResponse, ApiOkResponse } from '@nestjs/swagger';
 import { createZodDto } from 'nestjs-zod';
 import { ulid } from 'ulid';

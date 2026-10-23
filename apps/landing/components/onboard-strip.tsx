@@ -2,7 +2,7 @@ import { VENDORS } from '../content/vendors';
 import { Container } from './ui';
 
 /**
- * A slow looping strip of the food businesses already on Plateraa. Hidden until there are real,
+ * A slow looping strip of the food businesses already on Brixx. Hidden until there are real,
  * approved names in `content/vendors.ts`.
  */
 export function OnboardStrip() {
@@ -16,7 +16,7 @@ export function OnboardStrip() {
     <section className="py-12 sm:py-16" aria-labelledby="onboard">
       <Container>
         <h2 id="onboard" className="text-center text-[15px] text-muted">
-          Food businesses already taking orders with Plateraa
+          Food businesses already taking orders with Brixx
         </h2>
       </Container>
       <div className="mt-6 overflow-hidden [mask-image:linear-gradient(90deg,transparent,black_8%,black_92%,transparent)]">

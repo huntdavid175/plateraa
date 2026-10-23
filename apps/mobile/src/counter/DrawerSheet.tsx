@@ -1,4 +1,4 @@
-import type { Pesewas } from '@plateraa/shared';
+import type { Pesewas } from '@brixx/shared';
 import { cedis } from '../ui/theme';
 import { AmountSheet } from './AmountSheet';
 

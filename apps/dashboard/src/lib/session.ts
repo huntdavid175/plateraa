@@ -6,8 +6,8 @@ export interface Session {
   tenantId: string | null;
 }
 
-const TOKEN_KEY = 'plateraa.token';
-const TENANT_KEY = 'plateraa.tenant';
+const TOKEN_KEY = 'brixx.token';
+const TENANT_KEY = 'brixx.tenant';
 
 function read(key: string): string | null {
   try {

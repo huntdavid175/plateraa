@@ -9,7 +9,7 @@ import type { ReactNode } from 'react';
 import './globals.css';
 
 export const metadata: Metadata = {
-  title: 'Plateraa',
+  title: 'Brixx',
   description: 'Order from your favourite food spot, and pay with mobile money.',
 };
 
@@ -19,7 +19,7 @@ export const viewport: Viewport = {
 };
 
 // Dark mode before the first paint: what this browser chose last, else the phone's own setting.
-const DARK_FIRST = `try{var d=localStorage.getItem('plateraa-dark');if(d==='1'||(d===null&&matchMedia('(prefers-color-scheme: dark)').matches))document.documentElement.classList.add('dark')}catch(e){}`;
+const DARK_FIRST = `try{var d=localStorage.getItem('brixx-dark');if(d==='1'||(d===null&&matchMedia('(prefers-color-scheme: dark)').matches))document.documentElement.classList.add('dark')}catch(e){}`;
 
 export default function RootLayout({ children }: { children: ReactNode }) {
   return (

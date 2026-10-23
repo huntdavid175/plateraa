@@ -12,14 +12,14 @@ import {
   refunds,
   sql,
   type Tx,
-} from '@plateraa/db';
+} from '@brixx/db';
 import {
   ORDER_TYPES,
   type ExpenseCategory,
   type OrderSource,
   type OrderType,
   type PaymentMethod,
-} from '@plateraa/shared';
+} from '@brixx/shared';
 import { countsAsSale, dueSql } from './business-day';
 
 /**

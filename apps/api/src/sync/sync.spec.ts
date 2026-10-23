@@ -7,8 +7,8 @@ import {
   tenantSettings,
   withTenant,
   type Database,
-} from '@plateraa/db';
-import type { SyncCommandInput } from '@plateraa/shared';
+} from '@brixx/db';
+import type { SyncCommandInput } from '@brixx/shared';
 import request from 'supertest';
 import { ulid } from 'ulid';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';

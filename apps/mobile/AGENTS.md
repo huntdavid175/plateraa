@@ -2,21 +2,21 @@
 
 Read the exact versioned docs at https://docs.expo.dev/versions/v57.0.0/ before writing any code.
 
-# Tablet app (`@plateraa/mobile`)
+# Tablet app (`@brixx/mobile`)
 
 The counter app. It runs on the vendor's own budget Android tablet (8–10", **landscape**, often Wi-Fi only, no SIM). Say "tablet", not "phone". Order entry and the prep queue sit side by side.
 
 ## Running it
 
 - Expo SDK 57 (RN 0.86.3, React 19.2.3), New Architecture. It runs as an **EAS development build, not Expo Go**, because op-sqlite and our own Kotlin modules need native code.
-- JS/TS changes: `pnpm --filter @plateraa/mobile start` (PowerShell; see the root AGENTS.md for Git Bash), then open Plateraa on the tablet on the same Wi-Fi (or `npx expo start --tunnel`). Reloads over Metro, no rebuild.
+- JS/TS changes: `pnpm --filter @brixx/mobile start` (PowerShell; see the root AGENTS.md for Git Bash), then open Brixx on the tablet on the same Wi-Fi (or `npx expo start --tunnel`). Reloads over Metro, no rebuild.
 - **Native changes need a new build**: anything in `modules/`, new native dependencies, or `app.json` plugins/permissions. From `apps/mobile`: `npx eas-cli@latest build --profile development --platform android --non-interactive --no-wait`, then `npx eas-cli@latest build:view <id>` until FINISHED. The user installs the APK from the build page.
-- EAS project `@huntdavid175/plateraa`; profiles in `eas.json` (development / preview = internal APK, production = AAB). Android package `com.plateraa.pos` (permanent once on Google Play). Keystore is managed by EAS.
-- `pnpm --filter @plateraa/mobile typecheck`; `npx expo-doctor` from `apps/mobile` should stay 21/21.
+- EAS project `@huntdavid175/plateraa`; profiles in `eas.json` (development / preview = internal APK, production = AAB). Android package `com.brixx.pos` (permanent once on Google Play). Keystore is managed by EAS.
+- `pnpm --filter @brixx/mobile typecheck`; `npx expo-doctor` from `apps/mobile` should stay 21/21.
 
 ## Native modules (local Expo modules, Kotlin, autolinked from `modules/`)
 
-- `modules/plateraa-crypto`: `verifyPinAsync(verifier, pin): Promise<boolean>`. Checks a verifier in the server's format `pbkdf2-sha256$<iterations>$<salt b64url>$<hash b64url>` with PBKDF2-HMAC-SHA256 and a constant-time compare. Offline PIN checks use this; it is deliberately not tied to the Keystore (user decision).
+- `modules/brixx-crypto`: `verifyPinAsync(verifier, pin): Promise<boolean>`. Checks a verifier in the server's format `pbkdf2-sha256$<iterations>$<salt b64url>$<hash b64url>` with PBKDF2-HMAC-SHA256 and a constant-time compare. Offline PIN checks use this; it is deliberately not tied to the Keystore (user decision).
 - `modules/escpos-bt`: `listBondedAsync()`, `connectAsync(address)` (Bluetooth Classic SPP), `writeAsync(base64)`, `disconnectAsync()`, `isConnected()`. Errors: `BLUETOOTH_UNAVAILABLE` (off or none), `BLUETOOTH_PERMISSION` (ask for `BLUETOOTH_CONNECT` at runtime on API 31+ first), `PRINTER_NOT_CONNECTED`.
 - `src/printing/escpos.ts`: `Receipt` builder for 58mm printers (32 columns, ASCII only, so the cedi is written "GHS"), ending with `.finish().toBase64()`.
 
@@ -24,7 +24,7 @@ The counter app. It runs on the vendor's own budget Android tablet (8–10", **l
 
 - The real app is in place (Expo Router, `app/`), built on 11 Sep for plan.md §2.2. It runs on the tablet from EAS build `406855bd` (the first with Expo Router, `expo-secure-store` and `expo-crypto`): setup, PINs and lockout, adding staff, the idle lock and the offline banner all worked.
 - The day-1 test screen (plan.md §1.2) is now `app/diagnostics.tsx`, "Tablet check", reachable from the lock screen. It passed on a real tablet: 2,000 SQLite inserts in 535 ms; right PIN accepted in 295 ms, wrong refused in 230 ms; Bluetooth lists paired devices. Printing a real receipt waits for a printer.
-- §2.3, taking orders, is built (see below) and worked on the tablet on 11 Sep. It needs a menu: `pnpm --filter @plateraa/api seed:test-menu "<business name or slug>"` adds a test one.
+- §2.3, taking orders, is built (see below) and worked on the tablet on 11 Sep. It needs a menu: `pnpm --filter @brixx/api seed:test-menu "<business name or slug>"` adds a test one.
 - Next: §2.4, cash and stock (drops and pay-ins, closing the drawer, sold-out, prep counts).
 
 ## Counter (`src/counter`, plan.md §2.3)
@@ -74,7 +74,7 @@ The counter app. It runs on the vendor's own budget Android tablet (8–10", **l
   - The splash (`expo-splash-screen` plugin in `app.json`): `splash-icon.png` at 160 dp on the warm grey, or the dark ground in dark mode.
   - `logo.png` (256) in the app: beside the business name on the lock screen, and above "Set up this tablet".
   - Icons and the splash are native: they change only with a new EAS build.
-- The design file is `assets/design/Design Plateraa POS Screen.make`. The UI guideline skill used for the redesign is `.claude/skills/airbnb-ui` (installed as-is, so Prettier skips it).
+- The design file is `assets/design/Design Brixx POS Screen.make`. The UI guideline skill used for the redesign is `.claude/skills/airbnb-ui` (installed as-is, so Prettier skips it).
 
 ## App (`app/`, `src/tablet`, `src/ui`)
 
@@ -97,20 +97,20 @@ The counter app. It runs on the vendor's own budget Android tablet (8–10", **l
 - `engine.ts`: `SyncEngine`: `record(type, payload, staffId)`, `syncNow()`, `followUp(done)` (check back every 3 s, not 30, until `done`, for a minute at most), `start()` / `stop()` / `setForeground()`, `needsAttention()` / `dismiss()`, and `subscribe()` (screens use `useEngineState()` from `src/tablet/TabletProvider.tsx`). Each cycle pushes (≤50 at a time, in order) and then pulls; cycles never overlap.
 - `transport.ts`: `httpTransport(createApiClient(…))`. Failures are offline, server, unauthorized (the tablet was signed out) or invalid.
   - Every push and pull carries an `OutboxReport` (how many changes wait, and the oldest one's time) as the `x-outbox-pending` / `x-outbox-oldest` headers, so the dashboard can warn when a tablet stops keeping up. The engine keeps the oldest waiting change in `SyncState.oldestPendingAt`, and `SyncBanner` warns, even on the counter, once changes have waited 30 minutes.
-- Tests: `pnpm --filter @plateraa/mobile test` (Vitest in Node, against a fake server). App code must not use Node APIs: `tsconfig.json` leaves tests out, and `tsconfig.test.json` typechecks them with Node's types.
-- **Offline stress run** (plan.md Phase 4): `pnpm --filter @plateraa/mobile stress` (PowerShell). Run it before a release and after any change to the engine, `store.ts`, `commands.ts` or the server's sync handlers. It takes about 13 minutes: the scenarios run side by side, but the API runs on the laptop, so every query crosses to Frankfurt (about 2 s per change; on Render it's milliseconds). Its HTTP timeout is 5 minutes for that reason; the tablet keeps its 20 s.
+- Tests: `pnpm --filter @brixx/mobile test` (Vitest in Node, against a fake server). App code must not use Node APIs: `tsconfig.json` leaves tests out, and `tsconfig.test.json` typechecks them with Node's types.
+- **Offline stress run** (plan.md Phase 4): `pnpm --filter @brixx/mobile stress` (PowerShell). Run it before a release and after any change to the engine, `store.ts`, `commands.ts` or the server's sync handlers. It takes about 13 minutes: the scenarios run side by side, but the API runs on the laptop, so every query crosses to Frankfurt (about 2 s per change; on Render it's milliseconds). Its HTTP timeout is 5 minutes for that reason; the tablet keeps its 20 s.
   - **What runs:** the real `SyncEngine`, with SQLite in a temp file, against the real API on the Neon `test` branch. `testing/stress-server.ts` compiles `shared`, `db`, `api-client` and `api` with `tsc`, migrates the branch, starts the API from `apps/api/dist` on a local port, and sets up one business per scenario (removed afterwards). It skips when `TEST_DATABASE_URL` isn't set.
   - **The trouble** (`testing/stress-tablet.ts`): `FlakyNetwork` wraps the real transport with airplane mode, answers lost after the server saved the upload, uploads arriving twice, and random trouble from a seeded source. `Till` sells the way the counter does (`counter/actions.ts`) and keeps a hand tally.
   - **The scenarios** (`offline/sync.stress.ts`): a day of `STRESS_ORDERS` (100) orders with the middle third offline; lost answers; the app killed mid-sync and again before syncing; every upload doubled, then the whole day sent again; 200 changes queued offline; random trouble with two restarts (`STRESS_SEED` repeats a run).
   - **Each must end in step:** nothing waiting or refused, every order on the server once and as the counter left it, the tablet showing what the server has, the day summary matching the hand tally, and the drawer's difference zero.
-- Metro loads `@plateraa/shared` and `@plateraa/api-client` from their `dist`: after changing them, run `pnpm --filter "@plateraa/mobile^..." build` before `start`. EAS does the same through the `eas-build-post-install` script, which ran without error on build `406855bd`.
+- Metro loads `@brixx/shared` and `@brixx/api-client` from their `dist`: after changing them, run `pnpm --filter "@brixx/mobile^..." build` before `start`. EAS does the same through the `eas-build-post-install` script, which ran without error on build `406855bd`.
 
 ## Rules for the tablet
 
-- The server is the source of truth for money; the tablet never settles money. Offline totals are "provisional" and come from `priceOrder()` in `@plateraa/shared`.
-- Money is integer pesewas (`Pesewas` from `@plateraa/shared`); no floats.
+- The server is the source of truth for money; the tablet never settles money. Offline totals are "provisional" and come from `priceOrder()` in `@brixx/shared`.
+- Money is integer pesewas (`Pesewas` from `@brixx/shared`); no floats.
 - Device storage never holds aggregate revenue. SQLite keeps active and today's orders only; owner summaries live in memory and are cleared when the PIN session ends.
-- Every change is a sync command from `@plateraa/shared` (`sync-commands.ts`): applied locally at once, queued in the outbox, pushed in batches of ≤50. A rejected command goes to "Needs attention" and is never retried.
+- Every change is a sync command from `@brixx/shared` (`sync-commands.ts`): applied locally at once, queued in the outbox, pushed in batches of ≤50. A rejected command goes to "Needs attention" and is never retried.
 - Not on the tablet: refunds, drawer payouts and discounts (dashboard only); approvals and digital receipts (future). Anyone can cancel a paid order; it then shows "refund owed".
 - Pay before prep is on by default: an unpaid order waits in "awaiting payment" and stays off the prep queue.
 - Big text tiles, no photos. If a change makes order entry slower, it's the wrong change.

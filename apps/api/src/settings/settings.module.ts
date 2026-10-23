@@ -23,8 +23,8 @@ import {
   tenantSettings,
   tenants,
   withTenant,
-} from '@plateraa/db';
-import { VENDOR_TYPES, pesewas } from '@plateraa/shared';
+} from '@brixx/db';
+import { VENDOR_TYPES, pesewas } from '@brixx/shared';
 import { ApiBearerAuth, ApiNoContentResponse, ApiOkResponse } from '@nestjs/swagger';
 import { createZodDto } from 'nestjs-zod';
 import { ulid } from 'ulid';
@@ -59,7 +59,7 @@ class OrderSettingsDto extends createZodDto(
 class MoolreAccountDto extends createZodDto(
   z.object({
     apiUser: z.string().trim().min(1).max(100),
-    /** Only the public key: Plateraa never needs the private one. Sealed before it's stored. */
+    /** Only the public key: Brixx never needs the private one. Sealed before it's stored. */
     publicKey: z.string().trim().min(8).max(500),
     accountNumber: z
       .string()
@@ -240,7 +240,7 @@ export class SettingsService {
       );
     }
     try {
-      await this.moolre.paymentStatus(input, `PLATERAA-CHECK-${ulid()}`);
+      await this.moolre.paymentStatus(input, `BRIXX-CHECK-${ulid()}`);
     } catch (error) {
       if (error instanceof MoolreError && error.retryable) {
         throw new BadGatewayException("Moolre couldn't be reached. Try again in a minute.");

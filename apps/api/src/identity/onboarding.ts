@@ -10,8 +10,8 @@ import {
   tenants,
   withPlatform,
   withTenant,
-} from '@plateraa/db';
-import { DINE_IN_VENDOR_TYPES, ROLES, VENDOR_TYPES } from '@plateraa/shared';
+} from '@brixx/db';
+import { DINE_IN_VENDOR_TYPES, ROLES, VENDOR_TYPES } from '@brixx/shared';
 import { ApiBearerAuth, ApiCreatedResponse, ApiOkResponse } from '@nestjs/swagger';
 import { createZodDto } from 'nestjs-zod';
 import { ulid } from 'ulid';

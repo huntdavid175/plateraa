@@ -12,8 +12,8 @@ import './globals.css';
 export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),
   title: {
-    default: 'Plateraa: online ordering and order management for food vendors in Ghana',
-    template: '%s | Plateraa',
+    default: 'Brixx: online ordering and order management for food vendors in Ghana',
+    template: '%s | Brixx',
   },
   description: SITE_DESCRIPTION,
   applicationName: SITE_NAME,
@@ -22,7 +22,7 @@ export const metadata: Metadata = {
     siteName: SITE_NAME,
     locale: 'en_GH',
     url: '/',
-    title: 'Plateraa: online ordering and order management for food vendors in Ghana',
+    title: 'Brixx: online ordering and order management for food vendors in Ghana',
     description: SITE_DESCRIPTION,
   },
   twitter: { card: 'summary_large_image' },

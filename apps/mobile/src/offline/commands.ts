@@ -20,7 +20,7 @@ import {
   type SyncCommand,
   type SyncCommandOf,
   type SyncCommandType,
-} from '@plateraa/shared';
+} from '@brixx/shared';
 import type { CustomerRow, OrderRow, ShiftRow, StockItemRow } from './rows';
 import { placeholders, type Row, type Sql } from './sql';
 import type { CommandWriter } from './store';

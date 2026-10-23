@@ -16,7 +16,7 @@ import {
 } from './testing/stress-tablet';
 
 /**
- * The offline stress run (plan.md Phase 4; `pnpm --filter @plateraa/mobile stress`). The tablet's
+ * The offline stress run (plan.md Phase 4; `pnpm --filter @brixx/mobile stress`). The tablet's
  * real sync engine, with SQLite in a file, sells against the real API on the Neon `test` branch
  * over a connection that keeps failing. However rough it gets, every order must reach the server
  * exactly once, the tablet must end up showing what the server has, and the day summary must
@@ -29,7 +29,7 @@ const SEED = Number(process.env.STRESS_SEED ?? 20260917);
 
 const files: string[] = [];
 function tabletFile(): string {
-  const file = path.join(os.tmpdir(), `plateraa-stress-${ulid()}.db`);
+  const file = path.join(os.tmpdir(), `brixx-stress-${ulid()}.db`);
   files.push(file);
   return file;
 }

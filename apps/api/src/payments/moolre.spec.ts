@@ -1,4 +1,4 @@
-import { pesewas } from '@plateraa/shared';
+import { pesewas } from '@brixx/shared';
 import { describe, expect, it } from 'vitest';
 import { MoolreError, MoolreHttpClient, linkMessage, localNumber, moolreAmount } from './moolre';
 
@@ -29,7 +29,7 @@ const client = (fetchFn: typeof fetch, sms = true) =>
   new MoolreHttpClient(
     {
       baseUrl: 'https://sandbox.moolre.com',
-      ...(sms ? { smsVasKey: 'vas', smsSenderId: 'Plateraa' } : {}),
+      ...(sms ? { smsVasKey: 'vas', smsSenderId: 'Brixx' } : {}),
     },
     fetchFn,
   );
@@ -130,7 +130,7 @@ describe('texting the link', () => {
     expect(sent[0]!.headers).toMatchObject({ 'X-API-VASKEY': 'vas' });
     expect(sent[0]!.body).toEqual({
       type: 1,
-      senderid: 'Plateraa',
+      senderid: 'Brixx',
       messages: [{ recipient: '0241234567', message: 'Pay here', ref: 'L1' }],
     });
   });

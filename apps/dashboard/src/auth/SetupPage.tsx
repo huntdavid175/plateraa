@@ -1,4 +1,4 @@
-import { MENU_TEMPLATES, VENDOR_TYPES, pinProblem, type VendorType } from '@plateraa/shared';
+import { MENU_TEMPLATES, VENDOR_TYPES, pinProblem, type VendorType } from '@brixx/shared';
 import { useMutation, useQuery } from '@tanstack/react-query';
 import { ArrowLeft, Check, X } from 'lucide-react';
 import { useMemo, useState, type ReactNode } from 'react';
@@ -636,7 +636,7 @@ function MoolreStep({ onNext }: { onNext: () => void }) {
     <>
       <Heading
         title="Connect Moolre"
-        detail="Payment-link money goes straight into your own Moolre account. Plateraa never holds your money."
+        detail="Payment-link money goes straight into your own Moolre account. Brixx never holds your money."
       />
       {state === 'connected' ? (
         <Alert tone="success" title="Connected">
@@ -702,7 +702,7 @@ function MoolreStep({ onNext }: { onNext: () => void }) {
 
 function InstallStep({ business, onDone }: { business: string; onDone: () => void }) {
   const steps = [
-    'Install the Plateraa app on the counter tablet (we send you the link).',
+    'Install the Brixx app on the counter tablet (we send you the link).',
     'Open it and sign in with the email you used here.',
     `Pick ${business}, then set the tablet down at the counter.`,
     'Each person unlocks it with their own PIN.',

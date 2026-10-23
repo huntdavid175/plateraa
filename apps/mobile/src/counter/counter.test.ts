@@ -1,4 +1,4 @@
-import { pesewas } from '@plateraa/shared';
+import { pesewas } from '@brixx/shared';
 import { ulid } from 'ulid';
 import { describe, expect, it } from 'vitest';
 import { InvalidCommandError } from '../offline/engine';

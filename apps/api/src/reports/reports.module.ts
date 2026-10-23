@@ -1,6 +1,6 @@
 import { Controller, Get, Inject, Injectable, Module, Query } from '@nestjs/common';
-import { withTenant } from '@plateraa/db';
-import { ORDER_SOURCES, ORDER_TYPES, PAYMENT_METHODS, pesewas } from '@plateraa/shared';
+import { withTenant } from '@brixx/db';
+import { ORDER_SOURCES, ORDER_TYPES, PAYMENT_METHODS, pesewas } from '@brixx/shared';
 import { ApiBearerAuth, ApiOkResponse } from '@nestjs/swagger';
 import { createZodDto } from 'nestjs-zod';
 import { z } from 'zod';

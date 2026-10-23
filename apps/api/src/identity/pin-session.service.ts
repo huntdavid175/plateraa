@@ -8,8 +8,8 @@ export interface PinSessionClaims {
   deviceId: string;
 }
 
-const ISSUER = 'plateraa:api';
-const AUDIENCE = 'plateraa:device';
+const ISSUER = 'brixx:api';
+const AUDIENCE = 'brixx:device';
 export const PIN_SESSION_MINUTES = 15;
 
 /**

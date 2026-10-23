@@ -5,7 +5,7 @@
 
 ## Product Overview
 
-**One-liner:** Plateraa makes ordering easy for customers and managing orders easy for food businesses: customers order and pay from the vendor's own store link, and every order lands in one list on the counter tablet.
+**One-liner:** Brixx makes ordering easy for customers and managing orders easy for food businesses: customers order and pay from the vendor's own store link, and every order lands in one list on the counter tablet.
 
 **Positioning (user, 15 Oct 2026):** lead with easy ordering for customers and easy order management for the restaurant. Money tracking, the drawer and profit are supporting benefits, not the headline.
 
@@ -15,7 +15,7 @@
 
 **Product type:** SaaS (tablet app + web dashboard + hosted online store).
 
-**Business model:** Free to start and free to use. Plateraa takes 2% only on money a customer pays online through Plateraa (payment links and the online store). Cash sales are free. Moolre's own transaction fee is separate. (User decision, 15 Oct 2026; replaces the "prepaid 30-day pass" plan in plan.md R2 for marketing purposes.)
+**Business model:** Free to start and free to use. Brixx takes 2% only on money a customer pays online through Brixx (payment links and the online store). Cash sales are free. Moolre's own transaction fee is separate. (User decision, 15 Oct 2026; replaces the "prepaid 30-day pass" plan in plan.md R2 for marketing purposes.)
 
 ## Target Audience
 
@@ -73,7 +73,7 @@
 
 - Works offline: orders keep going when the Wi-Fi or hotspot drops and sync later.
 - Runs on the vendor's own budget Android tablet; no special hardware to buy.
-- Mobile money goes straight into the vendor's own Moolre account; Plateraa never holds their money.
+- Mobile money goes straight into the vendor's own Moolre account; Brixx never holds their money.
 - One store link for WhatsApp and Instagram, with no commission per order beyond 2% on online payments.
 - One inbox for counter, phone and online orders.
 - Built in Ghana, for cedis, MoMo and how food vendors actually work.
@@ -88,7 +88,7 @@
 
 | Objection                            | Response                                                                                               |
 | ------------------------------------ | ------------------------------------------------------------------------------------------------------ |
-| "It will cost me money every month." | No monthly fee. Cash sales are free. You pay 2% only when a customer pays you online through Plateraa. |
+| "It will cost me money every month." | No monthly fee. Cash sales are free. You pay 2% only when a customer pays you online through Brixx.    |
 | "Our internet is not reliable."      | The tablet keeps taking orders offline and catches up when the connection is back.                     |
 | "My staff won't manage it."          | Each staff member has a PIN; order entry is a few taps; we help set it up.                             |
 | "Will you hold my money?"            | No. Mobile money goes straight into your own Moolre account. We never touch it.                        |

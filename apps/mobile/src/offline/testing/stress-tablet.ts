@@ -1,5 +1,5 @@
-import { createApiClient } from '@plateraa/api-client';
-import { pesewas, type OrderStatus, type SyncCommandInput } from '@plateraa/shared';
+import { createApiClient } from '@brixx/api-client';
+import { pesewas, type OrderStatus, type SyncCommandInput } from '@brixx/shared';
 import { expect } from 'vitest';
 import {
   advance,

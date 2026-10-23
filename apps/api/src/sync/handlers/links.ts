@@ -1,5 +1,5 @@
-import { and, eq, gt, moolreAccounts, or, paymentLinks } from '@plateraa/db';
-import { amountDue, sub } from '@plateraa/shared';
+import { and, eq, gt, moolreAccounts, or, paymentLinks } from '@brixx/db';
+import { amountDue, sub } from '@brixx/shared';
 import { recordAudit } from '../../audit/audit';
 import { CommandRejected, type CommandHandler } from '../sync.types';
 import { deviceTime, loadOrder } from './common';

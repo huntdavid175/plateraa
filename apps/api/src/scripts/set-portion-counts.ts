@@ -6,7 +6,7 @@ import {
   tenants,
   withPlatform,
   withTenant,
-} from '@plateraa/db';
+} from '@brixx/db';
 import { loadEnv } from '../config/env';
 import { scriptTarget } from './target';
 
@@ -14,7 +14,7 @@ import { scriptTarget } from './target';
  * Switches morning portion counts on or off for a business, until the dashboard's settings page
  * exists (plan.md §3.1).
  *
- *   pnpm --filter @plateraa/api settings:portion-counts "<business name or slug>" on
+ *   pnpm --filter @brixx/api settings:portion-counts "<business name or slug>" on
  */
 async function main() {
   const env = loadEnv();

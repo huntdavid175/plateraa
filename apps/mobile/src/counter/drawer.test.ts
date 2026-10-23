@@ -1,4 +1,4 @@
-import { pesewas, resolveCapabilities } from '@plateraa/shared';
+import { pesewas, resolveCapabilities } from '@brixx/shared';
 import { ulid } from 'ulid';
 import { describe, expect, it } from 'vitest';
 import { DEVICE_ID, STAFF_ID, serverShift, setUp } from '../offline/testing/fixtures';

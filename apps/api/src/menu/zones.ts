@@ -11,8 +11,8 @@ import {
   Param,
   Put,
 } from '@nestjs/common';
-import { and, asc, deliveryZones, eq, isNull, ne, sql, withTenant } from '@plateraa/db';
-import { pesewas } from '@plateraa/shared';
+import { and, asc, deliveryZones, eq, isNull, ne, sql, withTenant } from '@brixx/db';
+import { pesewas } from '@brixx/shared';
 import { ApiBearerAuth, ApiNoContentResponse, ApiOkResponse } from '@nestjs/swagger';
 import { createZodDto } from 'nestjs-zod';
 import { z } from 'zod';

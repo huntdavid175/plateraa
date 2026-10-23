@@ -1,4 +1,4 @@
-import { amountDue, sub, type Pesewas } from '@plateraa/shared';
+import { amountDue, sub, type Pesewas } from '@brixx/shared';
 import { useEffect, useMemo, useState } from 'react';
 import { Text, View } from 'react-native';
 import {

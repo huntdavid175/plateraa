@@ -7,7 +7,7 @@ import type {
   PaymentMethod,
   Role,
   VendorType,
-} from '@plateraa/shared';
+} from '@brixx/shared';
 
 export const VENDOR_TYPE_WORDS: Record<VendorType, string> = {
   CHOP_BAR: 'Chop bar',

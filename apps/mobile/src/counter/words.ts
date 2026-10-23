@@ -4,7 +4,7 @@ import type {
   OrderType,
   PaymentLinkStatus,
   PaymentMethod,
-} from '@plateraa/shared';
+} from '@brixx/shared';
 import type { Lane } from './lanes';
 
 export const SOURCE_LABELS: Record<OrderSource, string> = {

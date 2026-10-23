@@ -1,4 +1,4 @@
-import { normalizeGhanaPhone, pesewas, type OrderType, type Pesewas } from '@plateraa/shared';
+import { normalizeGhanaPhone, pesewas, type OrderType, type Pesewas } from '@brixx/shared';
 import type { OrderDraft } from './actions';
 import type { TicketLine } from './ticket';
 

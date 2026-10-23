@@ -1,6 +1,6 @@
 import { NotFoundException } from '@nestjs/common';
-import { orders, sql, tenants, type Tx } from '@plateraa/db';
-import { pesewas, type Pesewas } from '@plateraa/shared';
+import { orders, sql, tenants, type Tx } from '@brixx/db';
+import { pesewas, type Pesewas } from '@brixx/shared';
 
 /** Today's trading day (YYYY-MM-DD) and the timezone it's in, for the business in `tx`. */
 export async function businessToday(tx: Tx): Promise<{ date: string; timezone: string }> {

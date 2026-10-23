@@ -7,7 +7,7 @@ import {
   type OrderStatus,
   type OrderType,
   type Pesewas,
-} from '@plateraa/shared';
+} from '@brixx/shared';
 import type { SyncEngine } from '../offline/engine';
 import type { Sql } from '../offline/sql';
 import { nextDisplayNumber } from './numbers';

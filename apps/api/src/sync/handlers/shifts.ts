@@ -1,5 +1,5 @@
-import { and, cashMovements, eq, isNull, payments, shifts, sql, type Tx } from '@plateraa/db';
-import { add, pesewas, sub, type Pesewas } from '@plateraa/shared';
+import { and, cashMovements, eq, isNull, payments, shifts, sql, type Tx } from '@brixx/db';
+import { add, pesewas, sub, type Pesewas } from '@brixx/shared';
 import { recordAudit } from '../../audit/audit';
 import { CommandRejected, type CommandHandler, type HandlerContext } from '../sync.types';
 import { deviceTime } from './common';

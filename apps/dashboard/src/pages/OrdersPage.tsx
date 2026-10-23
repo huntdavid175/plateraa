@@ -1,5 +1,5 @@
-import type { OrderSource, PaymentMethod } from '@plateraa/shared';
-import { ORDER_SOURCES } from '@plateraa/shared';
+import type { OrderSource, PaymentMethod } from '@brixx/shared';
+import { ORDER_SOURCES } from '@brixx/shared';
 import { useQuery } from '@tanstack/react-query';
 import { ChevronRight, ReceiptText } from 'lucide-react';
 import { Link, useLocation, useSearchParams } from 'react-router';

@@ -1,11 +1,11 @@
-import { createApiClient, type paths } from '@plateraa/api-client';
+import { createApiClient, type paths } from '@brixx/api-client';
 import { cache } from 'react';
 
 /**
- * The Plateraa API. Only the storefront's own server talks to it: customers' browsers talk to the
+ * The Brixx API. Only the storefront's own server talks to it: customers' browsers talk to the
  * storefront, so the API's address and any future secrets stay on the server.
  */
-const API_URL = process.env.PLATERAA_API_URL || 'https://plateraa-api.onrender.com';
+const API_URL = process.env.BRIXX_API_URL || 'https://plateraa-api.onrender.com';
 export const api = createApiClient(API_URL);
 
 type JsonOf<T> = T extends { content: { 'application/json': infer Body } } ? Body : never;

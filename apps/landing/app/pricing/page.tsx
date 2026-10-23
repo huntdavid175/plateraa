@@ -1,4 +1,4 @@
-import { bpsOf, formatCedis, pesewas } from '@plateraa/shared';
+import { bpsOf, formatCedis, pesewas } from '@brixx/shared';
 import { Check } from 'lucide-react';
 import type { Metadata } from 'next';
 
@@ -12,7 +12,7 @@ import { ONLINE_FEE_BPS, SIGN_UP_URL } from '../../lib/site';
 export const metadata: Metadata = {
   title: 'Pricing: free to start, 2% only on online payments',
   description:
-    'Plateraa has no monthly fee. Cash sales are free, and Plateraa’s share is 2% only when a customer pays you online. See what you’d pay.',
+    'Brixx has no monthly fee. Cash sales are free, and Brixx’s share is 2% only when a customer pays you online. See what you’d pay.',
   alternates: { canonical: '/pricing' },
 };
 
@@ -38,7 +38,7 @@ export default function PricingPage() {
             <Highlight soft>Free</Highlight> to start. You pay only when you get paid.
           </h1>
           <p className="mx-auto mt-6 max-w-2xl text-[18px] leading-relaxed text-muted">
-            One plan with everything in it. Plateraa’s share is 2% of the money customers pay you
+            One plan with everything in it. Brixx’s share is 2% of the money customers pay you
             online, and cash sales cost nothing.
           </p>
         </Container>
@@ -49,7 +49,7 @@ export default function PricingPage() {
           <div className="grid overflow-hidden rounded-[32px] border border-line lg:grid-cols-[1fr_1.1fr]">
             <div className="flex flex-col bg-night p-8 text-on-night sm:p-12">
               <p className="text-[15px] font-medium tracking-[0.08em] text-brand uppercase">
-                Plateraa
+                Brixx
               </p>
               <p className="mt-6 flex items-baseline gap-3">
                 <span className="text-[80px] leading-none font-light tracking-[-0.04em] tabular-nums">
@@ -101,7 +101,7 @@ export default function PricingPage() {
         <Container className="grid gap-12 lg:grid-cols-2 lg:items-center">
           <SectionHeading
             title="See what you’d pay"
-            intro={`Type what customers pay you online in a month. On a ${formatCedis(EXAMPLE)} order paid by mobile money, Plateraa’s share is ${formatCedis(bpsOf(EXAMPLE, ONLINE_FEE_BPS))}.`}
+            intro={`Type what customers pay you online in a month. On a ${formatCedis(EXAMPLE)} order paid by mobile money, Brixx’s share is ${formatCedis(bpsOf(EXAMPLE, ONLINE_FEE_BPS))}.`}
           />
           <FeeCalculator />
         </Container>
@@ -114,7 +114,7 @@ export default function PricingPage() {
             {[
               {
                 title: 'We earn when you earn',
-                body: 'Plateraa makes money only when your customers pay you through it. If online orders don’t take off for you, Plateraa costs you nothing.',
+                body: 'Brixx makes money only when your customers pay you through it. If online orders don’t take off for you, Brixx costs you nothing.',
               },
               {
                 title: 'Nothing to risk to try it',

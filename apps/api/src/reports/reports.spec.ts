@@ -1,6 +1,6 @@
 import type { NestExpressApplication } from '@nestjs/platform-express';
-import { channelCommissions, expenses, locations, withTenant, type Database } from '@plateraa/db';
-import { pesewas } from '@plateraa/shared';
+import { channelCommissions, expenses, locations, withTenant, type Database } from '@brixx/db';
+import { pesewas } from '@brixx/shared';
 import request from 'supertest';
 import { ulid } from 'ulid';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';

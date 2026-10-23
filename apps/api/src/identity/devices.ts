@@ -30,8 +30,8 @@ import {
   staffMembers,
   syncCommands,
   withTenant,
-} from '@plateraa/db';
-import { ROLES } from '@plateraa/shared';
+} from '@brixx/db';
+import { ROLES } from '@brixx/shared';
 import { createZodDto } from 'nestjs-zod';
 import { ulid } from 'ulid';
 import { z } from 'zod';

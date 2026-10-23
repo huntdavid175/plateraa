@@ -1,6 +1,6 @@
-# Plateraa
+# Brixx
 
-An operating system for small informal Ghanaian food vendors. They take orders from walk-ins, calls, Bolt Food and Chowdeck, mostly in cash, and today they track it in a notebook. Plateraa gives them one order inbox, one record of money and a clear view of profit:
+An operating system for small informal Ghanaian food vendors. They take orders from walk-ins, calls, Bolt Food and Chowdeck, mostly in cash, and today they track it in a notebook. Brixx gives them one order inbox, one record of money and a clear view of profit:
 
 - an **offline-first Android tablet app** at the counter;
 - a NestJS API;
@@ -8,6 +8,8 @@ An operating system for small informal Ghanaian food vendors. They take orders f
 - an online store (the storefront) that customers order and pay from, one link per business.
 
 A solo founder (GitHub `huntdavid175`) builds it with an AI agent. Work started Thu 10 Sep 2026.
+
+**Renamed from Plateraa to Brixx on 23 Oct 2026.** Outside services keep the old name until they're renamed or recreated: the Render API (`plateraa-api.onrender.com`), the Vercel storefront, the R2 bucket `plateraa-photos`, the EAS project slug `plateraa` and the GitHub repo `huntdavid175/plateraa`. The Android package became `com.brixx.pos`, and the saved keys (`brixx.sqlite`, `brixx.device`, `brixx.token`, …) and the PIN token's issuer were renamed with no move-over, so everyone signs in again and the tablet is set up afresh.
 
 ## Where things stand
 
@@ -32,7 +34,7 @@ A solo founder (GitHub `huntdavid175`) builds it with an AI agent. Work started 
   - the data and public API (`apps/api/src/storefront`), online orders on the tablet (numbered W1, W2, …, counted on the nav bar’s Orders button), and the dashboard's Online store page (its own sidebar entry since 14 Sep; it was in Settings);
   - the storefront pages to the user's Figma Make design (`apps/storefront`), live on Vercel at `https://plateraa-storefront-bvos.vercel.app`, with `STOREFRONT_URL` on Render pointing there;
   - photos: one per menu item, plus the store's cover picture and logo, kept in Cloudflare R2 (`apps/api/src/photos`);
-  - nine store looks (`STOREFRONT_LOOKS` in `@plateraa/shared`): the owner picks the page colour, and the top band, text and buttons follow it, in light and dark, with every look's contrast checked by a test.
+  - nine store looks (`STOREFRONT_LOOKS` in `@brixx/shared`): the owner picks the page colour, and the top band, text and buttons follow it, in light and dark, with every look's contrast checked by a test.
   - 15 Sep: the tablet rings a chime and shows a note for each new online order, and notes each payment link texted, paid or failed (`apps/mobile/AGENTS.md`, Alerts).
   - Still open: trying the chime (needs the EAS build of 15 Sep) and Accept on the tablet, and a real order placed from a phone.
 - **Phase 3.1–3.2, the dashboard** (12 Sep), built slice by slice to the user's Figma Make design. See `apps/dashboard/AGENTS.md`.
@@ -98,7 +100,7 @@ apps/api            NestJS API                        → apps/api/AGENTS.md
 apps/mobile         Expo tablet app + Kotlin modules  → apps/mobile/AGENTS.md
 apps/dashboard      Vite React dashboard              → apps/dashboard/AGENTS.md
 apps/storefront     Next.js online store              → apps/storefront/AGENTS.md
-apps/landing        Next.js landing page (Plateraa's own site) → apps/landing/AGENTS.md
+apps/landing        Next.js landing page (Brixx's own site) → apps/landing/AGENTS.md
 packages/db         Drizzle schema, migrations, RLS   → packages/db/AGENTS.md
 packages/shared     money, pricing, order rules, capabilities, sync command schemas
 packages/api-client generated OpenAPI types + createApiClient()
@@ -126,19 +128,19 @@ On this Windows machine, `pnpm` works in PowerShell. **In Git Bash the global `p
   - Prettier checks Markdown too.
   - Line endings are LF everywhere (`.gitattributes`).
 - **Database tests are local-only.** Tests that need the database run against the Neon `test` branch (`TEST_DATABASE_URL` / `TEST_DATABASE_URL_DIRECT` in the root `.env`, brought up to the latest migration before each run), and **skip themselves when it isn't set, including in CI**. So run `pnpm test` locally before pushing any change to the API or the database.
-- **Migrations:** `pnpm --filter @plateraa/db db:generate`, then `db:migrate`.
-- **Deployed API:** `https://plateraa-api.onrender.com` (Render, Frankfurt, free plan, service `srv-dahug3rm8hqs73deg150`). It deploys from `main` **only after CI passes** (auto-deploy trigger "checks pass"), so a failed CI run means no deploy. To check: `gh run list` (GitHub CLI; re-run a run that failed at startup with `gh run rerun <id>`), and Render's deploys through its API with `RENDER_API_KEY` from `.env` (`GET https://api.render.com/v1/services/<service>/deploys`, and `GET /v1/logs?ownerId=…&resource=<service>` for the logs). On the free plan a new instance is sometimes stopped before it opens its port. Render then waits out a 15-minute port scan, and on 13 Sep it marked that deploy live while running the previous build. So after a deploy that sat at `update_in_progress`, check its startup log lists the new modules (`InstanceLoader`). If it doesn't, redeploy the commit with the build cache cleared (`POST /v1/services/<service>/deploys` with `{"clearCache":"clear"}`). The free plan has no pre-deploy step, so **before pushing code that needs a new migration, run `pnpm --filter @plateraa/db db:migrate`** (the `dev` branch, which Render also uses for now). Once the `production` branch is in use, run `db:migrate:production` too.
+- **Migrations:** `pnpm --filter @brixx/db db:generate`, then `db:migrate`.
+- **Deployed API:** `https://plateraa-api.onrender.com` (Render, Frankfurt, free plan, service `srv-dahug3rm8hqs73deg150`). It deploys from `main` **only after CI passes** (auto-deploy trigger "checks pass"), so a failed CI run means no deploy. To check: `gh run list` (GitHub CLI; re-run a run that failed at startup with `gh run rerun <id>`), and Render's deploys through its API with `RENDER_API_KEY` from `.env` (`GET https://api.render.com/v1/services/<service>/deploys`, and `GET /v1/logs?ownerId=…&resource=<service>` for the logs). On the free plan a new instance is sometimes stopped before it opens its port. Render then waits out a 15-minute port scan, and on 13 Sep it marked that deploy live while running the previous build. So after a deploy that sat at `update_in_progress`, check its startup log lists the new modules (`InstanceLoader`). If it doesn't, redeploy the commit with the build cache cleared (`POST /v1/services/<service>/deploys` with `{"clearCache":"clear"}`). The free plan has no pre-deploy step, so **before pushing code that needs a new migration, run `pnpm --filter @brixx/db db:migrate`** (the `dev` branch, which Render also uses for now). Once the `production` branch is in use, run `db:migrate:production` too.
 - **Deployed storefront:** `https://plateraa-storefront-bvos.vercel.app` (Vercel, set up by the user on 13 Sep through Vercel's GitHub link). Vercel builds every push to `main` itself, **without waiting for CI**, and each build shows as a GitHub deployment (`gh api repos/huntdavid175/plateraa/deployments`, then `…/deployments/<id>/statuses`). So a storefront change can be live before Render has deployed the API change it needs: keep them compatible, or push the API first. `STOREFRONT_URL` on Render is this address; it makes the dashboard's store link and QR code.
-- **The landing page** (`apps/landing`, 15 Oct): Plateraa's own website, with Home, Features, Who it's for (which took over About on 15 Oct; `/about` redirects there), Pricing, Contact, Privacy and Terms, built to `apps/landing/DESIGN.md`. `pnpm --filter @plateraa/landing dev` on http://localhost:3002; not deployed yet. Its positioning lives in `.agents/product-marketing.md`, which the marketing skills in `.claude/skills` read.
-- **The dashboard isn't deployed** (user decision, 13 Sep): it runs on the laptop against the Render API (`pnpm --filter @plateraa/dashboard dev`).
+- **The landing page** (`apps/landing`, 15 Oct): Brixx's own website, with Home, Features, Who it's for (which took over About on 15 Oct; `/about` redirects there), Pricing, Contact, Privacy and Terms, built to `apps/landing/DESIGN.md`. `pnpm --filter @brixx/landing dev` on http://localhost:3002; not deployed yet. Its positioning lives in `.agents/product-marketing.md`, which the marketing skills in `.claude/skills` read.
+- **The dashboard isn't deployed** (user decision, 13 Sep): it runs on the laptop against the Render API (`pnpm --filter @brixx/dashboard dev`).
 - **Three Neon branches** (Frankfurt). `test` is only for the automated tests. `dev` is used by Render, the tablet, the test business and the laptop during development. `production` is untouched and kept for the pilot: before R1a it gets every migration, Render moves to it, and the pilot vendors are set up there. On the laptop, `DATABASE_URL` / `DATABASE_URL_DIRECT` are `dev`. `PRODUCTION_DATABASE_URL` / `PRODUCTION_DATABASE_URL_DIRECT` are `production` (empty until we set it up), used only by `db:migrate:production` and by setup scripts run with `--production`. Tests refuse to run on `dev` (Render's payment-link sender works there and picked up a test's link once) or on `production`.
 - **Errors** from the deployed API go to Sentry (EU region; `SENTRY_DSN` on Render only). The tablet joins at its next EAS build.
-- **Payment links** only run where `RUN_PAYMENT_LINKS=true`: on Render, never on the laptop, which shares the database. They also need `SECRETS_KEY`, `MOOLRE_BASE_URL`, `MOOLRE_SMS_VASKEY` and `MOOLRE_SMS_SENDER_ID` (see `.env.example`). A vendor's own Moolre account is saved with `pnpm --filter @plateraa/api settings:moolre-account "<business>"`.
-- **Photos** (menu items, the store's cover and logo) are kept in Cloudflare R2, bucket `plateraa-photos`, through the API. They need the `R2_*` settings (see `.env.example`) in `.env` and on Render; without them, uploads are refused and everything else works. `pnpm --filter @plateraa/api photos:check` tests the keys without printing them. See `apps/api/AGENTS.md`.
+- **Payment links** only run where `RUN_PAYMENT_LINKS=true`: on Render, never on the laptop, which shares the database. They also need `SECRETS_KEY`, `MOOLRE_BASE_URL`, `MOOLRE_SMS_VASKEY` and `MOOLRE_SMS_SENDER_ID` (see `.env.example`). A vendor's own Moolre account is saved with `pnpm --filter @brixx/api settings:moolre-account "<business>"`.
+- **Photos** (menu items, the store's cover and logo) are kept in Cloudflare R2, bucket `plateraa-photos`, through the API. They need the `R2_*` settings (see `.env.example`) in `.env` and on Render; without them, uploads are refused and everything else works. `pnpm --filter @brixx/api photos:check` tests the keys without printing them. See `apps/api/AGENTS.md`.
 - **Logo and icons:** the source is `public/images/logo.png` (the user's, 15 Sep). `pnpm brand:assets` (`scripts/brand-assets.mjs`, with `sharp`) rebuilds every icon from it: the tablet's app icon, Android adaptive icon and splash, the dashboard's favicons and logo, and the store's. It rebuilds rather than scales: a clean orange square (colour and corner measured from the source, `#FC5102`) with the white P lifted out, so the specks around the source don't carry over. Run it again whenever the logo changes; the tablet then needs a new EAS build.
-- **API client**, regenerated after API changes: `pnpm --filter @plateraa/api openapi`, then `pnpm --filter @plateraa/api-client generate`.
-- **Tablet:** `pnpm --filter @plateraa/mobile start`. Native changes need a new EAS build (see `apps/mobile/AGENTS.md`). EAS CLI: `npx eas-cli@latest …` (the package is `eas-cli`, not `eas`).
-- **Running the API:** `pnpm --filter @plateraa/api dev`. Swagger is at `http://localhost:3000/api/docs`.
+- **API client**, regenerated after API changes: `pnpm --filter @brixx/api openapi`, then `pnpm --filter @brixx/api-client generate`.
+- **Tablet:** `pnpm --filter @brixx/mobile start`. Native changes need a new EAS build (see `apps/mobile/AGENTS.md`). EAS CLI: `npx eas-cli@latest …` (the package is `eas-cli`, not `eas`).
+- **Running the API:** `pnpm --filter @brixx/api dev`. Swagger is at `http://localhost:3000/api/docs`.
 
 ## Key rules (don't break these)
 

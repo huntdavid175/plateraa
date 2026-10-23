@@ -10,8 +10,8 @@ import {
   modifiers,
   withTenant,
   type Database,
-} from '@plateraa/db';
-import { pesewas } from '@plateraa/shared';
+} from '@brixx/db';
+import { pesewas } from '@brixx/shared';
 import request from 'supertest';
 import { ulid } from 'ulid';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';

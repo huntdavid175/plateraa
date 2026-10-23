@@ -10,7 +10,7 @@ describe('why a payment link failed, in words', () => {
       "Moolre didn't accept this business's account details (Moolre AIN03: Authentication Error, user not found).",
     );
     expect(failureWords(new MoolreError('AIN01', 'Authentication Error', false), 'text')).toBe(
-      "Moolre didn't accept Plateraa's SMS key (Moolre AIN01: Authentication Error).",
+      "Moolre didn't accept Brixx's SMS key (Moolre AIN01: Authentication Error).",
     );
     expect(
       failureWords(new MoolreError('ASMS07', 'Sender ID is not approved', false), 'text'),

@@ -6,7 +6,7 @@ import {
   tenants,
   withPlatform,
   withTenant,
-} from '@plateraa/db';
+} from '@brixx/db';
 import { loadEnv } from '../config/env';
 import { sealSecret } from '../payments/secrets';
 import { scriptTarget } from './target';
@@ -19,7 +19,7 @@ import { scriptTarget } from './target';
  *
  *   MOOLRE_VENDOR_USER, MOOLRE_VENDOR_PUBKEY, MOOLRE_VENDOR_ACCOUNT, MOOLRE_VENDOR_EMAIL
  *
- *   pnpm --filter @plateraa/api settings:moolre-account "<business name or slug>"
+ *   pnpm --filter @brixx/api settings:moolre-account "<business name or slug>"
  */
 async function main() {
   const env = loadEnv();

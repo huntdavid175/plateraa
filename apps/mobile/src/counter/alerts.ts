@@ -1,4 +1,4 @@
-import type { OrderSource, OrderType, PaymentLinkStatus } from '@plateraa/shared';
+import type { OrderSource, OrderType, PaymentLinkStatus } from '@brixx/shared';
 import { cedis } from '../ui/theme';
 import { laneOf, type LaneOrder } from './lanes';
 import { SOURCE_LABELS, TYPE_LABELS, phoneWords } from './words';

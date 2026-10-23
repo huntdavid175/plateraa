@@ -1,5 +1,5 @@
 import { existsSync } from 'node:fs';
-import { migrateDatabase, testDatabaseUrl } from '@plateraa/db';
+import { migrateDatabase, testDatabaseUrl } from '@brixx/db';
 
 /** Before the tests run: the `test` branch gets the latest migrations (nothing to do in CI). */
 export default async function setup() {

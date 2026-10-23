@@ -4,7 +4,7 @@
 
 /*
  * The storefront's look, from the user's Figma Make design (design/). Each store has its own look
- * (STOREFRONT_LOOKS in @plateraa/shared, set by <Themed>): the page colour the owner picked, a
+ * (STOREFRONT_LOOKS in @brixx/shared, set by <Themed>): the page colour the owner picked, a
  * stronger band across the top (`hero`), tinted words, and buttons in a colour that goes with the
  * page (`brand`, with `on-brand` words and `brand-ink` for words in the button colour). Status
  * colours only ever come with a word. The values below are the Classic look, for pages that

@@ -1,9 +1,9 @@
-import type { Role } from '@plateraa/shared';
+import type { Role } from '@brixx/shared';
 import { Link } from 'expo-router';
 import { useState } from 'react';
 import { ActivityIndicator, Image, Pressable, ScrollView, Text, View } from 'react-native';
 import logo from '../assets/logo.png';
-import PlateraaCrypto from '../modules/plateraa-crypto/src/PlateraaCryptoModule';
+import BrixxCrypto from '../modules/brixx-crypto/src/BrixxCryptoModule';
 import { checkPin, pinMessage } from '../src/tablet/pin-guard';
 import { useLocalQuery, useTablet } from '../src/tablet/TabletProvider';
 import { initialOf, personColour } from '../src/ui/people';
@@ -25,7 +25,7 @@ const ROLE_NAMES: Record<Role, string> = {
   RIDER: 'Rider',
 };
 
-const verifyPin = (verifier: string, pin: string) => PlateraaCrypto.verifyPinAsync(verifier, pin);
+const verifyPin = (verifier: string, pin: string) => BrixxCrypto.verifyPinAsync(verifier, pin);
 
 /** The PIN switcher: tap your name, type your PIN. Checked on the tablet, so it works offline. */
 export default function LockScreen() {

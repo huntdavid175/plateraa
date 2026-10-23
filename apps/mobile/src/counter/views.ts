@@ -1,4 +1,4 @@
-import { amountDue, sub, type Pesewas } from '@plateraa/shared';
+import { amountDue, sub, type Pesewas } from '@brixx/shared';
 import { urgency, type LaneOrder } from './lanes';
 
 /** The Orders screen's tabs. */

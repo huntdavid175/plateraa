@@ -17,7 +17,7 @@ describe.skipIf(!hasDatabase())('identity (against Neon)', () => {
   const createdUsers: string[] = [];
 
   async function signUpOwner(name: string) {
-    const email = `owner-${ulid().toLowerCase()}@test.plateraa.dev`;
+    const email = `owner-${ulid().toLowerCase()}@test.brixx.dev`;
     const res = await request(server)
       .post('/api/auth/sign-up/email')
       .set('Origin', loadEnv().BETTER_AUTH_URL)

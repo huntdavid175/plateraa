@@ -17,6 +17,6 @@ console.log(`Migrating the PRODUCTION database at ${new URL(url).host}`);
 const result = spawnSync('drizzle-kit', ['migrate'], {
   stdio: 'inherit',
   shell: true,
-  env: { ...process.env, PLATERAA_DB_TARGET: 'production' },
+  env: { ...process.env, BRIXX_DB_TARGET: 'production' },
 });
 process.exit(result.status ?? 1);

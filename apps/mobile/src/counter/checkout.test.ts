@@ -1,4 +1,4 @@
-import { pesewas } from '@plateraa/shared';
+import { pesewas } from '@brixx/shared';
 import { describe, expect, it } from 'vitest';
 import { emptyCheckout, ghanaPhone, toDraft } from './checkout';
 import type { TicketLine } from './ticket';

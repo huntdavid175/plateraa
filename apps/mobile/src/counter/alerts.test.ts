@@ -1,4 +1,4 @@
-import { pesewas } from '@plateraa/shared';
+import { pesewas } from '@brixx/shared';
 import { describe, expect, it } from 'vitest';
 import { listen, type Heard, type WatchedLink, type WatchedOrder } from './alerts';
 

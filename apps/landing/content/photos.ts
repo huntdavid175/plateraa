@@ -2,7 +2,7 @@
  * The site's stock photos, from Unsplash (picked by the user, 15 Oct). The files are in
  * public/photos/, resized and compressed to WebP from the originals. Unsplash's licence allows
  * commercial use without credit; the footer credits the photographers anyway. These people aren't
- * Plateraa customers, so a photo must never be presented as a testimonial.
+ * Brixx customers, so a photo must never be presented as a testimonial.
  */
 export interface Photo {
   src: string;

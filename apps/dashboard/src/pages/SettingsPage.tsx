@@ -1,4 +1,4 @@
-import { VENDOR_TYPES, type VendorType } from '@plateraa/shared';
+import { VENDOR_TYPES, type VendorType } from '@brixx/shared';
 import { useMutation, useQuery } from '@tanstack/react-query';
 import { Plus } from 'lucide-react';
 import { useState, type ReactNode } from 'react';
@@ -503,7 +503,7 @@ function MoolreForm({ current, onClose }: { current: Settings['moolre']; onClose
   return (
     <DialogContent
       title="Your Moolre account"
-      description="Payment-link money goes straight into this account; it never passes through Plateraa. Find these on app.moolre.com. Only the public key is needed, never the private one."
+      description="Payment-link money goes straight into this account; it never passes through Brixx. Find these on app.moolre.com. Only the public key is needed, never the private one."
     >
       <form
         className="flex flex-col gap-4"

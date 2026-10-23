@@ -11,8 +11,8 @@ import {
   stockItems,
   stockMovements,
   type Tx,
-} from '@plateraa/db';
-import type { OrderStatus } from '@plateraa/shared';
+} from '@brixx/db';
+import type { OrderStatus } from '@brixx/shared';
 import { ulid } from 'ulid';
 import { CommandRejected, type HandlerContext } from '../sync.types';
 

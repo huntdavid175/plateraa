@@ -33,13 +33,13 @@ import {
   tenantSettings,
   tenants,
   withTenant,
-} from '@plateraa/db';
+} from '@brixx/db';
 import {
   COMMAND_CAPABILITY,
   businessDateOf,
   type SyncCommand,
   type SyncCommandType,
-} from '@plateraa/shared';
+} from '@brixx/shared';
 import * as Sentry from '@sentry/nestjs';
 import { DATABASE, type DatabaseHandle } from '../database/database.module';
 import { Directories, type ResolvedStaff } from '../identity/directories.service';

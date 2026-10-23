@@ -1,4 +1,4 @@
-import { canEditItems, refundOwed, type OrderStatus, type OrderType } from '@plateraa/shared';
+import { canEditItems, refundOwed, type OrderStatus, type OrderType } from '@brixx/shared';
 import { useMemo, useState } from 'react';
 import { Pressable, ScrollView, Text, View } from 'react-native';
 import { problemText } from '../tablet/api';

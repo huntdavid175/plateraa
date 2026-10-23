@@ -254,7 +254,7 @@ export default function FeaturesPage() {
           <SectionHeading
             dark
             title="Built for how Ghana works"
-            intro="Plateraa was made for vendors who take cash and MoMo, share a hotspot, and can’t stop serving because something went wrong."
+            intro="Brixx was made for vendors who take cash and MoMo, share a hotspot, and can’t stop serving because something went wrong."
           />
           <ul className="reveal mt-12 grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
             {GHANA.map((item) => (

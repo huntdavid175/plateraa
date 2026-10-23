@@ -7,7 +7,7 @@ import { CONTACT } from '../../lib/site';
 
 export const metadata: Metadata = {
   title: 'Contact us',
-  description: 'Questions about Plateraa? Reach us on WhatsApp, by phone or by email.',
+  description: 'Questions about Brixx? Reach us on WhatsApp, by phone or by email.',
   alternates: { canonical: '/contact' },
 };
 
@@ -78,7 +78,7 @@ export default function ContactPage() {
           </h1>
           <p className="mt-6 max-w-2xl text-[18px] leading-relaxed text-muted">
             Ask about setting up, mobile money or anything else. We’re happy to walk you through
-            Plateraa before you sign up.
+            Brixx before you sign up.
           </p>
 
           {list.length > 0 ? (

@@ -29,7 +29,7 @@ import {
   staffMembers,
   withTenant,
   type Tx,
-} from '@plateraa/db';
+} from '@brixx/db';
 import {
   DELIVERY_FEE_COLLECTORS,
   ORDER_SOURCES,
@@ -46,7 +46,7 @@ import {
   type OrderType,
   type PaymentMethod,
   type Pesewas,
-} from '@plateraa/shared';
+} from '@brixx/shared';
 import { ApiBearerAuth, ApiOkResponse } from '@nestjs/swagger';
 import { createZodDto } from 'nestjs-zod';
 import { z } from 'zod';

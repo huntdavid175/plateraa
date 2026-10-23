@@ -9,8 +9,8 @@ import {
   providerEvents,
   withTenant,
   type Database,
-} from '@plateraa/db';
-import { pesewas, type Pesewas } from '@plateraa/shared';
+} from '@brixx/db';
+import { pesewas, type Pesewas } from '@brixx/shared';
 import request from 'supertest';
 import { ulid } from 'ulid';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';

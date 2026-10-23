@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { PERSON_COLOURS, initialOf, personColour } from './people';
 
-/** WCAG relative luminance, as in @plateraa/shared's storefront contrast test. */
+/** WCAG relative luminance, as in @brixx/shared's storefront contrast test. */
 function luminance(hex: string): number {
   const value = parseInt(hex.slice(1), 16);
   const channel = (raw: number) => {

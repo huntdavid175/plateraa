@@ -1,4 +1,4 @@
-import { businessDateOf } from '@plateraa/shared';
+import { businessDateOf } from '@brixx/shared';
 import { useEffect, useMemo, useState } from 'react';
 import type { Database } from '../offline/sql';
 import { useEngineState, useLocalQuery, useTablet } from '../tablet/TabletProvider';

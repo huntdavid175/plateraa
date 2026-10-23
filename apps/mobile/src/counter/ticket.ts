@@ -1,4 +1,4 @@
-import { priceOrder, type Pesewas, type PricedOrder } from '@plateraa/shared';
+import { priceOrder, type Pesewas, type PricedOrder } from '@brixx/shared';
 
 export interface TicketModifier {
   modifierId: string;

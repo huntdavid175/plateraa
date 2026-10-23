@@ -1,6 +1,6 @@
 import type { NestExpressApplication } from '@nestjs/platform-express';
-import { categories, items, stockItems, withTenant } from '@plateraa/db';
-import { pesewas } from '@plateraa/shared';
+import { categories, items, stockItems, withTenant } from '@brixx/db';
+import { pesewas } from '@brixx/shared';
 import request from 'supertest';
 import { ulid } from 'ulid';
 import { loadEnv } from '../config/env';
@@ -26,7 +26,7 @@ export async function setUpVendor(server: Server, name = 'Ama'): Promise<Vendor>
     .post('/api/auth/sign-up/email')
     .set('Origin', loadEnv().BETTER_AUTH_URL)
     .send({
-      email: `owner-${ulid().toLowerCase()}@test.plateraa.dev`,
+      email: `owner-${ulid().toLowerCase()}@test.brixx.dev`,
       password: 'correct-horse-battery-staple',
       name,
     })

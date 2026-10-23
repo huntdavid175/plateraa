@@ -5,19 +5,19 @@ import { LegalPage } from '../../components/legal';
 
 export const metadata: Metadata = {
   title: 'Privacy',
-  description: 'What Plateraa collects, why, where it’s kept and how to ask us about it.',
+  description: 'What Brixx collects, why, where it’s kept and how to ask us about it.',
   alternates: { canonical: '/privacy' },
 };
 
 /*
- * A plain-language account of what Plateraa does with data today, written from the code
+ * A plain-language account of what Brixx does with data today, written from the code
  * (15 Oct 2026). Founder task: have the lawyer review it before the site goes live.
  */
 export default function PrivacyPage() {
   return (
     <LegalPage label="Legal" title="Privacy" updated="15 October 2026">
       <p>
-        This page explains, in plain words, what Plateraa collects, why we need it and how we look
+        This page explains, in plain words, what Brixx collects, why we need it and how we look
         after it. Our full privacy policy is being reviewed by our lawyer and will replace this
         summary.
       </p>
@@ -41,30 +41,30 @@ export default function PrivacyPage() {
 
       <h2>What we use it for</h2>
       <p>
-        To run Plateraa for you: taking and keeping your orders, showing your reports, sending
-        payment links and order texts, and helping when something goes wrong. We don’t sell your
-        data or your customers’ data.
+        To run Brixx for you: taking and keeping your orders, showing your reports, sending payment
+        links and order texts, and helping when something goes wrong. We don’t sell your data or
+        your customers’ data.
       </p>
 
       <h2>Payments</h2>
       <p>
         Mobile money payments are handled by Moolre and go into your own Moolre merchant account.
-        Plateraa records that a payment was made and confirmed. We never see or keep a customer’s
+        Brixx records that a payment was made and confirmed. We never see or keep a customer’s
         mobile money PIN.
       </p>
 
       <h2>Where it’s kept</h2>
       <p>
-        Your data is stored with the cloud providers we use to run Plateraa, on servers in the
-        European Union, and your photos are kept in cloud storage. When something breaks, an error
-        report is sent to our monitoring service without personal details. Your tablet keeps the
-        records it needs to work offline until they’re sent up.
+        Your data is stored with the cloud providers we use to run Brixx, on servers in the European
+        Union, and your photos are kept in cloud storage. When something breaks, an error report is
+        sent to our monitoring service without personal details. Your tablet keeps the records it
+        needs to work offline until they’re sent up.
       </p>
 
       <h2>Cookies</h2>
       <p>
-        This website doesn’t use advertising or tracking cookies. The Plateraa dashboard uses a
-        cookie to keep you signed in.
+        This website doesn’t use advertising or tracking cookies. The Brixx dashboard uses a cookie
+        to keep you signed in.
       </p>
 
       <h2>Your choices</h2>

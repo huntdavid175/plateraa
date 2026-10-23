@@ -1,6 +1,6 @@
 import { randomBytes } from 'node:crypto';
 import type { NestExpressApplication } from '@nestjs/platform-express';
-import { and, eq, moolreAccounts, stockItems, withTenant, type Database } from '@plateraa/db';
+import { and, eq, moolreAccounts, stockItems, withTenant, type Database } from '@brixx/db';
 import request from 'supertest';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { DATABASE, type DatabaseHandle } from '../database/database.module';

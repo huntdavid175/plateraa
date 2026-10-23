@@ -1,5 +1,5 @@
-import { createApiClient } from '@plateraa/api-client';
-import type { Role } from '@plateraa/shared';
+import { createApiClient } from '@brixx/api-client';
+import type { Role } from '@brixx/shared';
 import Constants from 'expo-constants';
 import { Platform } from 'react-native';
 import { API_URL } from '../config';
@@ -30,7 +30,7 @@ export interface Business {
   role: Role;
 }
 
-const OFFLINE = "Can't reach Plateraa. Check the internet connection and try again.";
+const OFFLINE = "Can't reach Brixx. Check the internet connection and try again.";
 /** The server can take up to a minute to wake up when nobody has used it for a while. */
 const TIMEOUT_MS = 70_000;
 

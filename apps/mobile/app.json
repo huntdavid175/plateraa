@@ -1,8 +1,8 @@
 {
   "expo": {
-    "name": "Plateraa",
+    "name": "Brixx",
     "slug": "plateraa",
-    "scheme": "plateraa",
+    "scheme": "brixx",
     "version": "1.0.0",
     "orientation": "landscape",
     "icon": "./assets/icon.png",
@@ -11,7 +11,7 @@
       "supportsTablet": true
     },
     "android": {
-      "package": "com.plateraa.pos",
+      "package": "com.brixx.pos",
       "adaptiveIcon": {
         "backgroundColor": "#FC5102",
         "foregroundImage": "./assets/android-icon-foreground.png",

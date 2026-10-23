@@ -10,7 +10,7 @@ import {
   type StoreDay,
   type StoreHours,
   type StorefrontTheme,
-} from '@plateraa/shared';
+} from '@brixx/shared';
 import { useMutation, useQuery } from '@tanstack/react-query';
 import { Check, ImageOff, QrCode } from 'lucide-react';
 import qrcode from 'qrcode-generator';

@@ -1,4 +1,4 @@
-import { eq, staffMembers, type Tx } from '@plateraa/db';
+import { eq, staffMembers, type Tx } from '@brixx/db';
 import { ulid } from 'ulid';
 
 /**

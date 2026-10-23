@@ -1,4 +1,4 @@
-import { createApiClient } from '@plateraa/api-client';
+import { createApiClient } from '@brixx/api-client';
 import { session } from './session';
 
 export const API_URL: string = import.meta.env.VITE_API_URL || 'https://plateraa-api.onrender.com';
@@ -25,7 +25,7 @@ export class ApiError extends Error {
   }
 }
 
-export const OFFLINE = "Can't reach Plateraa. Check your internet connection and try again.";
+export const OFFLINE = "Can't reach Brixx. Check your internet connection and try again.";
 
 export function messageOf(body: unknown, status: number): string {
   const message = (body as { message?: unknown } | undefined)?.message;

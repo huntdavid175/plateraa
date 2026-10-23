@@ -14,8 +14,8 @@ import {
   tenants,
   withPlatform,
   withTenant,
-} from '@plateraa/db';
-import { businessDateOf, pesewas, type Station } from '@plateraa/shared';
+} from '@brixx/db';
+import { businessDateOf, pesewas, type Station } from '@brixx/shared';
 import { ulid } from 'ulid';
 import { loadEnv } from '../config/env';
 import { scriptTarget } from './target';
@@ -24,7 +24,7 @@ import { scriptTarget } from './target';
  * Fills a test business with a small chop-bar menu, prices included, so there's something to sell
  * on the tablet before the dashboard's menu setup exists (plan.md §3.1).
  *
- *   pnpm --filter @plateraa/api seed:test-menu "Test Chop Bar"
+ *   pnpm --filter @brixx/api seed:test-menu "Test Chop Bar"
  *
  * Takes the business's name or slug, and refuses one that already has a menu.
  */

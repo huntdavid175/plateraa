@@ -1,4 +1,4 @@
-# API (`@plateraa/api`)
+# API (`@brixx/api`)
 
 NestJS 11 (not 12: nestjs-zod 5.5 needs `@nestjs/common` ^11), CommonJS, built with `tsc`. Validation with nestjs-zod 5.5 + Zod 4; OpenAPI via @nestjs/swagger 11.
 
@@ -8,7 +8,7 @@ NestJS 11 (not 12: nestjs-zod 5.5 needs `@nestjs/common` ^11), CommonJS, built w
 - `instrument.ts`: Sentry, imported first in `main.ts`. It reports unexpected errors from requests (`SentryGlobalFilter` in `app.module.ts`) and from background work (`captureException` in `PaymentLinks` and the sync). Only where `SENTRY_DSN` is set (Render), and with no personal data.
 - `app.setup.ts`: CORS, compression (gzip on every response), Better Auth mounted at `/api/auth/*splat`, global `/api` prefix, Swagger UI at `/api/docs` in development.
 - `auth/`: Better Auth 1.7 for owner/manager email + password (Argon2id via `@node-rs/argon2`, bearer plugin).
-- `identity/`: business signup (creates tenant, location and an OWNER staff member), device registration (opaque token, stored hashed), staff, 6-digit PIN login → 15-minute PIN session (jose HS256, `SESSION_SIGNING_SECRET`), lockout via `pinLockout` from `@plateraa/shared`.
+- `identity/`: business signup (creates tenant, location and an OWNER staff member), device registration (opaque token, stored hashed), staff, 6-digit PIN login → 15-minute PIN session (jose HS256, `SESSION_SIGNING_SECRET`), lockout via `pinLockout` from `@brixx/shared`.
   - `staff.ts` and `devices.ts` also serve the dashboard's Staff page:
     - `GET /api/staff` returns the team, never PINs;
     - `PUT /api/staff/:id` changes a name, role or switched on/off, and `seesRevenue` (owner only). Ranks apply;
@@ -56,16 +56,16 @@ NestJS 11 (not 12: nestjs-zod 5.5 needs `@nestjs/common` ^11), CommonJS, built w
   - `PUT /api/settings/business`, `/orders` and `/commissions` save them. `/orders` covers pay before prep, portion counts, dine-in (`offersDineIn`, synced to the tablet and in `/api/me/context`; a new business of a `DINE_IN_VENDOR_TYPES` type starts with it on) and the idle lock; switching counts on adds missing count records. Commissions stay for Bolt Food and Chowdeck's APIs, though the dashboard hides them since 13 Sep.
   - `PUT /api/settings/moolre` saves the vendor's Moolre account. It first asks Moolre about a made-up payment, so wrong details are refused (AIN codes) without charging anyone. The key is sealed with `SECRETS_KEY`, and only the last 4 digits of the account are returned. It uses `MOOLRE`, exported by `PaymentsModule`.
 - `storefront/`: the online store (plan.md §4.0).
-  - `settings.ts`: `GET`/`PUT /api/storefront/settings` (`storefront.manage`: the owner and managers): on, taking orders now, cash on pickup, accept first, the colour (`STOREFRONT_THEMES` in `@plateraa/shared`), area, phone and hours. The store's link is `STOREFRONT_URL/<slug>`.
+  - `settings.ts`: `GET`/`PUT /api/storefront/settings` (`storefront.manage`: the owner and managers): on, taking orders now, cash on pickup, accept first, the colour (`STOREFRONT_THEMES` in `@brixx/shared`), area, phone and hours. The store's link is `STOREFRONT_URL/<slug>`.
   - `public-store.ts`, public and unauthenticated, under `/api/public`: `GET stores/:slug` (the menu with extras, sold out today, zones, what's offered; never cost prices), `POST stores/:slug/orders`, `GET orders/:token`, `POST orders/:token/pay` and `POST orders/:token/check`. The server checks every line against today's menu and sets every price itself (`checkedLines`, then `priceLines` from `sync/handlers/orders.ts`). The browser's `orderId` makes a retry record nothing new.
-  - **Opening hours** (16 Sep, user request): `tenant_settings.storefront_hours` is a week of times (migration 0014, `StoreHours` in `@plateraa/shared`), kept in the tenant's timezone. `GET /api/public/stores/:slug` works out `open` from the hours **and** the `takingOrders` switch, and sends `opensWords` ("Opens today at 5:00 pm", null when it's the switch that's off), `hours` as the week in words, and — for the store's More info page — `week` (the days themselves) and `today` (the weekday where the store is, so the page can point at today's line). It also sends `popular`: the ids of the eight best-selling items over the last 28 days (cancelled and refunded orders left out, counter sales counted), for "People also add" on the order page. Placing an order checks the hours again in `record()`, so a page left open past closing time, or anything calling the API directly, is refused with 409. The free-text hours line is gone.
+  - **Opening hours** (16 Sep, user request): `tenant_settings.storefront_hours` is a week of times (migration 0014, `StoreHours` in `@brixx/shared`), kept in the tenant's timezone. `GET /api/public/stores/:slug` works out `open` from the hours **and** the `takingOrders` switch, and sends `opensWords` ("Opens today at 5:00 pm", null when it's the switch that's off), `hours` as the week in words, and — for the store's More info page — `week` (the days themselves) and `today` (the weekday where the store is, so the page can point at today's line). It also sends `popular`: the ids of the eight best-selling items over the last 28 days (cancelled and refunded orders left out, counter sales counted), for "People also add" on the order page. Placing an order checks the hours again in `record()`, so a page left open past closing time, or anything calling the API directly, is refused with 409. The free-text hours line is gone.
 - Online orders: source `STOREFRONT`, arrival `API`, no tablet, numbered `W1`, `W2`, … per day (under an advisory lock), `NEW` when the store accepts first, otherwise `CONFIRMED`. They're recorded under the business's hidden "Online store" staff member (`online-staff.ts`, `staff_members.system`), which is never active and is left off the Staff page. Cash on pickup sets `pay_on_collection`, which skips pay before prep. `track_token` is the customer's key; the sync pull leaves it out.
   - Paying online: `PaymentLinks.openForCustomer` makes the Moolre link at once, and the customer is sent straight to it (no text). The link is saved `QUEUED` with `checkedAt` set, so the background sender leaves it alone meanwhile. If Moolre can't be reached, it stays queued and is texted later.
   - Limits (`rate-limit.ts`, in memory, per instance): 60 order attempts per store per 10 minutes, and 6 orders placed per phone number.
 - `photos/`: menu and store photos in Cloudflare R2 (plan.md §4.0).
   - `photo-store.ts`: `PhotoStore` behind the `PHOTO_STORE` token (tests swap in a fake, like `MOOLRE`). `R2PhotoStore` signs requests with `aws4fetch` using the bucket-only token (`R2_*` in `.env.example`); without those settings `ready` is false and uploads answer 503, while everything else works.
   - `photos.ts`: `PUT`/`DELETE /api/menu/items/:itemId/photo` (`catalog.manage`) and `PUT`/`DELETE /api/storefront/photos/cover|logo` (`storefront.manage`). The body is the picture itself (`image/webp`, `image/jpeg` or `image/png`, up to 1.5 MB; a raw body parser in `app.setup.ts`). The dashboard shrinks it first. The file's first bytes decide what it is, not its Content-Type. Keys are `<tenantId>/items/<itemId>/<ulid>.<ext>` and `<tenantId>/store/<cover|logo>-<ulid>.<ext>` (on `items.photo_key`, `tenant_settings.storefront_cover_key` / `storefront_logo_key`). Each change is audited, and the replaced file is removed afterwards (a failure only leaves an unused file).
-  - Photo keys become addresses with `urlOf` (`R2_PUBLIC_URL/<key>`): `photoUrl` in `GET /api/menu` and the public store, and `coverUrl` / `logoUrl` in the store settings and the public store. `pnpm --filter @plateraa/api photos:check` tests the settings in `.env` without printing them.
+  - Photo keys become addresses with `urlOf` (`R2_PUBLIC_URL/<key>`): `photoUrl` in `GET /api/menu` and the public store, and `coverUrl` / `logoUrl` in the store settings and the public store. `pnpm --filter @brixx/api photos:check` tests the settings in `.env` without printing them.
 - `manager/`: what only a manager or the owner does, on the dashboard. The tablet can't do any of it.
   - `POST /api/orders/:orderId/refunds` (`refunds.record`): money handed back by hand, outside the drawer, full or partial up to what's owed. It lowers the order's `amountPaid`.
   - `PUT /api/orders/:orderId/discount` (`discounts.apply`): percent, amount or none, on an order that isn't fully paid. It's re-priced with `priceOrder`, can't go below what's paid, and starts prep if it clears what's owed.
@@ -76,8 +76,8 @@ NestJS 11 (not 12: nestjs-zod 5.5 needs `@nestjs/common` ^11), CommonJS, built w
 
 ## Database access
 
-- Always `withTenant(db, tenantId, fn)` from `@plateraa/db` for tenant data (switches to `app_user`, so RLS applies). `withPlatform()` only for tenant lookup, auth and CLI work.
-- Import drizzle operators (`eq`, `and`, `sql`, …) from `@plateraa/db`, never from `drizzle-orm` directly: two copies of drizzle break the types.
+- Always `withTenant(db, tenantId, fn)` from `@brixx/db` for tenant data (switches to `app_user`, so RLS applies). `withPlatform()` only for tenant lookup, auth and CLI work.
+- Import drizzle operators (`eq`, `and`, `sql`, …) from `@brixx/db`, never from `drizzle-orm` directly: two copies of drizzle break the types.
 
 ## Sync commands
 
@@ -88,7 +88,7 @@ To add one:
 3. Throw `CommandRejected` for business refusals: recorded in `sync_commands` and never retried. Any other error stops the batch so the device retries.
 4. Each command runs in its own `withTenant` transaction and is idempotent by command id.
 
-Pull runs in one REPEATABLE READ snapshot with an xid8 cursor (`changedSince`, `nextSyncCursor` from `@plateraa/db`). It never returns aggregates, cost prices or PIN hashes.
+Pull runs in one REPEATABLE READ snapshot with an xid8 cursor (`changedSince`, `nextSyncCursor` from `@brixx/db`). It never returns aggregates, cost prices or PIN hashes.
 
 A tablet pulls every 30 s, and nearly every pull has nothing to send, so the first thing it asks is whether anything changed at all: `anythingChangedSince` (16 Sep) probes each synced table's `(tenant_id, sync_xid)` index in one expression, alongside the cursor it already reads. Nothing changed → it answers with every list empty and reads no tables; ~20 round trips to Neon become 1. `SYNCED_TABLES` in `sync.service.ts` is the list it probes: **add a table there whenever the pull starts reading one**, or its changes would never wake a quiet tablet. The test `sends every list, even when nothing changed` compares the quiet answer's keys with a full pull's, so a missing name shows up.
 
@@ -96,7 +96,7 @@ Current commands (16): `order.create` (no discount), `order.update_items`, `orde
 
 ## After changing routes or DTOs
 
-`pnpm --filter @plateraa/api openapi` (writes `packages/api-client/openapi.json`), then `pnpm --filter @plateraa/api-client generate` (writes `src/schema.ts`). Commit both; never hand-edit them.
+`pnpm --filter @brixx/api openapi` (writes `packages/api-client/openapi.json`), then `pnpm --filter @brixx/api-client generate` (writes `src/schema.ts`). Commit both; never hand-edit them.
 
 For a top-level field that may be null, use `nullableText()` or `nullableFlag()` from `openapi.ts`, not `z.string().nullable()` or `z.boolean().nullable()`. This applies to requests and responses alike. Swagger mistakes the plain form for an array, so the clients would expect a list.
 

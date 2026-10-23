@@ -1,4 +1,4 @@
-import type { Pesewas } from '@plateraa/shared';
+import type { Pesewas } from '@brixx/shared';
 import { Modal, Pressable, Text, View } from 'react-native';
 import { Label } from '../ui/Field';
 import { cedis, colors, font, radii, space, themedStyles } from '../ui/theme';

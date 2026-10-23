@@ -263,7 +263,7 @@ function CountForm({ item, onClose }: { item: StockItem; onClose: () => void }) 
   return (
     <DialogContent
       title={`Count ${item.name}`}
-      description={`Plateraa expects ${item.onHand} ${item.unit}. Count what’s really there.`}
+      description={`Brixx expects ${item.onHand} ${item.unit}. Count what’s really there.`}
     >
       <form
         className="flex flex-col gap-4"

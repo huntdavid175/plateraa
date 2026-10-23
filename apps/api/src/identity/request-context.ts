@@ -1,5 +1,5 @@
 import type { IncomingMessage } from 'node:http';
-import type { Capability, Role } from '@plateraa/shared';
+import type { Capability, Role } from '@brixx/shared';
 
 /** A registered tablet, identified by its device token. */
 export interface DeviceContext {

@@ -1,6 +1,6 @@
-# Plateraa website design
+# Brixx website design
 
-The design system for Plateraa's own website (`apps/landing`), drawn from the screenshots in `design_inspiration/` (15 Oct 2026). Those were mostly Toast, plus Fountain, Shopify and Clover. The site is for **food vendors deciding whether to use Plateraa**. Everything here serves one action: creating a free account.
+The design system for Brixx's own website (`apps/landing`), drawn from the screenshots in `design_inspiration/` (15 Oct 2026). Those were mostly Toast, plus Fountain, Shopify and Clover. The site is for **food vendors deciding whether to use Brixx**. Everything here serves one action: creating a free account.
 
 ## Direction
 

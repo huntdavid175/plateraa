@@ -19,8 +19,8 @@ import {
   ApiOkResponse,
   ApiSecurity,
 } from '@nestjs/swagger';
-import { and, eq, isNull, staffMembers, tenantSettings, withTenant } from '@plateraa/db';
-import { ROLES, pinLockout, pinProblem, type Role } from '@plateraa/shared';
+import { and, eq, isNull, staffMembers, tenantSettings, withTenant } from '@brixx/db';
+import { ROLES, pinLockout, pinProblem, type Role } from '@brixx/shared';
 import { createZodDto } from 'nestjs-zod';
 import { ulid } from 'ulid';
 import { z } from 'zod';

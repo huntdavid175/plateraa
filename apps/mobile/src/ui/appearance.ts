@@ -1,7 +1,7 @@
 import * as SecureStore from 'expo-secure-store';
 import { setScheme, type Scheme } from './theme';
 
-const KEY = 'plateraa.appearance';
+const KEY = 'brixx.appearance';
 
 /** Puts back the look this tablet was left in. Synchronous, so the first screen is already right. */
 export function loadAppearance() {

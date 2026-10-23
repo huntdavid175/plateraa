@@ -11,7 +11,7 @@ import {
 import EscPosBluetooth, {
   type PairedPrinter,
 } from '../modules/escpos-bt/src/EscPosBluetoothModule';
-import PlateraaCrypto from '../modules/plateraa-crypto/src/PlateraaCryptoModule';
+import BrixxCrypto from '../modules/brixx-crypto/src/BrixxCryptoModule';
 import { Receipt } from '../src/printing/escpos';
 import { Button } from '../src/ui/Button';
 import { Header } from '../src/ui/Header';
@@ -47,10 +47,10 @@ async function testDatabase(log: Log) {
 
 async function testPin(log: Log) {
   let started = Date.now();
-  const right = await PlateraaCrypto.verifyPinAsync(PIN_VERIFIER, '482913');
+  const right = await BrixxCrypto.verifyPinAsync(PIN_VERIFIER, '482913');
   const rightMs = Date.now() - started;
   started = Date.now();
-  const wrong = await PlateraaCrypto.verifyPinAsync(PIN_VERIFIER, '111111');
+  const wrong = await BrixxCrypto.verifyPinAsync(PIN_VERIFIER, '111111');
   log(
     `Right PIN ${right ? 'accepted' : 'REFUSED (mismatch with server!)'} in ${rightMs} ms; ` +
       `wrong PIN ${wrong ? 'ACCEPTED (bug!)' : 'refused'} in ${Date.now() - started} ms`,
@@ -69,7 +69,7 @@ function testReceipt(): string {
   return new Receipt()
     .align('center')
     .bold(true)
-    .text('PLATERAA')
+    .text('BRIXX')
     .bold(false)
     .text('Printer test')
     .align('left')

@@ -1,6 +1,6 @@
 'use client';
 
-import { STOREFRONT_LOOKS, type StorefrontPalette, type StorefrontTheme } from '@plateraa/shared';
+import { STOREFRONT_LOOKS, type StorefrontPalette, type StorefrontTheme } from '@brixx/shared';
 import { useEffect, useState, type ReactNode } from 'react';
 
 const cssVars = (p: StorefrontPalette) =>
@@ -100,7 +100,7 @@ export function DarkToggle({ className = '' }: { className?: string }) {
     const next = !dark;
     document.documentElement.classList.toggle('dark', next);
     try {
-      localStorage.setItem('plateraa-dark', next ? '1' : '0');
+      localStorage.setItem('brixx-dark', next ? '1' : '0');
     } catch {
       // Not remembered, but it still switches.
     }
@@ -325,7 +325,7 @@ export function Message({
   title,
   children,
 }: {
-  /** An emoji, or a picture such as Plateraa's logo. */
+  /** An emoji, or a picture such as Brixx's logo. */
   icon: ReactNode;
   title: string;
   children?: ReactNode;

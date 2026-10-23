@@ -1,5 +1,5 @@
 import type { NestExpressApplication } from '@nestjs/platform-express';
-import { auditEvents, eq, withTenant, type Database } from '@plateraa/db';
+import { auditEvents, eq, withTenant, type Database } from '@brixx/db';
 import request from 'supertest';
 import { ulid } from 'ulid';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';

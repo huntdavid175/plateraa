@@ -1,4 +1,4 @@
-import { normalizeGhanaPhone } from '@plateraa/shared';
+import { normalizeGhanaPhone } from '@brixx/shared';
 import { ulid } from 'ulid';
 import { api, messageOf, OFFLINE, type Store } from './api';
 import { priceCart, type CartLine } from './cart';

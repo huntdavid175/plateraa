@@ -1,5 +1,5 @@
 import { Inject, Injectable, Logger } from '@nestjs/common';
-import { devices, eq, sql, withTenant } from '@plateraa/db';
+import { devices, eq, sql, withTenant } from '@brixx/db';
 import * as Sentry from '@sentry/nestjs';
 import { DATABASE, type DatabaseHandle } from '../database/database.module';
 import type { DeviceContext } from '../identity/request-context';

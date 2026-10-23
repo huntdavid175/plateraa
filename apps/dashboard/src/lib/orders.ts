@@ -1,4 +1,4 @@
-import type { paths } from '@plateraa/api-client';
+import type { paths } from '@brixx/api-client';
 import { api, call } from './api';
 
 /** A day (`date`) or a range (`from`, `to`), and the filters figures link to. */

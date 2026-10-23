@@ -1,5 +1,5 @@
 import type { NestExpressApplication } from '@nestjs/platform-express';
-import type { SyncCommandInput } from '@plateraa/shared';
+import type { SyncCommandInput } from '@brixx/shared';
 import request from 'supertest';
 import { ulid } from 'ulid';
 import type { Vendor } from './fixtures';

@@ -1,4 +1,5 @@
 import type { NestExpressApplication } from '@nestjs/platform-express';
+import { STORE_DAYS, type StoreHours } from '@brixx/shared';
 import request from 'supertest';
 import { afterAll, beforeAll, describe, expect, it, vi } from 'vitest';
 import { removeVendors, seedMenu, setUpVendor, type Vendor } from '../test/fixtures';
@@ -127,7 +128,9 @@ describe.skipIf(!hasDatabase())('photos (against Neon, pretend photo store)', ()
         theme: 'teal',
         area: '',
         phone: '',
-        hours: '',
+        hours: Object.fromEntries(
+          STORE_DAYS.map((day) => [day, { open: true, from: '00:00', to: '23:59' }]),
+        ) as StoreHours,
       })
       .expect(204);
     const cover = (await upload('/api/storefront/photos/cover', WEBP).expect(200)).body as {

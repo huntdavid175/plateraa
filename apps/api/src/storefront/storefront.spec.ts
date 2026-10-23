@@ -13,8 +13,8 @@ import {
   tenants,
   withTenant,
   type Database,
-} from '@plateraa/db';
-import { STORE_DAYS, pesewas, type Pesewas, type StoreHours } from '@plateraa/shared';
+} from '@brixx/db';
+import { STORE_DAYS, pesewas, type Pesewas, type StoreHours } from '@brixx/shared';
 import request from 'supertest';
 import { ulid } from 'ulid';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
@@ -133,7 +133,7 @@ describe.skipIf(!hasDatabase())('the online store (against Neon, pretend Moolre)
         apiUser: 'efua',
         publicKey: sealSecret('pk_test', secretsKey),
         accountNumber: '10555123456',
-        email: 'efua@test.plateraa.dev',
+        email: 'efua@test.brixx.dev',
       });
       const [tenant] = await tx.select({ slug: tenants.slug }).from(tenants);
       slug = tenant!.slug;

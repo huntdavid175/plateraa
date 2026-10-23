@@ -13,8 +13,8 @@ import {
   withPlatform,
   withTenant,
   type Tx,
-} from '@plateraa/db';
-import { resolveCapabilities, type Capability, type Role } from '@plateraa/shared';
+} from '@brixx/db';
+import { resolveCapabilities, type Capability, type Role } from '@brixx/shared';
 import { z } from 'zod';
 import { hashToken } from '../auth/secrets';
 import { DATABASE, type DatabaseHandle } from '../database/database.module';

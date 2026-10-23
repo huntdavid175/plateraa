@@ -41,7 +41,7 @@ import {
   withPlatform,
   withTenant,
   type Tx,
-} from '@plateraa/db';
+} from '@brixx/db';
 import {
   DEFAULT_STORE_HOURS,
   ORDER_STATUSES,
@@ -58,7 +58,7 @@ import {
   sub,
   type Pesewas,
   type SyncCommandOf,
-} from '@plateraa/shared';
+} from '@brixx/shared';
 import { ApiCreatedResponse, ApiOkResponse } from '@nestjs/swagger';
 import { createZodDto } from 'nestjs-zod';
 import { ulid } from 'ulid';

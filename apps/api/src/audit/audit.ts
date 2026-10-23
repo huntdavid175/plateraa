@@ -1,4 +1,4 @@
-import { auditEvents, type Tx } from '@plateraa/db';
+import { auditEvents, type Tx } from '@brixx/db';
 import { ulid } from 'ulid';
 
 export interface AuditEvent {

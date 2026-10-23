@@ -1,4 +1,4 @@
-import { pesewas, sub, type Pesewas } from '@plateraa/shared';
+import { pesewas, sub, type Pesewas } from '@brixx/shared';
 import { useEffect, useState } from 'react';
 import { ScrollView, Text, View, useWindowDimensions } from 'react-native';
 import { problemText } from '../tablet/api';

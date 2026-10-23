@@ -73,7 +73,7 @@ function Footer() {
   ).filter((c): c is ContactLink => c !== false);
 
   const columns = [
-    { title: 'Plateraa', links: NAV.map((n) => ({ href: n.href, label: n.label })) },
+    { title: 'Brixx', links: NAV.map((n) => ({ href: n.href, label: n.label })) },
     {
       title: 'Your account',
       links: [
@@ -95,9 +95,9 @@ function Footer() {
       <div className="mx-auto max-w-7xl rounded-[32px] bg-white px-6 pt-12 pb-10 sm:rounded-[40px] sm:px-12">
         <div className="grid gap-10 md:grid-cols-[1.3fr_repeat(3,1fr)]">
           <div>
-            <Link href="/" className="inline-flex items-center gap-2" aria-label="Plateraa home">
+            <Link href="/" className="inline-flex items-center gap-2" aria-label="Brixx home">
               <img src="/logo.png" alt="" width={44} height={44} className="rounded-[12px]" />
-              <span className="text-[22px] font-semibold tracking-[-0.02em]">Plateraa</span>
+              <span className="text-[22px] font-semibold tracking-[-0.02em]">Brixx</span>
             </Link>
             <p className="mt-4 max-w-xs text-[15px] leading-relaxed text-muted">
               Easy ordering for customers, easy orders for food vendors in Ghana.
@@ -154,7 +154,7 @@ function Footer() {
         </div>
 
         <div className="mt-8 flex flex-col gap-2 text-[13px] text-muted sm:flex-row sm:justify-between">
-          <p>© {new Date().getFullYear()} Plateraa</p>
+          <p>© {new Date().getFullYear()} Brixx</p>
           <p>Mobile money payments are processed by Moolre into each vendor’s own account.</p>
         </div>
         <p className="mt-3 text-[12px] text-muted">
@@ -174,7 +174,7 @@ function Footer() {
         aria-hidden
         className="py-10 text-center text-[44px] font-semibold tracking-[-0.03em] text-white/90 sm:py-14 sm:text-[64px]"
       >
-        Plateraa
+        Brixx
       </p>
     </footer>
   );

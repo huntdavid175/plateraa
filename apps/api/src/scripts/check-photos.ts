@@ -6,7 +6,7 @@ import { R2PhotoStore } from '../photos/photo-store';
  * Checks the photo storage (Cloudflare R2) works with the settings in .env: keeps a tiny test
  * file in the bucket, reads it back from the public address, and removes it. Prints no keys.
  *
- *   pnpm --filter @plateraa/api photos:check
+ *   pnpm --filter @brixx/api photos:check
  */
 async function main() {
   const store = new R2PhotoStore(loadEnv());
@@ -17,7 +17,7 @@ async function main() {
     process.exit(1);
   }
   const key = `checks/${ulid()}.txt`;
-  await store.put(key, new TextEncoder().encode('plateraa photo check'), 'text/plain');
+  await store.put(key, new TextEncoder().encode('brixx photo check'), 'text/plain');
   console.log('1. Keeping a test file in the bucket: ok');
   const response = await fetch(store.urlOf(key));
   console.log(

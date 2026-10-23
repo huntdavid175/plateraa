@@ -1,4 +1,4 @@
-import type { VendorType } from '@plateraa/shared';
+import type { VendorType } from '@brixx/shared';
 import { api, call } from './api';
 import { queryClient } from './query';
 

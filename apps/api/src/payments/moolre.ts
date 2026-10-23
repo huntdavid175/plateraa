@@ -1,4 +1,4 @@
-import { formatCedis, parseCedis, type Pesewas } from '@plateraa/shared';
+import { formatCedis, parseCedis, type Pesewas } from '@brixx/shared';
 
 /**
  * Moolre, as the rest of the API sees it (docs.moolre.com): payment links into a vendor's own

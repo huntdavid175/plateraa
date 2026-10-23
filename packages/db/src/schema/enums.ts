@@ -20,7 +20,7 @@ import {
   STOCK_MOVEMENT_TYPES,
   TENANT_STATUSES,
   VENDOR_TYPES,
-} from '@plateraa/shared';
+} from '@brixx/shared';
 import { pgEnum } from 'drizzle-orm/pg-core';
 
 export const tenantStatus = pgEnum('tenant_status', TENANT_STATUSES);

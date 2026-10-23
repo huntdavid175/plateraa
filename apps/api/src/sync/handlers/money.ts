@@ -1,4 +1,4 @@
-import { channelCommissions, eq, orders, payments, platformReceivables, sql } from '@plateraa/db';
+import { channelCommissions, eq, orders, payments, platformReceivables, sql } from '@brixx/db';
 import {
   add,
   amountDue,
@@ -9,7 +9,7 @@ import {
   sub,
   type OrderStatus,
   type Pesewas,
-} from '@plateraa/shared';
+} from '@brixx/shared';
 import { ulid } from 'ulid';
 import { recordAudit } from '../../audit/audit';
 import { CommandRejected, type CommandHandler, type HandlerContext } from '../sync.types';

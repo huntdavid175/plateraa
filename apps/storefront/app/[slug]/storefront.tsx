@@ -1,6 +1,6 @@
 'use client';
 
-import { STORE_DAYS, normalizeGhanaPhone, timeWords, type StoreDay } from '@plateraa/shared';
+import { STORE_DAYS, normalizeGhanaPhone, timeWords, type StoreDay } from '@brixx/shared';
 import { useRouter } from 'next/navigation';
 import { useEffect, useMemo, useState, type ReactNode } from 'react';
 import { ulid } from 'ulid';

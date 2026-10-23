@@ -22,7 +22,7 @@ import {
   sql,
   withTenant,
   type Tx,
-} from '@plateraa/db';
+} from '@brixx/db';
 import { ApiBearerAuth, ApiNoContentResponse, ApiOkResponse } from '@nestjs/swagger';
 import { createZodDto } from 'nestjs-zod';
 import { z } from 'zod';

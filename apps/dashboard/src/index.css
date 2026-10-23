@@ -10,7 +10,7 @@
 @custom-variant dark (&:where(.dark, .dark *));
 
 /*
- * Colours come from one place: Arc's token names, set to Plateraa's palette in theme.css. The
+ * Colours come from one place: Arc's token names, set to Brixx's palette in theme.css. The
  * names below only point at them:
  * - shadcn's names (bg-background, bg-card, bg-primary, text-muted-foreground, bg-sidebar, …);
  * - the names the screens built before the rework use (bg-surface, bg-tile, text-text, bg-brand,

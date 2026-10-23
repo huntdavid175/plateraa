@@ -1,5 +1,5 @@
 import { Global, Inject, Module, type OnApplicationShutdown } from '@nestjs/common';
-import { createDatabase } from '@plateraa/db';
+import { createDatabase } from '@brixx/db';
 import { ENV, type Env } from '../config/env';
 
 export const DATABASE = Symbol('DATABASE');

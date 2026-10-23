@@ -1,6 +1,6 @@
 import { Test } from '@nestjs/testing';
 import type { NestExpressApplication } from '@nestjs/platform-express';
-import { testDatabaseUrl } from '@plateraa/db';
+import { testDatabaseUrl } from '@brixx/db';
 import { configureApp } from '../app.setup';
 import { AppModule } from '../app.module';
 import { ENV, loadEnv, type Env } from '../config/env';

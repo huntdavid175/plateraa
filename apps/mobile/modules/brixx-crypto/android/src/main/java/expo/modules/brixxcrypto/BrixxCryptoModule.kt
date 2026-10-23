@@ -1,4 +1,4 @@
-package expo.modules.plateraacrypto
+package expo.modules.brixxcrypto
 
 import android.util.Base64
 import expo.modules.kotlin.modules.Module
@@ -12,9 +12,9 @@ import javax.crypto.spec.SecretKeySpec
  * (`pbkdf2-sha256$iterations$salt$hash`, base64url), done natively because it runs tens of
  * thousands of HMAC rounds.
  */
-class PlateraaCryptoModule : Module() {
+class BrixxCryptoModule : Module() {
   override fun definition() = ModuleDefinition {
-    Name("PlateraaCrypto")
+    Name("BrixxCrypto")
 
     AsyncFunction("verifyPinAsync") { verifier: String, pin: String ->
       val parts = verifier.split('$')

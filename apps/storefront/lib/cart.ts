@@ -1,4 +1,4 @@
-import { pesewas, priceOrder } from '@plateraa/shared';
+import { pesewas, priceOrder } from '@brixx/shared';
 import type { Store } from './api';
 
 /** One line of the cart, as the customer chose it. Prices come from the menu each time. */
@@ -86,7 +86,7 @@ export function priceCart(store: Store, lines: CartLine[]): PricedLine[] {
   });
 }
 
-const keyOf = (slug: string) => `plateraa-cart-${slug}`;
+const keyOf = (slug: string) => `brixx-cart-${slug}`;
 
 /** The cart kept in this browser, so a refresh or a closed tab doesn't lose it. */
 export function loadCart(slug: string): CartLine[] {

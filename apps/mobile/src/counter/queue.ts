@@ -1,4 +1,4 @@
-import type { OrderSource, OrderType, PaymentLinkStatus, Pesewas, Station } from '@plateraa/shared';
+import type { OrderSource, OrderType, PaymentLinkStatus, Pesewas, Station } from '@brixx/shared';
 import type { Sql } from '../offline/sql';
 import { provisionalSql } from '../offline/store';
 import type { LaneOrder } from './lanes';

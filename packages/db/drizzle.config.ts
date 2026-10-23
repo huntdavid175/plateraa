@@ -5,8 +5,8 @@ import { defineConfig } from 'drizzle-kit';
 if (existsSync('../../.env')) process.loadEnvFile('../../.env');
 
 // DATABASE_URL_DIRECT is the Neon `dev` branch. `db:migrate:production` sets
-// PLATERAA_DB_TARGET=production to migrate the `production` branch (kept for the pilot) instead.
-const production = process.env.PLATERAA_DB_TARGET === 'production';
+// BRIXX_DB_TARGET=production to migrate the `production` branch (kept for the pilot) instead.
+const production = process.env.BRIXX_DB_TARGET === 'production';
 const url = production
   ? process.env.PRODUCTION_DATABASE_URL_DIRECT
   : process.env.DATABASE_URL_DIRECT;

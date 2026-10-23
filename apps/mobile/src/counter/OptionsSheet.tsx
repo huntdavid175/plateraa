@@ -1,4 +1,4 @@
-import { add, mul } from '@plateraa/shared';
+import { add, mul } from '@brixx/shared';
 import { useEffect, useState } from 'react';
 import { ScrollView, Text, View } from 'react-native';
 import { newId } from '../tablet/ids';

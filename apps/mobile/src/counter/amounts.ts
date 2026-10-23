@@ -1,4 +1,4 @@
-import { formatCedis, parseCedis, type Pesewas } from '@plateraa/shared';
+import { formatCedis, parseCedis, type Pesewas } from '@brixx/shared';
 
 /** The cash keypad, as used by the payment sheet and the drawer prompt. */
 export const KEYS = ['1', '2', '3', '4', '5', '6', '7', '8', '9', '.', '0', 'back'] as const;

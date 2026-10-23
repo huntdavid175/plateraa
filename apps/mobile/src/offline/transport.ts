@@ -1,5 +1,5 @@
-import type { ApiClient } from '@plateraa/api-client';
-import type { SyncCommandInput } from '@plateraa/shared';
+import type { ApiClient } from '@brixx/api-client';
+import type { SyncCommandInput } from '@brixx/shared';
 import type { PullChanges } from './store';
 
 export type PushOutcome =

@@ -1,4 +1,4 @@
-import type { SyncCommandInput } from '@plateraa/shared';
+import type { SyncCommandInput } from '@brixx/shared';
 import { ulid } from 'ulid';
 import { SyncEngine } from '../engine';
 import { openLocalDatabase } from '../schema';

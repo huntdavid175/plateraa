@@ -1,4 +1,4 @@
-import { PIN_ATTEMPTS_BEFORE_LOCK, pinLockout } from '@plateraa/shared';
+import { PIN_ATTEMPTS_BEFORE_LOCK, pinLockout } from '@brixx/shared';
 import type { Sql } from '../offline/sql';
 
 /**

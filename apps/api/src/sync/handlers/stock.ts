@@ -1,5 +1,5 @@
-import { and, eq, items, sql, stockItems, stockMovements } from '@plateraa/db';
-import type { StockKind } from '@plateraa/shared';
+import { and, eq, items, sql, stockItems, stockMovements } from '@brixx/db';
+import type { StockKind } from '@brixx/shared';
 import { recordAudit } from '../../audit/audit';
 import { CommandRejected, type CommandHandler, type HandlerContext } from '../sync.types';
 import { deviceTime } from './common';

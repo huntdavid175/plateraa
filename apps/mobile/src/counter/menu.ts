@@ -1,4 +1,4 @@
-import type { Pesewas, Station } from '@plateraa/shared';
+import type { Pesewas, Station } from '@brixx/shared';
 import type { Sql } from '../offline/sql';
 
 export interface MenuModifier {

@@ -1,6 +1,6 @@
 import { Controller, Get, Inject, Injectable, NotFoundException } from '@nestjs/common';
-import { eq, staffMembers, tenantSettings, tenants, withTenant } from '@plateraa/db';
-import { CAPABILITIES, ROLES, VENDOR_TYPES } from '@plateraa/shared';
+import { eq, staffMembers, tenantSettings, tenants, withTenant } from '@brixx/db';
+import { CAPABILITIES, ROLES, VENDOR_TYPES } from '@brixx/shared';
 import { ApiBearerAuth, ApiOkResponse } from '@nestjs/swagger';
 import { createZodDto } from 'nestjs-zod';
 import { z } from 'zod';

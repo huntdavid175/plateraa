@@ -48,7 +48,7 @@ export function ChooseBusinessPage() {
           </div>
           {slow && (
             <p className="text-sm text-muted-foreground" role="status">
-              Plateraa is waking up. This can take up to a minute.
+              Brixx is waking up. This can take up to a minute.
             </p>
           )}
         </div>

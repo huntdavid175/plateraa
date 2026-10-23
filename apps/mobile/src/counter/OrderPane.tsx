@@ -1,4 +1,4 @@
-import { parseCedis, pesewas, type OrderType, type Pesewas } from '@plateraa/shared';
+import { parseCedis, pesewas, type OrderType, type Pesewas } from '@brixx/shared';
 import { useEffect, useRef, useState } from 'react';
 import { ScrollView, Text, View } from 'react-native';
 import { useLocalQuery } from '../tablet/TabletProvider';

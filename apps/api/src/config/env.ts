@@ -63,7 +63,7 @@ const envSchema = z.object({
   R2_ACCESS_KEY_ID: z.string().min(1).optional(),
   R2_SECRET_ACCESS_KEY: z.string().min(1).optional(),
   R2_BUCKET: z.string().min(1).default('plateraa-photos'),
-  /** The bucket's public address: its r2.dev address, or photos.plateraa.com later. */
+  /** The bucket's public address: its r2.dev address, or photos.brixx.com later. */
   R2_PUBLIC_URL: z
     .url()
     .transform((url) => url.replace(/\/+$/, ''))

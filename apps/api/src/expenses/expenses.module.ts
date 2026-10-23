@@ -30,8 +30,8 @@ import {
   stockMovements,
   withTenant,
   type Tx,
-} from '@plateraa/db';
-import { EXPENSE_CATEGORIES, EXPENSE_METHODS, pesewas } from '@plateraa/shared';
+} from '@brixx/db';
+import { EXPENSE_CATEGORIES, EXPENSE_METHODS, pesewas } from '@brixx/shared';
 import {
   ApiBearerAuth,
   ApiCreatedResponse,

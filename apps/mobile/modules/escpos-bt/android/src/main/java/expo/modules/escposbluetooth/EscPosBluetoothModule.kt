@@ -22,7 +22,7 @@ class BluetoothUnavailableException :
   CodedException("BLUETOOTH_UNAVAILABLE", "Bluetooth is switched off or this tablet has none", null)
 
 class BluetoothPermissionException :
-  CodedException("BLUETOOTH_PERMISSION", "Allow Plateraa to use nearby devices to print", null)
+  CodedException("BLUETOOTH_PERMISSION", "Allow Brixx to use nearby devices to print", null)
 
 class PrinterNotConnectedException :
   CodedException("PRINTER_NOT_CONNECTED", "The printer is not connected", null)

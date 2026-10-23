@@ -1,4 +1,4 @@
-import type { Capability } from '@plateraa/shared';
+import type { Capability } from '@brixx/shared';
 import {
   ChartColumn,
   Ellipsis,

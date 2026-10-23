@@ -23,8 +23,8 @@ import {
   withPlatform,
   withTenant,
   type Tx,
-} from '@plateraa/db';
-import { amountDue, sub, type Pesewas } from '@plateraa/shared';
+} from '@brixx/db';
+import { amountDue, sub, type Pesewas } from '@brixx/shared';
 import * as Sentry from '@sentry/nestjs';
 import { ulid } from 'ulid';
 import { recordAudit } from '../audit/audit';
@@ -76,7 +76,7 @@ export function failureWords(error: unknown, stage: 'link' | 'text' = 'link'): s
     default:
       if (error.code.startsWith('AIN')) {
         return stage === 'text'
-          ? `Moolre didn't accept Plateraa's SMS key ${detail}.`
+          ? `Moolre didn't accept Brixx's SMS key ${detail}.`
           : `Moolre didn't accept this business's account details ${detail}.`;
       }
       return `Moolre said: ${error.message}`.slice(0, 160);

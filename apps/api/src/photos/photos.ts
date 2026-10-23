@@ -14,7 +14,7 @@ import {
   ServiceUnavailableException,
   UnsupportedMediaTypeException,
 } from '@nestjs/common';
-import { and, eq, isNull, items, tenantSettings, withTenant } from '@plateraa/db';
+import { and, eq, isNull, items, tenantSettings, withTenant } from '@brixx/db';
 import {
   ApiBearerAuth,
   ApiBody,

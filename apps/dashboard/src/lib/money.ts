@@ -1,4 +1,4 @@
-import { formatCedis, pesewas } from '@plateraa/shared';
+import { formatCedis, pesewas } from '@brixx/shared';
 
 /** Pesewas from the API, shown as GH₵1,085.00. */
 export const cedis = (amount: number): string => formatCedis(pesewas(amount));

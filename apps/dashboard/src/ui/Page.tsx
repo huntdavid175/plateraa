@@ -34,7 +34,7 @@ export function Page({
 }
 
 /**
- * Screens outside the app (signing in, choosing a business, a crash): the Plateraa mark at the
+ * Screens outside the app (signing in, choosing a business, a crash): the Brixx mark at the
  * top, then one narrow column in the middle of the page, with no card around it.
  */
 export function Centered({
@@ -50,7 +50,7 @@ export function Centered({
     <div className="flex min-h-full flex-col px-4 py-6 md:px-8">
       <div className="flex items-center gap-2.5">
         <img src="/logo.png" alt="" className="size-8 rounded-lg" />
-        <span className="font-medium">Plateraa</span>
+        <span className="font-medium">Brixx</span>
       </div>
       <main className="flex flex-1 items-center justify-center py-10">
         <div className="flex w-full max-w-sm flex-col gap-8">

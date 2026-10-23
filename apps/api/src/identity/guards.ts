@@ -12,7 +12,7 @@ import {
   type ExecutionContext,
 } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
-import type { Capability } from '@plateraa/shared';
+import type { Capability } from '@brixx/shared';
 import { fromNodeHeaders } from 'better-auth/node';
 import { AUTH, type Auth } from '../auth/auth.factory';
 import { Directories } from './directories.service';
@@ -106,7 +106,7 @@ export class ActorGuard implements CanActivate {
   }
 }
 
-const REQUIRED_CAPABILITIES = 'plateraa:requiredCapabilities';
+const REQUIRED_CAPABILITIES = 'brixx:requiredCapabilities';
 
 @Injectable()
 export class CapabilityGuard implements CanActivate {

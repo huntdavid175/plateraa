@@ -1,4 +1,4 @@
-import type { Station } from '@plateraa/shared';
+import type { Station } from '@brixx/shared';
 import { useMutation, useQuery } from '@tanstack/react-query';
 import { Plus, X } from 'lucide-react';
 import { useState, type ReactNode } from 'react';

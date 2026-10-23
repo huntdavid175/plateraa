@@ -1,4 +1,4 @@
-# Dashboard (`@plateraa/dashboard`)
+# Dashboard (`@brixx/dashboard`)
 
 The web dashboard for owners and managers (plan.md §3.1). It uses:
 
@@ -22,7 +22,7 @@ The web dashboard for owners and managers (plan.md §3.1). It uses:
   - **The preview** (`src/dev/Preview.tsx`): with `pnpm dev`, `/__preview` shows rebuilt screens inside the real frame with made-up sample data, without signing in. It never touches the saved login, and the built app leaves it out. Screens are checked by screenshotting it with headless Chrome: `chrome --headless=new --window-size=1440,1500 --screenshot=<file> http://localhost:5173/__preview`, adding `--blink-settings=preferredColorScheme=0` for dark or `=1` for light; 500 px wide for a phone, as Chrome won't go narrower. Add each rebuilt screen's route and sample data there.
   - The old Figma Make design (`design/dashboard_design.make`) is no longer the guide. Its wording rules still hold: real order numbers; stations are Kitchen and Drinks only; a PIN is never shown; "Moolre account", not "MoMo account"; "sold out" means it can't be ordered until tomorrow.
   - **Today is called Home** (9 Oct, user request): the sidebar, the phone bar, the page title and back links. The address stays `/`.
-- **Colours** come from one place: Arc's token names (`--background`, `--surface`, `--surface-muted`, `--foreground`, `--text-secondary`, `--text-muted`, `--border`, `--accent`, `--success`, `--warning`, `--danger`), set to Plateraa's palette in `src/theme.css`, light and dark.
+- **Colours** come from one place: Arc's token names (`--background`, `--surface`, `--surface-muted`, `--foreground`, `--text-secondary`, `--text-muted`, `--border`, `--accent`, `--success`, `--warning`, `--danger`), set to Brixx's palette in `src/theme.css`, light and dark.
   - `src/index.css` points shadcn's Tailwind names at them (`bg-background`, `bg-card`, `bg-primary`, `text-muted-foreground`, `bg-sidebar`, …), plus ours (`text-accent-strong`, `bg-accent-subtle`, `text-success`, `text-danger`, `text-info`), plus the old screens' names (`bg-surface`, `bg-tile`, `bg-brand`, `bg-green-bg text-green`, …) until they're rebuilt.
   - shadcn's `accent` (Tailwind `bg-accent`) is the grey behind a hovered item; Arc's `--accent` (the variable) is the brand orange. Tailwind `primary` is the brand orange.
   - The accent is `#D44000`, deepened from the logo's `#FC5102` so white text on it reads (4.6:1); the logo keeps `#FC5102` (`bg-brand-mark`). In dark mode the accent is a lighter orange carrying dark text.
@@ -35,19 +35,19 @@ The web dashboard for owners and managers (plan.md §3.1). It uses:
 - **Toasts** (16 Sep, user request): `toast.ok('Saved')` / `toast.problem(…)` from `ui/Toast.tsx`, drawn by Arc's `ToastStack` since 10 Oct (user request): bottom-right (bottom-centre on a phone), 360px wide, a success for 4 s and a problem longer; three show at once, older ones tucked behind and fanned out on hover; a swipe or the close button dismisses, and timers pause while someone reads. A problem shows "Something went wrong" with the reason underneath. `toast` is called from outside React, so `ui/Toast.tsx` hands each note to Arc's hook through a small bridge. They're wired once in `lib/query.ts`: **every mutation that fails says why by itself**, and one that works says so when it carries `meta: { ok: 'Expense added' }`. A form that already prints its own error underneath (sign-in, sign-up) sets `meta: { quiet: true }` so it isn't said twice.
 - **Alert colours** (16 Sep, after the user reported they were hard to read): the status inks (`--green`, `--amber`, `--red`, `--blue`) and `--muted` in `index.css` were strengthened. Every one now clears **6.2:1** on the page, a card and its own tint in light mode, and 7.3:1 in dark (the old light values were 4.45–5.9). Check a new value against the page, a card (`--surface`), a tile and its tint before changing it.
 - **A time of day** (`TimeInput` on the Online store page) is an **uncontrolled** `<input type="time">`: a time field reports an empty value while it's half typed, and feeding that back wipes what's being typed, so the hour can never be finished (user report, 16 Sep). It starts from what's saved and is remounted by a `key` when something other than the keyboard changes it.
-- **The Plateraa logo** (15 Sep) is `public/logo.png`, a plain `<img>` wherever the brand mark goes: sign-in, sign-up and choosing a business (`Centered` in `ui/Page.tsx`), the sidebar and the phone header (`shell/Shell.tsx`). It replaced the orange square with a typed "P". The tab and home-screen icons are `public/favicon.ico`, `public/icon-192.png` and `public/apple-touch-icon.png`, linked from `index.html`. All of them are made by `pnpm brand:assets` from `public/images/logo.png` at the repo root, so don't edit them by hand. A vendor's own logo is a different thing (`logoUrl`, uploaded on the Online store page).
+- **The Brixx logo** (15 Sep) is `public/logo.png`, a plain `<img>` wherever the brand mark goes: sign-in, sign-up and choosing a business (`Centered` in `ui/Page.tsx`), the sidebar and the phone header (`shell/Shell.tsx`). It replaced the orange square with a typed "P". The tab and home-screen icons are `public/favicon.ico`, `public/icon-192.png` and `public/apple-touch-icon.png`, linked from `index.html`. All of them are made by `pnpm brand:assets` from `public/images/logo.png` at the repo root, so don't edit them by hand. A vendor's own logo is a different thing (`logoUrl`, uploaded on the Online store page).
 - **Plain words.** Every screen works at phone width: the sidebar shows from `md` up; below that there's a bottom bar plus "More".
 - **Scrollbars** (`src/index.css`): nothing may show a bar on hover, since it takes width and shifts the page. `no-scrollbar` for the sidebar and rows of pills (they still scroll), `page-scroll` for a page's own scrolling (thin, with its room always kept), `thin-scrollbar` for dialogs.
 
 ## Layout
 
 - `lib/api.ts`:
-  - the typed client from `@plateraa/api-client`, which sends the bearer token and `x-tenant-id`;
+  - the typed client from `@brixx/api-client`, which sends the bearer token and `x-tenant-id`;
   - `call()` returns the data, or throws an `ApiError` worded for the screen;
   - `signIn()` / `signOut()`: Better Auth; the token comes from the `set-auth-token` header, which CORS exposes;
   - any 401 signs the person out.
 - `lib/session.ts`: the token and the chosen business, in localStorage.
-- `lib/query.ts`: the QueryClient and shared queries (`useBusinesses`, `useContextQuery`), plus `useSlow` for the "Plateraa is waking up" hint while Render's free plan starts.
+- `lib/query.ts`: the QueryClient and shared queries (`useBusinesses`, `useContextQuery`), plus `useSlow` for the "Brixx is waking up" hint while Render's free plan starts.
 - `shell/Shell.tsx`: the signed-in frame.
   - It loads `GET /api/me/context`: name, role, permissions and business.
   - It hides navigation the person can't use.
@@ -110,12 +110,12 @@ The web dashboard for owners and managers (plan.md §3.1). It uses:
 ## Rules
 
 - **The server enforces permissions.** Hiding a screen is only tidiness. Revenue figures need `reports.revenue.view`, and the API refuses them otherwise.
-- **Money** arrives as integer pesewas. Show it with `formatCedis` from `@plateraa/shared`, and never do float maths on it.
+- **Money** arrives as integer pesewas. Show it with `formatCedis` from `@brixx/shared`, and never do float maths on it.
 - **After adding API endpoints,** regenerate the client (see the root AGENTS.md).
 
 ## Running
 
-- `pnpm --filter @plateraa/dashboard dev` serves http://localhost:5173.
+- `pnpm --filter @brixx/dashboard dev` serves http://localhost:5173.
 - **Which API it talks to.** By default, the deployed API. To use an API running on the laptop, set `VITE_API_URL=http://localhost:3000` in the root `.env`.
   - The dashboard reads the root `.env` (`envDir`). Only `VITE_` keys reach the browser, so never put a secret in one.
 - **Allowed browsers.** The API only accepts browsers from `TRUSTED_ORIGINS`, which defaults to `http://localhost:5173`. When the dashboard is deployed, add its address to `TRUSTED_ORIGINS` on Render.

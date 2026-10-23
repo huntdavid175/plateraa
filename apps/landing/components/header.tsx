@@ -18,10 +18,10 @@ export function Header() {
   return (
     <header className="sticky top-0 z-50 border-b border-line/70 bg-white/90 backdrop-blur-md">
       <Container className="flex h-16 items-center gap-8">
-        <Link href="/" className="flex shrink-0 items-center gap-2" aria-label="Plateraa home">
+        <Link href="/" className="flex shrink-0 items-center gap-2" aria-label="Brixx home">
           {/* A plain <img>: the logo is a small fixed-size PNG made by `pnpm brand:assets`. */}
           <img src="/logo.png" alt="" width={32} height={32} className="rounded-[9px]" />
-          <span className="text-[20px] font-semibold tracking-[-0.02em]">Plateraa</span>
+          <span className="text-[20px] font-semibold tracking-[-0.02em]">Brixx</span>
         </Link>
 
         <nav className="hidden items-center gap-7 md:flex" aria-label="Main">

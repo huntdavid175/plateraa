@@ -3,7 +3,7 @@ import {
   type RevenueVisibility,
   type StoreHours,
   type StorefrontTheme,
-} from '@plateraa/shared';
+} from '@brixx/shared';
 import { sql } from 'drizzle-orm';
 import {
   boolean,

@@ -1,5 +1,5 @@
-import type { paths } from '@plateraa/api-client';
-import type { MenuTemplate, VendorType } from '@plateraa/shared';
+import type { paths } from '@brixx/api-client';
+import type { MenuTemplate, VendorType } from '@brixx/shared';
 import { ulid } from 'ulid';
 import { api, call } from './api';
 

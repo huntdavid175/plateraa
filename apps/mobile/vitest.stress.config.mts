@@ -1,7 +1,7 @@
 import { defineConfig } from 'vitest/config';
 
 /**
- * The offline stress run (`pnpm --filter @plateraa/mobile stress`): the tablet's real sync engine
+ * The offline stress run (`pnpm --filter @brixx/mobile stress`): the tablet's real sync engine
  * against the real API on the Neon `test` branch, over a connection that keeps failing. Kept out
  * of `pnpm test` because it makes hundreds of round trips to Frankfurt.
  */

@@ -5,19 +5,19 @@ import { LegalPage } from '../../components/legal';
 
 export const metadata: Metadata = {
   title: 'Terms',
-  description: 'The basics of using Plateraa: your account, your money, our fee and your data.',
+  description: 'The basics of using Brixx: your account, your money, our fee and your data.',
   alternates: { canonical: '/terms' },
 };
 
 /*
- * A plain-language summary of how Plateraa works for a vendor (15 Oct 2026). Founder task: the
+ * A plain-language summary of how Brixx works for a vendor (15 Oct 2026). Founder task: the
  * binding terms come from the lawyer; this page must be replaced or approved before launch.
  */
 export default function TermsPage() {
   return (
     <LegalPage label="Legal" title="Terms" updated="15 October 2026">
       <p>
-        These are the basics of using Plateraa, in plain words. Our full terms of service are being
+        These are the basics of using Brixx, in plain words. Our full terms of service are being
         prepared with our lawyer and will replace this summary.
       </p>
 
@@ -31,15 +31,15 @@ export default function TermsPage() {
       <h2>Your money</h2>
       <p>
         Mobile money from your customers goes into your own Moolre merchant account, under Moolre’s
-        own terms. Plateraa doesn’t hold your money. Cash you take at the counter is recorded on
-        Plateraa but never passes through us.
+        own terms. Brixx doesn’t hold your money. Cash you take at the counter is recorded on Brixx
+        but never passes through us.
       </p>
 
       <h2>Our fee</h2>
       <p>
-        Plateraa is free to start and has no monthly fee. Our share is 2% of each payment a customer
-        makes to you online through Plateraa, by payment link or through your online store. Cash
-        sales are free. Moolre charges its own fee on mobile money payments.
+        Brixx is free to start and has no monthly fee. Our share is 2% of each payment a customer
+        makes to you online through Brixx, by payment link or through your online store. Cash sales
+        are free. Moolre charges its own fee on mobile money payments.
       </p>
 
       <h2>Your data</h2>
@@ -53,7 +53,7 @@ export default function TermsPage() {
 
       <h2>Fair use</h2>
       <p>
-        Use Plateraa for your own food business and within the law. We may suspend an account that’s
+        Use Brixx for your own food business and within the law. We may suspend an account that’s
         used for fraud or that puts other vendors or customers at risk.
       </p>
     </LegalPage>

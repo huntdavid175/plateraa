@@ -11,7 +11,7 @@ import {
   UseGuards,
 } from '@nestjs/common';
 import { ApiOkResponse, ApiSecurity } from '@nestjs/swagger';
-import { syncPushRequestSchema } from '@plateraa/shared';
+import { syncPushRequestSchema } from '@brixx/shared';
 import * as Sentry from '@sentry/nestjs';
 import { createZodDto } from 'nestjs-zod';
 import { z } from 'zod';

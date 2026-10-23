@@ -1,4 +1,4 @@
-import type { Capability, Pesewas } from '@plateraa/shared';
+import type { Capability, Pesewas } from '@brixx/shared';
 import type { Sql } from '../offline/sql';
 import { provisionalSql } from '../offline/store';
 import { cedis } from '../ui/theme';

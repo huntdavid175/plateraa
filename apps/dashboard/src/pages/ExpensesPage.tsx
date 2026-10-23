@@ -1,4 +1,4 @@
-import { EXPENSE_CATEGORIES, type ExpenseCategory } from '@plateraa/shared';
+import { EXPENSE_CATEGORIES, type ExpenseCategory } from '@brixx/shared';
 import { useMutation, useQuery } from '@tanstack/react-query';
 import { Plus, Wallet } from 'lucide-react';
 import { useState } from 'react';

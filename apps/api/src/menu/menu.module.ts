@@ -32,8 +32,8 @@ import {
   tenantSettings,
   withTenant,
   type Tx,
-} from '@plateraa/db';
-import { STATIONS, pesewas, type Pesewas } from '@plateraa/shared';
+} from '@brixx/db';
+import { STATIONS, pesewas, type Pesewas } from '@brixx/shared';
 import { ApiBearerAuth, ApiCreatedResponse, ApiOkResponse } from '@nestjs/swagger';
 import { createZodDto } from 'nestjs-zod';
 import { ulid } from 'ulid';
