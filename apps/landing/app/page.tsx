@@ -1,4 +1,3 @@
-import { bpsOf, formatCedis, pesewas } from '@brixx/shared';
 import type { Metadata } from 'next';
 import type { ReactNode } from 'react';
 
@@ -21,13 +20,11 @@ import { RushList } from '../components/rush-list';
 import { ButtonLink, Container, cx, PhotoSlot, SectionHeading, Highlight } from '../components/ui';
 import { HOME_FAQ } from '../content/faq';
 import { PHOTOS } from '../content/photos';
-import { ONLINE_FEE_BPS, SIGN_UP_URL } from '../lib/site';
+import { SIGN_UP_URL } from '../lib/site';
 
 export const metadata: Metadata = {
   alternates: { canonical: '/' },
 };
-
-const EXAMPLE_ORDER = pesewas(10000);
 
 export default function HomePage() {
   return (
@@ -65,7 +62,7 @@ function Hero() {
           <div>
             <span className="inline-flex items-center gap-2 rounded-full bg-white/10 px-3 py-1.5 text-[14px] text-white backdrop-blur">
               <span className="h-2 w-2 rounded-full bg-brand" aria-hidden />
-              Free to start. 2% only on online payments.
+              Free to start. Cash sales are always free.
             </span>
             <h1 className="mt-6 text-[40px] sm:mt-8 leading-[1.02] font-normal tracking-[-0.03em] text-balance text-white sm:text-[64px] lg:text-[72px]">
               Make ordering <Highlight>easy</Highlight> for your customers and your kitchen
@@ -82,9 +79,6 @@ function Hero() {
                 See how it works
               </ButtonLink>
             </div>
-            <p className="mt-4 hidden text-[14px] text-white/70 sm:block">
-              Cash sales are always free.
-            </p>
           </div>
           <div className="relative hidden h-[360px] lg:block" aria-hidden>
             <OrderChip
@@ -296,7 +290,6 @@ function Stat({ label, figure, note }: { label: string; figure: string; note: st
 }
 
 function Pricing() {
-  const share = formatCedis(bpsOf(EXAMPLE_ORDER, ONLINE_FEE_BPS));
   return (
     <section className="bg-night py-20 sm:py-28">
       <Container>
@@ -306,14 +299,14 @@ function Pricing() {
           intro="You don’t pay to join or to keep using Brixx. We earn a small share when money comes to you through it."
         />
         <div className="reveal mt-14 grid gap-10 sm:grid-cols-3">
-          <Stat label="Every month" figure="GH₵0" note="To sign up and to keep going" />
-          <Stat label="Online payments" figure="2%" note="Only when a customer pays you online" />
-          <Stat label="Cash sales" figure="0%" note="Cash at the counter is always free" />
+          <Stat label="Signing up" figure="GH₵0" note="Set up your counter and store free" />
+          <Stat label="Every month" figure="GH₵0" note="No subscription to keep going" />
+          <Stat label="Cash sales" figure="GH₵0" note="Cash at the counter is always free" />
         </div>
         <div className="reveal mt-14 flex flex-col gap-6 rounded-[24px] bg-night-card p-6 sm:flex-row sm:items-center sm:justify-between sm:p-8">
           <p className="max-w-2xl text-[18px] leading-relaxed text-on-night">
-            On a {formatCedis(EXAMPLE_ORDER)} order paid through your store, Brixx’s share is{' '}
-            {share}. On a {formatCedis(EXAMPLE_ORDER)} cash order, it’s nothing.
+            You pay a small fee only when a customer pays you online, through your store or a
+            payment link.
             <span className="mt-2 block text-[14px] text-night-muted">
               Moolre charges its own fee on mobile money payments.
             </span>

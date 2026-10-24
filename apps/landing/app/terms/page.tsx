@@ -2,6 +2,7 @@ import type { Metadata } from 'next';
 import Link from 'next/link';
 
 import { LegalPage } from '../../components/legal';
+import { ONLINE_FEE_WORDS } from '../../lib/site';
 
 export const metadata: Metadata = {
   title: 'Terms',
@@ -37,9 +38,9 @@ export default function TermsPage() {
 
       <h2>Our fee</h2>
       <p>
-        Brixx is free to start and has no monthly fee. Our share is 2% of each payment a customer
-        makes to you online through Brixx, by payment link or through your online store. Cash sales
-        are free. Moolre charges its own fee on mobile money payments.
+        Brixx is free to start and has no monthly fee. Our share is {ONLINE_FEE_WORDS} of each
+        payment a customer makes to you online through Brixx, by payment link or through your online
+        store. Cash sales are free. Moolre charges its own fee on mobile money payments.
       </p>
 
       <h2>Your data</h2>

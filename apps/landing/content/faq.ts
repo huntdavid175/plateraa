@@ -8,7 +8,7 @@ export const HOME_FAQ: Question[] = [
   },
   {
     q: 'How much does Brixx cost?',
-    a: 'It’s free to start and there’s no monthly fee. When a customer pays you online through Brixx, by payment link or through your online store, Brixx’s share is 2% of that payment. Cash sales are free. Moolre charges its own fee on mobile money payments.',
+    a: 'It’s free to start and there’s no monthly fee. When a customer pays you online through Brixx, by payment link or through your online store, Brixx takes a small fee from that payment. Cash sales are free. Moolre charges its own fee on mobile money payments.',
   },
   {
     q: 'What do I need to get started?',
@@ -43,7 +43,7 @@ export const PRICING_FAQ: Question[] = [
   },
   {
     q: 'Does Moolre charge a fee as well?',
-    a: 'Yes. Moolre charges its own fee on each mobile money payment it processes. That fee is Moolre’s and is separate from Brixx’s 2%.',
+    a: 'Yes. Moolre charges its own fee on each mobile money payment it processes. That fee is Moolre’s and is separate from Brixx’s fee.',
   },
   {
     q: 'Do I need a Moolre account?',

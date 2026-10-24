@@ -1,18 +1,16 @@
-import { bpsOf, formatCedis, pesewas } from '@brixx/shared';
-import { Check } from 'lucide-react';
+import { Check, Minus } from 'lucide-react';
 import type { Metadata } from 'next';
 
 import { Closing } from '../../components/closing';
 import { Faq } from '../../components/faq';
-import { FeeCalculator } from '../../components/fee-calculator';
 import { ButtonLink, Container, Eyebrow, SectionHeading, Highlight } from '../../components/ui';
 import { PRICING_FAQ } from '../../content/faq';
-import { ONLINE_FEE_BPS, SIGN_UP_URL } from '../../lib/site';
+import { SIGN_UP_URL } from '../../lib/site';
 
 export const metadata: Metadata = {
-  title: 'Pricing: free to start, 2% only on online payments',
+  title: 'Pricing: free to start, pay only when you get paid',
   description:
-    'Brixx has no monthly fee. Cash sales are free, and Brixx’s share is 2% only when a customer pays you online. See what you’d pay.',
+    'Brixx has no monthly fee and cash sales are free. You pay a small fee only when a customer pays you online.',
   alternates: { canonical: '/pricing' },
 };
 
@@ -26,7 +24,17 @@ const INCLUDED = [
   'Help from our team while you set up',
 ];
 
-const EXAMPLE = pesewas(5000);
+/** What never costs anything, and the only two ways a fee applies. */
+const FREE = [
+  'Signing up and setting up',
+  'Every cash sale at the counter',
+  'The tablet app, the dashboard and your staff',
+  'Your online store and store link',
+];
+const FEE = [
+  'A customer pays at checkout on your online store',
+  'A customer pays a payment link you texted them',
+];
 
 export default function PricingPage() {
   return (
@@ -38,8 +46,8 @@ export default function PricingPage() {
             <Highlight soft>Free</Highlight> to start. You pay only when you get paid.
           </h1>
           <p className="mx-auto mt-6 max-w-2xl text-[18px] leading-relaxed text-muted">
-            One plan with everything in it. Brixx’s share is 2% of the money customers pay you
-            online, and cash sales cost nothing.
+            One plan with everything in it. Cash sales cost nothing, and you pay a small fee only on
+            money customers pay you online.
           </p>
         </Container>
       </section>
@@ -60,7 +68,7 @@ export default function PricingPage() {
               <dl className="mt-8 space-y-4 border-t border-night-line pt-6 text-[17px]">
                 <div className="flex justify-between gap-4">
                   <dt className="text-night-muted">Online payments</dt>
-                  <dd className="font-medium">2% each</dd>
+                  <dd className="font-medium">Small fee</dd>
                 </div>
                 <div className="flex justify-between gap-4">
                   <dt className="text-night-muted">Cash sales</dt>
@@ -98,12 +106,42 @@ export default function PricingPage() {
       </section>
 
       <section className="reveal bg-cream py-20 sm:py-28">
-        <Container className="grid gap-12 lg:grid-cols-2 lg:items-center">
+        <Container>
           <SectionHeading
-            title="See what you’d pay"
-            intro={`Type what customers pay you online in a month. On a ${formatCedis(EXAMPLE)} order paid by mobile money, Brixx’s share is ${formatCedis(bpsOf(EXAMPLE, ONLINE_FEE_BPS))}.`}
+            title="When you pay, and when you don’t"
+            intro="Most of what you do with Brixx costs nothing. The fee comes out of a payment only when a customer pays you online."
           />
-          <FeeCalculator />
+          <div className="mt-12 grid gap-5 md:grid-cols-2">
+            <div className="rounded-[24px] bg-white p-8">
+              <h3 className="text-[22px] tracking-[-0.01em]">Always free</h3>
+              <ul className="mt-6 space-y-4">
+                {FREE.map((item) => (
+                  <li key={item} className="flex items-start gap-3 text-[17px]">
+                    <span className="mt-0.5 grid h-6 w-6 shrink-0 place-items-center rounded-full bg-brand-tint text-brand-strong">
+                      <Check size={15} strokeWidth={2.25} aria-hidden />
+                    </span>
+                    {item}
+                  </li>
+                ))}
+              </ul>
+            </div>
+            <div className="rounded-[24px] bg-night p-8 text-on-night">
+              <h3 className="text-[22px] tracking-[-0.01em]">A small fee, only when</h3>
+              <ul className="mt-6 space-y-4">
+                {FEE.map((item) => (
+                  <li key={item} className="flex items-start gap-3 text-[17px]">
+                    <span className="mt-0.5 grid h-6 w-6 shrink-0 place-items-center rounded-full bg-night-card text-brand">
+                      <Minus size={15} strokeWidth={2.25} aria-hidden />
+                    </span>
+                    {item}
+                  </li>
+                ))}
+              </ul>
+              <p className="mt-8 border-t border-night-line pt-5 text-[15px] text-night-muted">
+                Moolre charges its own fee on mobile money payments, separate from Brixx’s.
+              </p>
+            </div>
+          </div>
         </Container>
       </section>
 
@@ -122,7 +160,7 @@ export default function PricingPage() {
               },
               {
                 title: 'Your customers stay yours',
-                body: 'Your store is yours: your menu, your prices and your customers, with a flat 2% on online payments.',
+                body: 'Your store is yours: your menu, your prices and your customers. Their orders come straight to you.',
               },
             ].map((item) => (
               <li key={item.title} className="rounded-[24px] bg-cream p-8">

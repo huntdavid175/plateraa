@@ -69,7 +69,8 @@ export default function RootLayout({ children }: { children: ReactNode }) {
                   '@type': 'Offer',
                   price: '0',
                   priceCurrency: 'GHS',
-                  description: 'Free to start. 2% of each online payment; cash sales are free.',
+                  description:
+                    'Free to start. A small fee only on online payments; cash sales are free.',
                 },
               },
             ],

@@ -15,7 +15,7 @@
 
 **Product type:** SaaS (tablet app + web dashboard + hosted online store).
 
-**Business model:** Free to start and free to use. Brixx takes 2% only on money a customer pays online through Brixx (payment links and the online store). Cash sales are free. Moolre's own transaction fee is separate. (User decision, 15 Oct 2026; replaces the "prepaid 30-day pass" plan in plan.md R2 for marketing purposes.)
+**Business model:** Free to start and free to use. Brixx takes 2% only on money a customer pays online through Brixx (payment links and the online store). Cash sales are free. Moolre's own transaction fee is separate. (User decision, 15 Oct 2026; replaces the "prepaid 30-day pass" plan in plan.md R2 for marketing purposes.) **Public copy never names the rate** (user decision, 24 Oct 2026): say "a small fee only when a customer pays you online"; only the Terms state 2%.
 
 ## Target Audience
 
@@ -74,7 +74,7 @@
 - Works offline: orders keep going when the Wi-Fi or hotspot drops and sync later.
 - Runs on the vendor's own budget Android tablet; no special hardware to buy.
 - Mobile money goes straight into the vendor's own Moolre account; Brixx never holds their money.
-- One store link for WhatsApp and Instagram, with no commission per order beyond 2% on online payments.
+- One store link for WhatsApp and Instagram, with only a small fee when a customer pays online.
 - One inbox for counter, phone and online orders.
 - Built in Ghana, for cedis, MoMo and how food vendors actually work.
 
@@ -88,7 +88,7 @@
 
 | Objection                            | Response                                                                                               |
 | ------------------------------------ | ------------------------------------------------------------------------------------------------------ |
-| "It will cost me money every month." | No monthly fee. Cash sales are free. You pay 2% only when a customer pays you online through Brixx.    |
+| "It will cost me money every month." | No monthly fee. Cash sales are free. You pay a small fee only when a customer pays you online.         |
 | "Our internet is not reliable."      | The tablet keeps taking orders offline and catches up when the connection is back.                     |
 | "My staff won't manage it."          | Each staff member has a PIN; order entry is a few taps; we help set it up.                             |
 | "Will you hold my money?"            | No. Mobile money goes straight into your own Moolre account. We never touch it.                        |
@@ -137,7 +137,7 @@
 | ----------------------------- | -------------------------------------------------- |
 | Works offline                 | Offline-first tablet app; orders sync later        |
 | Your money stays yours        | Payments go to the vendor's own Moolre account     |
-| Free until you're paid online | 2% only on online payments; cash free              |
+| Free until you're paid online | Small fee only on online payments; cash free       |
 | One place for every order     | Counter, phone and online store orders in one list |
 
 ## Goals

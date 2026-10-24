@@ -41,7 +41,7 @@ export default async function OpengraphImage() {
             Easy ordering for your customers and your kitchen
           </div>
           <div style={{ fontSize: 30, marginTop: 28, opacity: 0.8 }}>
-            Free to start. 2% only on online payments.
+            Free to start. Cash sales are always free.
           </div>
         </div>
       </div>
