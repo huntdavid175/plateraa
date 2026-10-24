@@ -40,7 +40,7 @@ export function SignUpPage() {
     <JoinLayout
       stage={1}
       title="Create your account"
-      subtitle="This login is for the owner. Your staff sign in on the tablet with their own PIN."
+      subtitle="Free to start. Next, tell us about your business and we’ll call you to set it up."
     >
       <form
         className="flex flex-col gap-4"
