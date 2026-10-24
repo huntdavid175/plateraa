@@ -1,12 +1,13 @@
 /**
  * Brixx's website settings in one place.
  *
- * The dashboard isn't deployed yet (user decision, 13 Sep), so its address defaults to the laptop's
- * dev server. Set NEXT_PUBLIC_DASHBOARD_URL when it goes live, and NEXT_PUBLIC_SITE_URL once the
+ * The dashboard is live on Vercel (24 Oct); NEXT_PUBLIC_DASHBOARD_URL overrides it (for example
+ * `http://localhost:5173` to try the dashboard on the laptop). Set NEXT_PUBLIC_SITE_URL once the
  * domain is set up.
  */
 export const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL ?? 'https://brixx.com';
-const DASHBOARD_URL = process.env.NEXT_PUBLIC_DASHBOARD_URL ?? 'http://localhost:5173';
+const DASHBOARD_URL =
+  process.env.NEXT_PUBLIC_DASHBOARD_URL ?? 'https://brixxrestaurantdashboard.vercel.app';
 
 export const SIGN_UP_URL = `${DASHBOARD_URL}/sign-up`;
 export const SIGN_IN_URL = `${DASHBOARD_URL}/sign-in`;

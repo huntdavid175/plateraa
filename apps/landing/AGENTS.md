@@ -27,7 +27,7 @@ Brixx's own website, for selling Brixx to vendors. It's kept apart from the stor
 ## How it works
 
 - `lib/site.ts` holds the settings:
-  - the dashboard's address (`NEXT_PUBLIC_DASHBOARD_URL`; the laptop's `http://localhost:5173` until it's deployed), which builds the sign-up and log-in links;
+  - the dashboard's address (`NEXT_PUBLIC_DASHBOARD_URL`; `https://brixxrestaurantdashboard.vercel.app` by default since 24 Oct), which builds the sign-up and log-in links;
   - the site's own address (`NEXT_PUBLIC_SITE_URL`, `https://brixx.com` by default);
   - the contact details (`CONTACT`, still empty on 15 Oct). Empty ones are left off the footer and Contact page.
 - SEO:
