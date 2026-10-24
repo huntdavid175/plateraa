@@ -10,6 +10,8 @@ export interface Photo {
   alt: string;
   /** Where to keep the subject when the frame crops the photo (CSS object-position). */
   position?: string;
+  /** A smaller crop for phones, framed on the subject, with its width and height in pixels. */
+  phone?: { src: string; width: number; height: number };
   by: string;
   byUrl: string;
 }
@@ -19,6 +21,7 @@ export const PHOTOS = {
     src: '/photos/home-hero.webp',
     alt: 'A food vendor in an apron checks his phone beside the grill at his stall',
     position: '70% 35%',
+    phone: { src: '/photos/home-hero-phone.webp', width: 828, height: 652 },
     by: 'Ali Mkumbwa',
     byUrl: 'https://unsplash.com/@mkumbwajr',
   },

@@ -106,12 +106,15 @@ export function PhotoSlot({
   image,
   priority = false,
   className,
+  imageClassName,
   children,
 }: {
   photo: string;
   image?: Photo;
   priority?: boolean;
   className?: string;
+  /** Overrides how the photo sits in the frame, e.g. a phone crop pinned to the top. */
+  imageClassName?: string;
   children?: ReactNode;
 }) {
   return (
@@ -122,16 +125,20 @@ export function PhotoSlot({
       )}
     >
       {image ? (
-        // A plain <img>: the photos are sized and compressed before they're added.
-        <img
-          src={image.src}
-          alt={image.alt}
-          loading={priority ? 'eager' : 'lazy'}
-          fetchPriority={priority ? 'high' : 'auto'}
-          decoding="async"
-          style={image.position ? { objectPosition: image.position } : undefined}
-          className="absolute inset-0 h-full w-full object-cover"
-        />
+        // A plain <img>: the photos are sized and compressed before they're added. A photo with
+        // a phone crop sends that file to phones instead (below Tailwind's `sm`).
+        <picture>
+          {image.phone && <source media="(max-width: 639px)" srcSet={image.phone.src} />}
+          <img
+            src={image.src}
+            alt={image.alt}
+            loading={priority ? 'eager' : 'lazy'}
+            fetchPriority={priority ? 'high' : 'auto'}
+            decoding="async"
+            style={image.position ? { objectPosition: image.position } : undefined}
+            className={cx('absolute inset-0 h-full w-full object-cover', imageClassName)}
+          />
+        </picture>
       ) : (
         process.env.NODE_ENV === 'development' && (
           <span className="absolute top-3 right-3 rounded-full bg-black/40 px-2 py-1 text-[11px] text-white/70">

@@ -55,24 +55,26 @@ function Hero() {
         photo="a vendor at a busy counter, tablet beside them"
         image={PHOTOS.homeHero}
         priority
-        className="sm:rounded-br-[64px] sm:rounded-bl-[24px]"
+        // Below a laptop the photo sits above the words, its face clear, and fades into the dark.
+        className="bg-night max-lg:bg-none sm:rounded-br-[64px] sm:rounded-bl-[24px]"
+        imageClassName="max-lg:inset-auto max-lg:top-0 max-lg:left-0 max-lg:h-auto max-lg:aspect-[828/652]"
       >
-        <div className="absolute inset-0 bg-[linear-gradient(90deg,rgba(21,17,14,0.88)_0%,rgba(21,17,14,0.55)_55%,rgba(21,17,14,0.2)_100%)]" />
-        <Container className="relative grid min-h-[640px] items-center gap-12 py-20 lg:min-h-[720px] lg:grid-cols-[1.25fr_1fr]">
+        <div className="absolute inset-x-0 top-0 aspect-[828/652] bg-[linear-gradient(180deg,rgba(21,17,14,0.3)_0%,rgba(21,17,14,0)_22%,rgba(21,17,14,0.1)_55%,var(--color-night)_100%)] lg:hidden" />
+        <div className="absolute inset-0 hidden bg-[linear-gradient(90deg,rgba(21,17,14,0.88)_0%,rgba(21,17,14,0.55)_55%,rgba(21,17,14,0.2)_100%)] lg:block" />
+        <Container className="relative grid items-center gap-12 pt-[64vw] pb-14 sm:pb-20 lg:min-h-[720px] lg:py-20 lg:grid-cols-[1.25fr_1fr]">
           <div>
             <span className="inline-flex items-center gap-2 rounded-full bg-white/10 px-3 py-1.5 text-[14px] text-white backdrop-blur">
               <span className="h-2 w-2 rounded-full bg-brand" aria-hidden />
               Free to start. 2% only on online payments.
             </span>
-            <h1 className="mt-8 text-[44px] leading-[1.02] font-normal tracking-[-0.03em] text-balance text-white sm:text-[64px] lg:text-[80px]">
+            <h1 className="mt-6 text-[40px] sm:mt-8 leading-[1.02] font-normal tracking-[-0.03em] text-balance text-white sm:text-[64px] lg:text-[80px]">
               Make ordering <Highlight>easy</Highlight> for your customers and your kitchen
             </h1>
-            <p className="mt-6 max-w-xl text-[18px] leading-relaxed text-white/85 sm:text-[20px]">
-              Customers order and pay from your own store link. Walk-ins, phone calls and online
-              orders land in one list on your tablet, so your staff handle every order from one
-              place. Made for restaurants, cafés, pizzerias, bars and hotels across Ghana.
+            <p className="mt-5 max-w-lg text-[18px] leading-relaxed text-white/85 sm:mt-6 sm:text-[20px]">
+              Customers order and pay from your store link. Every order lands in one list on your
+              tablet.
             </p>
-            <div className="mt-9 flex flex-wrap gap-3">
+            <div className="mt-8 flex flex-wrap gap-3 sm:mt-9">
               <ButtonLink href={SIGN_UP_URL} size="lg">
                 Create my free account
               </ButtonLink>
@@ -80,7 +82,9 @@ function Hero() {
                 See how it works
               </ButtonLink>
             </div>
-            <p className="mt-4 text-[14px] text-white/70">Cash sales are always free.</p>
+            <p className="mt-4 hidden text-[14px] text-white/70 sm:block">
+              Cash sales are always free.
+            </p>
           </div>
           <div className="relative hidden h-[360px] lg:block" aria-hidden>
             <OrderChip
@@ -111,7 +115,7 @@ function OrangeCard({
   children: ReactNode;
 }) {
   return (
-    <li className="relative flex min-h-[260px] flex-col sm:min-h-[340px] overflow-hidden rounded-[24px] bg-[linear-gradient(160deg,#ff7a3d_0%,var(--color-brand)_45%,var(--color-brand-deep)_100%)] p-6 text-center">
+    <li className="relative flex min-h-[300px] w-[82%] shrink-0 snap-start flex-col sm:w-auto sm:min-h-[340px] overflow-hidden rounded-[24px] bg-[linear-gradient(160deg,#ff7a3d_0%,var(--color-brand)_45%,var(--color-brand-deep)_100%)] p-6 text-center">
       {soon && (
         <span className="absolute top-4 right-4 rounded-full bg-ink px-3 py-1 text-[12px] font-medium text-white">
           {soon === true ? 'Coming soon' : soon}
@@ -132,7 +136,13 @@ function Everything() {
           title="Everything your counter needs, on the tablet you already own"
           intro="Brixx runs on an ordinary Android tablet. Staff sign in with their PIN and take orders in a few taps, and you can check on everything from anywhere."
         />
-        <ul className="mt-12 grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
+        {/* On a phone the cards are a row to swipe through, the next one peeking in, rather
+            than eight tall cards stacked down the page. */}
+        <ul
+          tabIndex={0}
+          aria-label="What Brixx does"
+          className="-mx-4 mt-12 flex snap-x snap-mandatory scroll-px-4 gap-4 overflow-x-auto px-4 pb-2 sm:mx-0 sm:grid sm:grid-cols-2 sm:gap-5 sm:overflow-visible sm:px-0 sm:pb-0 lg:grid-cols-4"
+        >
           <OrangeCard
             title="Omnichannel ordering"
             line="Orders from Bolt Food, Chowdeck and your own store, in one list."
@@ -212,7 +222,7 @@ function StoreStep({
 }) {
   return (
     <li>
-      <div className="relative flex h-48 items-center sm:h-64 justify-center overflow-hidden rounded-[24px] bg-white p-6">
+      <div className="relative flex h-36 items-center sm:h-64 justify-center overflow-hidden rounded-[24px] bg-white p-6">
         <span className="absolute top-5 left-6 text-[14px] font-medium text-brand-strong">{n}</span>
         {children}
       </div>
