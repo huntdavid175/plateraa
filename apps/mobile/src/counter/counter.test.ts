@@ -152,8 +152,11 @@ describe('taking orders at the counter', () => {
       code: 'LINK_ALREADY_OPEN',
     });
     expect(
-      linkWords({ status: 'FAILED', phone: '+233241234567', failure: 'Moolre said: no.' }, true),
-    ).toEqual({ text: "The payment link didn't go. Moolre said: no.", tone: 'red' });
+      linkWords(
+        { status: 'FAILED', phone: '+233241234567', failure: 'The payment service said: no.' },
+        true,
+      ),
+    ).toEqual({ text: "The payment link didn't go. The payment service said: no.", tone: 'red' });
     expect(phoneWords('+233501234567')).toBe('050 123 4567');
   });
 

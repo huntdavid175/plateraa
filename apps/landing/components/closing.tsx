@@ -11,7 +11,7 @@ const PHOTOGRAPHERS = [...new Map(Object.values(PHOTOS).map((p) => [p.byUrl, p])
 const PROMISES = [
   'Free to start, with nothing to pay each month',
   'Runs on the Android tablet you already have',
-  'Mobile money goes straight into your own Moolre account',
+  'Mobile money goes straight into your own payment account',
 ];
 
 /**

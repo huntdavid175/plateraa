@@ -22,7 +22,7 @@ import { PHOTOS } from '../../content/photos';
 export const metadata: Metadata = {
   title: 'Features: orders, online store, mobile money and reports',
   description:
-    'Take counter, phone and online orders on one Android tablet, get paid by mobile money into your own Moolre account, track the drawer and stock, and see profit every day.',
+    'Take counter, phone and online orders on one Android tablet, get paid by mobile money into your own payment account, track the drawer and stock, and see profit every day.',
   alternates: { canonical: '/features' },
 };
 
@@ -109,7 +109,7 @@ const FEATURES: Feature[] = [
     id: 'payments',
     short: 'Mobile money',
     title: 'Mobile money into your own account',
-    body: 'Send a customer a payment link by text from the tablet, or let them pay at checkout on your store. The money goes into your own Moolre merchant account, and the order moves on once Moolre confirms it.',
+    body: 'Send a customer a payment link by text from the tablet, or let them pay at checkout on your store. The money goes into your own payment account, and the order moves on once the payment is confirmed.',
     points: [
       'Payment links texted to the customer',
       'Cash and mobile money in the same records',
@@ -184,7 +184,7 @@ const GHANA = [
   },
   {
     title: 'Your money, your account',
-    body: 'Payments go to your own Moolre account. We never hold them.',
+    body: 'Payments go to your own payment account. We never hold them.',
   },
 ];
 

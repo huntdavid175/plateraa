@@ -433,13 +433,13 @@ function PaymentsPanel({ settings }: { settings: Settings }) {
       title="Payments"
       description={
         moolre.connected
-          ? 'Money paid online and by payment link goes straight into your own Moolre account.'
-          : 'Without a Moolre account, payment links can’t go out, so customers can only pay cash.'
+          ? 'Money paid online and by payment link goes straight into your own payment account.'
+          : 'Without a payment account, payment links can’t go out, so customers can only pay cash.'
       }
     >
       <PanelRows>
         <SettingRow
-          title="Moolre account"
+          title="Payment account"
           detail={
             moolre.connected ? (
               <Badge tone="success" size="sm">
@@ -478,7 +478,7 @@ function MoolreForm({ current, onClose }: { current: Settings['moolre']; onClose
     /^\d{6,20}$/.test(accountNumber.trim()) &&
     email.includes('@');
   const saving = useMutation({
-    meta: { ok: 'Moolre account saved' },
+    meta: { ok: 'Payment account saved' },
     mutationFn: () =>
       saveMoolre({
         apiUser: apiUser.trim(),
@@ -495,7 +495,7 @@ function MoolreForm({ current, onClose }: { current: Settings['moolre']; onClose
 
   return (
     <DialogContent
-      title="Your Moolre account"
+      title="Connect payment"
       description="Payment-link money goes straight into this account; it never passes through Brixx. Find these on app.moolre.com. Only the public key is needed, never the private one."
     >
       <form
@@ -521,7 +521,7 @@ function MoolreForm({ current, onClose }: { current: Settings['moolre']; onClose
           onChange={(event) => setPublicKey(event.target.value)}
         />
         <Input
-          label="Moolre account number"
+          label="Account number"
           inputMode="numeric"
           autoComplete="off"
           placeholder={current.accountEnding ? `Ends ${current.accountEnding}` : undefined}
@@ -536,11 +536,11 @@ function MoolreForm({ current, onClose }: { current: Settings['moolre']; onClose
         />
         {saving.isPending && (
           <p className="text-sm text-muted-foreground" role="status">
-            Asking Moolre whether it knows this account…
+            Checking the account…
           </p>
         )}
         {saving.error && (
-          <Alert tone="danger" title="Moolre didn’t accept it">
+          <Alert tone="danger" title="That account wasn’t accepted">
             {saving.error.message}
           </Alert>
         )}
@@ -565,7 +565,7 @@ function SetupGuidePanel() {
       <PanelRows>
         <SettingRow
           title="Go through setup again"
-          detail="A starter menu and its prices, staff PINs, Moolre and the tablet, one step at a time."
+          detail="A starter menu and its prices, staff PINs, payment and the tablet, one step at a time."
         >
           <Button
             variant="secondary"

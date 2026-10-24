@@ -84,7 +84,7 @@ export default function PricingPage() {
                   Create my free account
                 </ButtonLink>
                 <p className="mt-3 text-center text-[14px] text-night-muted">
-                  Moolre charges its own fee on mobile money payments.
+                  The payment provider charges its own fee on mobile money payments.
                 </p>
               </div>
             </div>
@@ -138,7 +138,8 @@ export default function PricingPage() {
                 ))}
               </ul>
               <p className="mt-8 border-t border-night-line pt-5 text-[15px] text-night-muted">
-                Moolre charges its own fee on mobile money payments, separate from Brixx’s.
+                The payment provider charges its own fee on mobile money payments, separate from
+                Brixx’s.
               </p>
             </div>
           </div>

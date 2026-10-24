@@ -6,7 +6,7 @@ import { cn as cx } from '@/lib/utils';
 const STAGES = [
   { title: 'Create your account', detail: 'Your name, email and a password.' },
   { title: 'Tell us about your business', detail: 'What you sell, where, and how to reach you.' },
-  { title: 'We call you to set up', detail: 'Your menu, Moolre and the tablet, together.' },
+  { title: 'We call you to set up', detail: 'Your menu, payments and the tablet, together.' },
 ] as const;
 
 export type JoinStage = 1 | 2 | 3;

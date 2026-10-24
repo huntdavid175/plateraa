@@ -117,10 +117,13 @@ describe('payment links from this tablet', () => {
   it("says why a link didn't go", () => {
     const failed = after(
       { orders: [mine], links: [link()] },
-      { orders: [mine], links: [link({ status: 'FAILED', failure: 'Moolre said: no.' })] },
+      {
+        orders: [mine],
+        links: [link({ status: 'FAILED', failure: 'The payment service said: no.' })],
+      },
     );
     expect(failed.alerts).toEqual([
-      expect.objectContaining({ detail: 'A12: Moolre said: no.', tone: 'problem' }),
+      expect.objectContaining({ detail: 'A12: The payment service said: no.', tone: 'problem' }),
     ]);
   });
 

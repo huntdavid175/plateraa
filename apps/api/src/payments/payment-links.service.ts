@@ -60,26 +60,26 @@ type Outcome = 'PAID' | 'PENDING' | 'FAILED' | 'EXPIRED' | 'UNKNOWN';
  */
 export function failureWords(error: unknown, stage: 'link' | 'text' = 'link'): string {
   if (!(error instanceof MoolreError)) return "The link couldn't be made. Send it again.";
-  const detail = `(Moolre ${error.code}: ${error.message.replace(/\.+$/, '')})`.slice(0, 120);
+  const detail = `(${error.code}: ${error.message.replace(/\.+$/, '')})`.slice(0, 120);
   switch (error.code) {
     case 'NOT_CONNECTED':
-      return "This business hasn't connected its Moolre account yet.";
+      return "This business hasn't connected payment yet.";
     case 'NOT_SET_UP':
     case 'SMS_NOT_SET_UP':
       return "Payment links aren't set up on the server yet.";
     case 'ASMS07':
-      return "The text couldn't go: the sender name isn't approved by Moolre yet.";
+      return "The text couldn't go: the sender name isn't approved yet.";
     case 'INP02':
-      return 'Moolre already has this link. Send a new one.';
+      return 'This link was already made. Send a new one.';
     case 'UNREACHABLE':
-      return "Moolre couldn't be reached. Send the link again.";
+      return "The payment service couldn't be reached. Send the link again.";
     default:
       if (error.code.startsWith('AIN')) {
         return stage === 'text'
-          ? `Moolre didn't accept Brixx's SMS key ${detail}.`
-          : `Moolre didn't accept this business's account details ${detail}.`;
+          ? `Brixx's text message key wasn't accepted ${detail}.`
+          : `This business's payment details weren't accepted ${detail}.`;
       }
-      return `Moolre said: ${error.message}`.slice(0, 160);
+      return `The payment service said: ${error.message}`.slice(0, 160);
   }
 }
 

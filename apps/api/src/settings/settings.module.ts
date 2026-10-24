@@ -236,18 +236,20 @@ export class SettingsService {
   ) {
     if (!this.env.SECRETS_KEY) {
       throw new ServiceUnavailableException(
-        "Saving Moolre accounts isn't set up on the server yet (SECRETS_KEY)",
+        "Saving payment accounts isn't set up on the server yet (SECRETS_KEY)",
       );
     }
     try {
       await this.moolre.paymentStatus(input, `BRIXX-CHECK-${ulid()}`);
     } catch (error) {
       if (error instanceof MoolreError && error.retryable) {
-        throw new BadGatewayException("Moolre couldn't be reached. Try again in a minute.");
+        throw new BadGatewayException(
+          "The payment service couldn't be reached. Try again in a minute.",
+        );
       }
       if (error instanceof MoolreError) {
         throw new BadRequestException(
-          `Moolre didn't accept these details: ${error.message} (${error.code}). Check them on app.moolre.com.`,
+          `These payment details weren't accepted: ${error.message} (${error.code}). Check them on app.moolre.com.`,
         );
       }
       throw error;

@@ -251,7 +251,7 @@ function RequestForm({ onSent }: { onSent: (business: string, phone: string) => 
 /** What the call covers, so the owner can have things ready. */
 const ON_THE_CALL = [
   'Your menu and prices, from a starter menu for your kind of business',
-  'Your Moolre account, so mobile money goes straight to you',
+  'Your payment account, so mobile money goes straight to you',
   'The Brixx app on your Android tablet, and PINs for your staff',
 ];
 

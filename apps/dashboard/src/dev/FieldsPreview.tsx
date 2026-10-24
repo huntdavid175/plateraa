@@ -13,7 +13,7 @@ export default function FieldsPreview() {
   useEffect(() => {
     toast.ok('Item saved');
     toast.problem(
-      'Moolre didn’t accept that account. Check the public key and the account number, then try again.',
+      'That payment account wasn’t accepted. Check the public key and the account number, then try again.',
     );
   }, []);
   return (

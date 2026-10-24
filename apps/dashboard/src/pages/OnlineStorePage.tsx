@@ -445,19 +445,19 @@ function PaymentsTile({
       {store.moolreConnected ? (
         <>
           <Badge tone="success" icon={<Check size={12} aria-hidden />}>
-            Moolre connected
+            Payment connected
           </Badge>
           <p className="text-xs text-muted-foreground">
-            Paying online goes straight into your own Moolre account.
+            Paying online goes straight into your own payment account.
           </p>
         </>
       ) : (
         <>
-          <Badge tone="warning">Moolre not connected</Badge>
+          <Badge tone="warning">Payment not connected</Badge>
           <p className="text-xs text-muted-foreground">
             {cashOnPickup
-              ? `Until ${who} Moolre account, customers can only pay cash when they collect.`
-              : `Until ${who} Moolre account, nobody can pay, so the store can’t take orders.`}
+              ? `Until ${who} payment account, customers can only pay cash when they collect.`
+              : `Until ${who} payment account, nobody can pay, so the store can’t take orders.`}
           </p>
         </>
       )}

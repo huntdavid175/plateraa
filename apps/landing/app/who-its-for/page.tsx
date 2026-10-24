@@ -22,7 +22,7 @@ export const metadata: Metadata = {
 const ROLES = [
   {
     role: 'Owners',
-    gets: 'Your own store link for customers, every order in one list, and today’s sales on your phone wherever you are. Mobile money goes straight into your own Moolre account.',
+    gets: 'Your own store link for customers, every order in one list, and today’s sales on your phone wherever you are. Mobile money goes straight into your own payment account.',
   },
   {
     role: 'Managers',
@@ -45,7 +45,7 @@ const GOOD_FIT = [
 const NOT_YET = [
   'You need card machines or table plans for a large restaurant',
   'Your business is outside Ghana',
-  'You don’t want a Moolre merchant account for mobile money',
+  'You don’t want a payment account for mobile money',
 ];
 
 const BELIEFS = [
@@ -59,7 +59,7 @@ const BELIEFS = [
   },
   {
     title: 'Your money stays yours',
-    body: 'Customer payments go into your own Moolre account. Brixx keeps the record, and you keep the money.',
+    body: 'Customer payments go into your own payment account. Brixx keeps the record, and you keep the money.',
   },
 ];
 

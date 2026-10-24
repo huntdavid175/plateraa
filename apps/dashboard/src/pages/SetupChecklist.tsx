@@ -49,7 +49,7 @@ export function SetupChecklist({
     },
     {
       start: 'moolre',
-      title: 'Connect Moolre',
+      title: 'Connect payment',
       detail: 'So mobile money goes straight to you.',
       done: settings.data.moolre.connected,
     },

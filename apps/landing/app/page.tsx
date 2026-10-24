@@ -161,7 +161,7 @@ function Everything() {
           <OrangeCard title="Your own online store" line="One link for WhatsApp and Instagram.">
             <StoreLinkNote className="text-left" />
           </OrangeCard>
-          <OrangeCard title="Mobile money" line="Paid straight into your own Moolre account.">
+          <OrangeCard title="Mobile money" line="Paid straight into your own payment account.">
             <PaidNote amount="GH₵60.00" className="text-left" />
           </OrangeCard>
           <OrangeCard title="Profit every day" line="Sales and expenses, on your phone.">
@@ -269,7 +269,7 @@ function OnlineStore() {
           <StoreStep
             n="03"
             title="They pay you"
-            body="Mobile money goes into your own Moolre account. Cash on pickup is your choice."
+            body="Mobile money goes into your own payment account. Cash on pickup is your choice."
           >
             <PaidNote amount="GH₵120.00" />
           </StoreStep>
@@ -331,7 +331,7 @@ function Receipt() {
             </p>
           </div>
           <p className="mt-6 text-[13px] text-muted">
-            Moolre charges its own fee on mobile money payments.
+            The payment provider charges its own fee on mobile money payments.
           </p>
           <p className="mt-5 text-center">
             <Script className="text-[28px] text-brand-strong">Thank you</Script>
@@ -369,7 +369,7 @@ const STEPS = [
     body: 'Fast food, café, juice bar and more. Then set your prices.',
   },
   {
-    title: 'Connect your Moolre account',
+    title: 'Connect payment',
     body: 'So mobile money lands with you. We check it works.',
   },
   {
@@ -435,11 +435,11 @@ function YourMoney() {
           <div className="p-8 sm:p-14">
             <SectionHeading
               title="Your money goes straight to you"
-              intro="Every mobile money payment lands in your own Moolre merchant account. Brixx keeps the record so your figures add up, and never holds the money itself."
+              intro="Every mobile money payment lands in your own payment account. Brixx keeps the record so your figures add up, and never holds the money itself."
             />
             <ul className="mt-8 space-y-3 text-[16px] text-ink">
-              <li>Your account, opened in your name with Moolre</li>
-              <li>A payment counts only once Moolre confirms it</li>
+              <li>Your payment account, opened in your name</li>
+              <li>A payment counts only once it’s confirmed</li>
               <li>Refunds and payouts recorded by you or your manager</li>
             </ul>
           </div>

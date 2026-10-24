@@ -129,7 +129,7 @@ Toast and Shopify move gently; so do we.
 - Follow `.agents/product-marketing.md` (audience, objections, words to use and avoid) and the copywriting skill's rules: no "not X, it's Y", no negation lists, no em dashes in headings, nothing invented.
 - **Say "tablet"** for the counter device and **"GH₵"** for money.
 - Name foods and places the vendor knows (jollof, waakye, chop bar, MoMo) without caricature.
-- **Pricing words:** "Free to start. You pay a small fee only when a customer pays you online. Cash sales are free." Always add that Moolre charges its own fee. **Never name the rate** outside the Terms (user decision, 24 Oct: competitors in Africa don't publish theirs). The Terms state it, from `ONLINE_FEE_WORDS` in `lib/site.ts`.
+- **Pricing words:** "Free to start. You pay a small fee only when a customer pays you online. Cash sales are free." Always add that the payment provider charges its own fee. **Say "payment account", not Moolre** (user request, 24 Oct); only the Terms, the Privacy page and the footer's one-line disclosure name Moolre, since they must say who processes payments. **Never name the rate** outside the Terms (user decision, 24 Oct: competitors in Africa don't publish theirs). The Terms state it, from `ONLINE_FEE_WORDS` in `lib/site.ts`.
 - **No made-up proof:** no customer counts, logos, testimonials or star ratings until they're real and approved.
 
 ## SEO

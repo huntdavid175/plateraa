@@ -550,17 +550,17 @@ function MoolreStep({ onNext }: { onNext: () => void }) {
   return (
     <>
       <Heading
-        title="Connect Moolre"
-        detail="Payment-link money goes straight into your own Moolre account. Brixx never holds your money."
+        title="Connect payment"
+        detail="Money from payment links and your online store goes straight into your own payment account. Brixx never holds your money."
       />
       {state === 'connected' ? (
         <Alert tone="success" title="Connected">
-          Payments land in the Moolre account ending {settings.data?.moolre.accountEnding}.
+          Payments land in the account ending {settings.data?.moolre.accountEnding}.
         </Alert>
       ) : (
         <div className="flex flex-col gap-4">
           <Input
-            label="Moolre username"
+            label="Username"
             autoComplete="off"
             value={apiUser}
             onChange={(event) => setApiUser(event.target.value)}
@@ -574,7 +574,7 @@ function MoolreStep({ onNext }: { onNext: () => void }) {
             onChange={(event) => setPublicKey(event.target.value)}
           />
           <Input
-            label="Moolre account number"
+            label="Account number"
             inputMode="numeric"
             autoComplete="off"
             value={accountNumber}
@@ -598,7 +598,7 @@ function MoolreStep({ onNext }: { onNext: () => void }) {
             loading={connecting.isPending}
             onClick={() => connecting.mutate()}
           >
-            {connecting.isPending ? 'Checking with Moolre…' : 'Test connection'}
+            {connecting.isPending ? 'Checking the account…' : 'Test connection'}
           </Button>
         </div>
       )}
@@ -608,7 +608,7 @@ function MoolreStep({ onNext }: { onNext: () => void }) {
         note={
           connected
             ? undefined
-            : 'You can connect Moolre later in Settings. Until then, phone orders can’t be paid.'
+            : 'You can connect payment later in Settings. Until then, phone orders can’t be paid.'
         }
       />
     </>
