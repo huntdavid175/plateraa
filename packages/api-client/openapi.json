@@ -2352,11 +2352,38 @@
               "FOOD_TRUCK",
               "OTHER"
             ]
+          },
+          "phone": {
+            "type": "string"
+          },
+          "area": {
+            "type": "string",
+            "minLength": 2,
+            "maxLength": 80
+          },
+          "orderWays": {
+            "minItems": 1,
+            "maxItems": 6,
+            "type": "array",
+            "items": {
+              "type": "string",
+              "enum": [
+                "WALK_INS",
+                "PHONE_CALLS",
+                "WHATSAPP",
+                "INSTAGRAM",
+                "BOLT_FOOD",
+                "CHOWDECK"
+              ]
+            }
           }
         },
         "required": [
           "name",
-          "vendorType"
+          "vendorType",
+          "phone",
+          "area",
+          "orderWays"
         ]
       },
       "BusinessCreatedDto_Output": {
@@ -2402,6 +2429,14 @@
               "STAFF",
               "RIDER"
             ]
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "ACTIVE",
+              "SUSPENDED",
+              "PENDING"
+            ]
           }
         },
         "required": [
@@ -2409,7 +2444,8 @@
           "name",
           "slug",
           "staffId",
-          "role"
+          "role",
+          "status"
         ],
         "additionalProperties": false
       },

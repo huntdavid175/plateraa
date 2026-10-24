@@ -2,12 +2,23 @@ import type {
   ExpenseCategory,
   OrderSource,
   OrderStatus,
+  OrderWay,
   OrderType,
   PaymentLinkStatus,
   PaymentMethod,
   Role,
   VendorType,
 } from '@brixx/shared';
+
+/** How a business takes orders before Brixx, asked when it requests to join. */
+export const ORDER_WAY_WORDS: Record<OrderWay, string> = {
+  WALK_INS: 'Walk-ins at the counter',
+  PHONE_CALLS: 'Phone calls',
+  WHATSAPP: 'WhatsApp',
+  INSTAGRAM: 'Instagram',
+  BOLT_FOOD: 'Bolt Food',
+  CHOWDECK: 'Chowdeck',
+};
 
 export const VENDOR_TYPE_WORDS: Record<VendorType, string> = {
   CHOP_BAR: 'Chop bar',

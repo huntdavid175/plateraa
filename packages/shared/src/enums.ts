@@ -1,7 +1,22 @@
 // Value lists shared by the database schema and every client, so they can never drift apart.
 
-export const TENANT_STATUSES = ['ACTIVE', 'SUSPENDED'] as const;
+/**
+ * PENDING: a business that has asked to join (24 Oct, user decision). Nothing works for it, not
+ * the dashboard, the tablet or the store, until Brixx approves it and it becomes ACTIVE.
+ */
+export const TENANT_STATUSES = ['ACTIVE', 'SUSPENDED', 'PENDING'] as const;
 export type TenantStatus = (typeof TENANT_STATUSES)[number];
+
+/** How a business takes orders before Brixx, asked when it requests to join. */
+export const ORDER_WAYS = [
+  'WALK_INS',
+  'PHONE_CALLS',
+  'WHATSAPP',
+  'INSTAGRAM',
+  'BOLT_FOOD',
+  'CHOWDECK',
+] as const;
+export type OrderWay = (typeof ORDER_WAYS)[number];
 
 export const VENDOR_TYPES = [
   'CHOP_BAR',

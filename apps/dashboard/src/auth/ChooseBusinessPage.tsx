@@ -12,13 +12,17 @@ import { Centered } from '../ui/Page';
 /** One bordered group, a row per business. */
 const GROUP = 'flex flex-col divide-y overflow-hidden rounded-(--radius-surface) border bg-card';
 
-/** Picks the business to work on. With only one, it's picked straight away. */
+/**
+ * Picks the business to work on. With only one, it's picked straight away. A login with no open
+ * business goes to `/join`: to ask to join, or to see that its request is waiting.
+ */
 export function ChooseBusinessPage() {
   const { token, tenantId } = useSession();
   const businesses = useBusinesses();
   const slow = useSlow(businesses.isPending);
   const navigate = useNavigate();
-  const only = businesses.data?.length === 1 ? businesses.data[0] : undefined;
+  const open = businesses.data?.filter((business) => business.status === 'ACTIVE');
+  const only = open?.length === 1 ? open[0] : undefined;
 
   useEffect(() => {
     if (only && tenantId === null) {
@@ -28,6 +32,7 @@ export function ChooseBusinessPage() {
   }, [only, tenantId, navigate]);
 
   if (!token) return <Navigate to="/sign-in" replace />;
+  if (open?.length === 0) return <Navigate to="/join" replace />;
 
   const choose = (id: string) => {
     session.chooseBusiness(id);
@@ -65,22 +70,21 @@ export function ChooseBusinessPage() {
         </div>
       )}
 
-      {businesses.data?.length === 0 && (
-        <div className="flex flex-col gap-4">
-          <p className="text-text-secondary">
-            This login isn’t an owner or manager of any business yet. A manager is added by the
-            owner; an owner sets their business up here.
-          </p>
-          <Button size="lg" className="w-full" onClick={() => navigate('/setup')}>
-            Set up your business
-          </Button>
-        </div>
-      )}
-
       {businesses.data && businesses.data.length > 0 && (
         <ul className={GROUP}>
           {businesses.data.map((business) => {
             const current = business.tenantId === tenantId;
+            if (business.status !== 'ACTIVE') {
+              return (
+                <li
+                  key={business.tenantId}
+                  className="flex min-h-16 flex-col justify-center px-4 text-text-secondary"
+                >
+                  <span className="truncate font-medium">{business.name}</span>
+                  <span className="text-sm text-muted-foreground">Waiting for approval</span>
+                </li>
+              );
+            }
             return (
               <li key={business.tenantId}>
                 <button

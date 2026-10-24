@@ -29,6 +29,7 @@ import {
   sql,
   staffMembers,
   syncCommands,
+  tenants,
   withTenant,
 } from '@brixx/db';
 import { ROLES } from '@brixx/shared';
@@ -120,6 +121,11 @@ export class DevicesService {
    */
   async register(user: AuthUser, input: z.infer<typeof registerDeviceSchema>) {
     return withTenant(this.database.db, input.tenantId, async (tx) => {
+      // A business waiting for approval (or suspended) can't have tablets yet.
+      const [tenant] = await tx.select({ status: tenants.status }).from(tenants);
+      if (tenant?.status !== 'ACTIVE') {
+        throw new ForbiddenException('This business isn’t open on Brixx yet');
+      }
       const [staff] = await tx
         .select({ id: staffMembers.id, role: staffMembers.role })
         .from(staffMembers)

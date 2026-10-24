@@ -74,9 +74,13 @@ The web dashboard for owners and managers (plan.md §3.1). It uses:
     - Each dialog makes its id with `ulid()` when it opens, so pressing Save again after a lost reply records it once.
     - `refreshMoney()` reloads everything that shows money.
     - The refund and discount dialogs open from the order page; payouts open from the "Open drawers" card on Home.
-  - Sign-up and onboarding (`auth/SignUpPage`, `auth/SetupPage`, loaded lazily at `/setup`):
-    - the design's 7 steps, sized for a phone;
-    - the business is created at step 2;
+  - **Joining is a request Brixx approves** (24 Oct, user decision):
+    - `auth/JoinLayout`: the frame for sign-up, the request and "request received". The three stages (account, business, "we call you to set up") sit in a panel beside the form on a laptop and shrink to one line with bars on a phone.
+    - `auth/SignUpPage` (stage 1), then `/join` (`auth/JoinPage`, lazy): the business's name and kind, then its phone or WhatsApp number, area and how it takes orders today (`ORDER_WAYS`). Sending it saves the business as `PENDING`.
+    - A login whose businesses are all pending lands on "We've got your request" (stage 3); `ChooseBusinessPage` sends any login without an open business to `/join` and lists pending ones as "Waiting for approval".
+    - Once approved, Home shows the owner a setup checklist (`pages/SetupChecklist`: menu, their PIN, Moolre, a tablet), worked out from the business itself; it disappears when all four are done. Each opens its step of setup.
+  - Setup (`auth/SetupPage`, loaded lazily at `/setup`), for an approved business:
+    - starter menu, prices, PINs, Moolre, the tablet ("1 of 5"), opened at `state.start` (`menu`, `pins`, `moolre` or `tablet`);
     - the starter menu is saved in one call (`lib/onboarding.ts` turns a template and its prices into it);
     - PINs are never shown back;
     - Moolre uses the Settings check.

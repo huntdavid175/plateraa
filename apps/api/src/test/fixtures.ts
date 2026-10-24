@@ -1,10 +1,18 @@
 import type { NestExpressApplication } from '@nestjs/platform-express';
-import { categories, items, stockItems, withTenant } from '@brixx/db';
+import {
+  categories,
+  createDatabase,
+  items,
+  stockItems,
+  testDatabaseUrl,
+  withTenant,
+} from '@brixx/db';
 import { pesewas } from '@brixx/shared';
 import request from 'supertest';
 import { ulid } from 'ulid';
 import { loadEnv } from '../config/env';
 import { DATABASE, type DatabaseHandle } from '../database/database.module';
+import { approveBusiness } from '../identity/onboarding';
 
 type Server = ReturnType<NestExpressApplication['getHttpServer']>;
 
@@ -19,6 +27,23 @@ export interface Vendor {
 }
 
 export const OWNER_PIN = '482913';
+
+/** What the dashboard sends when a business asks to join. */
+export const BUSINESS_REQUEST = {
+  phone: '024 123 4567',
+  area: 'Osu, Accra',
+  orderWays: ['WALK_INS', 'PHONE_CALLS'],
+};
+
+/** Lets a new business in, as `pnpm admin:approve` does (it starts PENDING). */
+export async function approve(tenantId: string) {
+  const { db, pool } = createDatabase(testDatabaseUrl('pooled')!, { max: 1 });
+  try {
+    await approveBusiness(db, tenantId);
+  } finally {
+    await pool.end();
+  }
+}
 
 /** Signs up an owner, creates their business, sets their PIN and registers a tablet. */
 export async function setUpVendor(server: Server, name = 'Ama'): Promise<Vendor> {
@@ -36,9 +61,10 @@ export async function setUpVendor(server: Server, name = 'Ama'): Promise<Vendor>
   const business = await request(server)
     .post('/api/onboarding/business')
     .set('Authorization', `Bearer ${session}`)
-    .send({ name: `${name}'s Chop Bar`, vendorType: 'CHOP_BAR' })
+    .send({ name: `${name}'s Chop Bar`, vendorType: 'CHOP_BAR', ...BUSINESS_REQUEST })
     .expect(201);
   const { tenantId, staffId } = business.body as { tenantId: string; staffId: string };
+  await approve(tenantId);
 
   await request(server)
     .put(`/api/staff/${staffId}/pin`)

@@ -71,6 +71,13 @@ export const router = createBrowserRouter([
   { path: '/businesses', Component: ChooseBusinessPage, errorElement: <Crashed /> },
   { path: '/sign-up', Component: SignUpPage, errorElement: <Crashed /> },
   {
+    // Asking to join, after signing up, and "request received" while Brixx looks at it.
+    path: '/join',
+    lazy: later(async () => (await import('./auth/JoinPage')).default),
+    HydrateFallback: ScreenLoading,
+    errorElement: <Crashed />,
+  },
+  {
     // Only new owners need it, and it brings the menu templates.
     path: '/setup',
     lazy: later(async () => (await import('./auth/SetupPage')).default),

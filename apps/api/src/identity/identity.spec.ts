@@ -4,6 +4,7 @@ import { ulid } from 'ulid';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { loadEnv } from '../config/env';
 import { DATABASE, type DatabaseHandle } from '../database/database.module';
+import { approve, BUSINESS_REQUEST } from '../test/fixtures';
 import { createTestApp, hasDatabase, testEnv } from '../test/test-app';
 
 /**
@@ -16,7 +17,7 @@ describe.skipIf(!hasDatabase())('identity (against Neon)', () => {
   const createdTenants: string[] = [];
   const createdUsers: string[] = [];
 
-  async function signUpOwner(name: string) {
+  async function signUpOwner(name: string, approved = true) {
     const email = `owner-${ulid().toLowerCase()}@test.brixx.dev`;
     const res = await request(server)
       .post('/api/auth/sign-up/email')
@@ -30,9 +31,10 @@ describe.skipIf(!hasDatabase())('identity (against Neon)', () => {
     const business = await request(server)
       .post('/api/onboarding/business')
       .set('Authorization', `Bearer ${session}`)
-      .send({ name: `${name}'s Chop Bar`, vendorType: 'CHOP_BAR' })
+      .send({ name: `${name}'s Chop Bar`, vendorType: 'CHOP_BAR', ...BUSINESS_REQUEST })
       .expect(201);
     createdTenants.push(business.body.tenantId);
+    if (approved) await approve(business.body.tenantId);
     return {
       session: session as string,
       tenantId: business.body.tenantId as string,
@@ -78,6 +80,43 @@ describe.skipIf(!hasDatabase())('identity (against Neon)', () => {
     expect(res.body).toContainEqual(
       expect.objectContaining({ tenantId: owner.tenantId, role: 'OWNER' }),
     );
+  });
+
+  it('keeps a new request waiting until Brixx approves it', async () => {
+    const asking = await signUpOwner('Kojo', false);
+    const businesses = await request(server)
+      .get('/api/me/businesses')
+      .set('Authorization', `Bearer ${asking.session}`)
+      .expect(200);
+    expect(businesses.body).toEqual([
+      expect.objectContaining({ tenantId: asking.tenantId, status: 'PENDING' }),
+    ]);
+
+    // Nothing works for it yet: not the dashboard, and no tablet can be registered.
+    await dashboard(request(server).get('/api/me/context'), asking).expect(403);
+    await request(server)
+      .post('/api/devices/register')
+      .set('Authorization', `Bearer ${asking.session}`)
+      .send({ tenantId: asking.tenantId, name: 'Counter tablet' })
+      .expect((res) => expect(res.status).toBeGreaterThanOrEqual(400));
+
+    await approve(asking.tenantId);
+    await dashboard(request(server).get('/api/me/context'), asking).expect(200);
+  });
+
+  it('refuses a request without a Ghanaian phone number or a way of taking orders', async () => {
+    const asking = await signUpOwner('Esi');
+    for (const bad of [
+      { ...BUSINESS_REQUEST, phone: '12345' },
+      { ...BUSINESS_REQUEST, orderWays: [] },
+      { ...BUSINESS_REQUEST, area: '' },
+    ]) {
+      await request(server)
+        .post('/api/onboarding/business')
+        .set('Authorization', `Bearer ${asking.session}`)
+        .send({ name: 'Esi Waakye', vendorType: 'CHOP_BAR', ...bad })
+        .expect(400);
+    }
   });
 
   it('tells the dashboard who is signed in and what they may do', async () => {

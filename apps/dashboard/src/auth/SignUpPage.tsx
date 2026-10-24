@@ -8,9 +8,12 @@ import { PasswordField } from '@/components/arc/password-field/password-field';
 import { signUp } from '../lib/api';
 import { useSlow } from '../lib/query';
 import { session, useSession } from '../lib/session';
-import { Centered } from '../ui/Page';
+import { JoinLayout } from './JoinLayout';
 
-/** A new owner's email login. Setting up the business comes straight after (`/setup`). */
+/**
+ * A new owner's email login, the first of the three steps of joining. The request about the
+ * business comes straight after (`/join`).
+ */
 export function SignUpPage() {
   const { token } = useSession();
   const navigate = useNavigate();
@@ -26,7 +29,7 @@ export function SignUpPage() {
     onSuccess: (newToken) => {
       setCreated(true);
       session.signedIn(newToken);
-      navigate('/setup', { replace: true });
+      navigate('/join', { replace: true });
     },
   });
   const slow = useSlow(signingUp.isPending);
@@ -34,7 +37,11 @@ export function SignUpPage() {
   if (token && !created) return <Navigate to="/businesses" replace />;
 
   return (
-    <Centered title="Create your account" subtitle="For the owner. Staff use PINs on the tablet.">
+    <JoinLayout
+      stage={1}
+      title="Create your account"
+      subtitle="This login is for the owner. Your staff sign in on the tablet with their own PIN."
+    >
       <form
         className="flex flex-col gap-4"
         onSubmit={(event) => {
@@ -72,7 +79,7 @@ export function SignUpPage() {
           </Alert>
         )}
         <Button type="submit" size="lg" loading={signingUp.isPending} className="w-full">
-          Create account
+          Create my account
         </Button>
         {slow && (
           <p className="text-sm text-muted-foreground" role="status">
@@ -86,6 +93,6 @@ export function SignUpPage() {
           Sign in
         </Link>
       </p>
-    </Centered>
+    </JoinLayout>
   );
 }

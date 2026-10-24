@@ -19,6 +19,7 @@ import { ShellFrame } from '../shell/Shell';
 const ME = {
   businessName: 'Auntie Ama’s Kitchen',
   vendorType: 'CHOP_BAR',
+  staffId: 'me',
   displayName: 'Ama Owusu',
   role: 'OWNER',
   capabilities: [
@@ -524,6 +525,16 @@ function seed(tenant: string | null) {
       { id: 's4', name: 'Gas', unit: 'cylinder', onHand: 1, lowThreshold: 1, low: true },
     ],
   );
+  // /__preview?setup: a business just approved, so Home shows the setup checklist.
+  if (new URLSearchParams(window.location.search).has('setup')) {
+    queryClient.setQueryData(['menu', tenant], { ...MENU, items: [] });
+    queryClient.setQueryData(['tablets', tenant], []);
+    const settings = queryClient.getQueryData<{ moolre: object }>(['settings', tenant]);
+    queryClient.setQueryData(['settings', tenant], {
+      ...settings,
+      moolre: { connected: false, accountEnding: null, apiUser: null, email: null },
+    });
+  }
 }
 
 export default function Preview() {

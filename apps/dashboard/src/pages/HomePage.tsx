@@ -29,6 +29,7 @@ import { kindWords } from '../lib/words';
 import { useMe } from '../shell/Shell';
 import { Page } from '../ui/Page';
 import { PayoutDialog } from './money-dialogs';
+import { SetupChecklist } from './SetupChecklist';
 
 /** How many of the day's latest orders the feed shows. */
 const FEED_SIZE = 8;
@@ -90,6 +91,7 @@ export function HomePage() {
       actions={<DayPicker date={date} today={here} onPick={pick} />}
     >
       <div className="flex flex-col gap-4">
+        {me.role === 'OWNER' && <SetupChecklist staffId={me.staffId} tablets={tablets.data} />}
         <NeedsYou tablets={tablets.data} owed={owed.data} />
         {!seesMoney && (
           <Alert tone="info" title="Sales totals are hidden for you">

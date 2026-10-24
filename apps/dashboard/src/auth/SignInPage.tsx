@@ -65,7 +65,7 @@ export function SignInPage() {
       <p className="text-sm text-muted-foreground">
         New to Brixx?{' '}
         <Link to="/sign-up" className="font-medium text-accent-strong">
-          Set up your business
+          Create an account
         </Link>
       </p>
     </Centered>

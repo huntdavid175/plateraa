@@ -8,7 +8,7 @@ NestJS 11 (not 12: nestjs-zod 5.5 needs `@nestjs/common` ^11), CommonJS, built w
 - `instrument.ts`: Sentry, imported first in `main.ts`. It reports unexpected errors from requests (`SentryGlobalFilter` in `app.module.ts`) and from background work (`captureException` in `PaymentLinks` and the sync). Only where `SENTRY_DSN` is set (Render), and with no personal data.
 - `app.setup.ts`: CORS, compression (gzip on every response), Better Auth mounted at `/api/auth/*splat`, global `/api` prefix, Swagger UI at `/api/docs` in development.
 - `auth/`: Better Auth 1.7 for owner/manager email + password (Argon2id via `@node-rs/argon2`, bearer plugin).
-- `identity/`: business signup (creates tenant, location and an OWNER staff member), device registration (opaque token, stored hashed), staff, 6-digit PIN login → 15-minute PIN session (jose HS256, `SESSION_SIGNING_SECRET`), lockout via `pinLockout` from `@brixx/shared`.
+- `identity/`: business signup (creates tenant, location and an OWNER staff member; since 24 Oct it's a request: the tenant starts `PENDING` with its phone, area and `order_ways`, and `Directories` and device registration refuse it until `approveBusiness` makes it ACTIVE), device registration (opaque token, stored hashed), staff, 6-digit PIN login → 15-minute PIN session (jose HS256, `SESSION_SIGNING_SECRET`), lockout via `pinLockout` from `@brixx/shared`.
   - `staff.ts` and `devices.ts` also serve the dashboard's Staff page:
     - `GET /api/staff` returns the team, never PINs;
     - `PUT /api/staff/:id` changes a name, role or switched on/off, and `seesRevenue` (owner only). Ranks apply;
@@ -72,7 +72,7 @@ NestJS 11 (not 12: nestjs-zod 5.5 needs `@nestjs/common` ^11), CommonJS, built w
   - `GET /api/drawers` and `POST /api/drawers/:shiftId/payouts` (`payouts.record`): the open drawers, and cash paid out of one, which is booked as a `CASH_DRAWER` expense for today.
   - Expected cash shows only with `reports.revenue.view`. It uses `expectedCash()` from `sync/handlers/shifts.ts`.
   - The dashboard sends the refund or payout id, so a repeat records it only once.
-- `scripts/`: `seed:test-menu`, `settings:portion-counts` and `settings:moolre-account` stand in for dashboard setup until 3.1. They work on the `dev` branch (which Render also uses for now); `--production` targets the `production` branch, for setting up the pilot's vendors (`scripts/target.ts`).
+- `scripts/`: `admin:requests` lists the businesses waiting for approval and `admin:approve "<name or slug>"` lets one in (audited, `actorPlatform: 'admin'`), until the admin dashboard exists. `seed:test-menu`, `settings:portion-counts` and `settings:moolre-account` stand in for dashboard setup until 3.1. They work on the `dev` branch (which Render also uses for now); `--production` targets the `production` branch, for setting up the pilot's vendors (`scripts/target.ts`).
 
 ## Database access
 

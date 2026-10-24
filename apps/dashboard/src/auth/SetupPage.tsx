@@ -13,40 +13,44 @@ import { MoneyField, PlainField } from '@/components/app/money-field';
 import { Skeleton } from '@/components/ui/skeleton';
 import { fetchMenu } from '../lib/menu';
 import { parseAmount } from '../lib/money';
-import {
-  addStarterMenu,
-  createBusiness,
-  groupIdsFor,
-  priceRows,
-  starterMenu,
-} from '../lib/onboarding';
+import { addStarterMenu, groupIdsFor, priceRows, starterMenu } from '../lib/onboarding';
 import { queryClient, useContextQuery } from '../lib/query';
-import { session, useSession } from '../lib/session';
+import { useSession } from '../lib/session';
 import { fetchSettings, refreshSettings, saveMoolre } from '../lib/settings';
 import { addStaff, fetchTeam, refreshTeam, resetPin } from '../lib/team';
-import { ROLE_WORDS, VENDOR_TYPE_WORDS } from '../lib/words';
+import { ROLE_WORDS } from '../lib/words';
 
+/** The steps after approval, numbered as they always were: the request was steps 1 and 2. */
+const FIRST = 3;
 const TOTAL = 7;
 const BLANK: VendorType = 'OTHER';
 
+/** Where the setup checklist (Home) and the Setup guide (Settings) can open it. */
+export type SetupStart = 'menu' | 'pins' | 'moolre' | 'tablet';
+const START_STEP: Record<SetupStart, number> = { menu: 3, pins: 5, moolre: 6, tablet: 7 };
+
 /**
- * Setting up a business from a phone (plan.md §3.1): name, type, a starter menu, its prices,
- * PINs, the owner's own Moolre account, then the tablet. Opened with a business already chosen
- * (Settings → Setup guide), it starts at the menu.
+ * Setting up an approved business (plan.md §3.1), from a phone or a laptop: a starter menu, its
+ * prices, PINs, the owner's own Moolre account, then the tablet. Joining (the business's name and
+ * kind) is `/join`; this opens from Home's setup checklist or Settings → Setup guide, at the step
+ * passed in `state.start`, and closing it goes back to `state.back`.
  */
 export default function SetupPage() {
   const { token, tenantId } = useSession();
   const navigate = useNavigate();
   const location = useLocation();
   const context = useContextQuery();
-  const [startedWithBusiness] = useState(() => tenantId !== null);
-  const [step, setStep] = useState(startedWithBusiness ? 3 : 1);
-  const [name, setName] = useState('');
-  const [chosenType, setChosenType] = useState<VendorType | null>(null);
+  const state = location.state as { back?: unknown; start?: unknown } | null;
+  const [step, setStep] = useState(() =>
+    typeof state?.start === 'string' && state.start in START_STEP
+      ? START_STEP[state.start as SetupStart]
+      : FIRST,
+  );
   const [template, setTemplate] = useState<VendorType | null>(null);
 
   if (!token) return <Navigate to="/sign-in" replace />;
-  if (step > 2 && !context.data) {
+  if (!tenantId) return <Navigate to="/join" replace />;
+  if (!context.data) {
     return (
       <div className="mx-auto flex min-h-full max-w-[420px] flex-col gap-4 px-5 pt-24">
         {context.isError ? (
@@ -63,14 +67,11 @@ export default function SetupPage() {
     );
   }
 
-  const vendorType = chosenType ?? context.data?.vendorType ?? 'CHOP_BAR';
+  const vendorType = context.data.vendorType;
   const next = () => setStep((current) => Math.min(TOTAL, current + 1));
-  // The business exists from step 3 on, so there's no going back past it; from the PINs, back
-  // goes to the menu choice, which knows whether a menu is already there.
-  const back =
-    step === 2 ? () => setStep(1) : step > 3 ? () => setStep(step === 5 ? 3 : step - 1) : undefined;
-  // Opened from Settings (the "Setup guide"), closing it goes back there.
-  const from: unknown = (location.state as { back?: unknown } | null)?.back;
+  // From the PINs, back goes to the menu choice, which knows whether a menu is already there.
+  const back = step > FIRST ? () => setStep(step === 5 ? FIRST : step - 1) : undefined;
+  const from = state?.back;
   const done = () => navigate(typeof from === 'string' ? from : '/', { replace: true });
   const iconButton =
     'flex size-10 shrink-0 items-center justify-center rounded-(--radius-control) text-muted-foreground transition-colors hover:bg-muted hover:text-foreground';
@@ -82,45 +83,30 @@ export default function SetupPage() {
           <button type="button" onClick={back} aria-label="Back" className={iconButton}>
             <ArrowLeft size={20} strokeWidth={1.75} aria-hidden />
           </button>
-        ) : startedWithBusiness ? (
+        ) : (
           <button type="button" onClick={done} aria-label="Close" className={iconButton}>
             <X size={20} strokeWidth={1.75} aria-hidden />
           </button>
-        ) : (
-          <img src="/logo.png" alt="" className="size-8 shrink-0 rounded-lg" />
         )}
         <div
           className="h-1.5 flex-1 overflow-hidden rounded-full bg-muted"
           role="progressbar"
           aria-label="Setup"
           aria-valuemin={1}
-          aria-valuemax={TOTAL}
-          aria-valuenow={step}
+          aria-valuemax={TOTAL - FIRST + 1}
+          aria-valuenow={step - FIRST + 1}
         >
           <div
             className="h-full rounded-full bg-primary transition-[width] duration-300 ease-out motion-reduce:transition-none"
-            style={{ width: `${(step / TOTAL) * 100}%` }}
+            style={{ width: `${((step - FIRST + 1) / (TOTAL - FIRST + 1)) * 100}%` }}
           />
         </div>
         <span className="shrink-0 text-xs text-muted-foreground tabular-nums">
-          {step} of {TOTAL}
+          {step - FIRST + 1} of {TOTAL - FIRST + 1}
         </span>
       </div>
 
       <div className="flex-1 px-5 pb-44">
-        {step === 1 && <NameStep value={name} onChange={setName} onNext={next} />}
-        {step === 2 && (
-          <TypeStep
-            name={name}
-            value={chosenType}
-            onChange={setChosenType}
-            onCreated={(id) => {
-              session.chooseBusiness(id);
-              void queryClient.invalidateQueries({ queryKey: ['businesses'] });
-              next();
-            }}
-          />
-        )}
         {step === 3 && (
           <TemplateStep
             vendorType={vendorType}
@@ -130,9 +116,9 @@ export default function SetupPage() {
           />
         )}
         {step === 4 && <PricesStep template={template ?? vendorType} onNext={next} />}
-        {step === 5 && <StaffStep staffId={context.data!.staffId} onNext={next} />}
+        {step === 5 && <StaffStep staffId={context.data.staffId} onNext={next} />}
         {step === 6 && <MoolreStep onNext={next} />}
-        {step === 7 && <InstallStep business={context.data!.businessName} onDone={done} />}
+        {step === 7 && <InstallStep business={context.data.businessName} onDone={done} />}
       </div>
     </div>
   );
@@ -172,77 +158,6 @@ function Footer({
         {note && <p className="text-center text-xs text-muted-foreground">{note}</p>}
       </div>
     </div>
-  );
-}
-
-function NameStep({
-  value,
-  onChange,
-  onNext,
-}: {
-  value: string;
-  onChange: (value: string) => void;
-  onNext: () => void;
-}) {
-  return (
-    <>
-      <Heading
-        title="What’s your business called?"
-        detail="It shows on receipts and in the payment link texts."
-      />
-      <Input
-        label="Business name"
-        autoFocus
-        maxLength={80}
-        value={value}
-        placeholder="For example: Ama’s Kitchen"
-        onChange={(event) => onChange(event.target.value)}
-      />
-      <Footer label="Continue" onClick={onNext} disabled={value.trim().length < 2} />
-    </>
-  );
-}
-
-function TypeStep({
-  name,
-  value,
-  onChange,
-  onCreated,
-}: {
-  name: string;
-  value: VendorType | null;
-  onChange: (value: VendorType) => void;
-  onCreated: (tenantId: string) => void;
-}) {
-  const creating = useMutation({
-    mutationFn: () => createBusiness(name.trim(), value!),
-    onSuccess: (created) => onCreated(created.tenantId),
-  });
-  return (
-    <>
-      <Heading title="What kind of food business?" detail="It picks a starter menu for you." />
-      <RadioCards
-        aria-label="Kind of business"
-        layout="grid"
-        minColumnWidth={150}
-        value={value}
-        onValueChange={(type) => onChange(type as VendorType)}
-        options={VENDOR_TYPES.map((type) => ({ value: type, label: VENDOR_TYPE_WORDS[type] }))}
-      />
-      {creating.error && (
-        <div className="mt-4">
-          <Alert tone="danger" title="Couldn’t set up your business">
-            {creating.error.message}
-          </Alert>
-        </div>
-      )}
-      <Footer
-        label="Continue"
-        onClick={() => creating.mutate()}
-        disabled={!value}
-        busy={creating.isPending}
-      />
-    </>
   );
 }
 

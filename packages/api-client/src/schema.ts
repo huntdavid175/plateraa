@@ -848,6 +848,9 @@ export interface components {
             name: string;
             /** @enum {string} */
             vendorType: "CHOP_BAR" | "FAST_FOOD" | "CAFE_BAKERY" | "JUICE" | "CLOUD_KITCHEN" | "FOOD_TRUCK" | "OTHER";
+            phone: string;
+            area: string;
+            orderWays: ("WALK_INS" | "PHONE_CALLS" | "WHATSAPP" | "INSTAGRAM" | "BOLT_FOOD" | "CHOWDECK")[];
         };
         BusinessCreatedDto_Output: {
             tenantId: string;
@@ -861,6 +864,8 @@ export interface components {
             staffId: string;
             /** @enum {string} */
             role: "OWNER" | "MANAGER" | "STAFF" | "RIDER";
+            /** @enum {string} */
+            status: "ACTIVE" | "SUSPENDED" | "PENDING";
         };
         ContextDto_Output: {
             tenantId: string;

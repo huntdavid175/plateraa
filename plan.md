@@ -431,6 +431,7 @@ _What vendors need most: one link on WhatsApp and Instagram where customers orde
 - [ ] Triage + fix pilot feedback
 - [ ] Harden printing across the surveyed printer models
 - [ ] Polish self-serve onboarding + measure time to first order
+  - [x] Joining is a request Brixx approves (user decision, 24 Oct) — _sign-up, then the business, phone, area and how it takes orders today; it waits as `PENDING` (dashboard, tablet and store all refused) until `pnpm --filter @brixx/api admin:approve`. Approved owners get a setup checklist on Home (menu, PIN, Moolre, tablet). No notification yet: `admin:requests` lists them until the admin dashboard exists._
 - [ ] Play closed-testing track set up
 - [ ] Onboard 5–10 vendors
 - [ ] Moolre spike for R1.5: MoMo prompt on a vendor's own account (_links moved to the pilot, §2.5; wallets and transfers wait for the split_)

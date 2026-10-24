@@ -9,6 +9,11 @@ export const tenants = pgTable('tenants', {
   status: tenantStatus().notNull().default('ACTIVE'),
   currency: char({ length: 3 }).notNull().default('GHS'),
   timezone: text().notNull().default('Africa/Accra'),
+  // Asked when the business requests to join (status PENDING until approved).
+  contactPhone: text(),
+  area: text(),
+  orderWays: text().array(),
+  approvedAt: timestamp({ withTimezone: true }),
   taxEnabled: boolean().notNull().default(false),
   createdAt: timestamp({ withTimezone: true }).notNull().defaultNow(),
   updatedAt: timestamp({ withTimezone: true })

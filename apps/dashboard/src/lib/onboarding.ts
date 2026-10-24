@@ -1,10 +1,14 @@
 import type { paths } from '@brixx/api-client';
-import type { MenuTemplate, VendorType } from '@brixx/shared';
+import type { MenuTemplate } from '@brixx/shared';
 import { ulid } from 'ulid';
 import { api, call } from './api';
 
-export const createBusiness = (name: string, vendorType: VendorType) =>
-  call(api.POST('/api/onboarding/business', { body: { name, vendorType } }));
+export type BusinessRequest =
+  paths['/api/onboarding/business']['post']['requestBody']['content']['application/json'];
+
+/** Sends a request to join: the business is saved, waiting for Brixx to approve it. */
+export const requestBusiness = (body: BusinessRequest) =>
+  call(api.POST('/api/onboarding/business', { body }));
 
 export type StarterMenu =
   paths['/api/menu/starter']['post']['requestBody']['content']['application/json'];
