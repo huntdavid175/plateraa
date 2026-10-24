@@ -4,8 +4,7 @@ import { queryClient } from './query';
 
 /**
  * The Settings page's sections a person may open, in order. The chosen one lives in the address
- * (`/settings?tab=orders`; Business has none), so the sidebar's sub-menu and the Online store
- * can link straight to one.
+ * (`/settings?tab=orders`; Business has none), so the Online store can link straight to one.
  */
 export function settingsTabs(capabilities: readonly Capability[]) {
   const isOwner = capabilities.includes('settings.manage');

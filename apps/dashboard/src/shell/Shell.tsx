@@ -1,7 +1,6 @@
 import type { Capability } from '@brixx/shared';
 import {
   ChartColumn,
-  ChevronRight,
   Ellipsis,
   House,
   Package,
@@ -22,7 +21,6 @@ import {
   Navigate,
   NavLink,
   Outlet,
-  useLocation,
   useMatch,
   useNavigate,
   useOutletContext,
@@ -42,12 +40,8 @@ import {
   SidebarHeader,
   SidebarInset,
   SidebarMenu,
-  SidebarMenuAction,
   SidebarMenuButton,
   SidebarMenuItem,
-  SidebarMenuSub,
-  SidebarMenuSubButton,
-  SidebarMenuSubItem,
   SidebarProvider,
   SidebarRail,
   SidebarSeparator,
@@ -57,17 +51,10 @@ import { cn } from '@/lib/utils';
 import { ApiError } from '../lib/api';
 import { signOutAndForget, useBusinesses, useContextQuery, type Me } from '../lib/query';
 import { session, useSession } from '../lib/session';
-import { settingsTabs } from '../lib/settings';
 import { setTheme, useThemeChoice } from '../lib/theme';
 import { ROLE_WORDS, VENDOR_TYPE_WORDS } from '../lib/words';
 import { ScreenLoading } from '@/components/app/loading';
 import { Centered } from '../ui/Page';
-
-/** A page's own sections, shown under it in the sidebar (Settings' tabs). */
-interface SubItem {
-  to: string;
-  label: string;
-}
 
 interface NavItem {
   to: string;
@@ -77,8 +64,6 @@ interface NavItem {
   Icon: LucideIcon;
   /** Hidden from people without this permission (the server refuses them anyway). */
   needs?: Capability;
-  /** The page's sections this person may open, as a sub-menu under it. */
-  sections?: (capabilities: readonly Capability[]) => SubItem[];
 }
 
 interface NavGroup {
@@ -123,16 +108,7 @@ const NAV: NavGroup[] = [
     label: 'Business',
     items: [
       { to: '/staff', label: 'Staff', Icon: UserCog, needs: 'staff.manage' },
-      {
-        to: '/settings',
-        label: 'Settings',
-        Icon: Settings,
-        sections: (capabilities) =>
-          settingsTabs(capabilities).map((tab) => ({
-            to: tab.value === 'business' ? '/settings' : `/settings?tab=${tab.value}`,
-            label: tab.label,
-          })),
-      },
+      { to: '/settings', label: 'Settings', Icon: Settings },
     ],
   },
 ];
@@ -263,7 +239,7 @@ function AppSidebar({ me, groups }: { me: Me; groups: NavGroup[] }) {
               <SidebarGroupContent>
                 <SidebarMenu>
                   {group.items.map((item) => (
-                    <SidebarNavItem key={item.to} item={item} me={me} />
+                    <SidebarNavItem key={item.to} item={item} />
                   ))}
                 </SidebarMenu>
               </SidebarGroupContent>
@@ -280,18 +256,10 @@ function AppSidebar({ me, groups }: { me: Me; groups: NavGroup[] }) {
   );
 }
 
-function SidebarNavItem({ item: { to, label, Icon, sections }, me }: { item: NavItem; me: Me }) {
+function SidebarNavItem({ item: { to, label, Icon } }: { item: NavItem }) {
   // Orders stays lit on an order's own page; Home only on itself.
   const active = useMatch({ path: to, end: to === '/' }) !== null;
   const reduce = useReducedMotion();
-  const subs = sections?.(me.capabilities) ?? [];
-  // A sub-menu opens when its page does; its chevron opens or closes it from anywhere.
-  const [open, setOpen] = useState(active);
-  const [wasActive, setWasActive] = useState(active);
-  if (active !== wasActive) {
-    setWasActive(active);
-    if (active) setOpen(true);
-  }
   return (
     <SidebarMenuItem>
       <SidebarMenuButton
@@ -315,49 +283,7 @@ function SidebarNavItem({ item: { to, label, Icon, sections }, me }: { item: Nav
           <span>{label}</span>
         </Link>
       </SidebarMenuButton>
-      {subs.length > 0 && (
-        <>
-          <SidebarMenuAction
-            onClick={() => setOpen((current) => !current)}
-            aria-expanded={open}
-            aria-label={open ? `Hide ${label} sections` : `Show ${label} sections`}
-          >
-            <ChevronRight
-              className={cn(
-                'transition-transform duration-200 motion-reduce:transition-none',
-                open && 'rotate-90',
-              )}
-              aria-hidden
-            />
-          </SidebarMenuAction>
-          {open && (
-            <SidebarMenuSub>
-              {subs.map((sub) => (
-                <SidebarSubItem key={sub.to} sub={sub} />
-              ))}
-            </SidebarMenuSub>
-          )}
-        </>
-      )}
     </SidebarMenuItem>
-  );
-}
-
-/** One section of a page, lit while it's open: its path and its `?tab=` both match. */
-function SidebarSubItem({ sub }: { sub: SubItem }) {
-  const location = useLocation();
-  const [path, query = ''] = sub.to.split('?');
-  const active =
-    location.pathname === path &&
-    new URLSearchParams(location.search).get('tab') === new URLSearchParams(query).get('tab');
-  return (
-    <SidebarMenuSubItem>
-      <SidebarMenuSubButton asChild isActive={active}>
-        <Link to={sub.to} aria-current={active ? 'page' : undefined}>
-          <span>{sub.label}</span>
-        </Link>
-      </SidebarMenuSubButton>
-    </SidebarMenuSubItem>
   );
 }
 
