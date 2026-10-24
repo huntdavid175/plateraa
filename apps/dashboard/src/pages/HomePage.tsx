@@ -91,7 +91,6 @@ export function HomePage() {
       actions={<DayPicker date={date} today={here} onPick={pick} />}
     >
       <div className="flex flex-col gap-4">
-        {me.role === 'OWNER' && <SetupChecklist staffId={me.staffId} tablets={tablets.data} />}
         <NeedsYou tablets={tablets.data} owed={owed.data} />
         {!seesMoney && (
           <Alert tone="info" title="Sales totals are hidden for you">
@@ -109,6 +108,15 @@ export function HomePage() {
           </Alert>
         )}
 
+        {me.role === 'OWNER' && (
+          // As wide as "Money in today", sitting right above it (user request, 24 Oct): the
+          // bento's two of four columns on a laptop, less half its 1rem gap.
+          <SetupChecklist
+            staffId={me.staffId}
+            tablets={tablets.data}
+            className="lg:w-[calc(50%-0.5rem)]"
+          />
+        )}
         <Bento>
           {seesMoney && day.isPending && <MoneySkeleton />}
           {seesMoney && day.data && <MoneyTiles day={day.data} isToday={isToday} />}

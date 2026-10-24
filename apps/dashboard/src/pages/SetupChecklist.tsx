@@ -1,6 +1,7 @@
 import { useQuery } from '@tanstack/react-query';
-import { Check } from 'lucide-react';
+import { Check, ChevronRight } from 'lucide-react';
 import { Link } from 'react-router';
+import { Panel, PanelRows } from '@/components/app/panel';
 import { cn } from '@/lib/utils';
 import type { SetupStart } from '../auth/SetupPage';
 import { fetchMenu } from '../lib/menu';
@@ -17,9 +18,11 @@ import { fetchTeam, type Tablet } from '../lib/team';
 export function SetupChecklist({
   staffId,
   tablets,
+  className,
 }: {
   staffId: string;
   tablets: Tablet[] | undefined;
+  className?: string;
 }) {
   const { tenantId } = useSession();
   const menu = useQuery({ queryKey: ['menu', tenantId], queryFn: fetchMenu });
@@ -29,63 +32,95 @@ export function SetupChecklist({
   // Shown only once everything is known, so it never flashes in and out.
   if (!menu.data || !team.data || !settings.data || !tablets) return null;
 
-  const tasks: { start: SetupStart; title: string; done: boolean }[] = [
-    { start: 'menu', title: 'Add your menu', done: menu.data.items.length > 0 },
+  const tasks: { start: SetupStart; title: string; detail: string; done: boolean }[] = [
+    {
+      start: 'menu',
+      title: 'Add your menu',
+      detail: 'Start from a menu made for your kind of business, then set your prices.',
+      done: menu.data.items.length > 0,
+    },
     {
       start: 'pins',
       title: 'Make your PIN',
+      detail: 'Six digits to unlock the tablet. Add your staff here too.',
       done: team.data.staff.find((member) => member.id === staffId)?.hasPin ?? false,
     },
-    { start: 'moolre', title: 'Connect Moolre', done: settings.data.moolre.connected },
-    { start: 'tablet', title: 'Set up the tablet', done: tablets.length > 0 },
+    {
+      start: 'moolre',
+      title: 'Connect Moolre',
+      detail: 'So mobile money from payment links and your store goes straight to you.',
+      done: settings.data.moolre.connected,
+    },
+    {
+      start: 'tablet',
+      title: 'Set up the tablet',
+      detail: 'Install the Brixx app on your Android tablet and sign it in.',
+      done: tablets.length > 0,
+    },
   ];
   const finished = tasks.filter((task) => task.done).length;
   if (finished === tasks.length) return null;
 
-  // A slim strip (user request, 24 Oct: the panel was too big): one line saying where they are,
-  // then the four steps as small tiles, four across on a laptop and two by two on a phone.
   return (
-    <section
-      aria-labelledby="first-sale"
-      className="flex flex-col gap-3 rounded-(--radius-surface) border bg-card p-3 sm:p-4"
+    <Panel
+      className={className}
+      title="Get ready for your first sale"
+      description={`${finished} of ${tasks.length} done. Do them here, or with us on the phone.`}
     >
-      <div className="flex items-baseline justify-between gap-3 px-1">
-        <h2 id="first-sale" className="text-sm font-medium">
-          Get ready for your first sale
-        </h2>
-        <p className="shrink-0 text-xs text-muted-foreground tabular-nums">
-          {finished} of {tasks.length} done
-        </p>
+      <div className="mx-5 mb-3 flex gap-1.5" aria-hidden>
+        {tasks.map((task) => (
+          <span
+            key={task.start}
+            className={cn(
+              'h-1 flex-1 rounded-full',
+              task.done ? 'bg-(--accent)' : 'bg-(--border-strong)/60',
+            )}
+          />
+        ))}
       </div>
-      <ol className="grid grid-cols-2 gap-2 lg:grid-cols-4">
+      <PanelRows>
         {tasks.map((task, index) => (
           <li key={task.start}>
             <Link
               to="/setup"
               state={{ start: task.start, back: '/' }}
-              className={cn(
-                'flex h-full items-center gap-2.5 rounded-(--radius-control) border px-3 py-2.5 text-sm transition-colors hover:bg-muted',
-                task.done && 'border-transparent bg-muted/60 text-text-secondary',
-              )}
+              className="flex items-center gap-4 px-5 py-3.5 transition-colors hover:bg-muted"
             >
               <span
                 className={cn(
-                  'grid size-5 shrink-0 place-items-center rounded-full border text-[11px] tabular-nums',
+                  'grid size-8 shrink-0 place-items-center rounded-full border text-sm tabular-nums',
                   task.done
                     ? 'border-(--accent) bg-(--accent) text-(--accent-foreground)'
                     : 'border-(--border-strong) text-muted-foreground',
                 )}
               >
-                {task.done ? <Check size={12} strokeWidth={2.5} aria-hidden /> : index + 1}
+                {task.done ? <Check size={16} strokeWidth={2} aria-hidden /> : index + 1}
               </span>
-              <span className="min-w-0 truncate">
-                {task.title}
-                {task.done && <span className="sr-only"> (done)</span>}
+              <span className="flex min-w-0 flex-1 flex-col">
+                <span
+                  className={cn(
+                    'font-medium',
+                    // Done steps are struck through (user request, 24 Oct), so what's left stands out.
+                    task.done && 'text-text-secondary line-through decoration-(--border-strong)',
+                  )}
+                >
+                  {task.title}
+                  {task.done && <span className="sr-only"> (done)</span>}
+                </span>
+                <span className={cn('text-sm text-muted-foreground', task.done && 'line-through')}>
+                  {task.detail}
+                </span>
               </span>
+              <ChevronRight
+                size={18}
+                strokeWidth={1.75}
+                className="shrink-0 text-muted-foreground"
+                aria-hidden
+              />
             </Link>
           </li>
         ))}
-      </ol>
-    </section>
+      </PanelRows>
+    </Panel>
   );
 }
