@@ -25,10 +25,12 @@ export default function JoinPage() {
   const { token } = useSession();
   const businesses = useBusinesses();
   const slow = useSlow(businesses.isPending);
-  // What was just sent, so "received" can say which number we'll call.
-  const [sent, setSent] = useState<{ phone: string } | null>(null);
+  // What was just sent: "received" shows the moment the server takes it, and says which number
+  // we'll call, without waiting for the list of businesses to load again.
+  const [sent, setSent] = useState<{ business: string; phone: string } | null>(null);
 
   if (!token) return <Navigate to="/sign-up" replace />;
+  if (sent) return <Received business={sent.business} phone={sent.phone} />;
 
   if (businesses.isPending || businesses.isError) {
     return (
@@ -56,24 +58,26 @@ export default function JoinPage() {
     return <Navigate to="/businesses" replace />;
   }
   const waiting = businesses.data.find((business) => business.status === 'PENDING');
-  if (waiting) return <Received business={waiting.name} phone={sent?.phone ?? null} />;
+  if (waiting) return <Received business={waiting.name} phone={null} />;
 
   return (
     <RequestForm
-      onSent={(phone) => {
-        setSent({ phone });
+      onSent={(business, phone) => {
+        setSent({ business, phone });
         void queryClient.invalidateQueries({ queryKey: ['businesses'] });
       }}
     />
   );
 }
 
-function RequestForm({ onSent }: { onSent: (phone: string) => void }) {
+function RequestForm({ onSent }: { onSent: (business: string, phone: string) => void }) {
   const [screen, setScreen] = useState<'business' | 'contact'>('business');
   const [name, setName] = useState('');
   const [vendorType, setVendorType] = useState<VendorType | null>(null);
   const [phone, setPhone] = useState('');
   const [phoneTouched, setPhoneTouched] = useState(false);
+  // Set once a step's button is pressed: from then on, whatever is missing says so.
+  const [tried, setTried] = useState(false);
   const [area, setArea] = useState('');
   const [ways, setWays] = useState<OrderWay[]>([]);
 
@@ -89,7 +93,7 @@ function RequestForm({ onSent }: { onSent: (phone: string) => void }) {
         area: area.trim(),
         orderWays: ways,
       }),
-    onSuccess: () => onSent(phone.trim()),
+    onSuccess: () => onSent(name.trim(), phone.trim()),
   });
   const slow = useSlow(sending.isPending);
 
@@ -97,7 +101,9 @@ function RequestForm({ onSent }: { onSent: (phone: string) => void }) {
     const ready = name.trim().length >= 2 && vendorType !== null;
     const next = (event: FormEvent) => {
       event.preventDefault();
-      if (ready) setScreen('contact');
+      if (!ready) return setTried(true);
+      setTried(false);
+      setScreen('contact');
     };
     return (
       <JoinLayout
@@ -113,6 +119,7 @@ function RequestForm({ onSent }: { onSent: (phone: string) => void }) {
             autoComplete="organization"
             placeholder="For example: Ama’s Kitchen"
             value={name}
+            error={tried && name.trim().length < 2 ? 'Type your business’s name.' : undefined}
             onChange={(event) => setName(event.target.value)}
           />
           <fieldset className="flex flex-col gap-3">
@@ -128,8 +135,11 @@ function RequestForm({ onSent }: { onSent: (phone: string) => void }) {
                 label: type === 'OTHER' ? 'Something else' : VENDOR_TYPE_WORDS[type],
               }))}
             />
+            {tried && !vendorType && (
+              <p className="text-sm text-danger">Pick the one closest to your business.</p>
+            )}
           </fieldset>
-          <Button type="submit" size="lg" className="w-full" disabled={!ready}>
+          <Button type="submit" size="lg" className="w-full">
             Continue
           </Button>
         </form>
@@ -138,9 +148,14 @@ function RequestForm({ onSent }: { onSent: (phone: string) => void }) {
   }
 
   const phoneError =
-    phoneTouched && phone.trim() && !normalPhone
-      ? 'Enter a Ghanaian number, like 024 123 4567.'
+    (phoneTouched || tried) && !normalPhone
+      ? phone.trim()
+        ? 'Enter a Ghanaian number, like 024 123 4567.'
+        : tried
+          ? 'Type the number we should call.'
+          : undefined
       : undefined;
+  const areaError = tried && area.trim().length < 2 ? 'Type your area or town.' : undefined;
   const ready = normalPhone !== null && area.trim().length >= 2 && ways.length > 0;
   const toggle = (way: OrderWay, on: boolean) =>
     setWays((current) => (on ? [...current, way] : current.filter((item) => item !== way)));
@@ -165,6 +180,7 @@ function RequestForm({ onSent }: { onSent: (phone: string) => void }) {
         className="flex flex-col gap-6"
         onSubmit={(event) => {
           event.preventDefault();
+          setTried(true);
           if (ready) sending.mutate();
         }}
       >
@@ -186,11 +202,20 @@ function RequestForm({ onSent }: { onSent: (phone: string) => void }) {
           autoComplete="address-level2"
           placeholder="For example: Osu, Accra"
           value={area}
+          error={areaError}
           onChange={(event) => setArea(event.target.value)}
         />
         <fieldset>
           <legend className="text-sm font-medium">How do customers order from you today?</legend>
-          <p className="mt-1 text-sm text-muted-foreground">Tick all that apply.</p>
+          <p
+            className={
+              tried && ways.length === 0
+                ? 'mt-1 text-sm text-danger'
+                : 'mt-1 text-sm text-muted-foreground'
+            }
+          >
+            {tried && ways.length === 0 ? 'Tick at least one.' : 'Tick all that apply.'}
+          </p>
           <div className="mt-3 flex flex-col divide-y overflow-hidden rounded-(--radius-panel) border bg-card">
             {ORDER_WAYS.map((way) => (
               <div key={way} className="px-4 py-2">
@@ -209,13 +234,7 @@ function RequestForm({ onSent }: { onSent: (phone: string) => void }) {
           </Alert>
         )}
         <div className="flex flex-col gap-2">
-          <Button
-            type="submit"
-            size="lg"
-            className="w-full"
-            disabled={!ready}
-            loading={sending.isPending}
-          >
+          <Button type="submit" size="lg" className="w-full" loading={sending.isPending}>
             Send my request
           </Button>
           {slow && (
