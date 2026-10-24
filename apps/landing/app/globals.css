@@ -70,6 +70,23 @@ body {
     animation-range: entry 0% entry 35%;
   }
 }
+/* The pricing receipt's torn foot: a row of small teeth cut from the paper's bottom edge. */
+.receipt-edge {
+  --tooth: 9px;
+  mask: conic-gradient(from -45deg at bottom, #0000, #000 1deg 89deg, #0000 90deg) 50% /
+    calc(2 * var(--tooth)) 100%;
+}
+
+/* The receipt prints in, top to bottom, once (components/print-in.tsx). */
+@keyframes print-in {
+  from {
+    clip-path: inset(0 0 100% 0);
+  }
+  to {
+    clip-path: inset(0 0 0 0);
+  }
+}
+
 @keyframes reveal {
   from {
     opacity: 0;

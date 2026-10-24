@@ -16,8 +16,17 @@ import { Closing } from '../components/closing';
 import { Faq } from '../components/faq';
 import { OnboardStrip } from '../components/onboard-strip';
 import { OrderSources } from '../components/order-sources';
+import { PrintIn } from '../components/print-in';
 import { RushList } from '../components/rush-list';
-import { ButtonLink, Container, cx, PhotoSlot, SectionHeading, Highlight } from '../components/ui';
+import {
+  ButtonLink,
+  Container,
+  cx,
+  PhotoSlot,
+  Script,
+  SectionHeading,
+  Highlight,
+} from '../components/ui';
 import { HOME_FAQ } from '../content/faq';
 import { PHOTOS } from '../content/photos';
 import { SIGN_UP_URL } from '../lib/site';
@@ -277,44 +286,77 @@ function OnlineStore() {
   );
 }
 
-function Stat({ label, figure, note }: { label: string; figure: string; note: string }) {
+/** One line of the pricing receipt. */
+function ReceiptLine({ item, note, amount }: { item: string; note?: string; amount: string }) {
   return (
-    <div className="border-t border-night-line pt-5">
-      <p className="text-[13px] font-medium tracking-[0.08em] text-brand uppercase">{label}</p>
-      <p className="mt-3 text-[64px] leading-none font-light tracking-[-0.03em] text-on-night tabular-nums sm:text-[88px]">
-        {figure}
-      </p>
-      <p className="mt-3 text-[16px] text-night-muted">{note}</p>
+    <div className="flex items-baseline justify-between gap-4">
+      <dt>
+        {item}
+        {note && <span className="mt-0.5 block text-[13px] text-muted">{note}</span>}
+      </dt>
+      <dd className="shrink-0 font-medium tabular-nums">{amount}</dd>
+    </div>
+  );
+}
+
+/**
+ * Pricing as the paper receipt a vendor hands over: every line GH₵0 except online payments, which
+ * only ever say "small fee" (the rate lives in the Terms alone). It prints in once as it comes into
+ * view; the zigzag foot is `.receipt-edge` in globals.css.
+ */
+function Receipt() {
+  return (
+    <div className="mx-auto w-full max-w-[400px] drop-shadow-[0_24px_40px_rgba(0,0,0,0.45)] lg:mr-0 lg:rotate-2">
+      <PrintIn>
+        <div className="receipt-edge bg-cream px-6 pt-7 pb-12 text-ink sm:px-8">
+          <div className="flex items-center justify-between">
+            {/* A plain <img>: the wordmark is a small fixed-size PNG made by `pnpm brand:assets`. */}
+            <img src="/wordmark.png" alt="Brixx" width={77} height={24} />
+            <span className="text-[13px] text-muted">Your bill</span>
+          </div>
+          <dl className="mt-6 space-y-4 border-t border-dashed border-ink/25 pt-5 text-[16px]">
+            <ReceiptLine item="Signing up" amount="GH₵0.00" />
+            <ReceiptLine item="Every month" amount="GH₵0.00" />
+            <ReceiptLine item="Cash sales" note="Every cedi at the counter" amount="GH₵0.00" />
+            <ReceiptLine
+              item="Online payments"
+              note="Only when a customer pays you online"
+              amount="Small fee"
+            />
+          </dl>
+          <div className="mt-6 flex items-baseline justify-between gap-4 border-t border-dashed border-ink/25 pt-5">
+            <p className="text-[16px]">To pay today</p>
+            <p className="text-[40px] leading-none font-light tracking-[-0.03em] tabular-nums">
+              GH₵0.00
+            </p>
+          </div>
+          <p className="mt-6 text-[13px] text-muted">
+            Moolre charges its own fee on mobile money payments.
+          </p>
+          <p className="mt-5 text-center">
+            <Script className="text-[28px] text-brand-strong">Thank you</Script>
+          </p>
+        </div>
+      </PrintIn>
     </div>
   );
 }
 
 function Pricing() {
   return (
-    <section className="bg-night py-20 sm:py-28">
-      <Container>
-        <SectionHeading
-          dark
-          title="Free until a customer pays you online"
-          intro="You don’t pay to join or to keep using Brixx. We earn a small share when money comes to you through it."
-        />
-        <div className="reveal mt-14 grid gap-10 sm:grid-cols-3">
-          <Stat label="Signing up" figure="GH₵0" note="Set up your counter and store free" />
-          <Stat label="Every month" figure="GH₵0" note="No subscription to keep going" />
-          <Stat label="Cash sales" figure="GH₵0" note="Cash at the counter is always free" />
-        </div>
-        <div className="reveal mt-14 flex flex-col gap-6 rounded-[24px] bg-night-card p-6 sm:flex-row sm:items-center sm:justify-between sm:p-8">
-          <p className="max-w-2xl text-[18px] leading-relaxed text-on-night">
-            You pay a small fee only when a customer pays you online, through your store or a
-            payment link.
-            <span className="mt-2 block text-[14px] text-night-muted">
-              Moolre charges its own fee on mobile money payments.
-            </span>
-          </p>
-          <ButtonLink href="/pricing" kind="light">
+    <section className="overflow-hidden bg-night py-20 sm:py-28">
+      <Container className="grid items-center gap-14 lg:grid-cols-[1fr_auto] lg:gap-20">
+        <div>
+          <SectionHeading
+            dark
+            title="Free until a customer pays you online"
+            intro="You don’t pay to join or to keep using Brixx. We earn a small share when money comes to you through it."
+          />
+          <ButtonLink href="/pricing" kind="light" className="mt-8">
             See pricing
           </ButtonLink>
         </div>
+        <Receipt />
       </Container>
     </section>
   );
