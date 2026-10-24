@@ -1,6 +1,7 @@
 import type { Capability } from '@brixx/shared';
 import {
   ChartColumn,
+  ChevronRight,
   Ellipsis,
   House,
   Package,
@@ -21,6 +22,7 @@ import {
   Navigate,
   NavLink,
   Outlet,
+  useLocation,
   useMatch,
   useNavigate,
   useOutletContext,
@@ -36,11 +38,16 @@ import {
   SidebarFooter,
   SidebarGroup,
   SidebarGroupContent,
+  SidebarGroupLabel,
   SidebarHeader,
   SidebarInset,
   SidebarMenu,
+  SidebarMenuAction,
   SidebarMenuButton,
   SidebarMenuItem,
+  SidebarMenuSub,
+  SidebarMenuSubButton,
+  SidebarMenuSubItem,
   SidebarProvider,
   SidebarRail,
   SidebarSeparator,
@@ -50,10 +57,17 @@ import { cn } from '@/lib/utils';
 import { ApiError } from '../lib/api';
 import { signOutAndForget, useBusinesses, useContextQuery, type Me } from '../lib/query';
 import { session, useSession } from '../lib/session';
+import { settingsTabs } from '../lib/settings';
 import { setTheme, useThemeChoice } from '../lib/theme';
 import { ROLE_WORDS, VENDOR_TYPE_WORDS } from '../lib/words';
 import { ScreenLoading } from '@/components/app/loading';
 import { Centered } from '../ui/Page';
+
+/** A page's own sections, shown under it in the sidebar (Settings' tabs). */
+interface SubItem {
+  to: string;
+  label: string;
+}
 
 interface NavItem {
   to: string;
@@ -63,38 +77,71 @@ interface NavItem {
   Icon: LucideIcon;
   /** Hidden from people without this permission (the server refuses them anyway). */
   needs?: Capability;
+  /** The page's sections this person may open, as a sub-menu under it. */
+  sections?: (capabilities: readonly Capability[]) => SubItem[];
 }
 
-/** The sidebar, in groups: the day, the food, the money, the team. */
-const NAV: NavItem[][] = [
-  [
-    { to: '/', label: 'Home', Icon: House },
-    { to: '/orders', label: 'Orders', Icon: ReceiptText },
-    { to: '/customers', label: 'Customers', Icon: Users },
-  ],
-  [
-    { to: '/menu', label: 'Menu', Icon: UtensilsCrossed, needs: 'catalog.manage' },
-    { to: '/stock', label: 'Stock', Icon: Package, needs: 'catalog.manage' },
-    {
-      to: '/store',
-      label: 'Online store',
-      short: 'Store',
-      Icon: Store,
-      needs: 'storefront.manage',
-    },
-  ],
-  [
-    { to: '/expenses', label: 'Expenses', Icon: Wallet, needs: 'expenses.manage' },
-    { to: '/refunds', label: 'Refunds', Icon: Undo2, needs: 'refunds.record' },
-    { to: '/reports', label: 'Reports', Icon: ChartColumn, needs: 'reports.revenue.view' },
-  ],
-  [
-    { to: '/staff', label: 'Staff', Icon: UserCog, needs: 'staff.manage' },
-    { to: '/settings', label: 'Settings', Icon: Settings },
-  ],
+interface NavGroup {
+  /** What the pages in it are about, named above them (user request, 24 Oct). */
+  label: string;
+  items: NavItem[];
+}
+
+/** The sidebar, in named groups: the day, selling, the food, the money, the business. */
+const NAV: NavGroup[] = [
+  { label: 'Overview', items: [{ to: '/', label: 'Home', Icon: House }] },
+  {
+    label: 'Sales',
+    items: [
+      { to: '/orders', label: 'Orders', Icon: ReceiptText },
+      { to: '/customers', label: 'Customers', Icon: Users },
+      {
+        to: '/store',
+        label: 'Online store',
+        short: 'Store',
+        Icon: Store,
+        needs: 'storefront.manage',
+      },
+    ],
+  },
+  {
+    label: 'Menu & stock',
+    items: [
+      { to: '/menu', label: 'Menu', Icon: UtensilsCrossed, needs: 'catalog.manage' },
+      { to: '/stock', label: 'Stock', Icon: Package, needs: 'catalog.manage' },
+    ],
+  },
+  {
+    label: 'Money',
+    items: [
+      { to: '/expenses', label: 'Expenses', Icon: Wallet, needs: 'expenses.manage' },
+      { to: '/refunds', label: 'Refunds', Icon: Undo2, needs: 'refunds.record' },
+      { to: '/reports', label: 'Reports', Icon: ChartColumn, needs: 'reports.revenue.view' },
+    ],
+  },
+  {
+    label: 'Business',
+    items: [
+      { to: '/staff', label: 'Staff', Icon: UserCog, needs: 'staff.manage' },
+      {
+        to: '/settings',
+        label: 'Settings',
+        Icon: Settings,
+        sections: (capabilities) =>
+          settingsTabs(capabilities).map((tab) => ({
+            to: tab.value === 'business' ? '/settings' : `/settings?tab=${tab.value}`,
+            label: tab.label,
+          })),
+      },
+    ],
+  },
 ];
 
-/** The phone's bottom bar holds four places and More; the rest open from More. */
+/**
+ * The phone's bottom bar holds four places and More; the rest open from More, under the same
+ * group names. These four come first when the person may open them, as before the groups moved.
+ */
+const BOTTOM_BAR = ['/', '/orders', '/customers', '/menu'];
 const BOTTOM_BAR_SIZE = 4;
 
 const ICON = { size: 18, strokeWidth: 1.75, 'aria-hidden': true } as const;
@@ -155,10 +202,18 @@ export function Shell() {
 
 /** The signed-in frame around a screen: sidebar, phone header and bottom bar. */
 export function ShellFrame({ me, children }: { me: Me; children: ReactNode }) {
-  const groups = NAV.map((group) =>
-    group.filter((item) => !item.needs || me.capabilities.includes(item.needs)),
-  ).filter((group) => group.length > 0);
-  const flat = groups.flat();
+  const groups = NAV.map((group) => ({
+    ...group,
+    items: group.items.filter((item) => !item.needs || me.capabilities.includes(item.needs)),
+  })).filter((group) => group.items.length > 0);
+  const flat = groups.flatMap((group) => group.items);
+  const bar = [
+    ...flat.filter((item) => BOTTOM_BAR.includes(item.to)),
+    ...flat.filter((item) => !BOTTOM_BAR.includes(item.to)),
+  ].slice(0, BOTTOM_BAR_SIZE);
+  const more = groups
+    .map((group) => ({ ...group, items: group.items.filter((item) => !bar.includes(item)) }))
+    .filter((group) => group.items.length > 0);
   return (
     // The sidebar remembers being folded (shadcn keeps it in a cookie).
     <SidebarProvider defaultOpen={!document.cookie.includes('sidebar_state=false')}>
@@ -167,13 +222,16 @@ export function ShellFrame({ me, children }: { me: Me; children: ReactNode }) {
         <PhoneHeader me={me} />
         {children}
       </SidebarInset>
-      <BottomBar bar={flat.slice(0, BOTTOM_BAR_SIZE)} more={flat.slice(BOTTOM_BAR_SIZE)} />
+      <BottomBar bar={bar} more={more} />
     </SidebarProvider>
   );
 }
 
-/** Laptops and tablets: the business at the top, the pages in groups, the account at the foot. */
-function AppSidebar({ me, groups }: { me: Me; groups: NavItem[][] }) {
+/**
+ * Laptops and tablets: the business at the top, the pages in named groups, the account at the
+ * foot. Folded to icons, the names give way to a hairline between groups.
+ */
+function AppSidebar({ me, groups }: { me: Me; groups: NavGroup[] }) {
   return (
     <Sidebar collapsible="icon">
       <SidebarHeader>
@@ -196,13 +254,16 @@ function AppSidebar({ me, groups }: { me: Me; groups: NavItem[][] }) {
 
       <SidebarContent>
         {groups.map((group, index) => (
-          <div key={group[0]!.to} className="contents">
-            {index > 0 && <SidebarSeparator className="mx-0" />}
+          <div key={group.label} className="contents">
+            {index > 0 && (
+              <SidebarSeparator className="mx-0 hidden group-data-[collapsible=icon]:block" />
+            )}
             <SidebarGroup>
+              <SidebarGroupLabel>{group.label}</SidebarGroupLabel>
               <SidebarGroupContent>
                 <SidebarMenu>
-                  {group.map((item) => (
-                    <SidebarNavItem key={item.to} item={item} />
+                  {group.items.map((item) => (
+                    <SidebarNavItem key={item.to} item={item} me={me} />
                   ))}
                 </SidebarMenu>
               </SidebarGroupContent>
@@ -219,10 +280,18 @@ function AppSidebar({ me, groups }: { me: Me; groups: NavItem[][] }) {
   );
 }
 
-function SidebarNavItem({ item: { to, label, Icon } }: { item: NavItem }) {
+function SidebarNavItem({ item: { to, label, Icon, sections }, me }: { item: NavItem; me: Me }) {
   // Orders stays lit on an order's own page; Home only on itself.
   const active = useMatch({ path: to, end: to === '/' }) !== null;
   const reduce = useReducedMotion();
+  const subs = sections?.(me.capabilities) ?? [];
+  // A sub-menu opens when its page does; its chevron opens or closes it from anywhere.
+  const [open, setOpen] = useState(active);
+  const [wasActive, setWasActive] = useState(active);
+  if (active !== wasActive) {
+    setWasActive(active);
+    if (active) setOpen(true);
+  }
   return (
     <SidebarMenuItem>
       <SidebarMenuButton
@@ -246,7 +315,49 @@ function SidebarNavItem({ item: { to, label, Icon } }: { item: NavItem }) {
           <span>{label}</span>
         </Link>
       </SidebarMenuButton>
+      {subs.length > 0 && (
+        <>
+          <SidebarMenuAction
+            onClick={() => setOpen((current) => !current)}
+            aria-expanded={open}
+            aria-label={open ? `Hide ${label} sections` : `Show ${label} sections`}
+          >
+            <ChevronRight
+              className={cn(
+                'transition-transform duration-200 motion-reduce:transition-none',
+                open && 'rotate-90',
+              )}
+              aria-hidden
+            />
+          </SidebarMenuAction>
+          {open && (
+            <SidebarMenuSub>
+              {subs.map((sub) => (
+                <SidebarSubItem key={sub.to} sub={sub} />
+              ))}
+            </SidebarMenuSub>
+          )}
+        </>
+      )}
     </SidebarMenuItem>
+  );
+}
+
+/** One section of a page, lit while it's open: its path and its `?tab=` both match. */
+function SidebarSubItem({ sub }: { sub: SubItem }) {
+  const location = useLocation();
+  const [path, query = ''] = sub.to.split('?');
+  const active =
+    location.pathname === path &&
+    new URLSearchParams(location.search).get('tab') === new URLSearchParams(query).get('tab');
+  return (
+    <SidebarMenuSubItem>
+      <SidebarMenuSubButton asChild isActive={active}>
+        <Link to={sub.to} aria-current={active ? 'page' : undefined}>
+          <span>{sub.label}</span>
+        </Link>
+      </SidebarMenuSubButton>
+    </SidebarMenuSubItem>
   );
 }
 
@@ -287,7 +398,7 @@ function PhoneHeader({ me }: { me: Me }) {
 }
 
 /** Phones: four places at the bottom, and More for the rest. */
-function BottomBar({ bar, more }: { bar: NavItem[]; more: NavItem[] }) {
+function BottomBar({ bar, more }: { bar: NavItem[]; more: NavGroup[] }) {
   const [open, setOpen] = useState(false);
   const tab = 'flex min-h-14 flex-1 flex-col items-center justify-center gap-1 text-xs';
   return (
@@ -321,25 +432,37 @@ function BottomBar({ bar, more }: { bar: NavItem[]; more: NavItem[] }) {
             </button>
           }
         >
-          <ul className="flex flex-col">
-            {more.map(({ to, label, Icon }) => (
-              <li key={to}>
-                <NavLink
-                  to={to}
-                  onClick={() => setOpen(false)}
-                  className={({ isActive }) =>
-                    cn(
-                      'flex min-h-12 items-center gap-3 rounded-lg px-3 text-base',
-                      isActive ? 'bg-surface-muted font-medium' : '',
-                    )
-                  }
+          <div className="flex flex-col gap-4">
+            {more.map((group) => (
+              <section key={group.label} aria-labelledby={`more-${group.label}`}>
+                <h3
+                  id={`more-${group.label}`}
+                  className="px-3 pb-1 text-xs font-medium text-muted-foreground"
                 >
-                  <Icon {...ICON} size={20} />
-                  {label}
-                </NavLink>
-              </li>
+                  {group.label}
+                </h3>
+                <ul className="flex flex-col">
+                  {group.items.map(({ to, label, Icon }) => (
+                    <li key={to}>
+                      <NavLink
+                        to={to}
+                        onClick={() => setOpen(false)}
+                        className={({ isActive }) =>
+                          cn(
+                            'flex min-h-12 items-center gap-3 rounded-lg px-3 text-base',
+                            isActive ? 'bg-surface-muted font-medium' : '',
+                          )
+                        }
+                      >
+                        <Icon {...ICON} size={20} />
+                        {label}
+                      </NavLink>
+                    </li>
+                  ))}
+                </ul>
+              </section>
             ))}
-          </ul>
+          </div>
         </BottomSheet>
       )}
     </nav>

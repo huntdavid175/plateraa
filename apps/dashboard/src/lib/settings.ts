@@ -1,6 +1,23 @@
-import type { VendorType } from '@brixx/shared';
+import type { Capability, VendorType } from '@brixx/shared';
 import { api, call } from './api';
 import { queryClient } from './query';
+
+/**
+ * The Settings page's sections a person may open, in order. The chosen one lives in the address
+ * (`/settings?tab=orders`; Business has none), so the sidebar's sub-menu and the Online store
+ * can link straight to one.
+ */
+export function settingsTabs(capabilities: readonly Capability[]) {
+  const isOwner = capabilities.includes('settings.manage');
+  const setsUpMenu = capabilities.includes('catalog.manage');
+  return [
+    { value: 'business', label: 'Business' },
+    ...(isOwner ? [{ value: 'orders', label: 'Orders' }] : []),
+    ...(setsUpMenu ? [{ value: 'delivery', label: 'Delivery' }] : []),
+    ...(isOwner ? [{ value: 'payments', label: 'Payments' }] : []),
+    { value: 'appearance', label: 'Appearance' },
+  ];
+}
 
 export const fetchSettings = () => call(api.GET('/api/settings'));
 export type Settings = Awaited<ReturnType<typeof fetchSettings>>;

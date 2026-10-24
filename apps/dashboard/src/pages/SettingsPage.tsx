@@ -26,6 +26,7 @@ import {
   saveBusiness,
   saveMoolre,
   saveOrderSettings,
+  settingsTabs,
   type OrderSettings,
   type Settings,
 } from '../lib/settings';
@@ -50,15 +51,7 @@ export function SettingsPage() {
     enabled: isOwner,
   });
 
-  // The sections a person may open, in order; the chosen one lives in the address (`?tab=`),
-  // so the Online store can link straight to Payments or Delivery.
-  const tabs = [
-    { value: 'business', label: 'Business' },
-    ...(isOwner ? [{ value: 'orders', label: 'Orders' }] : []),
-    ...(setsUpMenu ? [{ value: 'delivery', label: 'Delivery' }] : []),
-    ...(isOwner ? [{ value: 'payments', label: 'Payments' }] : []),
-    { value: 'appearance', label: 'Appearance' },
-  ];
+  const tabs = settingsTabs(me.capabilities);
   const asked = params.get('tab');
   const tab = tabs.some((each) => each.value === asked) ? asked! : 'business';
   const needsSettings = (body: (data: Settings) => ReactNode) =>
