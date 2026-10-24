@@ -67,7 +67,7 @@ function Hero() {
               <span className="h-2 w-2 rounded-full bg-brand" aria-hidden />
               Free to start. 2% only on online payments.
             </span>
-            <h1 className="mt-6 text-[40px] sm:mt-8 leading-[1.02] font-normal tracking-[-0.03em] text-balance text-white sm:text-[64px] lg:text-[80px]">
+            <h1 className="mt-6 text-[40px] sm:mt-8 leading-[1.02] font-normal tracking-[-0.03em] text-balance text-white sm:text-[64px] lg:text-[72px]">
               Make ordering <Highlight>easy</Highlight> for your customers and your kitchen
             </h1>
             <p className="mt-5 max-w-lg text-[18px] leading-relaxed text-white/85 sm:mt-6 sm:text-[20px]">

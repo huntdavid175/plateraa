@@ -20,7 +20,7 @@ const PROMISES = [
  */
 export function Closing({ heading = 'Let’s get your counter sorted' }: { heading?: string }) {
   return (
-    <div className="bg-[linear-gradient(180deg,var(--color-brand)_0%,var(--color-brand-strong)_38%,var(--color-brand-deep)_100%)]">
+    <div className="bg-[linear-gradient(180deg,var(--color-brand)_0%,var(--color-brand-strong)_14%,var(--color-brand-deep)_100%)]">
       <Container className="grid gap-10 pt-20 pb-16 sm:pt-24 lg:grid-cols-[1.2fr_1fr] lg:items-center">
         <div>
           <h2 className="text-[40px] leading-[1.05] font-normal tracking-[-0.02em] text-balance text-white sm:text-[56px]">
@@ -138,7 +138,7 @@ function Footer() {
                 <a
                   key={href}
                   href={href}
-                  className="inline-flex h-11 items-center gap-2 rounded-full border border-brand-strong px-4 text-[15px] text-brand-strong hover:bg-brand-tint"
+                  className="inline-flex h-11 items-center gap-2 rounded-full border border-brand-strong px-4 text-[15px] text-brand-strong hover:bg-brand-tint hover:text-brand-ink"
                 >
                   <Icon size={17} strokeWidth={1.75} aria-hidden />
                   {label}

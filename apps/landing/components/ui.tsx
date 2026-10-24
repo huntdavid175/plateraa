@@ -18,7 +18,7 @@ type ButtonKind = 'solid' | 'outline' | 'light' | 'outline-light';
 
 const BUTTON: Record<ButtonKind, string> = {
   solid: 'bg-brand-strong text-white hover:bg-brand-deep',
-  outline: 'border border-brand-strong text-brand-strong hover:bg-brand-tint',
+  outline: 'border border-brand-strong text-brand-strong hover:bg-brand-tint hover:text-brand-ink',
   light: 'bg-white text-ink hover:bg-cream',
   'outline-light': 'border border-white/70 text-white hover:bg-white/10',
 };

@@ -52,6 +52,7 @@ Tokens live in `app/globals.css` as CSS variables and are exposed to Tailwind (`
 | `brand-strong` | `#C93F00` | Buttons with white text (5.0:1) and orange words on white (5.0:1) or cream (4.5:1) |
 | `brand-deep`   | `#7A2A06` | The bottom of the closing band; white text on it is 9.7:1                          |
 | `brand-tint`   | `#FFE9DC` | Soft orange chips and backgrounds                                                  |
+| `brand-ink`    | `#B53800` | Small orange text on `brand-tint`, like an order chip's code (5.1:1)               |
 | `ink`          | `#1F1A17` | Text (15.6:1 on cream)                                                             |
 | `muted`        | `#5E5650` | Secondary text (6.5:1 on cream)                                                    |
 | `page`         | `#FFFFFF` | Default background                                                                 |
@@ -70,7 +71,7 @@ Tokens live in `app/globals.css` as CSS variables and are exposed to Tailwind (`
 ## Type
 
 - **Figtree** (`@fontsource-variable/figtree`) for everything. Headings are large and light, as on Toast: weight 400–500, tight tracking (`-0.02em`), line height 1.05–1.1.
-  - Hero: 56–88 px on a laptop, 40–48 px on a phone.
+  - Hero: 56–72 px on a laptop, 40–48 px on a phone.
   - Section headings: 40–56 px.
   - Card titles: 22–26 px.
   - Body: 17–18 px, line height 1.6, `muted`.

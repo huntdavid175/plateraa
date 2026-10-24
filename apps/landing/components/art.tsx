@@ -51,7 +51,7 @@ export function OrderChip({
 }) {
   return (
     <Note className={cx('flex items-center gap-3', className)}>
-      <span className="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-brand-tint text-[13px] font-semibold text-brand-strong">
+      <span className="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-brand-tint text-[13px] font-semibold text-brand-ink">
         {code}
       </span>
       <span className="min-w-0 flex-1">

@@ -234,15 +234,20 @@ export default function FeaturesPage() {
                 <SectionHeading title={f.title} intro={f.body} />
                 <ul className="mt-6 space-y-2">
                   {f.points.map((p) => (
-                    <li key={p} className="flex items-center gap-3 text-[16px]">
-                      <span className="h-1.5 w-1.5 rounded-full bg-brand" aria-hidden />
+                    <li key={p} className="flex items-start gap-3 text-[16px]">
+                      <span
+                        className="mt-[9px] h-1.5 w-1.5 shrink-0 rounded-full bg-brand"
+                        aria-hidden
+                      />
                       {p}
                     </li>
                   ))}
                 </ul>
               </div>
-              <div className="flex min-h-[320px] items-center justify-center rounded-[32px] bg-cream p-8">
-                {f.art}
+              {/* The notes are drawn at their real size; on a laptop they're enlarged so they
+                  fill the panel instead of floating in it. */}
+              <div className="flex min-h-[220px] items-center justify-center rounded-[32px] bg-cream p-6 sm:min-h-[320px] sm:p-8">
+                <div className="lg:[zoom:1.3]">{f.art}</div>
               </div>
             </Container>
           </section>
