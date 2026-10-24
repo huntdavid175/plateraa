@@ -1,7 +1,6 @@
 import { useQuery } from '@tanstack/react-query';
 import { Check, ChevronRight } from 'lucide-react';
 import { Link } from 'react-router';
-import { Panel, PanelRows } from '@/components/app/panel';
 import { cn } from '@/lib/utils';
 import type { SetupStart } from '../auth/SetupPage';
 import { fetchMenu } from '../lib/menu';
@@ -14,6 +13,9 @@ import { fetchTeam, type Tablet } from '../lib/team';
  * needs before its first sale, each opening its step of `/setup`. The owner can do them alone or
  * with the Brixx team on the call. It shows only to the owner, and goes away once all four are
  * done. Each is worked out from the business itself, so there's nothing to tick by hand.
+ *
+ * Kept compact (user request, 24 Oct: "too huge on laptop screens"): small type, one short line
+ * under each step, tight rows, and a done step struck through.
  */
 export function SetupChecklist({
   staffId,
@@ -36,25 +38,25 @@ export function SetupChecklist({
     {
       start: 'menu',
       title: 'Add your menu',
-      detail: 'Start from a menu made for your kind of business, then set your prices.',
+      detail: 'Pick a starter menu, then set your prices.',
       done: menu.data.items.length > 0,
     },
     {
       start: 'pins',
       title: 'Make your PIN',
-      detail: 'Six digits to unlock the tablet. Add your staff here too.',
+      detail: 'Six digits to unlock the tablet.',
       done: team.data.staff.find((member) => member.id === staffId)?.hasPin ?? false,
     },
     {
       start: 'moolre',
       title: 'Connect Moolre',
-      detail: 'So mobile money from payment links and your store goes straight to you.',
+      detail: 'So mobile money goes straight to you.',
       done: settings.data.moolre.connected,
     },
     {
       start: 'tablet',
       title: 'Set up the tablet',
-      detail: 'Install the Brixx app on your Android tablet and sign it in.',
+      detail: 'Install the Brixx app and sign it in.',
       done: tablets.length > 0,
     },
   ];
@@ -62,57 +64,70 @@ export function SetupChecklist({
   if (finished === tasks.length) return null;
 
   return (
-    <Panel
-      className={className}
-      title="Get ready for your first sale"
-      description={`${finished} of ${tasks.length} done. Do them here, or with us on the phone.`}
+    <section
+      aria-labelledby="first-sale"
+      className={cn('overflow-hidden rounded-(--radius-panel) border bg-card', className)}
     >
-      <div className="mx-5 mb-3 flex gap-1.5" aria-hidden>
-        {tasks.map((task) => (
-          <span
-            key={task.start}
-            className={cn(
-              'h-1 flex-1 rounded-full',
-              task.done ? 'bg-(--accent)' : 'bg-(--border-strong)/60',
-            )}
-          />
-        ))}
+      <div className="flex items-center gap-3 px-4 pt-3 pb-2.5">
+        <h2 id="first-sale" className="min-w-0 flex-1 truncate text-sm font-medium">
+          Get ready for your first sale
+        </h2>
+        <div className="flex w-16 shrink-0 gap-1" aria-hidden>
+          {tasks.map((task) => (
+            <span
+              key={task.start}
+              className={cn(
+                'h-1 flex-1 rounded-full',
+                task.done ? 'bg-(--accent)' : 'bg-(--border-strong)/60',
+              )}
+            />
+          ))}
+        </div>
+        <p className="shrink-0 text-xs text-muted-foreground tabular-nums">
+          {finished} of {tasks.length}
+        </p>
       </div>
-      <PanelRows>
+      <ol className="flex flex-col divide-y border-t">
         {tasks.map((task, index) => (
           <li key={task.start}>
             <Link
               to="/setup"
               state={{ start: task.start, back: '/' }}
-              className="flex items-center gap-4 px-5 py-3.5 transition-colors hover:bg-muted"
+              className="flex items-center gap-3 px-4 py-2 transition-colors hover:bg-muted"
             >
               <span
                 className={cn(
-                  'grid size-8 shrink-0 place-items-center rounded-full border text-sm tabular-nums',
+                  'grid size-4 shrink-0 place-items-center rounded-full border text-[10px] leading-none tabular-nums',
                   task.done
                     ? 'border-(--accent) bg-(--accent) text-(--accent-foreground)'
                     : 'border-(--border-strong) text-muted-foreground',
                 )}
               >
-                {task.done ? <Check size={16} strokeWidth={2} aria-hidden /> : index + 1}
+                {task.done ? <Check size={10} strokeWidth={3} aria-hidden /> : index + 1}
               </span>
-              <span className="flex min-w-0 flex-1 flex-col">
+              <span className="flex min-w-0 flex-1 items-baseline gap-2">
                 <span
                   className={cn(
-                    'font-medium',
+                    'shrink-0 text-sm',
                     // Done steps are struck through (user request, 24 Oct), so what's left stands out.
-                    task.done && 'text-text-secondary line-through decoration-(--border-strong)',
+                    task.done && 'text-muted-foreground line-through',
                   )}
                 >
                   {task.title}
                   {task.done && <span className="sr-only"> (done)</span>}
                 </span>
-                <span className={cn('text-sm text-muted-foreground', task.done && 'line-through')}>
+                <span
+                  className={cn(
+                    // Phones show only the step's name: the line would be cut off.
+                    'hidden truncate text-xs text-muted-foreground sm:inline',
+                    task.done && 'line-through',
+                  )}
+                >
                   {task.detail}
                 </span>
               </span>
               <ChevronRight
-                size={18}
+                size={14}
                 strokeWidth={1.75}
                 className="shrink-0 text-muted-foreground"
                 aria-hidden
@@ -120,7 +135,7 @@ export function SetupChecklist({
             </Link>
           </li>
         ))}
-      </PanelRows>
-    </Panel>
+      </ol>
+    </section>
   );
 }
