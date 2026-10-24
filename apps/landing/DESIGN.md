@@ -25,7 +25,6 @@ One or two **full-bleed dark sections**, as on Shopify, break the page's rhythm 
 | Toast   | Pills of business types                                                            | "Built for"               |
 | Clover  | Feature cards drawn as simplified UI (an order chip, a paid note)                  | Feature and store cards   |
 | Shopify | Sentence with some words dim and some bright, on dark                              | Dark section intro        |
-| Shopify | Big stat figures with a small label above                                          | Pricing                   |
 | Shopify | Numbered steps 01, 02, 03 with hairlines                                           | "How it works"            |
 
 **Not taken:**
@@ -106,6 +105,7 @@ All are hand-written with Tailwind; **there's no shadcn on this site** (user dec
 - **PhotoSlot:** a rounded frame for a stock photo, with a warm gradient until one is added. It names the photo it's waiting for only in development.
 - **Illustration fragments** (`components/art.tsx`): the abstract UI pieces listed under "Keep the product private".
 - **Faq:** `<details>` rows, keyboard-friendly with no script. Closed rows are cream with a ⊕; the open row is `ink` with white text and ⊖.
+- **Receipt** (home pricing, 24 Oct, replacing Shopify's stat figures): a cream paper receipt on the dark section, tilted 2° on a laptop, with a torn zigzag foot (`.receipt-edge`). Each line is GH₵0.00 except online payments, "Small fee", then "To pay today GH₵0.00" and a Caveat "Thank you" (the home page's one script line).
 - **CtaBand:** an orange band (`brand` → `brand-deep`), with a heading, ticks and the main button. The footer card sits on its lower half.
 - **Footer:** a white card with a big top radius, holding the columns, contact and legal links, and the wordmark on orange beneath.
 
@@ -114,6 +114,7 @@ All are hand-written with Tailwind; **there's no shadcn on this site** (user dec
 Toast and Shopify move gently; so do we.
 
 - The highlighter stroke sweeps in once (about 700 ms, ease-out).
+- The pricing receipt prints in once, top to bottom (about 1.1 s), when it's 40% in view (`components/print-in.tsx`).
 - Sections fade up 12 px on first view.
 - The business-type pills scroll slowly sideways.
 - **Everything stops under `prefers-reduced-motion`.** Nothing loops except the pills, and they stop too. There's no parallax, scroll-jacking or autoplaying video.
