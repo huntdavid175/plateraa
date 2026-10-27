@@ -1,0 +1,153 @@
+@import 'tailwindcss';
+@import 'tw-animate-css';
+@import 'shadcn/tailwind.css';
+@import '@fontsource-variable/geist';
+@import '@fontsource-variable/inter';
+@import './components/arc/foundation.css';
+@import './theme.css';
+
+/* Dark mode follows the `dark` class on <html>, set with data-theme="dark" (src/lib/theme.ts). */
+@custom-variant dark (&:where(.dark, .dark *));
+
+/*
+ * Colours come from one place: Arc's token names, set to Brixx's palette in theme.css. The
+ * names below only point at them:
+ * - shadcn's names (bg-background, bg-card, bg-primary, text-muted-foreground, bg-sidebar, …);
+ * - the names the screens built before the rework use (bg-surface, bg-tile, text-text, bg-brand,
+ *   bg-green-bg text-green, …), until each is rebuilt.
+ * shadcn's `accent` is the grey behind a hovered item; Arc's `--accent` is the brand colour. The
+ * Tailwind name keeps shadcn's meaning; the variable keeps Arc's.
+ */
+:root {
+  --muted-foreground: var(--text-muted);
+  --radius: var(--radius-control);
+  /* Read by name in the item editor and the orders-by-hour chart, until they're rebuilt. */
+  --brand: var(--accent);
+  --text: var(--foreground);
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--surface);
+  --color-card-foreground: var(--foreground);
+  --color-popover: var(--surface-raised);
+  --color-popover-foreground: var(--foreground);
+  --color-primary: var(--accent);
+  --color-primary-foreground: var(--accent-foreground);
+  --color-secondary: var(--surface-muted);
+  --color-secondary-foreground: var(--foreground);
+  --color-muted: var(--surface-muted);
+  --color-muted-foreground: var(--text-muted);
+  --color-accent: var(--surface-muted);
+  --color-accent-foreground: var(--foreground);
+  --color-destructive: var(--danger);
+  --color-border: var(--border);
+  --color-input: var(--border-strong);
+  --color-ring: var(--accent);
+  --color-chart-1: var(--series-1);
+  --color-chart-2: var(--series-2);
+  --color-chart-3: var(--series-3);
+  --color-chart-4: var(--series-4);
+  --color-chart-5: var(--text-muted);
+  --color-sidebar: var(--surface);
+  --color-sidebar-foreground: var(--foreground);
+  --color-sidebar-primary: var(--accent-strong);
+  --color-sidebar-primary-foreground: var(--accent-foreground);
+  --color-sidebar-accent: var(--surface-muted);
+  --color-sidebar-accent-foreground: var(--foreground);
+  --color-sidebar-border: var(--border);
+  --color-sidebar-ring: var(--accent);
+
+  /* Ours, beside Arc's own. */
+  --color-surface: var(--surface);
+  --color-accent-strong: var(--accent-strong);
+  --color-accent-subtle: var(--accent-subtle);
+  --color-text-secondary: var(--text-secondary);
+  --color-success: var(--success);
+  --color-warning: var(--warning);
+  --color-danger: var(--danger);
+  --color-info: var(--info);
+  --color-brand-mark: #fc5102;
+
+  /* The names from before the rework. */
+  --color-bg: var(--background);
+  --color-tile: var(--surface-muted);
+  --color-text: var(--foreground);
+  --color-brand: var(--accent);
+  --color-brand-fg: var(--accent-foreground);
+  --color-brand-subtle: var(--accent-subtle);
+  --color-green: var(--success);
+  --color-green-bg: color-mix(in oklab, var(--success) 12%, var(--surface));
+  --color-amber: var(--warning);
+  --color-amber-bg: color-mix(in oklab, var(--warning) 12%, var(--surface));
+  --color-red: var(--danger);
+  --color-red-bg: color-mix(in oklab, var(--danger) 12%, var(--surface));
+  --color-blue: var(--info);
+  --color-blue-bg: color-mix(in oklab, var(--info) 12%, var(--surface));
+
+  /* Inter for text, Geist for headings and figures (money, order numbers) with even digits. */
+  --font-sans: var(--font-body);
+  --font-heading: var(--font-display);
+  --font-mono: var(--font-display);
+
+  --radius-sm: calc(var(--radius) * 0.6);
+  --radius-md: calc(var(--radius) * 0.8);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) * 1.4);
+  --radius-2xl: calc(var(--radius) * 1.8);
+  --radius-3xl: calc(var(--radius) * 2.2);
+  --radius-4xl: calc(var(--radius) * 2.6);
+}
+
+html,
+body,
+#root {
+  height: 100%;
+}
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+  font-family: var(--font-body);
+  letter-spacing: var(--tracking-body);
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Money and order numbers: figures of even width, so columns line up and totals don't jiggle. */
+.font-mono,
+.tabular-nums {
+  font-variant-numeric: tabular-nums;
+}
+
+/*
+ * Scrollbars. A bar that appears on hover takes width and shifts everything beside it, so none
+ * of them do.
+ */
+
+/* No bar at all: the sidebar and rows of pills. They still scroll by wheel, trackpad or finger. */
+.no-scrollbar {
+  scrollbar-width: none;
+}
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+
+/* A thin bar, only when there's more to see: dialogs. */
+.thin-scrollbar {
+  scrollbar-width: thin;
+  scrollbar-color: var(--border) transparent;
+}
+
+/* The page itself: a thin bar, with its room always kept so the page never moves when it shows. */
+.page-scroll {
+  scrollbar-gutter: stable;
+  scrollbar-width: thin;
+  scrollbar-color: var(--border) transparent;
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+}

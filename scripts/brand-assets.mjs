@@ -180,6 +180,11 @@ const outputs = {
   'apps/dashboard/public/apple-touch-icon.png': () => icon(180, { background: 'full' }),
   'apps/dashboard/public/logo.png': () => icon(256),
   'apps/dashboard/public/wordmark.png': () => wordmark(96),
+  // The admin console, same icons as the dashboard.
+  'apps/admin/public/favicon.ico': () => ico([16, 32, 48]),
+  'apps/admin/public/icon-192.png': () => icon(192),
+  'apps/admin/public/apple-touch-icon.png': () => icon(180, { background: 'full' }),
+  'apps/admin/public/logo.png': () => icon(256),
   // The online store (Next picks up favicon.ico, icon.png and apple-icon.png in app/).
   'apps/storefront/app/favicon.ico': () => ico([16, 32, 48]),
   'apps/storefront/app/icon.png': () => icon(192),

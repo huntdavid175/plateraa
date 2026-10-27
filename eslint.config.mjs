@@ -20,6 +20,9 @@ export default defineConfig([
       '.claude/skills/**',
       // Arc (uiarc.dev) components, installed as-is by the shadcn CLI.
       'apps/dashboard/src/components/arc/**',
+      'apps/admin/src/components/arc/**',
+      // Impeccable's decision sketches and notes for the admin console.
+      'apps/admin/.impeccable/**',
     ],
   },
   js.configs.recommended,

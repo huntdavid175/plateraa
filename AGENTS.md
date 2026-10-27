@@ -55,6 +55,7 @@ A solo founder (GitHub `huntdavid175`) builds it with an AI agent. Work started 
   - Still open in `plan.md`:
     - raw counts on the tablet (the `stock.raw_count` command exists; no tablet screen yet);
     - 3.3 receipts (later, once the printer arrives: user decision, 13 Sep).
+- **The admin console** (27 Oct, user request; plan.md Phase 4 and 6): `apps/admin`, Brixx's own console with two roles, Admin and Customer service (`platform_staff`, `PLATFORM_ROLES` in `@brixx/shared`), over `/api/platform`. Approvals, businesses, support search, analytics, health, audit log and team. The dashboard's look, built from shadcn and Arc components (27 Oct, user decision). `pnpm --filter @brixx/admin dev` on http://localhost:5174 (`?preview` for sample data); not deployed yet. See `apps/admin/AGENTS.md`.
 - **Next toward R1a** (`plan.md` Phase 4): the admin CLI v0 (list and suspend businesses, revoke a tablet, reset a PIN, export the audit log), a performance check on a 2–3 GB budget tablet, the APK size, the R1a definition of done, and moving Render to the `production` branch before installing at the first vendors.
 - Founder tasks (Moolre, lawyer, printers, domain, Play Console) are Phase 0 in `plan.md`.
 
@@ -100,6 +101,7 @@ apps/mobile         Expo tablet app + Kotlin modules  → apps/mobile/AGENTS.md
 apps/dashboard      Vite React dashboard              → apps/dashboard/AGENTS.md
 apps/storefront     Next.js online store              → apps/storefront/AGENTS.md
 apps/landing        Next.js landing page (Brixx's own site) → apps/landing/AGENTS.md
+apps/admin          Vite React admin console (Brixx team) → apps/admin/AGENTS.md
 packages/db         Drizzle schema, migrations, RLS   → packages/db/AGENTS.md
 packages/shared     money, pricing, order rules, capabilities, sync command schemas
 packages/api-client generated OpenAPI types + createApiClient()

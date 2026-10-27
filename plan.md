@@ -420,7 +420,8 @@ _What vendors need most: one link on WhatsApp and Instagram where customers orde
     - _**We're told** through Sentry when a tablet is online but stuck (at most once an hour per tablet). Server errors (5xx) and background-job failures already went to Sentry._
     - _**At the counter**, the banner warns once changes haven't reached the server for 30 minutes._
     - _Not done: Sentry on the tablet itself (it needs a new EAS build), so a crash on the tablet isn't reported yet. 13 Sep: the counter's sync warnings show on the tablet._
-- [ ] Admin CLI v0: list/suspend tenants, revoke a device, reset a PIN, export the audit log
+- [x] Admin CLI v0: list/suspend tenants, revoke a device, reset a PIN, export the audit log
+  - _27 Oct: done as the admin console (`apps/admin`) instead of a CLI: list, suspend and restore businesses, sign a tablet out, set a new PIN, download the audit log as CSV. The only command left is `admin:grant <email> ADMIN|SUPPORT`, to add the first Admin._
 - [ ] All items in the **R1a definition of done** below are green
 - [ ] Install at 1–2 vendors; on site for their first day
 
@@ -431,7 +432,7 @@ _What vendors need most: one link on WhatsApp and Instagram where customers orde
 - [ ] Triage + fix pilot feedback
 - [ ] Harden printing across the surveyed printer models
 - [ ] Polish self-serve onboarding + measure time to first order
-  - [x] Joining is a request Brixx approves (user decision, 24 Oct) — _sign-up, then the business, phone, area and how it takes orders today; it waits as `PENDING` (dashboard, tablet and store all refused) until `pnpm --filter @brixx/api admin:approve`. Approved owners get a setup checklist on Home (menu, PIN, Moolre, tablet). No notification yet: `admin:requests` lists them until the admin dashboard exists._
+  - [x] Joining is a request Brixx approves (user decision, 24 Oct) — _sign-up, then the business, phone, area and how it takes orders today; it waits as `PENDING` (dashboard, tablet and store all refused) until `pnpm --filter @brixx/api admin:approve`. Approved owners get a setup checklist on Home (menu, PIN, Moolre, tablet). No notification yet: `admin:requests` lists them until the admin dashboard exists. 27 Oct: the admin console's Requests page approves or declines them._
 - [ ] Play closed-testing track set up
 - [ ] Onboard 5–10 vendors
 - [ ] Moolre spike for R1.5: MoMo prompt on a vendor's own account (_links moved to the pilot, §2.5; wallets and transfers wait for the split_)
@@ -447,7 +448,8 @@ _Vendor's own Moolre account only (decided 10 Sep): customer money never passes 
 - [ ] Fee snapshots per payment (Moolre's fee / net, rates in bps)
 - [ ] Fee-bearer setting (vendor absorbs Moolre's fee, or a visible customer service fee)
 - [ ] Daily reconciliation against Moolre → `recon_exceptions`
-- [ ] Super-admin console v1
+- [x] Super-admin console v1
+  - _27 Oct (moved up, user request): `apps/admin`, two roles (Admin, Customer service) in `platform_staff` (migration 0016), API under `/api/platform`. Home (today, four queues, "Needs someone"), Requests (approve, or decline with a reason), Businesses and one business (tablets, staff PINs, orders, links, activity, team notes; Admins suspend), Support search (name, phone, order number, email), Analytics (funnel, trends, each business), Health, Audit log (CSV for Admins) and Team. In the dashboard's look, built from shadcn and Arc (Arc's metric cards, sortable tables, charts, timeline, JSON viewer and command palette). Not deployed yet._
 - [ ] Photo-menu import
 
 ---

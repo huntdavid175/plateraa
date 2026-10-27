@@ -1,0 +1,62 @@
+{
+  "detector": {
+    "ignoreRules": [],
+    "ignoreFiles": [],
+    "ignoreValues": [
+      {
+        "rule": "*",
+        "value": "*",
+        "files": [
+          ".impeccable/mocks/decision/assigned.html"
+        ],
+        "createdAt": "2026-10-27T17:43:10.242Z",
+        "reason": "Claude: one-off decision-page sketch, not shipped; the built app (src) passes detect with no findings"
+      },
+      {
+        "rule": "*",
+        "value": "*",
+        "files": [
+          ".impeccable/mocks/decision/model-pick.html"
+        ],
+        "createdAt": "2026-10-27T17:43:10.340Z",
+        "reason": "Claude: one-off decision-page sketch, not shipped; the built app (src) passes detect with no findings"
+      },
+      {
+        "rule": "*",
+        "value": "*",
+        "files": [
+          ".impeccable/mocks/decision/canon.html"
+        ],
+        "createdAt": "2026-10-27T17:43:10.438Z",
+        "reason": "Claude: one-off decision-page sketch, not shipped; the built app (src) passes detect with no findings"
+      },
+      {
+        "rule": "design-system-font",
+        "value": "*",
+        "files": [
+          ".impeccable/mocks/decision/assigned.html"
+        ],
+        "createdAt": "2026-10-27T17:47:41.079Z",
+        "reason": "Claude: one-off decision-page sketch, not shipped; predates DESIGN.md"
+      },
+      {
+        "rule": "design-system-font",
+        "value": "*",
+        "files": [
+          ".impeccable/mocks/decision/model-pick.html"
+        ],
+        "createdAt": "2026-10-27T17:47:41.159Z",
+        "reason": "Claude: one-off decision-page sketch, not shipped; predates DESIGN.md"
+      },
+      {
+        "rule": "design-system-font",
+        "value": "*",
+        "files": [
+          ".impeccable/mocks/decision/canon.html"
+        ],
+        "createdAt": "2026-10-27T17:47:41.233Z",
+        "reason": "Claude: one-off decision-page sketch, not shipped; predates DESIGN.md"
+      }
+    ]
+  }
+}

@@ -15,3 +15,6 @@ packages/api-client/src/schema.ts
 .claude/agents/impeccable-*
 # Arc (uiarc.dev) components, installed as-is by the shadcn CLI.
 apps/dashboard/src/components/arc
+# Impeccable decision sketches and notes for the admin console.
+apps/admin/.impeccable
+apps/admin/src/components/arc

@@ -46,3 +46,7 @@ Thumbs.db
 
 # design references kept on the laptop (third-party screenshots, ~50 MB)
 apps/landing/design_inspiration/
+
+# Impeccable working files for the admin console (screenshots, sketches, caches); its settings stay.
+apps/admin/.impeccable/*
+!apps/admin/.impeccable/config.json

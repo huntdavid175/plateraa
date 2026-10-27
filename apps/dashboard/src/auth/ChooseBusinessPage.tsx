@@ -32,7 +32,9 @@ export function ChooseBusinessPage() {
   }, [only, tenantId, navigate]);
 
   if (!token) return <Navigate to="/sign-in" replace />;
-  if (open?.length === 0) return <Navigate to="/join" replace />;
+  // A suspended business stays listed here, so its owner isn't sent to ask to join again.
+  const suspended = businesses.data?.some((business) => business.status === 'SUSPENDED');
+  if (open?.length === 0 && !suspended) return <Navigate to="/join" replace />;
 
   const choose = (id: string) => {
     session.chooseBusiness(id);
@@ -81,7 +83,11 @@ export function ChooseBusinessPage() {
                   className="flex min-h-16 flex-col justify-center px-4 text-text-secondary"
                 >
                   <span className="truncate font-medium">{business.name}</span>
-                  <span className="text-sm text-muted-foreground">Waiting for approval</span>
+                  <span className="text-sm text-muted-foreground">
+                    {business.status === 'SUSPENDED'
+                      ? 'Paused by Brixx. Call us to open it again.'
+                      : 'Waiting for approval'}
+                  </span>
                 </li>
               );
             }
