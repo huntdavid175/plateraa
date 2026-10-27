@@ -254,4 +254,25 @@ describe.skipIf(!hasDatabase())('the admin console (against Neon)', () => {
       .send({ role: 'SUPPORT', active: true })
       .expect(403);
   });
+
+  it('keeps the Brixx team and vendors on separate logins', async () => {
+    // A team login can't ask for a business, so it never shows up as a vendor.
+    await as(admin, request(server()).post('/api/onboarding/business'))
+      .send({
+        name: `Team Kitchen ${ulid().slice(-5)}`,
+        vendorType: 'CHOP_BAR',
+        ...BUSINESS_REQUEST,
+      })
+      .expect(403);
+
+    // A vendor's login can't join the team.
+    const { pool } = app.get<DatabaseHandle>(DATABASE);
+    const { rows } = await pool.query<{ email: string }>('select email from "user" where id = $1', [
+      vendor.userId,
+    ]);
+    const refused = await as(admin, request(server()).post('/api/platform/team'))
+      .send({ email: rows[0]!.email, role: 'SUPPORT' })
+      .expect(400);
+    expect(refused.body.message).toMatch(/vendor’s login/);
+  });
 });

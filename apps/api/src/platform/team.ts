@@ -17,6 +17,7 @@ import { ApiBearerAuth, ApiNoContentResponse, ApiOkResponse } from '@nestjs/swag
 import type { PlatformRole } from '@brixx/shared';
 import { AUTH, type Auth } from '../auth/auth.factory';
 import { DATABASE, type DatabaseHandle } from '../database/database.module';
+import { VENDOR_LOGIN, vendorLogin } from './vendor-login';
 import { CurrentPlatformUser, Platform, type PlatformUser } from './guard';
 import { AddTeamMemberDto, PlatformMeDto, TeamMemberDto, UpdateTeamMemberDto } from './schemas';
 
@@ -59,8 +60,9 @@ export class PlatformTeam {
   }
 
   /**
-   * Adds someone by email. A login that already exists (a vendor's owner, say) just gets the role;
-   * otherwise one is made with the name and starting password given, for the Admin to pass on.
+   * Adds someone by email. Usually the login is made here, with the name and starting password
+   * given, for the Admin to pass on. An existing login can join only if no business uses it: the
+   * team and vendors never share a login, so the team never shows up as a vendor.
    */
   async add(
     by: PlatformUser,
@@ -69,6 +71,9 @@ export class PlatformTeam {
     let [existing] = await withPlatform(this.database.db, (tx) =>
       tx.select({ id: user.id }).from(user).where(eq(user.email, input.email)),
     );
+    if (existing && (await vendorLogin(this.database.db, existing.id))) {
+      throw new BadRequestException(VENDOR_LOGIN);
+    }
     if (!existing) {
       if (!input.name || !input.password) {
         throw new BadRequestException(

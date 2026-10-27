@@ -9,7 +9,9 @@ Two, from `PLATFORM_ROLES` in `@brixx/shared` (`platform.ts`), held in `platform
 - **Customer service** (`SUPPORT`): sees everything, approves or declines sign-ups, resets a staff PIN, signs a tablet out, writes notes on a business.
 - **Admin** (`ADMIN`): all of that, plus suspending and restoring a business, downloading the audit log and managing the team.
 
-The server checks every permission (`@Platform(...)`); the console only hides what someone can't use (`useCan()` in `lib/query.ts`). The first Admin is added with `pnpm --filter @brixx/api admin:grant <email> ADMIN` (the login must exist: sign up on the dashboard first); after that, Admins add people on the Team page.
+The server checks every permission (`@Platform(...)`); the console only hides what someone can't use (`useCan()` in `lib/query.ts`). The first Admin is added with `pnpm --filter @brixx/api admin:grant <email> ADMIN "Their name"`, which makes the login itself and asks for its password in the terminal; after that, Admins add people on the Team page, which makes their logins too.
+
+**The team and vendors never share a login** (27 Oct, user decision: an Admin had shown up as a vendor). A team login can't ask for a business (the API refuses it), and an email that already belongs to a business can't join the team. Nobody on the team goes through the vendor sign-up.
 
 ## Screens
 

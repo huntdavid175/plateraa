@@ -1,10 +1,20 @@
-import { Body, Controller, Get, Inject, Injectable, Post, UseGuards } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  ForbiddenException,
+  Get,
+  Inject,
+  Injectable,
+  Post,
+  UseGuards,
+} from '@nestjs/common';
 import {
   and,
   eq,
   inArray,
   isNull,
   locations,
+  platformStaff,
   staffMembers,
   tenantSettings,
   tenants,
@@ -82,6 +92,19 @@ export class OnboardingService {
 
   /** Creates the business, its default location and settings, and makes the login its owner. */
   async createBusiness(user: AuthUser, input: z.infer<typeof createBusinessSchema>) {
+    // Brixx's own team and vendors never share a login, so the team never shows up as a vendor.
+    const [teamMember] = await withPlatform(this.database.db, (tx) =>
+      tx
+        .select({ userId: platformStaff.userId })
+        .from(platformStaff)
+        .where(eq(platformStaff.userId, user.id)),
+    );
+    if (teamMember) {
+      throw new ForbiddenException(
+        'This is a Brixx team login, so it can’t run a business. Sign up with another email.',
+      );
+    }
+
     const tenantId = ulid();
     const staffId = ulid();
     const slug = await this.uniqueSlug(input.name);
