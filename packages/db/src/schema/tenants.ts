@@ -14,6 +14,9 @@ export const tenants = pgTable('tenants', {
   area: text(),
   orderWays: text().array(),
   approvedAt: timestamp({ withTimezone: true }),
+  /** Why Brixx declined or suspended it, shown to the team; null otherwise. */
+  statusReason: text(),
+  statusChangedAt: timestamp({ withTimezone: true }),
   taxEnabled: boolean().notNull().default(false),
   createdAt: timestamp({ withTimezone: true }).notNull().defaultNow(),
   updatedAt: timestamp({ withTimezone: true })

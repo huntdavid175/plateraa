@@ -7,6 +7,7 @@ export * from './money.js';
 export * from './order-payment.js';
 export * from './order-state.js';
 export * from './phone.js';
+export * from './platform.js';
 export * from './pin.js';
 export * from './pricing.js';
 export * from './store-hours.js';

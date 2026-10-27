@@ -836,13 +836,417 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/platform/me": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["PlatformTeamController_me"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/platform/team": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["PlatformTeamController_list"];
+        put?: never;
+        post: operations["PlatformTeamController_add"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/platform/team/{userId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put: operations["PlatformTeamController_update"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/platform/overview": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["PlatformInsightsController_overview"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/platform/analytics": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["PlatformInsightsController_analytics"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/platform/health": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["PlatformInsightsController_health"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/platform/businesses": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["PlatformBusinessesController_list"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/platform/businesses/{tenantId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["PlatformBusinessesController_detail"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/platform/requests": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["PlatformBusinessesController_requests"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/platform/requests/{tenantId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["PlatformBusinessesController_request"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/platform/requests/{tenantId}/approve": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["PlatformBusinessesController_approve"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/platform/requests/{tenantId}/decline": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["PlatformBusinessesController_decline"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/platform/businesses/{tenantId}/suspend": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["PlatformBusinessesController_suspend"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/platform/businesses/{tenantId}/restore": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["PlatformBusinessesController_restore"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/platform/businesses/{tenantId}/notes": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["PlatformBusinessesController_addNote"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/platform/businesses/{tenantId}/tablets/{deviceId}/sign-out": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["PlatformBusinessesController_signOutTablet"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/platform/businesses/{tenantId}/staff/{staffId}/pin": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["PlatformBusinessesController_resetPin"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/platform/search": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["PlatformSearchController_search"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/platform/audit": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["PlatformAuditController_list"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/platform/audit/export": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["PlatformAuditController_export"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
 }
 export type webhooks = Record<string, never>;
 export interface components {
     schemas: {
         HealthDto_Output: {
-            /** @enum {string} */
-            status: "ok";
+            server: {
+                startedAt: string;
+                commit: string | null;
+                databaseMs: number;
+                nodeVersion: string;
+            };
+            tablets: {
+                id: string;
+                tenantId: string;
+                businessName: string;
+                businessSlug: string;
+                name: string;
+                code: string;
+                appVersion: string | null;
+                lastSeenAt: string | null;
+                lastSyncedAt: string | null;
+                pendingChanges: number;
+                oldestPendingAt: string | null;
+                signedOut: boolean;
+                alerts: {
+                    /** @enum {string} */
+                    kind: "OUT_OF_TOUCH" | "STUCK" | "WAITING" | "REFUSED";
+                    count: number;
+                    since: string | null;
+                }[];
+            }[];
+            tabletCounts: {
+                total: number;
+                online: number;
+                today: number;
+                quiet: number;
+                signedOut: number;
+                waitingChanges: number;
+            };
+            versions: {
+                version: string;
+                tablets: number;
+            }[];
+            sync: {
+                applied: number;
+                rejected: number;
+                byHour: {
+                    hour: string;
+                    applied: number;
+                    rejected: number;
+                }[];
+            };
+            links: {
+                byStatus: {
+                    status: string;
+                    count: number;
+                }[];
+                failed: {
+                    id: string;
+                    orderNumber: string;
+                    status: string;
+                    amount: number;
+                    phone: string;
+                    failure: string | null;
+                    createdAt: string;
+                    tenantId: string;
+                    businessName: string;
+                }[];
+                byDay: {
+                    date: string;
+                    sent: number;
+                    paid: number;
+                    failed: number;
+                }[];
+                medianMinutesToPay: number | null;
+            };
+            provider: {
+                callbacks: number;
+                lastAt: string | null;
+            };
+            refusals: {
+                type: string;
+                count: number;
+                businesses: number;
+                lastAt: string;
+            }[];
+            storesWithoutPayments: {
+                id: string;
+                name: string;
+                area: string | null;
+            }[];
         };
         CreateBusinessDto: {
             name: string;
@@ -865,7 +1269,7 @@ export interface components {
             /** @enum {string} */
             role: "OWNER" | "MANAGER" | "STAFF" | "RIDER";
             /** @enum {string} */
-            status: "ACTIVE" | "SUSPENDED" | "PENDING";
+            status: "ACTIVE" | "SUSPENDED" | "PENDING" | "DECLINED";
         };
         ContextDto_Output: {
             tenantId: string;
@@ -2205,6 +2609,487 @@ export interface components {
         PayDto_Output: {
             payUrl: string | null;
             payProblem: string | null;
+        };
+        PlatformMeDto_Output: {
+            id: string;
+            name: string;
+            email: string;
+            /** @enum {string} */
+            role: "ADMIN" | "SUPPORT";
+            capabilities: ("platform.view" | "requests.decide" | "support.fix" | "notes.write" | "businesses.suspend" | "audit.export" | "team.manage")[];
+        };
+        TeamMemberDto_Output: {
+            userId: string;
+            name: string;
+            email: string;
+            /** @enum {string} */
+            role: "ADMIN" | "SUPPORT";
+            active: boolean;
+            addedByName: string | null;
+            createdAt: string;
+            lastSignInAt: string | null;
+        };
+        AddTeamMemberDto: {
+            /** Format: email */
+            email: string;
+            /** @enum {string} */
+            role: "ADMIN" | "SUPPORT";
+            name?: string;
+            password?: string;
+        };
+        UpdateTeamMemberDto: {
+            /** @enum {string} */
+            role: "ADMIN" | "SUPPORT";
+            active: boolean;
+        };
+        OverviewDto_Output: {
+            today: string;
+            ordersToday: number;
+            valueToday: number;
+            activeBusinessesToday: number;
+            ordersSameTimeLastWeek: number;
+            businesses: {
+                active: number;
+                pending: number;
+                suspended: number;
+            };
+            requests: {
+                id: string;
+                name: string;
+                slug: string;
+                vendorType: string;
+                /** @enum {string} */
+                status: "ACTIVE" | "SUSPENDED" | "PENDING" | "DECLINED";
+                statusReason: string | null;
+                statusChangedAt: string | null;
+                area: string | null;
+                contactPhone: string | null;
+                orderWays: string[];
+                ownerName: string | null;
+                ownerEmail: string | null;
+                createdAt: string;
+            }[];
+            tablets: {
+                id: string;
+                tenantId: string;
+                businessName: string;
+                businessSlug: string;
+                name: string;
+                code: string;
+                appVersion: string | null;
+                lastSeenAt: string | null;
+                lastSyncedAt: string | null;
+                pendingChanges: number;
+                oldestPendingAt: string | null;
+                signedOut: boolean;
+                alerts: {
+                    /** @enum {string} */
+                    kind: "OUT_OF_TOUCH" | "STUCK" | "WAITING" | "REFUSED";
+                    count: number;
+                    since: string | null;
+                }[];
+            }[];
+            failedLinks: {
+                id: string;
+                orderNumber: string;
+                status: string;
+                amount: number;
+                phone: string;
+                failure: string | null;
+                createdAt: string;
+                tenantId: string;
+                businessName: string;
+            }[];
+            quiet: {
+                id: string;
+                name: string;
+                area: string | null;
+                lastOrderOn: string | null;
+            }[];
+            byHour: number[];
+            recentActions: {
+                id: string;
+                tenantId: string;
+                businessName: string;
+                actorName: string;
+                byBrixx: boolean;
+                action: string;
+                entityType: string;
+                entityId: string;
+                before: unknown;
+                after: unknown;
+                createdAt: string;
+            }[];
+        };
+        AnalyticsDto_Output: {
+            days: number;
+            from: string;
+            to: string;
+            totals: {
+                orders: number;
+                value: number;
+                activeBusinesses: number;
+                averageOrder: number;
+                onlineShare: number;
+            };
+            previous: {
+                orders: number;
+                value: number;
+                activeBusinesses: number;
+            };
+            daily: {
+                date: string;
+                orders: number;
+                value: number;
+                businesses: number;
+            }[];
+            funnel: {
+                requested: number;
+                approved: number;
+                menu: number;
+                tablet: number;
+                firstOrder: number;
+                activeThisWeek: number;
+            };
+            byType: {
+                key: string;
+                orders: number;
+                value: number;
+            }[];
+            bySource: {
+                key: string;
+                orders: number;
+                value: number;
+            }[];
+            businesses: {
+                id: string;
+                name: string;
+                area: string | null;
+                orders: number;
+                previousOrders: number;
+                value: number;
+                activeDays: number;
+                lastOrderOn: string | null;
+                spark: number[];
+                averageOrder: number;
+                cancelled: number;
+                onlineShare: number;
+            }[];
+            previousDaily: number[];
+            losses: {
+                cancelled: number;
+                cancelledShare: number;
+                refunds: number;
+                refunded: number;
+            };
+            newCustomers: number;
+            byMethod: {
+                key: string;
+                orders: number;
+                value: number;
+            }[];
+            byHour: number[];
+            byWeekday: number[];
+            topItems: {
+                name: string;
+                quantity: number;
+                value: number;
+                businesses: number;
+            }[];
+            byArea: {
+                key: string;
+                orders: number;
+                value: number;
+                businesses: number;
+            }[];
+            byVendorType: {
+                key: string;
+                orders: number;
+                value: number;
+                businesses: number;
+            }[];
+            signups: {
+                week: string;
+                requested: number;
+                approved: number;
+            }[];
+        };
+        BusinessRowDto_Output: {
+            id: string;
+            name: string;
+            slug: string;
+            vendorType: string;
+            /** @enum {string} */
+            status: "ACTIVE" | "SUSPENDED" | "PENDING" | "DECLINED";
+            statusReason: string | null;
+            area: string | null;
+            contactPhone: string | null;
+            ownerName: string | null;
+            ownerEmail: string | null;
+            createdAt: string;
+            approvedAt: string | null;
+            orders7d: number;
+            value7d: number;
+            lastOrderOn: string | null;
+            tablets: number;
+            tabletAlerts: number;
+            paymentConnected: boolean;
+            storeOn: boolean;
+        };
+        BusinessDetailDto_Output: {
+            id: string;
+            name: string;
+            slug: string;
+            vendorType: string;
+            /** @enum {string} */
+            status: "ACTIVE" | "SUSPENDED" | "PENDING" | "DECLINED";
+            statusReason: string | null;
+            area: string | null;
+            contactPhone: string | null;
+            ownerName: string | null;
+            ownerEmail: string | null;
+            createdAt: string;
+            approvedAt: string | null;
+            orders7d: number;
+            value7d: number;
+            lastOrderOn: string | null;
+            tablets: number;
+            tabletAlerts: number;
+            paymentConnected: boolean;
+            storeOn: boolean;
+            orderWays: string[];
+            timezone: string;
+            storeUrl: string;
+            paymentAccountLast4: string | null;
+            menuItems: number;
+            customers: number;
+            logins: {
+                name: string;
+                email: string;
+                /** @enum {string} */
+                role: "OWNER" | "MANAGER" | "STAFF" | "RIDER";
+                active: boolean;
+            }[];
+            staff: {
+                id: string;
+                name: string;
+                /** @enum {string} */
+                role: "OWNER" | "MANAGER" | "STAFF" | "RIDER";
+                active: boolean;
+                hasPin: boolean;
+                lockedUntil: string | null;
+            }[];
+            tabletList: {
+                id: string;
+                tenantId: string;
+                businessName: string;
+                businessSlug: string;
+                name: string;
+                code: string;
+                appVersion: string | null;
+                lastSeenAt: string | null;
+                lastSyncedAt: string | null;
+                pendingChanges: number;
+                oldestPendingAt: string | null;
+                signedOut: boolean;
+                alerts: {
+                    /** @enum {string} */
+                    kind: "OUT_OF_TOUCH" | "STUCK" | "WAITING" | "REFUSED";
+                    count: number;
+                    since: string | null;
+                }[];
+            }[];
+            trend: {
+                date: string;
+                orders: number;
+                value: number;
+            }[];
+            recentOrders: {
+                id: string;
+                displayNumber: string;
+                businessDate: string;
+                createdAt: string;
+                type: string;
+                source: string;
+                status: string;
+                total: number;
+                amountPaid: number;
+            }[];
+            recentLinks: {
+                id: string;
+                orderNumber: string;
+                status: string;
+                amount: number;
+                phone: string;
+                failure: string | null;
+                createdAt: string;
+            }[];
+            notes: {
+                id: string;
+                body: string;
+                authorName: string;
+                createdAt: string;
+            }[];
+            activity: {
+                id: string;
+                tenantId: string;
+                businessName: string;
+                actorName: string;
+                byBrixx: boolean;
+                action: string;
+                entityType: string;
+                entityId: string;
+                before: unknown;
+                after: unknown;
+                createdAt: string;
+            }[];
+        };
+        RequestDto_Output: {
+            id: string;
+            name: string;
+            slug: string;
+            vendorType: string;
+            /** @enum {string} */
+            status: "ACTIVE" | "SUSPENDED" | "PENDING" | "DECLINED";
+            statusReason: string | null;
+            statusChangedAt: string | null;
+            area: string | null;
+            contactPhone: string | null;
+            orderWays: string[];
+            ownerName: string | null;
+            ownerEmail: string | null;
+            createdAt: string;
+        };
+        RequestDetailDto_Output: {
+            id: string;
+            name: string;
+            slug: string;
+            vendorType: string;
+            /** @enum {string} */
+            status: "ACTIVE" | "SUSPENDED" | "PENDING" | "DECLINED";
+            statusReason: string | null;
+            statusChangedAt: string | null;
+            area: string | null;
+            contactPhone: string | null;
+            orderWays: string[];
+            ownerName: string | null;
+            ownerEmail: string | null;
+            createdAt: string;
+            timezone: string;
+            owner: {
+                name: string | null;
+                email: string | null;
+                emailVerified: boolean;
+                signedUpAt: string | null;
+                lastSignInAt: string | null;
+                otherBusinesses: {
+                    id: string;
+                    name: string;
+                    /** @enum {string} */
+                    status: "ACTIVE" | "SUSPENDED" | "PENDING" | "DECLINED";
+                    /** @enum {string} */
+                    role: "OWNER" | "MANAGER" | "STAFF" | "RIDER";
+                }[];
+            };
+            lookalikes: {
+                id: string;
+                name: string;
+                /** @enum {string} */
+                status: "ACTIVE" | "SUSPENDED" | "PENDING" | "DECLINED";
+                area: string | null;
+                createdAt: string;
+                reasons: string[];
+            }[];
+            nearby: {
+                open: number;
+                waiting: number;
+            };
+            notes: {
+                id: string;
+                body: string;
+                authorName: string;
+                createdAt: string;
+            }[];
+            activity: {
+                id: string;
+                tenantId: string;
+                businessName: string;
+                actorName: string;
+                byBrixx: boolean;
+                action: string;
+                entityType: string;
+                entityId: string;
+                before: unknown;
+                after: unknown;
+                createdAt: string;
+            }[];
+        };
+        ReasonDto: {
+            reason: string;
+        };
+        NoteInputDto: {
+            body: string;
+        };
+        PinResetDto: {
+            pin: string;
+            reason: string;
+        };
+        SearchDto_Output: {
+            businesses: {
+                id: string;
+                name: string;
+                slug: string;
+                /** @enum {string} */
+                status: "ACTIVE" | "SUSPENDED" | "PENDING" | "DECLINED";
+                area: string | null;
+                ownerEmail: string | null;
+                contactPhone: string | null;
+            }[];
+            orders: {
+                id: string;
+                displayNumber: string;
+                businessDate: string;
+                createdAt: string;
+                type: string;
+                source: string;
+                status: string;
+                total: number;
+                amountPaid: number;
+                tenantId: string;
+                businessName: string;
+            }[];
+            customers: {
+                id: string;
+                tenantId: string;
+                businessName: string;
+                phone: string;
+                name: string | null;
+                orders: number;
+            }[];
+            links: {
+                id: string;
+                orderNumber: string;
+                status: string;
+                amount: number;
+                phone: string;
+                failure: string | null;
+                createdAt: string;
+                tenantId: string;
+                businessName: string;
+            }[];
+        };
+        AuditRowDto_Output: {
+            id: string;
+            tenantId: string;
+            businessName: string;
+            actorName: string;
+            byBrixx: boolean;
+            action: string;
+            entityType: string;
+            entityId: string;
+            before: unknown;
+            after: unknown;
+            createdAt: string;
         };
     };
     responses: never;
@@ -3580,6 +4465,465 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["TrackedDto_Output"];
+                };
+            };
+        };
+    };
+    PlatformTeamController_me: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PlatformMeDto_Output"];
+                };
+            };
+        };
+    };
+    PlatformTeamController_list: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["TeamMemberDto_Output"][];
+                };
+            };
+        };
+    };
+    PlatformTeamController_add: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AddTeamMemberDto"];
+            };
+        };
+        responses: {
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    PlatformTeamController_update: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                userId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["UpdateTeamMemberDto"];
+            };
+        };
+        responses: {
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    PlatformInsightsController_overview: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["OverviewDto_Output"];
+                };
+            };
+        };
+    };
+    PlatformInsightsController_analytics: {
+        parameters: {
+            query?: {
+                days?: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AnalyticsDto_Output"];
+                };
+            };
+        };
+    };
+    PlatformInsightsController_health: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HealthDto_Output"];
+                };
+            };
+        };
+    };
+    PlatformBusinessesController_list: {
+        parameters: {
+            query?: {
+                search?: string;
+                filter?: "ACTIVE" | "SUSPENDED" | "PENDING" | "DECLINED" | "QUIET" | "ALL";
+                limit?: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BusinessRowDto_Output"][];
+                };
+            };
+        };
+    };
+    PlatformBusinessesController_detail: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                tenantId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BusinessDetailDto_Output"];
+                };
+            };
+        };
+    };
+    PlatformBusinessesController_requests: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["RequestDto_Output"][];
+                };
+            };
+        };
+    };
+    PlatformBusinessesController_request: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                tenantId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["RequestDetailDto_Output"];
+                };
+            };
+        };
+    };
+    PlatformBusinessesController_approve: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                tenantId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    PlatformBusinessesController_decline: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                tenantId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ReasonDto"];
+            };
+        };
+        responses: {
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    PlatformBusinessesController_suspend: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                tenantId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ReasonDto"];
+            };
+        };
+        responses: {
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    PlatformBusinessesController_restore: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                tenantId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ReasonDto"];
+            };
+        };
+        responses: {
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    PlatformBusinessesController_addNote: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                tenantId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["NoteInputDto"];
+            };
+        };
+        responses: {
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    PlatformBusinessesController_signOutTablet: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                tenantId: string;
+                deviceId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ReasonDto"];
+            };
+        };
+        responses: {
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    PlatformBusinessesController_resetPin: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                tenantId: string;
+                staffId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["PinResetDto"];
+            };
+        };
+        responses: {
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    PlatformSearchController_search: {
+        parameters: {
+            query: {
+                q: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SearchDto_Output"];
+                };
+            };
+        };
+    };
+    PlatformAuditController_list: {
+        parameters: {
+            query?: {
+                tenantId?: string;
+                who?: "all" | "brixx" | "vendor";
+                action?: string;
+                from?: string;
+                to?: string;
+                before?: string;
+                limit?: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AuditRowDto_Output"][];
+                };
+            };
+        };
+    };
+    PlatformAuditController_export: {
+        parameters: {
+            query?: {
+                tenantId?: string;
+                who?: "all" | "brixx" | "vendor";
+                action?: string;
+                from?: string;
+                to?: string;
+                before?: string;
+                limit?: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "text/csv": string;
                 };
             };
         };

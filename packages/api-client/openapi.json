@@ -2294,6 +2294,888 @@
           "PublicStore"
         ]
       }
+    },
+    "/api/platform/me": {
+      "get": {
+        "operationId": "PlatformTeamController_me",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PlatformMeDto_Output"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "PlatformTeam"
+        ]
+      }
+    },
+    "/api/platform/team": {
+      "get": {
+        "operationId": "PlatformTeamController_list",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/TeamMemberDto_Output"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "PlatformTeam"
+        ]
+      },
+      "post": {
+        "operationId": "PlatformTeamController_add",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AddTeamMemberDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "204": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "PlatformTeam"
+        ]
+      }
+    },
+    "/api/platform/team/{userId}": {
+      "put": {
+        "operationId": "PlatformTeamController_update",
+        "parameters": [
+          {
+            "name": "userId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateTeamMemberDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "204": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "PlatformTeam"
+        ]
+      }
+    },
+    "/api/platform/overview": {
+      "get": {
+        "operationId": "PlatformInsightsController_overview",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/OverviewDto_Output"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "PlatformInsights"
+        ]
+      }
+    },
+    "/api/platform/analytics": {
+      "get": {
+        "operationId": "PlatformInsightsController_analytics",
+        "parameters": [
+          {
+            "name": "days",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "minimum": -9007199254740991,
+              "maximum": 9007199254740991,
+              "default": 30,
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AnalyticsDto_Output"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "PlatformInsights"
+        ]
+      }
+    },
+    "/api/platform/health": {
+      "get": {
+        "operationId": "PlatformInsightsController_health",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HealthDto_Output"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "PlatformInsights"
+        ]
+      }
+    },
+    "/api/platform/businesses": {
+      "get": {
+        "operationId": "PlatformBusinessesController_list",
+        "parameters": [
+          {
+            "name": "search",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "maxLength": 60,
+              "type": "string"
+            }
+          },
+          {
+            "name": "filter",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "default": "ALL",
+              "type": "string",
+              "enum": [
+                "ACTIVE",
+                "SUSPENDED",
+                "PENDING",
+                "DECLINED",
+                "QUIET",
+                "ALL"
+              ]
+            }
+          },
+          {
+            "name": "limit",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "minimum": 1,
+              "maximum": 500,
+              "default": 200,
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/BusinessRowDto_Output"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "PlatformBusinesses"
+        ]
+      }
+    },
+    "/api/platform/businesses/{tenantId}": {
+      "get": {
+        "operationId": "PlatformBusinessesController_detail",
+        "parameters": [
+          {
+            "name": "tenantId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BusinessDetailDto_Output"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "PlatformBusinesses"
+        ]
+      }
+    },
+    "/api/platform/requests": {
+      "get": {
+        "operationId": "PlatformBusinessesController_requests",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/RequestDto_Output"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "PlatformBusinesses"
+        ]
+      }
+    },
+    "/api/platform/requests/{tenantId}": {
+      "get": {
+        "operationId": "PlatformBusinessesController_request",
+        "parameters": [
+          {
+            "name": "tenantId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RequestDetailDto_Output"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "PlatformBusinesses"
+        ]
+      }
+    },
+    "/api/platform/requests/{tenantId}/approve": {
+      "post": {
+        "operationId": "PlatformBusinessesController_approve",
+        "parameters": [
+          {
+            "name": "tenantId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "PlatformBusinesses"
+        ]
+      }
+    },
+    "/api/platform/requests/{tenantId}/decline": {
+      "post": {
+        "operationId": "PlatformBusinessesController_decline",
+        "parameters": [
+          {
+            "name": "tenantId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ReasonDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "204": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "PlatformBusinesses"
+        ]
+      }
+    },
+    "/api/platform/businesses/{tenantId}/suspend": {
+      "post": {
+        "operationId": "PlatformBusinessesController_suspend",
+        "parameters": [
+          {
+            "name": "tenantId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ReasonDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "204": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "PlatformBusinesses"
+        ]
+      }
+    },
+    "/api/platform/businesses/{tenantId}/restore": {
+      "post": {
+        "operationId": "PlatformBusinessesController_restore",
+        "parameters": [
+          {
+            "name": "tenantId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ReasonDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "204": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "PlatformBusinesses"
+        ]
+      }
+    },
+    "/api/platform/businesses/{tenantId}/notes": {
+      "post": {
+        "operationId": "PlatformBusinessesController_addNote",
+        "parameters": [
+          {
+            "name": "tenantId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/NoteInputDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "204": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "PlatformBusinesses"
+        ]
+      }
+    },
+    "/api/platform/businesses/{tenantId}/tablets/{deviceId}/sign-out": {
+      "post": {
+        "operationId": "PlatformBusinessesController_signOutTablet",
+        "parameters": [
+          {
+            "name": "tenantId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "deviceId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ReasonDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "204": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "PlatformBusinesses"
+        ]
+      }
+    },
+    "/api/platform/businesses/{tenantId}/staff/{staffId}/pin": {
+      "post": {
+        "operationId": "PlatformBusinessesController_resetPin",
+        "parameters": [
+          {
+            "name": "tenantId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "staffId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PinResetDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "204": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "PlatformBusinesses"
+        ]
+      }
+    },
+    "/api/platform/search": {
+      "get": {
+        "operationId": "PlatformSearchController_search",
+        "parameters": [
+          {
+            "name": "q",
+            "required": true,
+            "in": "query",
+            "schema": {
+              "minLength": 2,
+              "maxLength": 60,
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SearchDto_Output"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "PlatformSearch"
+        ]
+      }
+    },
+    "/api/platform/audit": {
+      "get": {
+        "operationId": "PlatformAuditController_list",
+        "parameters": [
+          {
+            "name": "tenantId",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "who",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "default": "all",
+              "type": "string",
+              "enum": [
+                "all",
+                "brixx",
+                "vendor"
+              ]
+            }
+          },
+          {
+            "name": "action",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "maxLength": 60,
+              "type": "string"
+            }
+          },
+          {
+            "name": "from",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "format": "date",
+              "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))$",
+              "type": "string"
+            }
+          },
+          {
+            "name": "to",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "format": "date",
+              "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))$",
+              "type": "string"
+            }
+          },
+          {
+            "name": "before",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "limit",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "minimum": 1,
+              "maximum": 200,
+              "default": 100,
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/AuditRowDto_Output"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "PlatformAudit"
+        ]
+      }
+    },
+    "/api/platform/audit/export": {
+      "get": {
+        "operationId": "PlatformAuditController_export",
+        "parameters": [
+          {
+            "name": "tenantId",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "who",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "default": "all",
+              "type": "string",
+              "enum": [
+                "all",
+                "brixx",
+                "vendor"
+              ]
+            }
+          },
+          {
+            "name": "action",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "maxLength": 60,
+              "type": "string"
+            }
+          },
+          {
+            "name": "from",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "format": "date",
+              "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))$",
+              "type": "string"
+            }
+          },
+          {
+            "name": "to",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "format": "date",
+              "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))$",
+              "type": "string"
+            }
+          },
+          {
+            "name": "before",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "limit",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "minimum": 1,
+              "maximum": 200,
+              "default": 100,
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "text/csv": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "PlatformAudit"
+        ]
+      }
     }
   },
   "info": {
@@ -2321,15 +3203,449 @@
       "HealthDto_Output": {
         "type": "object",
         "properties": {
-          "status": {
-            "type": "string",
-            "enum": [
-              "ok"
-            ]
+          "server": {
+            "type": "object",
+            "properties": {
+              "startedAt": {
+                "type": "string"
+              },
+              "commit": {
+                "type": "string",
+                "nullable": true
+              },
+              "databaseMs": {
+                "type": "integer",
+                "minimum": -9007199254740991,
+                "maximum": 9007199254740991
+              },
+              "nodeVersion": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "startedAt",
+              "commit",
+              "databaseMs",
+              "nodeVersion"
+            ],
+            "additionalProperties": false
+          },
+          "tablets": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "id": {
+                  "type": "string"
+                },
+                "tenantId": {
+                  "type": "string"
+                },
+                "businessName": {
+                  "type": "string"
+                },
+                "businessSlug": {
+                  "type": "string"
+                },
+                "name": {
+                  "type": "string"
+                },
+                "code": {
+                  "type": "string"
+                },
+                "appVersion": {
+                  "type": "string",
+                  "nullable": true
+                },
+                "lastSeenAt": {
+                  "type": "string",
+                  "nullable": true
+                },
+                "lastSyncedAt": {
+                  "type": "string",
+                  "nullable": true
+                },
+                "pendingChanges": {
+                  "type": "integer",
+                  "minimum": -9007199254740991,
+                  "maximum": 9007199254740991
+                },
+                "oldestPendingAt": {
+                  "type": "string",
+                  "nullable": true
+                },
+                "signedOut": {
+                  "type": "boolean"
+                },
+                "alerts": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "kind": {
+                        "type": "string",
+                        "enum": [
+                          "OUT_OF_TOUCH",
+                          "STUCK",
+                          "WAITING",
+                          "REFUSED"
+                        ]
+                      },
+                      "count": {
+                        "type": "integer",
+                        "minimum": -9007199254740991,
+                        "maximum": 9007199254740991
+                      },
+                      "since": {
+                        "type": "string",
+                        "nullable": true
+                      }
+                    },
+                    "required": [
+                      "kind",
+                      "count",
+                      "since"
+                    ],
+                    "additionalProperties": false
+                  }
+                }
+              },
+              "required": [
+                "id",
+                "tenantId",
+                "businessName",
+                "businessSlug",
+                "name",
+                "code",
+                "appVersion",
+                "lastSeenAt",
+                "lastSyncedAt",
+                "pendingChanges",
+                "oldestPendingAt",
+                "signedOut",
+                "alerts"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "tabletCounts": {
+            "type": "object",
+            "properties": {
+              "total": {
+                "type": "integer",
+                "minimum": -9007199254740991,
+                "maximum": 9007199254740991
+              },
+              "online": {
+                "type": "integer",
+                "minimum": -9007199254740991,
+                "maximum": 9007199254740991
+              },
+              "today": {
+                "type": "integer",
+                "minimum": -9007199254740991,
+                "maximum": 9007199254740991
+              },
+              "quiet": {
+                "type": "integer",
+                "minimum": -9007199254740991,
+                "maximum": 9007199254740991
+              },
+              "signedOut": {
+                "type": "integer",
+                "minimum": -9007199254740991,
+                "maximum": 9007199254740991
+              },
+              "waitingChanges": {
+                "type": "integer",
+                "minimum": -9007199254740991,
+                "maximum": 9007199254740991
+              }
+            },
+            "required": [
+              "total",
+              "online",
+              "today",
+              "quiet",
+              "signedOut",
+              "waitingChanges"
+            ],
+            "additionalProperties": false
+          },
+          "versions": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "version": {
+                  "type": "string"
+                },
+                "tablets": {
+                  "type": "integer",
+                  "minimum": -9007199254740991,
+                  "maximum": 9007199254740991
+                }
+              },
+              "required": [
+                "version",
+                "tablets"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "sync": {
+            "type": "object",
+            "properties": {
+              "applied": {
+                "type": "integer",
+                "minimum": -9007199254740991,
+                "maximum": 9007199254740991
+              },
+              "rejected": {
+                "type": "integer",
+                "minimum": -9007199254740991,
+                "maximum": 9007199254740991
+              },
+              "byHour": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "hour": {
+                      "type": "string"
+                    },
+                    "applied": {
+                      "type": "integer",
+                      "minimum": -9007199254740991,
+                      "maximum": 9007199254740991
+                    },
+                    "rejected": {
+                      "type": "integer",
+                      "minimum": -9007199254740991,
+                      "maximum": 9007199254740991
+                    }
+                  },
+                  "required": [
+                    "hour",
+                    "applied",
+                    "rejected"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            },
+            "required": [
+              "applied",
+              "rejected",
+              "byHour"
+            ],
+            "additionalProperties": false
+          },
+          "links": {
+            "type": "object",
+            "properties": {
+              "byStatus": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "status": {
+                      "type": "string"
+                    },
+                    "count": {
+                      "type": "integer",
+                      "minimum": -9007199254740991,
+                      "maximum": 9007199254740991
+                    }
+                  },
+                  "required": [
+                    "status",
+                    "count"
+                  ],
+                  "additionalProperties": false
+                }
+              },
+              "failed": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "id": {
+                      "type": "string"
+                    },
+                    "orderNumber": {
+                      "type": "string"
+                    },
+                    "status": {
+                      "type": "string"
+                    },
+                    "amount": {
+                      "type": "integer",
+                      "minimum": -9007199254740991,
+                      "maximum": 9007199254740991
+                    },
+                    "phone": {
+                      "type": "string"
+                    },
+                    "failure": {
+                      "type": "string",
+                      "nullable": true
+                    },
+                    "createdAt": {
+                      "type": "string"
+                    },
+                    "tenantId": {
+                      "type": "string"
+                    },
+                    "businessName": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "id",
+                    "orderNumber",
+                    "status",
+                    "amount",
+                    "phone",
+                    "failure",
+                    "createdAt",
+                    "tenantId",
+                    "businessName"
+                  ],
+                  "additionalProperties": false
+                }
+              },
+              "byDay": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "date": {
+                      "type": "string"
+                    },
+                    "sent": {
+                      "type": "integer",
+                      "minimum": -9007199254740991,
+                      "maximum": 9007199254740991
+                    },
+                    "paid": {
+                      "type": "integer",
+                      "minimum": -9007199254740991,
+                      "maximum": 9007199254740991
+                    },
+                    "failed": {
+                      "type": "integer",
+                      "minimum": -9007199254740991,
+                      "maximum": 9007199254740991
+                    }
+                  },
+                  "required": [
+                    "date",
+                    "sent",
+                    "paid",
+                    "failed"
+                  ],
+                  "additionalProperties": false
+                }
+              },
+              "medianMinutesToPay": {
+                "type": "number",
+                "nullable": true
+              }
+            },
+            "required": [
+              "byStatus",
+              "failed",
+              "byDay",
+              "medianMinutesToPay"
+            ],
+            "additionalProperties": false
+          },
+          "provider": {
+            "type": "object",
+            "properties": {
+              "callbacks": {
+                "type": "integer",
+                "minimum": -9007199254740991,
+                "maximum": 9007199254740991
+              },
+              "lastAt": {
+                "type": "string",
+                "nullable": true
+              }
+            },
+            "required": [
+              "callbacks",
+              "lastAt"
+            ],
+            "additionalProperties": false
+          },
+          "refusals": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "type": {
+                  "type": "string"
+                },
+                "count": {
+                  "type": "integer",
+                  "minimum": -9007199254740991,
+                  "maximum": 9007199254740991
+                },
+                "businesses": {
+                  "type": "integer",
+                  "minimum": -9007199254740991,
+                  "maximum": 9007199254740991
+                },
+                "lastAt": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "type",
+                "count",
+                "businesses",
+                "lastAt"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "storesWithoutPayments": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "id": {
+                  "type": "string"
+                },
+                "name": {
+                  "type": "string"
+                },
+                "area": {
+                  "type": "string",
+                  "nullable": true
+                }
+              },
+              "required": [
+                "id",
+                "name",
+                "area"
+              ],
+              "additionalProperties": false
+            }
           }
         },
         "required": [
-          "status"
+          "server",
+          "tablets",
+          "tabletCounts",
+          "versions",
+          "sync",
+          "links",
+          "provider",
+          "refusals",
+          "storesWithoutPayments"
         ],
         "additionalProperties": false
       },
@@ -2435,7 +3751,8 @@
             "enum": [
               "ACTIVE",
               "SUSPENDED",
-              "PENDING"
+              "PENDING",
+              "DECLINED"
             ]
           }
         },
@@ -8696,6 +10013,2344 @@
         "required": [
           "payUrl",
           "payProblem"
+        ],
+        "additionalProperties": false
+      },
+      "PlatformMeDto_Output": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "email": {
+            "type": "string"
+          },
+          "role": {
+            "type": "string",
+            "enum": [
+              "ADMIN",
+              "SUPPORT"
+            ]
+          },
+          "capabilities": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "enum": [
+                "platform.view",
+                "requests.decide",
+                "support.fix",
+                "notes.write",
+                "businesses.suspend",
+                "audit.export",
+                "team.manage"
+              ]
+            }
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "email",
+          "role",
+          "capabilities"
+        ],
+        "additionalProperties": false
+      },
+      "TeamMemberDto_Output": {
+        "type": "object",
+        "properties": {
+          "userId": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "email": {
+            "type": "string"
+          },
+          "role": {
+            "type": "string",
+            "enum": [
+              "ADMIN",
+              "SUPPORT"
+            ]
+          },
+          "active": {
+            "type": "boolean"
+          },
+          "addedByName": {
+            "type": "string",
+            "nullable": true
+          },
+          "createdAt": {
+            "type": "string"
+          },
+          "lastSignInAt": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "required": [
+          "userId",
+          "name",
+          "email",
+          "role",
+          "active",
+          "addedByName",
+          "createdAt",
+          "lastSignInAt"
+        ],
+        "additionalProperties": false
+      },
+      "AddTeamMemberDto": {
+        "type": "object",
+        "properties": {
+          "email": {
+            "type": "string",
+            "format": "email",
+            "pattern": "^(?:[A-Za-z0-9_'+\\-]+\\.)*[A-Za-z0-9_'+\\-]*[A-Za-z0-9_+-]@(?:[A-Za-z0-9][A-Za-z0-9\\-]*\\.)+[A-Za-z]{2,}$"
+          },
+          "role": {
+            "type": "string",
+            "enum": [
+              "ADMIN",
+              "SUPPORT"
+            ]
+          },
+          "name": {
+            "type": "string",
+            "minLength": 2,
+            "maxLength": 80
+          },
+          "password": {
+            "type": "string",
+            "minLength": 8,
+            "maxLength": 128
+          }
+        },
+        "required": [
+          "email",
+          "role"
+        ]
+      },
+      "UpdateTeamMemberDto": {
+        "type": "object",
+        "properties": {
+          "role": {
+            "type": "string",
+            "enum": [
+              "ADMIN",
+              "SUPPORT"
+            ]
+          },
+          "active": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "role",
+          "active"
+        ]
+      },
+      "OverviewDto_Output": {
+        "type": "object",
+        "properties": {
+          "today": {
+            "type": "string"
+          },
+          "ordersToday": {
+            "type": "integer",
+            "minimum": -9007199254740991,
+            "maximum": 9007199254740991
+          },
+          "valueToday": {
+            "type": "integer",
+            "minimum": -9007199254740991,
+            "maximum": 9007199254740991
+          },
+          "activeBusinessesToday": {
+            "type": "integer",
+            "minimum": -9007199254740991,
+            "maximum": 9007199254740991
+          },
+          "ordersSameTimeLastWeek": {
+            "type": "integer",
+            "minimum": -9007199254740991,
+            "maximum": 9007199254740991
+          },
+          "businesses": {
+            "type": "object",
+            "properties": {
+              "active": {
+                "type": "integer",
+                "minimum": -9007199254740991,
+                "maximum": 9007199254740991
+              },
+              "pending": {
+                "type": "integer",
+                "minimum": -9007199254740991,
+                "maximum": 9007199254740991
+              },
+              "suspended": {
+                "type": "integer",
+                "minimum": -9007199254740991,
+                "maximum": 9007199254740991
+              }
+            },
+            "required": [
+              "active",
+              "pending",
+              "suspended"
+            ],
+            "additionalProperties": false
+          },
+          "requests": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "id": {
+                  "type": "string"
+                },
+                "name": {
+                  "type": "string"
+                },
+                "slug": {
+                  "type": "string"
+                },
+                "vendorType": {
+                  "type": "string"
+                },
+                "status": {
+                  "type": "string",
+                  "enum": [
+                    "ACTIVE",
+                    "SUSPENDED",
+                    "PENDING",
+                    "DECLINED"
+                  ]
+                },
+                "statusReason": {
+                  "type": "string",
+                  "nullable": true
+                },
+                "statusChangedAt": {
+                  "type": "string",
+                  "nullable": true
+                },
+                "area": {
+                  "type": "string",
+                  "nullable": true
+                },
+                "contactPhone": {
+                  "type": "string",
+                  "nullable": true
+                },
+                "orderWays": {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  }
+                },
+                "ownerName": {
+                  "type": "string",
+                  "nullable": true
+                },
+                "ownerEmail": {
+                  "type": "string",
+                  "nullable": true
+                },
+                "createdAt": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "id",
+                "name",
+                "slug",
+                "vendorType",
+                "status",
+                "statusReason",
+                "statusChangedAt",
+                "area",
+                "contactPhone",
+                "orderWays",
+                "ownerName",
+                "ownerEmail",
+                "createdAt"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "tablets": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "id": {
+                  "type": "string"
+                },
+                "tenantId": {
+                  "type": "string"
+                },
+                "businessName": {
+                  "type": "string"
+                },
+                "businessSlug": {
+                  "type": "string"
+                },
+                "name": {
+                  "type": "string"
+                },
+                "code": {
+                  "type": "string"
+                },
+                "appVersion": {
+                  "type": "string",
+                  "nullable": true
+                },
+                "lastSeenAt": {
+                  "type": "string",
+                  "nullable": true
+                },
+                "lastSyncedAt": {
+                  "type": "string",
+                  "nullable": true
+                },
+                "pendingChanges": {
+                  "type": "integer",
+                  "minimum": -9007199254740991,
+                  "maximum": 9007199254740991
+                },
+                "oldestPendingAt": {
+                  "type": "string",
+                  "nullable": true
+                },
+                "signedOut": {
+                  "type": "boolean"
+                },
+                "alerts": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "kind": {
+                        "type": "string",
+                        "enum": [
+                          "OUT_OF_TOUCH",
+                          "STUCK",
+                          "WAITING",
+                          "REFUSED"
+                        ]
+                      },
+                      "count": {
+                        "type": "integer",
+                        "minimum": -9007199254740991,
+                        "maximum": 9007199254740991
+                      },
+                      "since": {
+                        "type": "string",
+                        "nullable": true
+                      }
+                    },
+                    "required": [
+                      "kind",
+                      "count",
+                      "since"
+                    ],
+                    "additionalProperties": false
+                  }
+                }
+              },
+              "required": [
+                "id",
+                "tenantId",
+                "businessName",
+                "businessSlug",
+                "name",
+                "code",
+                "appVersion",
+                "lastSeenAt",
+                "lastSyncedAt",
+                "pendingChanges",
+                "oldestPendingAt",
+                "signedOut",
+                "alerts"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "failedLinks": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "id": {
+                  "type": "string"
+                },
+                "orderNumber": {
+                  "type": "string"
+                },
+                "status": {
+                  "type": "string"
+                },
+                "amount": {
+                  "type": "integer",
+                  "minimum": -9007199254740991,
+                  "maximum": 9007199254740991
+                },
+                "phone": {
+                  "type": "string"
+                },
+                "failure": {
+                  "type": "string",
+                  "nullable": true
+                },
+                "createdAt": {
+                  "type": "string"
+                },
+                "tenantId": {
+                  "type": "string"
+                },
+                "businessName": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "id",
+                "orderNumber",
+                "status",
+                "amount",
+                "phone",
+                "failure",
+                "createdAt",
+                "tenantId",
+                "businessName"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "quiet": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "id": {
+                  "type": "string"
+                },
+                "name": {
+                  "type": "string"
+                },
+                "area": {
+                  "type": "string",
+                  "nullable": true
+                },
+                "lastOrderOn": {
+                  "type": "string",
+                  "nullable": true
+                }
+              },
+              "required": [
+                "id",
+                "name",
+                "area",
+                "lastOrderOn"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "byHour": {
+            "type": "array",
+            "items": {
+              "type": "integer",
+              "minimum": -9007199254740991,
+              "maximum": 9007199254740991
+            }
+          },
+          "recentActions": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "id": {
+                  "type": "string"
+                },
+                "tenantId": {
+                  "type": "string"
+                },
+                "businessName": {
+                  "type": "string"
+                },
+                "actorName": {
+                  "type": "string"
+                },
+                "byBrixx": {
+                  "type": "boolean"
+                },
+                "action": {
+                  "type": "string"
+                },
+                "entityType": {
+                  "type": "string"
+                },
+                "entityId": {
+                  "type": "string"
+                },
+                "before": {},
+                "after": {},
+                "createdAt": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "id",
+                "tenantId",
+                "businessName",
+                "actorName",
+                "byBrixx",
+                "action",
+                "entityType",
+                "entityId",
+                "before",
+                "after",
+                "createdAt"
+              ],
+              "additionalProperties": false
+            }
+          }
+        },
+        "required": [
+          "today",
+          "ordersToday",
+          "valueToday",
+          "activeBusinessesToday",
+          "ordersSameTimeLastWeek",
+          "businesses",
+          "requests",
+          "tablets",
+          "failedLinks",
+          "quiet",
+          "byHour",
+          "recentActions"
+        ],
+        "additionalProperties": false
+      },
+      "AnalyticsDto_Output": {
+        "type": "object",
+        "properties": {
+          "days": {
+            "type": "integer",
+            "minimum": -9007199254740991,
+            "maximum": 9007199254740991
+          },
+          "from": {
+            "type": "string"
+          },
+          "to": {
+            "type": "string"
+          },
+          "totals": {
+            "type": "object",
+            "properties": {
+              "orders": {
+                "type": "integer",
+                "minimum": -9007199254740991,
+                "maximum": 9007199254740991
+              },
+              "value": {
+                "type": "integer",
+                "minimum": -9007199254740991,
+                "maximum": 9007199254740991
+              },
+              "activeBusinesses": {
+                "type": "integer",
+                "minimum": -9007199254740991,
+                "maximum": 9007199254740991
+              },
+              "averageOrder": {
+                "type": "integer",
+                "minimum": -9007199254740991,
+                "maximum": 9007199254740991
+              },
+              "onlineShare": {
+                "type": "number"
+              }
+            },
+            "required": [
+              "orders",
+              "value",
+              "activeBusinesses",
+              "averageOrder",
+              "onlineShare"
+            ],
+            "additionalProperties": false
+          },
+          "previous": {
+            "type": "object",
+            "properties": {
+              "orders": {
+                "type": "integer",
+                "minimum": -9007199254740991,
+                "maximum": 9007199254740991
+              },
+              "value": {
+                "type": "integer",
+                "minimum": -9007199254740991,
+                "maximum": 9007199254740991
+              },
+              "activeBusinesses": {
+                "type": "integer",
+                "minimum": -9007199254740991,
+                "maximum": 9007199254740991
+              }
+            },
+            "required": [
+              "orders",
+              "value",
+              "activeBusinesses"
+            ],
+            "additionalProperties": false
+          },
+          "daily": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "date": {
+                  "type": "string"
+                },
+                "orders": {
+                  "type": "integer",
+                  "minimum": -9007199254740991,
+                  "maximum": 9007199254740991
+                },
+                "value": {
+                  "type": "integer",
+                  "minimum": -9007199254740991,
+                  "maximum": 9007199254740991
+                },
+                "businesses": {
+                  "type": "integer",
+                  "minimum": -9007199254740991,
+                  "maximum": 9007199254740991
+                }
+              },
+              "required": [
+                "date",
+                "orders",
+                "value",
+                "businesses"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "funnel": {
+            "type": "object",
+            "properties": {
+              "requested": {
+                "type": "integer",
+                "minimum": -9007199254740991,
+                "maximum": 9007199254740991
+              },
+              "approved": {
+                "type": "integer",
+                "minimum": -9007199254740991,
+                "maximum": 9007199254740991
+              },
+              "menu": {
+                "type": "integer",
+                "minimum": -9007199254740991,
+                "maximum": 9007199254740991
+              },
+              "tablet": {
+                "type": "integer",
+                "minimum": -9007199254740991,
+                "maximum": 9007199254740991
+              },
+              "firstOrder": {
+                "type": "integer",
+                "minimum": -9007199254740991,
+                "maximum": 9007199254740991
+              },
+              "activeThisWeek": {
+                "type": "integer",
+                "minimum": -9007199254740991,
+                "maximum": 9007199254740991
+              }
+            },
+            "required": [
+              "requested",
+              "approved",
+              "menu",
+              "tablet",
+              "firstOrder",
+              "activeThisWeek"
+            ],
+            "additionalProperties": false
+          },
+          "byType": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "key": {
+                  "type": "string"
+                },
+                "orders": {
+                  "type": "integer",
+                  "minimum": -9007199254740991,
+                  "maximum": 9007199254740991
+                },
+                "value": {
+                  "type": "integer",
+                  "minimum": -9007199254740991,
+                  "maximum": 9007199254740991
+                }
+              },
+              "required": [
+                "key",
+                "orders",
+                "value"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "bySource": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "key": {
+                  "type": "string"
+                },
+                "orders": {
+                  "type": "integer",
+                  "minimum": -9007199254740991,
+                  "maximum": 9007199254740991
+                },
+                "value": {
+                  "type": "integer",
+                  "minimum": -9007199254740991,
+                  "maximum": 9007199254740991
+                }
+              },
+              "required": [
+                "key",
+                "orders",
+                "value"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "businesses": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "id": {
+                  "type": "string"
+                },
+                "name": {
+                  "type": "string"
+                },
+                "area": {
+                  "type": "string",
+                  "nullable": true
+                },
+                "orders": {
+                  "type": "integer",
+                  "minimum": -9007199254740991,
+                  "maximum": 9007199254740991
+                },
+                "previousOrders": {
+                  "type": "integer",
+                  "minimum": -9007199254740991,
+                  "maximum": 9007199254740991
+                },
+                "value": {
+                  "type": "integer",
+                  "minimum": -9007199254740991,
+                  "maximum": 9007199254740991
+                },
+                "activeDays": {
+                  "type": "integer",
+                  "minimum": -9007199254740991,
+                  "maximum": 9007199254740991
+                },
+                "lastOrderOn": {
+                  "type": "string",
+                  "nullable": true
+                },
+                "spark": {
+                  "type": "array",
+                  "items": {
+                    "type": "integer",
+                    "minimum": -9007199254740991,
+                    "maximum": 9007199254740991
+                  }
+                },
+                "averageOrder": {
+                  "type": "integer",
+                  "minimum": -9007199254740991,
+                  "maximum": 9007199254740991
+                },
+                "cancelled": {
+                  "type": "integer",
+                  "minimum": -9007199254740991,
+                  "maximum": 9007199254740991
+                },
+                "onlineShare": {
+                  "type": "number"
+                }
+              },
+              "required": [
+                "id",
+                "name",
+                "area",
+                "orders",
+                "previousOrders",
+                "value",
+                "activeDays",
+                "lastOrderOn",
+                "spark",
+                "averageOrder",
+                "cancelled",
+                "onlineShare"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "previousDaily": {
+            "type": "array",
+            "items": {
+              "type": "integer",
+              "minimum": -9007199254740991,
+              "maximum": 9007199254740991
+            }
+          },
+          "losses": {
+            "type": "object",
+            "properties": {
+              "cancelled": {
+                "type": "integer",
+                "minimum": -9007199254740991,
+                "maximum": 9007199254740991
+              },
+              "cancelledShare": {
+                "type": "number"
+              },
+              "refunds": {
+                "type": "integer",
+                "minimum": -9007199254740991,
+                "maximum": 9007199254740991
+              },
+              "refunded": {
+                "type": "integer",
+                "minimum": -9007199254740991,
+                "maximum": 9007199254740991
+              }
+            },
+            "required": [
+              "cancelled",
+              "cancelledShare",
+              "refunds",
+              "refunded"
+            ],
+            "additionalProperties": false
+          },
+          "newCustomers": {
+            "type": "integer",
+            "minimum": -9007199254740991,
+            "maximum": 9007199254740991
+          },
+          "byMethod": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "key": {
+                  "type": "string"
+                },
+                "orders": {
+                  "type": "integer",
+                  "minimum": -9007199254740991,
+                  "maximum": 9007199254740991
+                },
+                "value": {
+                  "type": "integer",
+                  "minimum": -9007199254740991,
+                  "maximum": 9007199254740991
+                }
+              },
+              "required": [
+                "key",
+                "orders",
+                "value"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "byHour": {
+            "type": "array",
+            "items": {
+              "type": "integer",
+              "minimum": -9007199254740991,
+              "maximum": 9007199254740991
+            }
+          },
+          "byWeekday": {
+            "type": "array",
+            "items": {
+              "type": "integer",
+              "minimum": -9007199254740991,
+              "maximum": 9007199254740991
+            }
+          },
+          "topItems": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "name": {
+                  "type": "string"
+                },
+                "quantity": {
+                  "type": "integer",
+                  "minimum": -9007199254740991,
+                  "maximum": 9007199254740991
+                },
+                "value": {
+                  "type": "integer",
+                  "minimum": -9007199254740991,
+                  "maximum": 9007199254740991
+                },
+                "businesses": {
+                  "type": "integer",
+                  "minimum": -9007199254740991,
+                  "maximum": 9007199254740991
+                }
+              },
+              "required": [
+                "name",
+                "quantity",
+                "value",
+                "businesses"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "byArea": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "key": {
+                  "type": "string"
+                },
+                "orders": {
+                  "type": "integer",
+                  "minimum": -9007199254740991,
+                  "maximum": 9007199254740991
+                },
+                "value": {
+                  "type": "integer",
+                  "minimum": -9007199254740991,
+                  "maximum": 9007199254740991
+                },
+                "businesses": {
+                  "type": "integer",
+                  "minimum": -9007199254740991,
+                  "maximum": 9007199254740991
+                }
+              },
+              "required": [
+                "key",
+                "orders",
+                "value",
+                "businesses"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "byVendorType": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "key": {
+                  "type": "string"
+                },
+                "orders": {
+                  "type": "integer",
+                  "minimum": -9007199254740991,
+                  "maximum": 9007199254740991
+                },
+                "value": {
+                  "type": "integer",
+                  "minimum": -9007199254740991,
+                  "maximum": 9007199254740991
+                },
+                "businesses": {
+                  "type": "integer",
+                  "minimum": -9007199254740991,
+                  "maximum": 9007199254740991
+                }
+              },
+              "required": [
+                "key",
+                "orders",
+                "value",
+                "businesses"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "signups": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "week": {
+                  "type": "string"
+                },
+                "requested": {
+                  "type": "integer",
+                  "minimum": -9007199254740991,
+                  "maximum": 9007199254740991
+                },
+                "approved": {
+                  "type": "integer",
+                  "minimum": -9007199254740991,
+                  "maximum": 9007199254740991
+                }
+              },
+              "required": [
+                "week",
+                "requested",
+                "approved"
+              ],
+              "additionalProperties": false
+            }
+          }
+        },
+        "required": [
+          "days",
+          "from",
+          "to",
+          "totals",
+          "previous",
+          "daily",
+          "funnel",
+          "byType",
+          "bySource",
+          "businesses",
+          "previousDaily",
+          "losses",
+          "newCustomers",
+          "byMethod",
+          "byHour",
+          "byWeekday",
+          "topItems",
+          "byArea",
+          "byVendorType",
+          "signups"
+        ],
+        "additionalProperties": false
+      },
+      "BusinessRowDto_Output": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "slug": {
+            "type": "string"
+          },
+          "vendorType": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "ACTIVE",
+              "SUSPENDED",
+              "PENDING",
+              "DECLINED"
+            ]
+          },
+          "statusReason": {
+            "type": "string",
+            "nullable": true
+          },
+          "area": {
+            "type": "string",
+            "nullable": true
+          },
+          "contactPhone": {
+            "type": "string",
+            "nullable": true
+          },
+          "ownerName": {
+            "type": "string",
+            "nullable": true
+          },
+          "ownerEmail": {
+            "type": "string",
+            "nullable": true
+          },
+          "createdAt": {
+            "type": "string"
+          },
+          "approvedAt": {
+            "type": "string",
+            "nullable": true
+          },
+          "orders7d": {
+            "type": "integer",
+            "minimum": -9007199254740991,
+            "maximum": 9007199254740991
+          },
+          "value7d": {
+            "type": "integer",
+            "minimum": -9007199254740991,
+            "maximum": 9007199254740991
+          },
+          "lastOrderOn": {
+            "type": "string",
+            "nullable": true
+          },
+          "tablets": {
+            "type": "integer",
+            "minimum": -9007199254740991,
+            "maximum": 9007199254740991
+          },
+          "tabletAlerts": {
+            "type": "integer",
+            "minimum": -9007199254740991,
+            "maximum": 9007199254740991
+          },
+          "paymentConnected": {
+            "type": "boolean"
+          },
+          "storeOn": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "slug",
+          "vendorType",
+          "status",
+          "statusReason",
+          "area",
+          "contactPhone",
+          "ownerName",
+          "ownerEmail",
+          "createdAt",
+          "approvedAt",
+          "orders7d",
+          "value7d",
+          "lastOrderOn",
+          "tablets",
+          "tabletAlerts",
+          "paymentConnected",
+          "storeOn"
+        ],
+        "additionalProperties": false
+      },
+      "BusinessDetailDto_Output": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "slug": {
+            "type": "string"
+          },
+          "vendorType": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "ACTIVE",
+              "SUSPENDED",
+              "PENDING",
+              "DECLINED"
+            ]
+          },
+          "statusReason": {
+            "type": "string",
+            "nullable": true
+          },
+          "area": {
+            "type": "string",
+            "nullable": true
+          },
+          "contactPhone": {
+            "type": "string",
+            "nullable": true
+          },
+          "ownerName": {
+            "type": "string",
+            "nullable": true
+          },
+          "ownerEmail": {
+            "type": "string",
+            "nullable": true
+          },
+          "createdAt": {
+            "type": "string"
+          },
+          "approvedAt": {
+            "type": "string",
+            "nullable": true
+          },
+          "orders7d": {
+            "type": "integer",
+            "minimum": -9007199254740991,
+            "maximum": 9007199254740991
+          },
+          "value7d": {
+            "type": "integer",
+            "minimum": -9007199254740991,
+            "maximum": 9007199254740991
+          },
+          "lastOrderOn": {
+            "type": "string",
+            "nullable": true
+          },
+          "tablets": {
+            "type": "integer",
+            "minimum": -9007199254740991,
+            "maximum": 9007199254740991
+          },
+          "tabletAlerts": {
+            "type": "integer",
+            "minimum": -9007199254740991,
+            "maximum": 9007199254740991
+          },
+          "paymentConnected": {
+            "type": "boolean"
+          },
+          "storeOn": {
+            "type": "boolean"
+          },
+          "orderWays": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "timezone": {
+            "type": "string"
+          },
+          "storeUrl": {
+            "type": "string"
+          },
+          "paymentAccountLast4": {
+            "type": "string",
+            "nullable": true
+          },
+          "menuItems": {
+            "type": "integer",
+            "minimum": -9007199254740991,
+            "maximum": 9007199254740991
+          },
+          "customers": {
+            "type": "integer",
+            "minimum": -9007199254740991,
+            "maximum": 9007199254740991
+          },
+          "logins": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "name": {
+                  "type": "string"
+                },
+                "email": {
+                  "type": "string"
+                },
+                "role": {
+                  "type": "string",
+                  "enum": [
+                    "OWNER",
+                    "MANAGER",
+                    "STAFF",
+                    "RIDER"
+                  ]
+                },
+                "active": {
+                  "type": "boolean"
+                }
+              },
+              "required": [
+                "name",
+                "email",
+                "role",
+                "active"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "staff": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "id": {
+                  "type": "string"
+                },
+                "name": {
+                  "type": "string"
+                },
+                "role": {
+                  "type": "string",
+                  "enum": [
+                    "OWNER",
+                    "MANAGER",
+                    "STAFF",
+                    "RIDER"
+                  ]
+                },
+                "active": {
+                  "type": "boolean"
+                },
+                "hasPin": {
+                  "type": "boolean"
+                },
+                "lockedUntil": {
+                  "type": "string",
+                  "nullable": true
+                }
+              },
+              "required": [
+                "id",
+                "name",
+                "role",
+                "active",
+                "hasPin",
+                "lockedUntil"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "tabletList": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "id": {
+                  "type": "string"
+                },
+                "tenantId": {
+                  "type": "string"
+                },
+                "businessName": {
+                  "type": "string"
+                },
+                "businessSlug": {
+                  "type": "string"
+                },
+                "name": {
+                  "type": "string"
+                },
+                "code": {
+                  "type": "string"
+                },
+                "appVersion": {
+                  "type": "string",
+                  "nullable": true
+                },
+                "lastSeenAt": {
+                  "type": "string",
+                  "nullable": true
+                },
+                "lastSyncedAt": {
+                  "type": "string",
+                  "nullable": true
+                },
+                "pendingChanges": {
+                  "type": "integer",
+                  "minimum": -9007199254740991,
+                  "maximum": 9007199254740991
+                },
+                "oldestPendingAt": {
+                  "type": "string",
+                  "nullable": true
+                },
+                "signedOut": {
+                  "type": "boolean"
+                },
+                "alerts": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "kind": {
+                        "type": "string",
+                        "enum": [
+                          "OUT_OF_TOUCH",
+                          "STUCK",
+                          "WAITING",
+                          "REFUSED"
+                        ]
+                      },
+                      "count": {
+                        "type": "integer",
+                        "minimum": -9007199254740991,
+                        "maximum": 9007199254740991
+                      },
+                      "since": {
+                        "type": "string",
+                        "nullable": true
+                      }
+                    },
+                    "required": [
+                      "kind",
+                      "count",
+                      "since"
+                    ],
+                    "additionalProperties": false
+                  }
+                }
+              },
+              "required": [
+                "id",
+                "tenantId",
+                "businessName",
+                "businessSlug",
+                "name",
+                "code",
+                "appVersion",
+                "lastSeenAt",
+                "lastSyncedAt",
+                "pendingChanges",
+                "oldestPendingAt",
+                "signedOut",
+                "alerts"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "trend": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "date": {
+                  "type": "string"
+                },
+                "orders": {
+                  "type": "integer",
+                  "minimum": -9007199254740991,
+                  "maximum": 9007199254740991
+                },
+                "value": {
+                  "type": "integer",
+                  "minimum": -9007199254740991,
+                  "maximum": 9007199254740991
+                }
+              },
+              "required": [
+                "date",
+                "orders",
+                "value"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "recentOrders": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "id": {
+                  "type": "string"
+                },
+                "displayNumber": {
+                  "type": "string"
+                },
+                "businessDate": {
+                  "type": "string"
+                },
+                "createdAt": {
+                  "type": "string"
+                },
+                "type": {
+                  "type": "string"
+                },
+                "source": {
+                  "type": "string"
+                },
+                "status": {
+                  "type": "string"
+                },
+                "total": {
+                  "type": "integer",
+                  "minimum": -9007199254740991,
+                  "maximum": 9007199254740991
+                },
+                "amountPaid": {
+                  "type": "integer",
+                  "minimum": -9007199254740991,
+                  "maximum": 9007199254740991
+                }
+              },
+              "required": [
+                "id",
+                "displayNumber",
+                "businessDate",
+                "createdAt",
+                "type",
+                "source",
+                "status",
+                "total",
+                "amountPaid"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "recentLinks": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "id": {
+                  "type": "string"
+                },
+                "orderNumber": {
+                  "type": "string"
+                },
+                "status": {
+                  "type": "string"
+                },
+                "amount": {
+                  "type": "integer",
+                  "minimum": -9007199254740991,
+                  "maximum": 9007199254740991
+                },
+                "phone": {
+                  "type": "string"
+                },
+                "failure": {
+                  "type": "string",
+                  "nullable": true
+                },
+                "createdAt": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "id",
+                "orderNumber",
+                "status",
+                "amount",
+                "phone",
+                "failure",
+                "createdAt"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "notes": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "id": {
+                  "type": "string"
+                },
+                "body": {
+                  "type": "string"
+                },
+                "authorName": {
+                  "type": "string"
+                },
+                "createdAt": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "id",
+                "body",
+                "authorName",
+                "createdAt"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "activity": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "id": {
+                  "type": "string"
+                },
+                "tenantId": {
+                  "type": "string"
+                },
+                "businessName": {
+                  "type": "string"
+                },
+                "actorName": {
+                  "type": "string"
+                },
+                "byBrixx": {
+                  "type": "boolean"
+                },
+                "action": {
+                  "type": "string"
+                },
+                "entityType": {
+                  "type": "string"
+                },
+                "entityId": {
+                  "type": "string"
+                },
+                "before": {},
+                "after": {},
+                "createdAt": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "id",
+                "tenantId",
+                "businessName",
+                "actorName",
+                "byBrixx",
+                "action",
+                "entityType",
+                "entityId",
+                "before",
+                "after",
+                "createdAt"
+              ],
+              "additionalProperties": false
+            }
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "slug",
+          "vendorType",
+          "status",
+          "statusReason",
+          "area",
+          "contactPhone",
+          "ownerName",
+          "ownerEmail",
+          "createdAt",
+          "approvedAt",
+          "orders7d",
+          "value7d",
+          "lastOrderOn",
+          "tablets",
+          "tabletAlerts",
+          "paymentConnected",
+          "storeOn",
+          "orderWays",
+          "timezone",
+          "storeUrl",
+          "paymentAccountLast4",
+          "menuItems",
+          "customers",
+          "logins",
+          "staff",
+          "tabletList",
+          "trend",
+          "recentOrders",
+          "recentLinks",
+          "notes",
+          "activity"
+        ],
+        "additionalProperties": false
+      },
+      "RequestDto_Output": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "slug": {
+            "type": "string"
+          },
+          "vendorType": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "ACTIVE",
+              "SUSPENDED",
+              "PENDING",
+              "DECLINED"
+            ]
+          },
+          "statusReason": {
+            "type": "string",
+            "nullable": true
+          },
+          "statusChangedAt": {
+            "type": "string",
+            "nullable": true
+          },
+          "area": {
+            "type": "string",
+            "nullable": true
+          },
+          "contactPhone": {
+            "type": "string",
+            "nullable": true
+          },
+          "orderWays": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "ownerName": {
+            "type": "string",
+            "nullable": true
+          },
+          "ownerEmail": {
+            "type": "string",
+            "nullable": true
+          },
+          "createdAt": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "slug",
+          "vendorType",
+          "status",
+          "statusReason",
+          "statusChangedAt",
+          "area",
+          "contactPhone",
+          "orderWays",
+          "ownerName",
+          "ownerEmail",
+          "createdAt"
+        ],
+        "additionalProperties": false
+      },
+      "RequestDetailDto_Output": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "slug": {
+            "type": "string"
+          },
+          "vendorType": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "ACTIVE",
+              "SUSPENDED",
+              "PENDING",
+              "DECLINED"
+            ]
+          },
+          "statusReason": {
+            "type": "string",
+            "nullable": true
+          },
+          "statusChangedAt": {
+            "type": "string",
+            "nullable": true
+          },
+          "area": {
+            "type": "string",
+            "nullable": true
+          },
+          "contactPhone": {
+            "type": "string",
+            "nullable": true
+          },
+          "orderWays": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "ownerName": {
+            "type": "string",
+            "nullable": true
+          },
+          "ownerEmail": {
+            "type": "string",
+            "nullable": true
+          },
+          "createdAt": {
+            "type": "string"
+          },
+          "timezone": {
+            "type": "string"
+          },
+          "owner": {
+            "type": "object",
+            "properties": {
+              "name": {
+                "type": "string",
+                "nullable": true
+              },
+              "email": {
+                "type": "string",
+                "nullable": true
+              },
+              "emailVerified": {
+                "type": "boolean"
+              },
+              "signedUpAt": {
+                "type": "string",
+                "nullable": true
+              },
+              "lastSignInAt": {
+                "type": "string",
+                "nullable": true
+              },
+              "otherBusinesses": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "id": {
+                      "type": "string"
+                    },
+                    "name": {
+                      "type": "string"
+                    },
+                    "status": {
+                      "type": "string",
+                      "enum": [
+                        "ACTIVE",
+                        "SUSPENDED",
+                        "PENDING",
+                        "DECLINED"
+                      ]
+                    },
+                    "role": {
+                      "type": "string",
+                      "enum": [
+                        "OWNER",
+                        "MANAGER",
+                        "STAFF",
+                        "RIDER"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "id",
+                    "name",
+                    "status",
+                    "role"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            },
+            "required": [
+              "name",
+              "email",
+              "emailVerified",
+              "signedUpAt",
+              "lastSignInAt",
+              "otherBusinesses"
+            ],
+            "additionalProperties": false
+          },
+          "lookalikes": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "id": {
+                  "type": "string"
+                },
+                "name": {
+                  "type": "string"
+                },
+                "status": {
+                  "type": "string",
+                  "enum": [
+                    "ACTIVE",
+                    "SUSPENDED",
+                    "PENDING",
+                    "DECLINED"
+                  ]
+                },
+                "area": {
+                  "type": "string",
+                  "nullable": true
+                },
+                "createdAt": {
+                  "type": "string"
+                },
+                "reasons": {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  }
+                }
+              },
+              "required": [
+                "id",
+                "name",
+                "status",
+                "area",
+                "createdAt",
+                "reasons"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "nearby": {
+            "type": "object",
+            "properties": {
+              "open": {
+                "type": "integer",
+                "minimum": -9007199254740991,
+                "maximum": 9007199254740991
+              },
+              "waiting": {
+                "type": "integer",
+                "minimum": -9007199254740991,
+                "maximum": 9007199254740991
+              }
+            },
+            "required": [
+              "open",
+              "waiting"
+            ],
+            "additionalProperties": false
+          },
+          "notes": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "id": {
+                  "type": "string"
+                },
+                "body": {
+                  "type": "string"
+                },
+                "authorName": {
+                  "type": "string"
+                },
+                "createdAt": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "id",
+                "body",
+                "authorName",
+                "createdAt"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "activity": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "id": {
+                  "type": "string"
+                },
+                "tenantId": {
+                  "type": "string"
+                },
+                "businessName": {
+                  "type": "string"
+                },
+                "actorName": {
+                  "type": "string"
+                },
+                "byBrixx": {
+                  "type": "boolean"
+                },
+                "action": {
+                  "type": "string"
+                },
+                "entityType": {
+                  "type": "string"
+                },
+                "entityId": {
+                  "type": "string"
+                },
+                "before": {},
+                "after": {},
+                "createdAt": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "id",
+                "tenantId",
+                "businessName",
+                "actorName",
+                "byBrixx",
+                "action",
+                "entityType",
+                "entityId",
+                "before",
+                "after",
+                "createdAt"
+              ],
+              "additionalProperties": false
+            }
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "slug",
+          "vendorType",
+          "status",
+          "statusReason",
+          "statusChangedAt",
+          "area",
+          "contactPhone",
+          "orderWays",
+          "ownerName",
+          "ownerEmail",
+          "createdAt",
+          "timezone",
+          "owner",
+          "lookalikes",
+          "nearby",
+          "notes",
+          "activity"
+        ],
+        "additionalProperties": false
+      },
+      "ReasonDto": {
+        "type": "object",
+        "properties": {
+          "reason": {
+            "type": "string",
+            "minLength": 3,
+            "maxLength": 300
+          }
+        },
+        "required": [
+          "reason"
+        ]
+      },
+      "NoteInputDto": {
+        "type": "object",
+        "properties": {
+          "body": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 1000
+          }
+        },
+        "required": [
+          "body"
+        ]
+      },
+      "PinResetDto": {
+        "type": "object",
+        "properties": {
+          "pin": {
+            "type": "string"
+          },
+          "reason": {
+            "type": "string",
+            "minLength": 3,
+            "maxLength": 300
+          }
+        },
+        "required": [
+          "pin",
+          "reason"
+        ]
+      },
+      "SearchDto_Output": {
+        "type": "object",
+        "properties": {
+          "businesses": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "id": {
+                  "type": "string"
+                },
+                "name": {
+                  "type": "string"
+                },
+                "slug": {
+                  "type": "string"
+                },
+                "status": {
+                  "type": "string",
+                  "enum": [
+                    "ACTIVE",
+                    "SUSPENDED",
+                    "PENDING",
+                    "DECLINED"
+                  ]
+                },
+                "area": {
+                  "type": "string",
+                  "nullable": true
+                },
+                "ownerEmail": {
+                  "type": "string",
+                  "nullable": true
+                },
+                "contactPhone": {
+                  "type": "string",
+                  "nullable": true
+                }
+              },
+              "required": [
+                "id",
+                "name",
+                "slug",
+                "status",
+                "area",
+                "ownerEmail",
+                "contactPhone"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "orders": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "id": {
+                  "type": "string"
+                },
+                "displayNumber": {
+                  "type": "string"
+                },
+                "businessDate": {
+                  "type": "string"
+                },
+                "createdAt": {
+                  "type": "string"
+                },
+                "type": {
+                  "type": "string"
+                },
+                "source": {
+                  "type": "string"
+                },
+                "status": {
+                  "type": "string"
+                },
+                "total": {
+                  "type": "integer",
+                  "minimum": -9007199254740991,
+                  "maximum": 9007199254740991
+                },
+                "amountPaid": {
+                  "type": "integer",
+                  "minimum": -9007199254740991,
+                  "maximum": 9007199254740991
+                },
+                "tenantId": {
+                  "type": "string"
+                },
+                "businessName": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "id",
+                "displayNumber",
+                "businessDate",
+                "createdAt",
+                "type",
+                "source",
+                "status",
+                "total",
+                "amountPaid",
+                "tenantId",
+                "businessName"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "customers": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "id": {
+                  "type": "string"
+                },
+                "tenantId": {
+                  "type": "string"
+                },
+                "businessName": {
+                  "type": "string"
+                },
+                "phone": {
+                  "type": "string"
+                },
+                "name": {
+                  "type": "string",
+                  "nullable": true
+                },
+                "orders": {
+                  "type": "integer",
+                  "minimum": -9007199254740991,
+                  "maximum": 9007199254740991
+                }
+              },
+              "required": [
+                "id",
+                "tenantId",
+                "businessName",
+                "phone",
+                "name",
+                "orders"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "links": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "id": {
+                  "type": "string"
+                },
+                "orderNumber": {
+                  "type": "string"
+                },
+                "status": {
+                  "type": "string"
+                },
+                "amount": {
+                  "type": "integer",
+                  "minimum": -9007199254740991,
+                  "maximum": 9007199254740991
+                },
+                "phone": {
+                  "type": "string"
+                },
+                "failure": {
+                  "type": "string",
+                  "nullable": true
+                },
+                "createdAt": {
+                  "type": "string"
+                },
+                "tenantId": {
+                  "type": "string"
+                },
+                "businessName": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "id",
+                "orderNumber",
+                "status",
+                "amount",
+                "phone",
+                "failure",
+                "createdAt",
+                "tenantId",
+                "businessName"
+              ],
+              "additionalProperties": false
+            }
+          }
+        },
+        "required": [
+          "businesses",
+          "orders",
+          "customers",
+          "links"
+        ],
+        "additionalProperties": false
+      },
+      "AuditRowDto_Output": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "tenantId": {
+            "type": "string"
+          },
+          "businessName": {
+            "type": "string"
+          },
+          "actorName": {
+            "type": "string"
+          },
+          "byBrixx": {
+            "type": "boolean"
+          },
+          "action": {
+            "type": "string"
+          },
+          "entityType": {
+            "type": "string"
+          },
+          "entityId": {
+            "type": "string"
+          },
+          "before": {},
+          "after": {},
+          "createdAt": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "tenantId",
+          "businessName",
+          "actorName",
+          "byBrixx",
+          "action",
+          "entityType",
+          "entityId",
+          "before",
+          "after",
+          "createdAt"
         ],
         "additionalProperties": false
       }

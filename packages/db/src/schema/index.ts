@@ -10,6 +10,7 @@ export * from './identity.js';
 export * from './links.js';
 export * from './orders.js';
 export * from './payments.js';
+export * from './platform.js';
 export * from './reports.js';
 export * from './stock.js';
 export * from './sync.js';

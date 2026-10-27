@@ -121,7 +121,7 @@ export class OnboardingService {
     return { tenantId, slug, staffId };
   }
 
-  /** The businesses this login can manage, and its requests still waiting for approval. */
+  /** The businesses this login can manage, its requests still waiting, and any Brixx suspended. */
   async listBusinesses(userId: string) {
     return withPlatform(this.database.db, (tx) =>
       tx
@@ -141,7 +141,7 @@ export class OnboardingService {
             eq(staffMembers.active, true),
             isNull(staffMembers.deletedAt),
             inArray(staffMembers.role, ['OWNER', 'MANAGER']),
-            inArray(tenants.status, ['ACTIVE', 'PENDING']),
+            inArray(tenants.status, ['ACTIVE', 'PENDING', 'SUSPENDED']),
           ),
         ),
     );
@@ -194,23 +194,33 @@ export async function pendingBusinesses(db: DatabaseHandle['db']): Promise<Busin
 
 /**
  * Approves a request: the business becomes ACTIVE and its dashboard, tablet and store start
- * working. Audited. Returns false when there's no such business waiting.
+ * working. A declined request can be approved after all. Audited. Returns false when there's no
+ * such business waiting.
  */
-export async function approveBusiness(db: DatabaseHandle['db'], tenantId: string) {
+export async function approveBusiness(
+  db: DatabaseHandle['db'],
+  tenantId: string,
+  /** Who at Brixx let them in: a team member's login id, or 'admin' from the command line. */
+  actorPlatform = 'admin',
+) {
   return withTenant(db, tenantId, async (tx) => {
-    const [approved] = await tx
+    const [before] = await tx
+      .select({ status: tenants.status })
+      .from(tenants)
+      .where(and(eq(tenants.id, tenantId), inArray(tenants.status, ['PENDING', 'DECLINED'])));
+    if (!before) return false;
+    const now = new Date();
+    await tx
       .update(tenants)
-      .set({ status: 'ACTIVE', approvedAt: new Date() })
-      .where(and(eq(tenants.id, tenantId), eq(tenants.status, 'PENDING')))
-      .returning({ id: tenants.id });
-    if (!approved) return false;
+      .set({ status: 'ACTIVE', approvedAt: now, statusReason: null, statusChangedAt: now })
+      .where(eq(tenants.id, tenantId));
     await recordAudit(tx, {
       tenantId,
-      actorPlatform: 'admin',
+      actorPlatform,
       action: 'tenant.approved',
       entityType: 'tenant',
       entityId: tenantId,
-      before: { status: 'PENDING' },
+      before,
       after: { status: 'ACTIVE' },
     });
     return true;

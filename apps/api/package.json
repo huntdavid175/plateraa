@@ -14,7 +14,8 @@
     "settings:moolre-account": "tsc -p tsconfig.build.json && node dist/scripts/set-moolre-account.js",
     "photos:check": "tsc -p tsconfig.build.json && node dist/scripts/check-photos.js",
     "admin:requests": "tsc -p tsconfig.build.json && node dist/scripts/business-requests.js list",
-    "admin:approve": "tsc -p tsconfig.build.json && node dist/scripts/business-requests.js approve"
+    "admin:approve": "tsc -p tsconfig.build.json && node dist/scripts/business-requests.js approve",
+    "admin:grant": "tsc -p tsconfig.build.json && node dist/scripts/team-grant.js"
   },
   "dependencies": {
     "@nestjs/common": "11.2.3",

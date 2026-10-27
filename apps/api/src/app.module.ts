@@ -14,6 +14,7 @@ import { MenuModule } from './menu/menu.module';
 import { OrdersModule } from './orders/orders.module';
 import { PaymentsModule } from './payments/payments.module';
 import { PhotosModule } from './photos/photos';
+import { PlatformModule } from './platform/platform.module';
 import { ReportsModule } from './reports/reports.module';
 import { SettingsModule } from './settings/settings.module';
 import { StorefrontModule } from './storefront/storefront.module';
@@ -37,6 +38,7 @@ import { SyncModule } from './sync/sync.module';
     ExpensesModule,
     StorefrontModule,
     PhotosModule,
+    PlatformModule,
   ],
   controllers: [HealthController],
   providers: [

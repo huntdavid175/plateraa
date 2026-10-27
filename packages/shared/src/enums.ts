@@ -4,7 +4,7 @@
  * PENDING: a business that has asked to join (24 Oct, user decision). Nothing works for it, not
  * the dashboard, the tablet or the store, until Brixx approves it and it becomes ACTIVE.
  */
-export const TENANT_STATUSES = ['ACTIVE', 'SUSPENDED', 'PENDING'] as const;
+export const TENANT_STATUSES = ['ACTIVE', 'SUSPENDED', 'PENDING', 'DECLINED'] as const;
 export type TenantStatus = (typeof TENANT_STATUSES)[number];
 
 /** How a business takes orders before Brixx, asked when it requests to join. */

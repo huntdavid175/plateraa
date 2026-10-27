@@ -86,7 +86,7 @@ class TeamDto extends createZodDto(
 
 const RANK: Record<Role, number> = { OWNER: 3, MANAGER: 2, STAFF: 1, RIDER: 1 };
 
-async function pinSecrets(pin: string) {
+export async function pinSecrets(pin: string) {
   const problem = pinProblem(pin);
   if (problem) throw new BadRequestException(problem);
   const [pinHash, pinVerifier] = await Promise.all([hashSecret(pin), createPinVerifier(pin)]);

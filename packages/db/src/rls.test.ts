@@ -10,8 +10,8 @@ import { auditEvents, categories, tenants } from './schema/index.js';
 // `production` (testDatabaseUrl refuses both). Unset, as in CI, and they skip.
 const url = testDatabaseUrl('direct');
 
-/** Tables that are deliberately not tenant-scoped: Better Auth logins sit above any one business. */
-const NOT_TENANT_SCOPED = new Set(['user', 'session', 'account', 'verification']);
+/** Tables that are deliberately not tenant-scoped: logins and Brixx's own team sit above any one business. */
+const NOT_TENANT_SCOPED = new Set(['user', 'session', 'account', 'verification', 'platform_staff']);
 
 /** Drizzle wraps driver errors; the Postgres message is on the cause. */
 async function errorOf(promise: Promise<unknown>): Promise<string> {
