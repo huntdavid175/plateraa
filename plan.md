@@ -449,7 +449,7 @@ _Vendor's own Moolre account only (decided 10 Sep): customer money never passes 
 - [ ] Fee-bearer setting (vendor absorbs Moolre's fee, or a visible customer service fee)
 - [ ] Daily reconciliation against Moolre → `recon_exceptions`
 - [x] Super-admin console v1
-  - _27 Oct (moved up, user request): `apps/admin`, two roles (Admin, Customer service) in `platform_staff` (migration 0016), API under `/api/platform`. Home (today, four queues, "Needs someone"), Requests (approve, or decline with a reason), Businesses and one business (tablets, staff PINs, orders, links, activity, team notes; Admins suspend), Support search (name, phone, order number, email), Analytics (funnel, trends, each business), Health, Audit log (CSV for Admins) and Team. In the dashboard's look, built from shadcn and Arc (Arc's metric cards, sortable tables, charts, timeline, JSON viewer and command palette). Not deployed yet._
+  - _27 Oct (moved up, user request): `apps/admin`, two roles (Admin, Customer service) in `platform_staff` (migration 0016), API under `/api/platform`. Home (today, four queues, "Needs someone"), Requests (approve, or decline with a reason), Businesses and one business (tablets, staff PINs, orders, links, activity, team notes; Admins suspend), Support search (name, phone, order number, email), Analytics (funnel, trends, each business), Health, Audit log (CSV for Admins) and Team. In the dashboard's look, built from shadcn and Arc (Arc's metric cards, sortable tables, charts, timeline, JSON viewer and command palette). Deployed at `https://brixxsuperadmin.vercel.app` on 27 Oct._
 - [ ] Photo-menu import
 
 ---

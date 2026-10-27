@@ -45,6 +45,6 @@ The server checks every permission (`@Platform(...)`); the console only hides wh
 ## Running
 
 - `pnpm --filter @brixx/admin dev` serves http://localhost:5174 (5173 is the dashboard's). It uses the deployed API unless `VITE_API_URL` is set in the root `.env`.
-- **The API only accepts browsers in `TRUSTED_ORIGINS`.** Add `http://localhost:5174` (and the console's address once deployed) there, on Render and in the local `.env`.
+- **The API only accepts browsers in `TRUSTED_ORIGINS`.** On Render it lists `https://brixxsuperadmin.vercel.app` and `http://localhost:5174` (27 Oct); add any new address of the console there, or signing in fails with "Can't reach Brixx". Deployed on Vercel at `https://brixxsuperadmin.vercel.app`.
 - **Preview** (dev only): `?preview` (or `?preview=SUPPORT`) answers every API call with made-up sample data from `src/dev/preview.ts`, with no login, and a strip says so; `?live` turns it off. The build leaves it out. Screens are checked by screenshotting it with headless Chrome at 1440 and 500 wide, light (`--blink-settings=preferredColorScheme=1`) and dark (`=0`).
 - `vercel.json` sends every address to `index.html`.
