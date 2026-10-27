@@ -5,7 +5,8 @@ An operating system for small informal Ghanaian food vendors. They take orders f
 - an **offline-first Android tablet app** at the counter;
 - a NestJS API;
 - a web dashboard for owners and managers;
-- an online store (the storefront) that customers order and pay from, one link per business.
+- an online store (the storefront) that customers order and pay from, one link per business;
+- an admin console for Brixx's own team: letting new vendors in, supporting the ones already in, and watching the whole platform.
 
 A solo founder (GitHub `huntdavid175`) builds it with an AI agent. Work started Thu 10 Sep 2026.
 
@@ -55,8 +56,19 @@ A solo founder (GitHub `huntdavid175`) builds it with an AI agent. Work started 
   - Still open in `plan.md`:
     - raw counts on the tablet (the `stock.raw_count` command exists; no tablet screen yet);
     - 3.3 receipts (later, once the printer arrives: user decision, 13 Sep).
-- **The admin console** (27 Oct, user request; plan.md Phase 4 and 6): `apps/admin`, Brixx's own console with two roles, Admin and Customer service (`platform_staff`, `PLATFORM_ROLES` in `@brixx/shared`), over `/api/platform`. Approvals, businesses, support search, analytics, health, audit log and team. The dashboard's look, built from shadcn and Arc components (27 Oct, user decision). `pnpm --filter @brixx/admin dev` on http://localhost:5174 (`?preview` for sample data); deployed at `https://brixxsuperadmin.vercel.app` (Vercel, set up by the user on 27 Oct). The first Admin is stackavenue@gmail.com on `dev`. See `apps/admin/AGENTS.md`.
-- **Next toward R1a** (`plan.md` Phase 4): the admin CLI v0 (list and suspend businesses, revoke a tablet, reset a PIN, export the audit log), a performance check on a 2–3 GB budget tablet, the APK size, the R1a definition of done, and moving Render to the `production` branch before installing at the first vendors.
+- **The admin console** (27 Oct, user request; plan.md Phase 4 and 6; it replaced the planned admin CLI v0): `apps/admin`, Brixx's own console, over `/api/platform` (`apps/api/src/platform`). See `apps/admin/AGENTS.md`.
+  - Two roles in `platform_staff` (migration 0016): **Admin** and **Customer service** (`PLATFORM_ROLES` and `PLATFORM_ROLE_CAPABILITIES` in `@brixx/shared`). Customer service sees everything, approves or declines sign-ups, resets PINs, signs tablets out and writes notes; only an Admin suspends or restores a business, downloads the audit log and manages the team.
+  - Pages:
+    - Home (today across Brixx, the queues that need someone);
+    - Requests (each request in full: the owner's login, look-alike businesses, call notes; approve, or decline with a reason);
+    - Businesses and one business (tablets, staff PINs, orders, payment links, activity, notes);
+    - Support search (a name, phone number, order number or email), also behind Ctrl+K;
+    - Analytics, Health, Audit log (CSV for Admins) and Team.
+  - Every change asks why and is audited with the team member's name.
+  - The dashboard's look, built from shadcn and Arc components (27 Oct, user decision, after trying a separate look first).
+  - `pnpm --filter @brixx/admin dev` on http://localhost:5174 (`?preview` for sample data, no login). Deployed at `https://brixxsuperadmin.vercel.app`.
+  - The first Admin is stackavenue@gmail.com (Fawaz Dogbe), on `dev` only so far.
+- **Next toward R1a** (`plan.md` Phase 4): a performance check on a 2–3 GB budget tablet, the APK size, the R1a definition of done, and moving Render to the `production` branch before installing at the first vendors. On `production`, the admin console needs migration 0016 (`db:migrate:production`) and its first Admin again (`admin:grant <email> ADMIN "Name" --production`).
 - Founder tasks (Moolre, lawyer, printers, domain, Play Console) are Phase 0 in `plan.md`.
 
 ## Working with the user
@@ -79,6 +91,9 @@ A solo founder (GitHub `huntdavid175`) builds it with an AI agent. Work started 
   - **Pay before prep** is on by default, as a per-vendor setting. The payment that clears an order moves it to Preparing automatically.
   - There are no WhatsApp or Instagram order sources; those customers use the storefront.
   - Menu setup, expenses and purchases are entered on the dashboard.
+  - **Joining Brixx is a request Brixx approves** (24 Oct). A new business waits as `PENDING` until someone on the team approves it on the admin console; a declined one can be approved later.
+  - **The Brixx team and vendors never share a login** (27 Oct). A team login can't ask for a business, and a login that belongs to a business can't join the team. Team logins are made on the console's Team page, or with `admin:grant`, never through the vendor sign-up.
+  - **The admin console looks like the dashboard** (27 Oct): shadcn and Arc, the same tokens. Don't give it a look of its own.
 - **Confirm before destructive or outward-facing actions.**
 - **Never print `.env`.** It sits in the repo root and is gitignored; the key names are in `.env.example`.
 - **Commits:** short imperative subjects, committed to `main` and pushed once lint, format, typecheck and tests are green.
@@ -91,7 +106,7 @@ A solo founder (GitHub `huntdavid175`) builds it with an AI agent. Work started 
 | API       | NestJS 11.2, nestjs-zod 5.5 + Zod 4.6, Better Auth 1.7.4, jose 6, @node-rs/argon2, aws4fetch 1.0 (R2 photos)   |
 | Data      | drizzle-orm 0.45.2 on Neon Postgres 18.6 (Frankfurt)                                                           |
 | Tablet    | Expo SDK 57 (RN 0.86.3, React 19.2.3), op-sqlite 18.2.1                                                        |
-| Web       | Vite 8 + React 19, React Router 7, TanStack Query 5 (dashboard), Next 16.3 (storefront), Tailwind 4            |
+| Web       | Vite 8 + React 19, React Router 7, TanStack Query 5 (dashboard, admin), Next 16.3 (storefront), Tailwind 4     |
 
 ## Layout
 
@@ -115,10 +130,11 @@ packages/ui         web components (empty so far)
 - `order-state.ts`: `canTransition`, `nextStatus`, `canEditItems`.
 - `order-payment.ts`: `amountDue`, `isAwaitingPayment`, `paymentStartsPrep`, `refundOwed`.
 - `capabilities.ts`: role → capabilities (STAFF / MANAGER / OWNER).
+- `platform.ts`: Brixx's own team: `PLATFORM_ROLES` (ADMIN, SUPPORT), `PLATFORM_CAPABILITIES`, `PLATFORM_ROLE_CAPABILITIES` and `platformCan`.
 - `sync-commands.ts`: Zod command schemas plus `COMMAND_CAPABILITY`.
 - `storefront.ts`: `STOREFRONT_THEMES` and `STOREFRONT_LOOKS`, each store look's light and dark colours. In light mode every look now stands on white and shows its colour in the top band and the buttons (16 Sep); dark mode keeps the look's own dark shade. `storefront.test.ts` checks every look's contrast.
 - `store-hours.ts`: the week the online store keeps — `StoreHours` (a day each, with `open`, `from`, `to`), `isOpenAt`, `nextOpening`, `opensWords` ("Opens tomorrow at 8:00 am") and `hoursWords` ("Mon–Fri 8:00 am – 8:00 pm · Sun closed"), all in the store's own timezone. A closing time earlier than the opening one runs past midnight.
-- `pin.ts`, `phone.ts`, `enums.ts`, `menu-templates.ts`.
+- `pin.ts`, `phone.ts`, `enums.ts` (`TENANT_STATUSES` is ACTIVE, SUSPENDED, PENDING and DECLINED), `menu-templates.ts`.
 
 ## Commands
 
@@ -134,12 +150,14 @@ On this Windows machine, `pnpm` works in PowerShell. **In Git Bash the global `p
 - **Deployed storefront:** `https://plateraa-storefront-bvos.vercel.app` (Vercel, set up by the user on 13 Sep through Vercel's GitHub link). Vercel builds every push to `main` itself, **without waiting for CI**, and each build shows as a GitHub deployment (`gh api repos/huntdavid175/plateraa/deployments`, then `…/deployments/<id>/statuses`). So a storefront change can be live before Render has deployed the API change it needs: keep them compatible, or push the API first. `STOREFRONT_URL` on Render is this address; it makes the dashboard's store link and QR code.
 - **The landing page** (`apps/landing`, 15 Oct): Brixx's own website, with Home, Features, Who it's for (which took over About on 15 Oct; `/about` redirects there), Pricing, Contact, Privacy and Terms, built to `apps/landing/DESIGN.md`. `pnpm --filter @brixx/landing dev` on http://localhost:3002; not deployed yet. Its positioning lives in `.agents/product-marketing.md`, which the marketing skills in `.claude/skills` read.
 - **Deployed dashboard:** `https://brixxrestaurantdashboard.vercel.app` (Vercel, set up by the user on 24 Oct), against the Render API. `apps/dashboard/vercel.json` sends every address to `index.html`, so `/sign-up` and the other screens load directly. Its address is in `TRUSTED_ORIGINS` on Render (with `http://localhost:5173` for the laptop), and the website's sign-up and log-in buttons point at it (`apps/landing/lib/site.ts`). On the laptop it still runs with `pnpm --filter @brixx/dashboard dev`.
-- **Deployed admin console:** `https://brixxsuperadmin.vercel.app` (Vercel, 27 Oct), against the Render API. `TRUSTED_ORIGINS` on Render lists it with `http://localhost:5174`, beside the dashboard's two addresses.
+- **Deployed admin console:** `https://brixxsuperadmin.vercel.app` (Vercel, set up by the user on 27 Oct), against the Render API. `apps/admin/vercel.json` sends every address to `index.html`. On the laptop it runs with `pnpm --filter @brixx/admin dev` on http://localhost:5174.
+- **`TRUSTED_ORIGINS`** on Render is the list of web addresses whose browsers the API accepts (CORS and Better Auth). It holds the dashboard (`https://brixxrestaurantdashboard.vercel.app`, `http://localhost:5173`) and the admin console (`https://brixxsuperadmin.vercel.app`, `http://localhost:5174`). A new web app, or a new address for one, must be added there first, or signing in fails with "Can't reach Brixx". Changing it on Render needs a redeploy.
+- **The Brixx team** (admin console logins): the first Admin with `pnpm --filter @brixx/api admin:grant <email> ADMIN "Their name"`, which makes the login and asks for its password without showing it (add `--production` for the pilot's database); everyone after that from the console's Team page. `admin:requests` and `admin:approve` still work from the command line, but the console's Requests page does the same.
 - **Three Neon branches** (Frankfurt). `test` is only for the automated tests. `dev` is used by Render, the tablet, the test business and the laptop during development. `production` is untouched and kept for the pilot: before R1a it gets every migration, Render moves to it, and the pilot vendors are set up there. On the laptop, `DATABASE_URL` / `DATABASE_URL_DIRECT` are `dev`. `PRODUCTION_DATABASE_URL` / `PRODUCTION_DATABASE_URL_DIRECT` are `production` (empty until we set it up), used only by `db:migrate:production` and by setup scripts run with `--production`. Tests refuse to run on `dev` (Render's payment-link sender works there and picked up a test's link once) or on `production`.
 - **Errors** from the deployed API go to Sentry (EU region; `SENTRY_DSN` on Render only). The tablet joins at its next EAS build.
 - **Payment links** only run where `RUN_PAYMENT_LINKS=true`: on Render, never on the laptop, which shares the database. They also need `SECRETS_KEY`, `MOOLRE_BASE_URL`, `MOOLRE_SMS_VASKEY` and `MOOLRE_SMS_SENDER_ID` (see `.env.example`). A vendor's own Moolre account is saved with `pnpm --filter @brixx/api settings:moolre-account "<business>"`.
 - **Photos** (menu items, the store's cover and logo) are kept in Cloudflare R2, bucket `plateraa-photos`, through the API. They need the `R2_*` settings (see `.env.example`) in `.env` and on Render; without them, uploads are refused and everything else works. `pnpm --filter @brixx/api photos:check` tests the keys without printing them. See `apps/api/AGENTS.md`.
-- **Logo and icons:** the source is `public/images/brixx-logo.png` (the user's Brixx logo, 23 Oct: the orange B mark with "brixx" beside it, on a transparent background). `pnpm brand:assets` (`scripts/brand-assets.mjs`, with `sharp`) rebuilds every icon from it: the tablet's app icon, Android adaptive icon and splash, the dashboard's favicons and logo, and the store's and landing page's. It rebuilds rather than scales: a clean orange rounded square (the logo's measured orange, `#FE5701`) with the B lifted out and set in white. The whole logo, trimmed, is `wordmark.png` for the places the name is spelled out (the landing page's header and footer, the dashboard's sign-in pages). The B alone in orange (`apps/landing/assets/mark.png`) stands on black in the landing page's share picture (`app/opengraph-image.tsx`). `public/images/brixx-logo-glow.png` (the B glowing on black) is kept for reference but not used: its glow is stored as see-through pixels. Run the script again whenever the logo changes; the tablet then needs a new EAS build.
+- **Logo and icons:** the source is `public/images/brixx-logo.png` (the user's Brixx logo, 23 Oct: the orange B mark with "brixx" beside it, on a transparent background). `pnpm brand:assets` (`scripts/brand-assets.mjs`, with `sharp`) rebuilds every icon from it: the tablet's app icon, Android adaptive icon and splash, the dashboard's and the admin console's favicons and logo, and the store's and landing page's. It rebuilds rather than scales: a clean orange rounded square (the logo's measured orange, `#FE5701`) with the B lifted out and set in white. The whole logo, trimmed, is `wordmark.png` for the places the name is spelled out (the landing page's header and footer, the dashboard's sign-in pages). The B alone in orange (`apps/landing/assets/mark.png`) stands on black in the landing page's share picture (`app/opengraph-image.tsx`). `public/images/brixx-logo-glow.png` (the B glowing on black) is kept for reference but not used: its glow is stored as see-through pixels. Run the script again whenever the logo changes; the tablet then needs a new EAS build.
 - **API client**, regenerated after API changes: `pnpm --filter @brixx/api openapi`, then `pnpm --filter @brixx/api-client generate`.
 - **Tablet:** `pnpm --filter @brixx/mobile start`. Native changes need a new EAS build (see `apps/mobile/AGENTS.md`). EAS CLI: `npx eas-cli@latest …` (the package is `eas-cli`, not `eas`).
 - **Running the API:** `pnpm --filter @brixx/api dev`. Swagger is at `http://localhost:3000/api/docs`.
@@ -149,7 +167,8 @@ On this Windows machine, `pnpm` works in PowerShell. **In Git Bash the global `p
 - **Money:**
   - The server is the source of truth for money; the tablet never settles it.
   - Money is integer pesewas (`BIGINT` / `Pesewas`). No floats, and no `toFixed` maths.
-- **Tenant isolation:** every tenant query goes through `withTenant()`, and RLS is on every tenant table.
+- **Tenant isolation:** every tenant query goes through `withTenant()`, and RLS is on every tenant table. The one exception is the admin console's API (`/api/platform`): it reads across businesses with `withPlatform()`, only behind `@Platform(...)`, and every change it makes still runs in that business's own `withTenant()` transaction.
 - **Revenue visibility:** staff never receive aggregate revenue unless granted. This is enforced on the server, and aggregates are never stored on the device.
-- **Audit:** money, price, stock and access changes are audited in the same transaction.
+- **Audit:** money, price, stock and access changes are audited in the same transaction. A change by the Brixx team carries their login id in `actor_platform`.
+- **The team sees what it needs to help, not more:** the admin console never shows a PIN, a password, a key or a token.
 - **Speed:** if a change makes order entry slower, it's the wrong change.
