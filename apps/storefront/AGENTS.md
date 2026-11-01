@@ -37,7 +37,7 @@ The online store customers order from (plan.md §4.0): one link per business, `S
 ## Running
 
 - `pnpm --filter @brixx/storefront dev` serves http://localhost:3001. To use an API on the laptop, set `BRIXX_API_URL=http://localhost:3000` in `apps/storefront/.env.local`. After changing `@brixx/shared` or the API client, build them first.
-- **Deployed on Vercel** (13 Sep) at `https://plateraa-storefront-bvos.vercel.app`, built from `main` by Vercel's GitHub link (each build shows as a GitHub deployment; a build's own long address needs a Vercel login, the short one is public). `STOREFRONT_URL` on Render must be this address, so the dashboard shows the right store link and QR code. `BRIXX_API_URL` isn't set there, so it uses the Render API. Until `brixx.com` is set up, store links are `<that address>/<slug>`.
+- **Deployed on Vercel** (13 Sep; this address since 1 Nov) at `https://brixxstorefront.vercel.app`, built from `main` by Vercel's GitHub link (each build shows as a GitHub deployment; a build's own long address needs a Vercel login, the short one is public). `STOREFRONT_URL` on Render must be this address, so the dashboard shows the right store link and QR code. `BRIXX_API_URL` isn't set there, so it uses the Render API. Until `brixx.com` is set up, store links are `<that address>/<slug>`.
 
 <!-- BEGIN:nextjs-agent-rules -->
 

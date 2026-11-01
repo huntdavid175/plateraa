@@ -509,7 +509,7 @@ function seed(tenant: string | null) {
       sat: day(true),
       sun: day(false),
     },
-    url: 'https://plateraa-storefront-bvos.vercel.app/s/auntie-amas-kitchen',
+    url: 'https://brixxstorefront.vercel.app/auntie-amas-kitchen',
     moolreConnected: false,
     deliveryZones: 0,
     photosReady: true,

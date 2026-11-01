@@ -19,7 +19,7 @@ These were kept on purpose so nothing broke. Rename or recreate each one, then c
   - `apps/dashboard/src/lib/api.ts`, `apps/mobile/src/config.ts` and `apps/storefront/lib/api.ts` (their default API address);
   - `AGENTS.md`;
   - the tablet needs a new EAS build to pick up the address.
-- [ ] **Vercel storefront** (`https://plateraa-storefront-bvos.vercel.app`). Same as the API: give it the new domain (for example `store.<domain>`). Then update:
+- [ ] **Vercel storefront** (`https://brixxstorefront.vercel.app`). Same as the API: give it the new domain (for example `store.<domain>`). Then update:
   - `STOREFRONT_URL` on Render (it makes the dashboard's store link and QR code);
   - `apps/dashboard/src/dev/Preview.tsx`, `AGENTS.md` and `apps/storefront/AGENTS.md`.
 - [ ] **R2 bucket** (`plateraa-photos`). R2 can't rename a bucket: make `brixx-photos` and copy every object across. The database only saves each photo's key, so no data changes. Then:

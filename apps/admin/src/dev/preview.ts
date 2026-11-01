@@ -416,7 +416,7 @@ function detail(tenantId: string): BusinessDetail {
     ...b,
     orderWays: ['WALK_INS', 'PHONE_CALLS', 'WHATSAPP'],
     timezone: 'Africa/Accra',
-    storeUrl: `https://plateraa-storefront-bvos.vercel.app/${b.slug}`,
+    storeUrl: `https://brixxstorefront.vercel.app/${b.slug}`,
     paymentAccountLast4: b.paymentConnected ? '4821' : null,
     menuItems: 34,
     customers: 212,
