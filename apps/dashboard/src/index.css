@@ -146,6 +146,54 @@ body {
   scrollbar-color: var(--border) transparent;
 }
 
+/* ScreenLoading: the squares twinkle, and the dots count up. Held still for reduced motion. */
+.loading-square {
+  animation: loading-square 1.2s ease-in-out infinite;
+}
+
+.loading-dot {
+  animation: loading-dot 1.2s step-end infinite;
+}
+
+.loading-dot-last {
+  animation-name: loading-dot-last;
+}
+
+@keyframes loading-square {
+  0%,
+  100% {
+    opacity: 0.15;
+  }
+  40% {
+    opacity: 1;
+  }
+}
+
+@keyframes loading-dot {
+  0% {
+    opacity: 0;
+  }
+  33% {
+    opacity: 1;
+  }
+}
+
+@keyframes loading-dot-last {
+  0% {
+    opacity: 0;
+  }
+  66% {
+    opacity: 1;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .loading-square,
+  .loading-dot {
+    animation: none;
+  }
+}
+
 @layer base {
   * {
     @apply border-border;
