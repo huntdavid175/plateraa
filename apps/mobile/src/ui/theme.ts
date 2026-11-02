@@ -76,6 +76,11 @@ const LIGHT = {
   infoInk: '#5B21B6',
   stockBg: '#F5E6D3',
   stockInk: '#7A5A36',
+  /** The top bar's solid pill and tile: an order being cooked, and one ready. Same in both schemes. */
+  cookingBg: '#8CDD8C',
+  cookingInk: '#10261A',
+  readyBg: '#DAD8FB',
+  readyInk: '#1A1917',
 };
 
 export type Palette = typeof LIGHT;
@@ -120,6 +125,10 @@ const DARK: Palette = {
   infoInk: '#C4B5FD',
   stockBg: '#2E2317',
   stockInk: '#D9B68A',
+  cookingBg: '#8CDD8C',
+  cookingInk: '#10261A',
+  readyBg: '#DAD8FB',
+  readyInk: '#1A1917',
 };
 
 export type Scheme = 'light' | 'dark';
