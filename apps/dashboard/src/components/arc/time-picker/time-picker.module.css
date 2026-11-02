@@ -1,4 +1,4 @@
-.field { display: grid; gap: var(--space-2); min-width: 0; }
+.field { display: grid; align-content: start; gap: var(--space-2); min-width: 0; }
 .label { font-size: var(--text-sm); font-weight: 500; line-height: var(--leading-body); }
 .anchor { position: relative; min-width: 0; }
 /* The trigger anchors the menu, so press feedback stays in color; it never scales. */

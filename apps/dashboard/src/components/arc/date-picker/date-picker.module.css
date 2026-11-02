@@ -1,4 +1,4 @@
-.field { display: grid; gap: 7px; min-width: 0; }
+.field { display: grid; align-content: start; gap: 7px; min-width: 0; }
 .label { color: var(--foreground); font-size: var(--text-sm); font-weight: 500; line-height: var(--leading-body); }
 .anchor { position: relative; min-width: 0; }
 /* The trigger anchors the calendar, so press feedback stays in color; it never scales. */
