@@ -337,23 +337,23 @@ function OrderDetail({
               : timeOf(order.created_at_device)}
           </Text>
         </View>
-        {(order.customer_name || order.customer_phone) && (
+        {order.customer_name || order.customer_phone ? (
           <Text style={styles.detailLine}>
             {order.customer_name ? `${order.customer_name}  ` : ''}
             <Text style={styles.mono}>{order.customer_phone ?? ''}</Text>
           </Text>
-        )}
-        {order.delivery_address && (
+        ) : null}
+        {order.delivery_address ? (
           <Text style={styles.detailLine}>Deliver to {order.delivery_address}</Text>
-        )}
-        {order.external_reference && (
+        ) : null}
+        {order.external_reference ? (
           <Text style={[styles.detailLine, styles.mono]}>Ref {order.external_reference}</Text>
-        )}
-        {order.note && <Badge label={order.note} tone="amber" />}
+        ) : null}
+        {order.note ? <Badge label={order.note} tone="amber" /> : null}
         {/* Where it stands is on the steps below; up here only what they don't show. */}
         <View style={styles.payRow}>
           {order.status === 'CANCELLED' && <Badge label="Cancelled" tone="red" />}
-          {order.on_hold && open && <Badge label="On hold" tone="amber" />}
+          {order.on_hold && open ? <Badge label="On hold" tone="amber" /> : null}
           {open && toPay > 0 && <Badge label="Unpaid" tone="red" strong />}
           {open && toPay <= 0 && order.amount_paid > 0 && <Badge label="Paid" tone="good" />}
           {refundOwed > 0 && <Badge label="Refund owed" tone="amber" strong />}
@@ -456,9 +456,9 @@ function OrderDetail({
               A manager gives it back and records it on the dashboard.
             </Text>
           )}
-          {order.cancel_reason && (
+          {order.cancel_reason ? (
             <Text style={styles.detailLine}>Cancelled: {order.cancel_reason}</Text>
-          )}
+          ) : null}
         </View>
 
         {cancelling && (
