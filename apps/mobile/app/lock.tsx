@@ -6,7 +6,8 @@ import logo from '../assets/logo.png';
 import BrixxCrypto from '../modules/brixx-crypto/src/BrixxCryptoModule';
 import { checkPin, pinMessage } from '../src/tablet/pin-guard';
 import { useLocalQuery, useTablet } from '../src/tablet/TabletProvider';
-import { initialOf, personColour } from '../src/ui/people';
+import { usePersonColour } from '../src/tablet/person-colours';
+import { initialOf } from '../src/ui/people';
 import { PinPad } from '../src/ui/PinPad';
 import { SyncBanner } from '../src/ui/SyncBanner';
 import { colors, font, radii, space, text, themedStyles } from '../src/ui/theme';
@@ -34,6 +35,7 @@ export default function LockScreen() {
     `SELECT id, display_name, role, pin_verifier FROM staff WHERE active = 1
       ORDER BY CASE role WHEN 'OWNER' THEN 0 WHEN 'MANAGER' THEN 1 ELSE 2 END, display_name`,
   );
+  const personColour = usePersonColour();
   const [chosen, setChosen] = useState<Person | null>(null);
   const [message, setMessage] = useState<string | null>(null);
   const [checking, setChecking] = useState(false);

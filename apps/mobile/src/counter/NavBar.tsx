@@ -4,7 +4,8 @@ import { Alert, Modal, Pressable, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useEngineState, useLocalQuery, useTablet } from '../tablet/TabletProvider';
 import { saveAppearance } from '../ui/appearance';
-import { initialOf, personColour } from '../ui/people';
+import { usePersonColour } from '../tablet/person-colours';
+import { initialOf } from '../ui/people';
 import {
   CounterIcon,
   DrawerIcon,
@@ -52,6 +53,7 @@ export function NavBar({ tab, onTab }: { tab: CounterTab; onTab: (tab: CounterTa
     )?.[0]?.count ?? 0;
   const refused = state?.needsAttention ?? 0;
   // The colour they were picked by on the lock screen, carried through to the till.
+  const personColour = usePersonColour();
   const colour = personColour(staff?.id ?? '');
   const canAddStaff = staff?.capabilities.has('staff.manage') ?? false;
   const runsDrawer = staff?.capabilities.has('shift.operate') ?? false;

@@ -23,10 +23,15 @@ export const PERSON_COLOURS: readonly PersonColour[] = [
 ];
 
 /**
- * Always the same colour for the same person, on every tablet, without storing anything: the
- * staff id decides it. Order in the list doesn't, so a new colleague can't recolour the others.
+ * Everyone at a business gets a different colour until the eight run out, on every tablet,
+ * without storing anything: they're dealt out in the order people joined. `staffIds` is everyone
+ * there, inactive people too; ids sort by when they were made, so a new colleague always comes
+ * last and can't recolour the others. A person not in the list (or before it has loaded) falls
+ * back to a colour from their id alone.
  */
-export function personColour(id: string): PersonColour {
+export function personColour(id: string, staffIds: readonly string[] = []): PersonColour {
+  const place = [...staffIds].sort().indexOf(id);
+  if (place >= 0) return PERSON_COLOURS[place % PERSON_COLOURS.length]!;
   let hash = 0;
   for (let index = 0; index < id.length; index += 1) {
     hash = (hash * 31 + id.charCodeAt(index)) % 100_000_007;

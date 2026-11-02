@@ -33,6 +33,22 @@ describe('the colour each person is known by', () => {
     expect(used.size).toBeGreaterThan(PERSON_COLOURS.length / 2);
   });
 
+  it('never gives two people at a business the same colour until the eight run out', () => {
+    // These two landed on the same colour when the id alone decided it.
+    const ids = ['01M5Q0XJKN0KZF4ZAJAPPK1EMP', '01M6EBZGJXWYHHY70K08VPSE2J'];
+    expect(personColour(ids[0]!)).toBe(personColour(ids[1]!));
+    expect(personColour(ids[0]!, ids)).not.toBe(personColour(ids[1]!, ids));
+
+    const eight = Array.from({ length: 8 }, (_, index) => `01M5Q0XJKN0KZF4ZAJAPPK1E0${index}`);
+    expect(new Set(eight.map((id) => personColour(id, eight).tint)).size).toBe(8);
+  });
+
+  it('leaves everyone’s colour alone when a new colleague joins', () => {
+    const before = ['01M5Q0XJKN0KZF4ZAJAPPK1EMP', '01M6EBZGJXWYHHY70K08VPSE2J'];
+    const after = [...before, '01M7AAAAAAAAAAAAAAAAAAAAAA'];
+    for (const id of before) expect(personColour(id, after)).toBe(personColour(id, before));
+  });
+
   it('reads at a glance in both looks: the ink is dark on its own ground', () => {
     for (const colour of PERSON_COLOURS) {
       expect(contrast(colour.ink, colour.tint)).toBeGreaterThanOrEqual(4.5);
