@@ -1,6 +1,7 @@
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import { ActivityIndicator, Alert, Pressable, ScrollView, Text, View } from 'react-native';
 import { problemText } from '../tablet/api';
+import { categoryColours, colourOf } from '../ui/categories';
 import { cedis, colors, font, plural, radii, space, text, themedStyles } from '../ui/theme';
 import { addPortions, setSoldOut, type Counter } from './actions';
 import { useCountPortions, useMenu } from './hooks';
@@ -12,7 +13,8 @@ const GAP = 12;
 
 /**
  * What's on sale today, laid out like the counter's menu: a tile per item, three across on an
- * 8" tablet and four on a 10", under its category. One tap on a tile's switch marks it sold out,
+ * 8" tablet and four on a 10", under its category and in its colour; a sold-out tile loses the
+ * colour, so what's off stands out. One tap on a tile's switch marks it sold out,
  * and the counter shows it at once; another tap puts it back. Sold out lasts the trading day.
  * When the owner switches portion counts on, items with a count record also take the portions
  * made, and sell out by themselves at 0.
@@ -23,6 +25,7 @@ export function StockScreen({ counter }: { counter: Counter }) {
   const [busyId, setBusyId] = useState<string | null>(null);
   const [counting, setCounting] = useState<MenuItem | null>(null);
   const [width, setWidth] = useState(0);
+  const colours = useMemo(() => categoryColours(menu ?? []), [menu]);
   const columns = width >= 1100 ? 4 : 3;
   // Explicit rows of equal tiles, as on the menu, so a width that rounds up can't wrap a tile.
   const tileWidth =
@@ -74,9 +77,13 @@ export function StockScreen({ counter }: { counter: Counter }) {
         for (let at = 0; at < category.items.length; at += columns) {
           rows.push(category.items.slice(at, at + columns));
         }
+        const colour = colourOf(colours, category.id);
         return (
           <View key={category.id ?? 'other'} style={styles.section}>
-            <Text style={styles.sectionTitle}>{category.name}</Text>
+            <View style={styles.sectionHead}>
+              <View style={[styles.swatch, { backgroundColor: colour.tint }]} />
+              <Text style={styles.sectionTitle}>{category.name}</Text>
+            </View>
             {rows.map((row) => (
               <View key={row[0]!.id} style={styles.row}>
                 {row.map((item) => (
@@ -85,14 +92,17 @@ export function StockScreen({ counter }: { counter: Counter }) {
                     style={[
                       styles.tile,
                       tileWidth ? { width: tileWidth } : styles.tileFallback,
-                      item.soldOut && styles.tileOut,
+                      item.soldOut ? styles.tileOut : { backgroundColor: colour.tint },
                     ]}
                   >
                     <View style={styles.tileText}>
-                      <Text style={[styles.name, item.soldOut && styles.faded]} numberOfLines={2}>
+                      <Text
+                        style={[styles.name, item.soldOut ? styles.faded : { color: colour.ink }]}
+                        numberOfLines={2}
+                      >
                         {item.name}
                       </Text>
-                      <Text style={styles.price}>
+                      <Text style={[styles.price, !item.soldOut && { color: colour.soft }]}>
                         {cedis(item.price)}
                         {item.left !== null ? ` · ${item.left} left` : ''}
                       </Text>
@@ -176,6 +186,8 @@ const styles = themedStyles(() => ({
   title: { fontFamily: font.semibold, fontSize: text.heading, color: colors.ink },
   hint: { fontFamily: font.regular, fontSize: text.small, color: colors.muted },
   section: { gap: GAP },
+  sectionHead: { flexDirection: 'row', alignItems: 'center', gap: space.sm },
+  swatch: { width: 12, height: 12, borderRadius: 4 },
   sectionTitle: { fontFamily: font.semibold, fontSize: text.body, color: colors.text2 },
   row: { flexDirection: 'row', gap: GAP },
   tile: {
@@ -189,9 +201,14 @@ const styles = themedStyles(() => ({
   tileFallback: { flex: 1 },
   tileOut: { backgroundColor: colors.tileMuted },
   tileText: { gap: 3 },
-  name: { fontFamily: font.medium, fontSize: 17, lineHeight: 22, color: colors.ink },
+  name: { fontFamily: font.semibold, fontSize: 17, lineHeight: 22, color: colors.ink },
   faded: { color: colors.muted },
-  price: { fontFamily: font.mono, fontSize: text.small, color: colors.muted },
+  price: {
+    fontFamily: font.medium,
+    fontSize: 15,
+    fontVariant: ['tabular-nums'],
+    color: colors.muted,
+  },
   tileFoot: { flexDirection: 'row', gap: space.sm },
   switch: {
     flex: 1,

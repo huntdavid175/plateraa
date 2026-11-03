@@ -122,10 +122,10 @@ const styles = themedStyles(() => ({
   },
   noteProblem: { backgroundColor: colors.redSolid },
   dot: { width: 10, height: 10, borderRadius: 5, marginTop: 6 },
-  dotOrder: { backgroundColor: colors.brand },
+  dotOrder: { backgroundColor: colors.onInverseAccent },
   dotGood: { backgroundColor: colors.online },
   words: { flex: 1 },
   title: { fontFamily: font.semibold, fontSize: 16, color: colors.onInverse },
   detail: { fontFamily: font.regular, fontSize: 15, color: colors.onInverse, marginTop: 2 },
-  onProblem: { color: colors.onBrand },
+  onProblem: { color: colors.onSolid },
 }));

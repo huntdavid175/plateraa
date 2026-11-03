@@ -364,5 +364,5 @@ const styles = themedStyles(() => ({
   },
   toastProblem: { backgroundColor: colors.redSolid },
   toastText: { fontFamily: font.medium, fontSize: 15, color: colors.onInverse },
-  toastTextProblem: { color: colors.onBrand },
+  toastTextProblem: { color: colors.onSolid },
 }));

@@ -3,25 +3,28 @@ import { useSyncExternalStore } from 'react';
 import type { StyleSheet } from 'react-native';
 
 /**
- * The one brand colour, in the two schemes. Trying blue in place of the orange (16 Sep); to go
- * back, put the orange values below back in — nothing else in the app names the brand colour.
+ * The main action and the tab in use, in the two schemes. Ink, like CosyPOS's "Place Order"
+ * (3 Nov, user decision): near-black on the light look and near-white on the dark, so the
+ * menu's category pastels carry the colour and the main action stays the strongest thing on
+ * screen. The orange comes later; nothing else in the app names these colours, so it's a swap
+ * here. Before, blue (16 Sep) and the orange:
  *   light: brand '#E8701A', brandPressed '#D4641A', brandTint '#FEF0E6', brandInk '#C55A10'
  *   dark:  brand '#E8701A', brandPressed '#D4641A', brandTint '#2E1B0B', brandInk '#F59A4E'
  */
 const BRAND = {
   light: {
-    brand: '#2563EB',
-    brandPressed: '#1D4ED8',
-    brandTint: '#E8F0FE',
-    brandInk: '#1D4ED8',
+    brand: '#1A1917',
+    brandPressed: '#3A3835',
+    brandTint: '#ECEAE7',
+    brandInk: '#1A1917',
     onBrand: '#FFFFFF',
   },
   dark: {
-    brand: '#3B82F6',
-    brandPressed: '#2563EB',
-    brandTint: '#0F1E38',
-    brandInk: '#7FAEF8',
-    onBrand: '#FFFFFF',
+    brand: '#F2F2F3',
+    brandPressed: '#D2D2D6',
+    brandTint: '#333337',
+    brandInk: '#F2F2F3',
+    onBrand: '#161618',
   },
 };
 
@@ -54,6 +57,8 @@ const LIGHT = {
   /** Dark on light and light on dark, for a toast over the counter. */
   inverse: '#1A1917',
   onInverse: '#FFFFFF',
+  /** A dot that shows up on `inverse`: a new order's note. */
+  onInverseAccent: '#B8A6F8',
   ...BRAND.light,
   online: '#22C55E',
   good: '#16A34A',
@@ -69,9 +74,11 @@ const LIGHT = {
   redInk: '#B91C1C',
   /** A red background under white words, in both schemes. */
   redSolid: '#B91C1C',
+  /** The white words on `redSolid`. */
+  onSolid: '#FFFFFF',
   offlineBg: '#E8EEF4',
   offlineInk: '#3D5A73',
-  /** Violet, not blue: blue is the brand, and an 'info' badge must not read as the main action. */
+  /** Violet, so an 'info' badge reads as a note, not as the main action. */
   infoBg: '#F4F1FE',
   infoInk: '#5B21B6',
   stockBg: '#F5E6D3',
@@ -85,26 +92,30 @@ const LIGHT = {
 
 export type Palette = typeof LIGHT;
 
-/** The same roles on cool dark greys, which sit under the blue; status tints keep their own hue. */
+/**
+ * The same roles on neutral charcoal, as on CosyPOS (3 Nov): no tint of its own, so the
+ * category pastels and the status colours stand out on it; status tints keep their own hue.
+ */
 const DARK: Palette = {
-  canvas: '#191C21',
-  ground: '#0F1114',
-  tile: '#23262C',
-  tilePressed: '#2D3138',
-  tileMuted: '#202329',
-  raised: '#373C44',
-  field: '#14161A',
-  track: '#272B31',
-  line: '#373C44',
-  divider: '#272B31',
-  countBg: '#373C44',
-  ink: '#EDF0F4',
-  text2: '#CFD4DB',
-  muted: '#9AA1AB',
-  faint: '#767D87',
-  disabled: '#474D56',
-  inverse: '#EDF0F4',
-  onInverse: '#171A1F',
+  canvas: '#1C1C1E',
+  ground: '#121213',
+  tile: '#2A2A2D',
+  tilePressed: '#343438',
+  tileMuted: '#232326',
+  raised: '#3A3A3E',
+  field: '#161618',
+  track: '#2A2A2D',
+  line: '#3A3A3E',
+  divider: '#2A2A2D',
+  countBg: '#3A3A3E',
+  ink: '#F2F2F3',
+  text2: '#D2D2D6',
+  muted: '#A0A0A6',
+  faint: '#77777D',
+  disabled: '#4A4A4F',
+  inverse: '#F2F2F3',
+  onInverse: '#1C1C1E',
+  onInverseAccent: '#6D4ED8',
   ...BRAND.dark,
   online: '#22C55E',
   good: '#34D07A',
@@ -119,6 +130,7 @@ const DARK: Palette = {
   redLine: '#5C2323',
   redInk: '#F87171',
   redSolid: '#B91C1C',
+  onSolid: '#FFFFFF',
   offlineBg: '#1A2530',
   offlineInk: '#A7C0D6',
   infoBg: '#1C1630',

@@ -1,4 +1,5 @@
 import { Pressable, Text, View } from 'react-native';
+import type { CategoryColour } from './categories';
 import { colors, font, radii, space, text, themed, themedStyles } from './theme';
 
 /** Two to four choices side by side, like Pickup | Delivery. */
@@ -31,16 +32,27 @@ export function Segmented<T extends string>({
   );
 }
 
-/** A rounded filter chip: menu categories, kitchen stations. */
+/**
+ * A rounded filter chip: menu categories, kitchen stations. Chosen, it's filled solid. A menu
+ * category's chip wears its colour: its pastel, and once chosen its ink, ringed in the pastel so
+ * it still shows on the dark look.
+ */
 export function Chip({
   label,
   selected = false,
+  colour,
   onPress,
 }: {
   label: string;
   selected?: boolean;
+  colour?: CategoryColour;
   onPress: () => void;
 }) {
+  const tinted = colour
+    ? selected
+      ? { backgroundColor: colour.ink, borderColor: colour.tint }
+      : { backgroundColor: colour.tint }
+    : null;
   return (
     <Pressable
       accessibilityRole="button"
@@ -49,10 +61,19 @@ export function Chip({
       style={({ pressed }) => [
         styles.chip,
         selected && styles.chipOn,
-        pressed && !selected && styles.chipPressed,
+        tinted,
+        pressed && !selected && (colour ? { backgroundColor: colour.pressed } : styles.chipPressed),
       ]}
     >
-      <Text style={[styles.chipLabel, selected && styles.chipLabelOn]}>{label}</Text>
+      <Text
+        style={[
+          styles.chipLabel,
+          selected && styles.chipLabelOn,
+          colour && { color: selected ? colour.tint : colour.ink },
+        ]}
+      >
+        {label}
+      </Text>
     </Pressable>
   );
 }
@@ -175,15 +196,15 @@ const styles = themedStyles(() => ({
     minHeight: 44,
     paddingHorizontal: 18,
     borderRadius: 22,
-    borderWidth: 1.5,
+    borderWidth: 2,
     borderColor: 'transparent',
     backgroundColor: colors.tile,
     justifyContent: 'center',
   },
-  chipOn: { backgroundColor: colors.brandTint, borderColor: colors.brand },
+  chipOn: { backgroundColor: colors.brand },
   chipPressed: { backgroundColor: colors.tilePressed },
   chipLabel: { fontFamily: font.medium, fontSize: 15, color: colors.text2 },
-  chipLabelOn: { color: colors.brand },
+  chipLabelOn: { fontFamily: font.semibold, color: colors.onBrand },
   option: {
     minHeight: 56,
     borderRadius: radii.lg,
