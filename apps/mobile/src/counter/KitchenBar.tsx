@@ -214,7 +214,7 @@ const styles = themedStyles(() => ({
     alignItems: 'center',
     gap: 12,
     paddingHorizontal: 12,
-    borderRadius: 16,
+    borderRadius: radii.lg,
     borderWidth: 1,
     borderColor: colors.line,
     backgroundColor: colors.canvas,
@@ -222,7 +222,7 @@ const styles = themedStyles(() => ({
   tile: {
     width: 52,
     height: 52,
-    borderRadius: 12,
+    borderRadius: radii.sm,
     alignItems: 'center',
     justifyContent: 'center',
     paddingHorizontal: 4,

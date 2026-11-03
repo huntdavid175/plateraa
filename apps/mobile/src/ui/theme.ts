@@ -210,7 +210,14 @@ export const font = {
 
 export const space = { xs: 4, sm: 8, md: 16, lg: 24, xl: 32 };
 
-export const radii = { sm: 8, md: 10, lg: 12, xl: 20, pill: 999 };
+/**
+ * Firm corners, like a till rather than a phone app (3 Nov, user request: soft rounding on
+ * everything read as generated). `lg` for tiles, big buttons and rows; `md` for keys, fields
+ * and small buttons; `sm` for what sits inside them; `xl` for sheets and dialogs. Pills only
+ * for small tokens (chips, status badges), circles only for round things (avatars, dots,
+ * counts). A box inside another takes a smaller radius than the one around it.
+ */
+export const radii = { sm: 4, md: 6, lg: 8, xl: 12, pill: 999 };
 
 /** Three sizes do most of the work: small labels, medium names, large totals. */
 export const text = {

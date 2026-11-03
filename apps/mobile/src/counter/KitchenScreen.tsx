@@ -208,7 +208,7 @@ const styles = themedStyles(() => ({
   emptyHint: { fontFamily: font.regular, fontSize: 15, color: colors.muted },
   card: {
     backgroundColor: colors.canvas,
-    borderRadius: 16,
+    borderRadius: radii.lg,
     overflow: 'hidden',
   },
   cardFallback: { width: '48%' },

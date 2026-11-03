@@ -195,7 +195,7 @@ const styles = themedStyles(() => ({
   chip: {
     minHeight: 44,
     paddingHorizontal: 18,
-    borderRadius: 22,
+    borderRadius: radii.pill,
     borderWidth: 2,
     borderColor: 'transparent',
     backgroundColor: colors.tile,
@@ -223,7 +223,7 @@ const styles = themedStyles(() => ({
   optionDetailOn: { color: colors.brandPressed },
   badge: {
     alignSelf: 'flex-start',
-    borderRadius: 6,
+    borderRadius: radii.pill,
     paddingHorizontal: space.sm,
     paddingVertical: 2,
   },
