@@ -210,7 +210,7 @@ export function HomePage() {
               <Loading lines={6} />
             ) : needs.length === 0 ? (
               <PanelEmpty>
-                Nothing needs anyone. Every tablet is syncing and no one is waiting.
+                Nothing needs anyone. Every tablet is in sync and no one is waiting.
               </PanelEmpty>
             ) : (
               <PanelRows>

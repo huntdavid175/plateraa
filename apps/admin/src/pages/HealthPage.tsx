@@ -129,7 +129,7 @@ export function HealthPage() {
       <div className="flex flex-col gap-4 md:gap-6">
         {h && troubled.length === 0 && failed24 === 0 && !providerQuiet && (
           <Alert tone="success" title="Everything is working">
-            All {h.tabletCounts.total} tablets are syncing and no payment link has failed today.
+            All {h.tabletCounts.total} tablets are in sync and no payment link has failed today.
           </Alert>
         )}
         {providerQuiet && (
@@ -198,7 +198,7 @@ export function HealthPage() {
           {!h ? (
             <Loading lines={6} />
           ) : (which === 'problems' ? troubled : h.tablets).length === 0 ? (
-            <PanelEmpty>Every tablet is syncing.</PanelEmpty>
+            <PanelEmpty>Every tablet is in sync.</PanelEmpty>
           ) : (
             <TableScroll>
               <SortableDataTable

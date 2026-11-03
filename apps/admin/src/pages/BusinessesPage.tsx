@@ -35,7 +35,7 @@ function tablets(row: BusinessRow) {
       </Badge>
     );
   }
-  return <Badge tone="success">{row.tablets === 1 ? 'Syncing' : `${row.tablets} syncing`}</Badge>;
+  return <Badge tone="success">{row.tablets === 1 ? 'In sync' : `${row.tablets} in sync`}</Badge>;
 }
 
 const COLUMNS: DataColumn<BusinessRow>[] = [

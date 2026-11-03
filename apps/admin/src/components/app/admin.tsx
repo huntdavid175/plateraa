@@ -109,7 +109,7 @@ export function TabletBadge({ tablet }: { tablet: Tablet }) {
       </Badge>
     );
   }
-  return <Badge tone="success">Syncing</Badge>;
+  return <Badge tone="success">In sync</Badge>;
 }
 
 const LINK_TONES: Record<string, 'success' | 'danger' | 'warning' | 'neutral'> = {
