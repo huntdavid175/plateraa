@@ -133,9 +133,14 @@ export function Loading({ lines = 5, className }: { lines?: number; className?: 
   );
 }
 
-/** Lets an Arc table scroll sideways inside its panel on a phone, never the page. */
+/**
+ * An Arc table inside a panel, with the panel as its only frame (`.panel-table` in index.css).
+ * It scrolls sideways inside the panel on a phone, never the page.
+ */
 export function TableScroll({ children }: { children: ReactNode }) {
-  return <div className="overflow-x-auto overscroll-x-contain border-t px-2 pb-2">{children}</div>;
+  return (
+    <div className="panel-table overflow-x-auto overscroll-x-contain border-t">{children}</div>
+  );
 }
 
 /**

@@ -188,10 +188,9 @@ export function TeamPage() {
       sortable: true,
       render: (_, m) =>
         manage && m.userId !== me?.id ? (
-          <div className="w-48">
+          <div className="w-48 [&_label]:sr-only">
             <Select
               label={`${m.name}’s role`}
-              className="[&_label]:sr-only"
               value={m.role}
               onValueChange={(value) =>
                 update.mutate({ userId: m.userId, role: value as Role, active: m.active })

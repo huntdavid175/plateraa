@@ -121,6 +121,31 @@ body {
 }
 
 /*
+ * An Arc table inside a Panel (TableScroll): the panel is its only frame, so the table's own
+ * border and corners go, its rows run to the panel's edges, and its first and last columns line
+ * up with the panel's heading.
+ */
+.panel-table > div {
+  border: 0;
+  border-radius: 0;
+}
+@media (min-width: 621px) {
+  .panel-table table :is(td, th:not([data-sortable])):first-child,
+  .panel-table table th:first-child > button {
+    padding-left: var(--space-5);
+  }
+  .panel-table table :is(td, th:not([data-sortable])):last-child,
+  .panel-table table th:last-child > button {
+    padding-right: var(--space-5);
+  }
+}
+@media (max-width: 620px) {
+  .panel-table table tbody tr {
+    padding-inline: var(--space-5);
+  }
+}
+
+/*
  * Scrollbars. A bar that appears on hover takes width and shifts everything beside it, so none
  * of them do.
  */

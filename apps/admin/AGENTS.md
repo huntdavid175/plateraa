@@ -39,6 +39,7 @@ The server checks every permission (`@Platform(...)`); the console only hides wh
   - the `command-palette` block, opened with Ctrl+K (⌘K) or "Find anything", over every page and business.
   - The `page-header` block was installed but isn't used: it's a demo without props.
 - **Shared pieces:** `components/app/panel.tsx`, `bento.tsx`, `loading.tsx` and `ui/Page.tsx`, copied from the dashboard (`Page` gained `back`). Ours are in `components/app/admin.tsx`: `ReasonDialog`, `TabletBadge`, `LinkBadge`, `Loading`, `TableScroll`, `TrendLine` (a trend inside a table cell) and `ShareDonut`.
+- **A table in a panel has no frame of its own** (3 Nov, user request: no cards in cards). Always wrap Arc's `SortableDataTable` in `TableScroll`: `.panel-table` in `index.css` takes off the table's border and corners and lines its first and last columns up with the panel's heading.
 - **Arc's metric card trims a plain leading space** in `suffix`: use `NBSP` from `lib/format.ts` ("9 of 11").
 - **Installing more Arc parts:** never let the CLI's `--overwrite` stand on `src/index.css`. On 27 Oct it wrote Arc's default tokens (a black accent) into it, and every colour went wrong; restore it from `apps/dashboard/src/index.css`. `command-palette.tsx` has six `!` added for this repo's `noUncheckedIndexedAccess`; put them back if it's reinstalled.
 
