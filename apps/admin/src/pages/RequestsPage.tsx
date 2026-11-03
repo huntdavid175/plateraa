@@ -12,7 +12,7 @@ import SegmentedControl from '@/components/arc/segmented-control/segmented-contr
 import { Skeleton } from '@/components/arc/skeleton/skeleton';
 import { Textarea } from '@/components/arc/textarea/textarea';
 import { Timeline } from '@/components/arc/timeline/timeline';
-import { Loading, ReasonDialog } from '@/components/app/admin';
+import { ButtonLink, Loading, ReasonDialog } from '@/components/app/admin';
 import { Panel, PanelEmpty } from '@/components/app/panel';
 import { api, call, type Request, type RequestDetail } from '@/lib/api';
 import { actionWords, ago, localPhone, orderWay, stamp, vendorType } from '@/lib/format';
@@ -202,20 +202,16 @@ function RequestView({ id }: { id: string }) {
         <div className="flex flex-wrap items-center gap-2 border-t px-5 py-4">
           {r.contactPhone && (
             <>
-              <a
-                href={`tel:${r.contactPhone}`}
-                className="inline-flex h-9 items-center gap-1.5 rounded-(--radius-control) border px-3 text-sm font-medium hover:bg-muted"
-              >
+              <ButtonLink href={`tel:${r.contactPhone}`}>
                 <Phone {...ICON} /> Call {phone}
-              </a>
-              <a
+              </ButtonLink>
+              <ButtonLink
                 href={`https://wa.me/${r.contactPhone.replace(/\D/g, '')}`}
                 target="_blank"
                 rel="noreferrer"
-                className="inline-flex h-9 items-center gap-1.5 rounded-(--radius-control) border px-3 text-sm font-medium hover:bg-muted"
               >
                 <MessageCircle {...ICON} /> WhatsApp
-              </a>
+              </ButtonLink>
               <CopyButton value={phone} label="Copy number" iconOnly variant="plain" />
             </>
           )}

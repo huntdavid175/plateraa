@@ -19,7 +19,13 @@ import {
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/arc/tabs/tabs';
 import { Textarea } from '@/components/arc/textarea/textarea';
 import { Timeline } from '@/components/arc/timeline/timeline';
-import { LinkBadge, ReasonDialog, TableScroll, TabletBadge } from '@/components/app/admin';
+import {
+  ButtonLink,
+  LinkBadge,
+  ReasonDialog,
+  TableScroll,
+  TabletBadge,
+} from '@/components/app/admin';
 import { Panel, PanelEmpty, PanelLink } from '@/components/app/panel';
 import { api, call, type BusinessDetail, type Tablet } from '@/lib/api';
 import {
@@ -372,22 +378,14 @@ export function BusinessPage() {
       actions={
         <>
           {b.status === 'ACTIVE' && (
-            <a
-              href={b.storeUrl}
-              target="_blank"
-              rel="noreferrer"
-              className="inline-flex h-9 items-center gap-1.5 rounded-(--radius-control) border bg-card px-3 text-sm font-medium hover:bg-muted"
-            >
+            <ButtonLink href={b.storeUrl} target="_blank" rel="noreferrer">
               Store <ExternalLink {...ICON} />
-            </a>
+            </ButtonLink>
           )}
           {b.status === 'PENDING' && (
-            <Link
-              to={`/requests?open=${b.id}`}
-              className="inline-flex h-9 items-center rounded-(--radius-control) bg-foreground px-3 text-sm font-medium text-background"
-            >
+            <ButtonLink variant="primary" to={`/requests?open=${b.id}`}>
               Decide on request
-            </Link>
+            </ButtonLink>
           )}
           {can('businesses.suspend') && b.status === 'ACTIVE' && (
             <Button variant="danger" onClick={() => setDialog({ kind: 'suspend' })}>

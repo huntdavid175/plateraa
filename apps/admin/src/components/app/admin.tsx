@@ -1,8 +1,10 @@
 import { useMutation } from '@tanstack/react-query';
-import { useState, type FormEvent, type ReactNode } from 'react';
+import { useState, type AnchorHTMLAttributes, type FormEvent, type ReactNode } from 'react';
+import { Link, type LinkProps } from 'react-router';
 import { Alert } from '@/components/arc/alert/alert';
 import { Badge } from '@/components/arc/badge/badge';
-import { Button } from '@/components/arc/button/button';
+import { Button, type ButtonSize, type ButtonVariant } from '@/components/arc/button/button';
+import buttonStyles from '@/components/arc/button/button.module.css';
 import { Dialog, DialogContent } from '@/components/arc/dialog/dialog';
 import { DonutChart } from '@/components/arc/donut-chart/donut-chart';
 import { Skeleton } from '@/components/arc/skeleton/skeleton';
@@ -11,6 +13,29 @@ import type { Tablet } from '@/lib/api';
 import { sentence, tabletAlertWords } from '@/lib/format';
 import { refreshAll } from '@/lib/query';
 import { cn } from '@/lib/utils';
+
+type ButtonLinkProps = { variant?: ButtonVariant; size?: ButtonSize } & (
+  LinkProps | AnchorHTMLAttributes<HTMLAnchorElement>
+);
+
+/**
+ * A link dressed as Arc's Button (its own stylesheet), so it stands beside one at the same height
+ * and shape. Arc's Button is always a <button>; a link keeps middle-click and "copy link". `to`
+ * moves within the console, `href` goes out (a store, a phone call, WhatsApp).
+ */
+export function ButtonLink({
+  variant = 'secondary',
+  size = 'md',
+  className,
+  ...props
+}: ButtonLinkProps) {
+  const classes = cn(buttonStyles.button, buttonStyles[variant], buttonStyles[size], className);
+  return 'to' in props ? (
+    <Link {...props} className={classes} />
+  ) : (
+    <a {...props} className={classes} />
+  );
+}
 
 /**
  * Every change the team makes asks why, and the reason goes into the audit log with their name.
