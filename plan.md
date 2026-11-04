@@ -28,6 +28,11 @@ Full design detail: `C:\Users\user\.claude\plans\plan-mode-prompt-you-peaceful-p
 - [ ] Engage a Ghanaian fintech + data-protection lawyer (Act 987, AML, Act 843, marketing consent basis)
 - [ ] Register with the Data Protection Commission (after the lawyer's advice)
 - [ ] Apply as a Bolt Food POS integrator
+- [ ] Yango Delivery for delivery orders (4 Nov, user decision): **one Brixx account books riders for every vendor**, and the customer pays the delivery fee to the rider at the door, so it never passes through us. The food is paid before the rider is booked (payment link or cash at the counter); the rider collects only the delivery fee. Their B2B API (`b2b.delivery.yango.tech`, a token from a Yango manager, no sandbox) can quote, book, track, cancel and report status. Ask Yango's Ghana business team ([delivery.yango.com/gh-en](https://delivery.yango.com/gh-en), the B2B form), **in writing**:
+  - [ ] On bookings made through the API, can the customer pay the delivery fee to the rider (cash or MoMo), with nothing charged to our account? The docs show only "payment on receipt" for the goods, with cash marked "not yet available", and their sample note to the rider says the recipient doesn't pay. If our account pays, how is it billed (prepaid balance, contract, card)?
+  - [ ] Who pays when a customer refuses the order or doesn't answer (the food goes back after 10 minutes), how much is the return trip, and what is the cancellation fee once the rider has reached the vendor?
+  - [ ] Can one account book pickups from many vendors' addresses? Will they give us a `referral_source` as a platform?
+  - [ ] Is the API live in Accra, priced in GHS, and is there a test account?
 - [ ] Create a Play Console **organisation** account (needs a D-U-N-S number)
 - [ ] Buy 1–2 local 58mm Bluetooth thermal printers
 - [ ] Survey pilot vendors: tablet (or whether they need one), Android version, printer, internet (Wi-Fi / hotspot / SIM)
