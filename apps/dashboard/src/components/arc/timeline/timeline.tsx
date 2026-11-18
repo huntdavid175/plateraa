@@ -25,7 +25,7 @@ export interface TimelineEvent {
   /** Icon for a system event, used when there is no avatar. */
   icon?: ReactNode;
   /** Status of a system event. Always say the outcome in the title too, so it never rests on color. */
-  tone?: "neutral" | "success" | "danger";
+  tone?: "neutral" | "success" | "warning" | "danger";
 }
 
 /**

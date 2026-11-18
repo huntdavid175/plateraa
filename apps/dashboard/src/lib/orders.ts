@@ -1,4 +1,5 @@
 import type { paths } from '@brixx/api-client';
+import { Check, Clock, Undo2, X, type LucideIcon } from 'lucide-react';
 import { api, call } from './api';
 
 /** A day (`date`) or a range (`from`, `to`), and the filters figures link to. */
@@ -45,6 +46,29 @@ export function paymentState(
   if (order.status === 'REFUNDED') return { key: 'REFUNDED', label: 'Refunded', tone: 'neutral' };
   if (order.amountPaid >= order.amountDue) return { key: 'PAID', label: 'Paid', tone: 'green' };
   return { key: 'UNPAID', label: 'Unpaid', tone: 'amber' };
+}
+
+/** A payment state's tone as a feed's circle takes it. */
+export const FEED_TONES = {
+  green: 'success',
+  amber: 'warning',
+  red: 'danger',
+  neutral: 'neutral',
+} as const;
+
+/** The icon in an order's circle in a feed, so its state never rests on colour alone. */
+export const PAYMENT_ICONS: Record<PaymentKey, LucideIcon> = {
+  PAID: Check,
+  UNPAID: Clock,
+  REFUND_OWED: Undo2,
+  CANCELLED: X,
+  REFUNDED: Undo2,
+};
+
+/** One line of an order in full: "2 × Jollof rice (Large)". */
+export function itemWords(item: OrderRow['items'][number]): string {
+  const name = item.variantName ? `${item.name} (${item.variantName})` : item.name;
+  return item.quantity > 1 ? `${item.quantity} × ${name}` : name;
 }
 
 /** Where a link to an order came from, so its page can offer the way back. */

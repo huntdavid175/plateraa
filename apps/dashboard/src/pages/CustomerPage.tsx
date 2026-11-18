@@ -16,7 +16,14 @@ import {
 } from '../lib/customers';
 import { shiftDays } from '../lib/expenses';
 import { cedis, shortDate, todayHere } from '../lib/money';
-import { orderLine, paymentState, type BackTo } from '../lib/orders';
+import {
+  FEED_TONES,
+  itemWords,
+  orderLine,
+  PAYMENT_ICONS,
+  paymentState,
+  type BackTo,
+} from '../lib/orders';
 import { useSession } from '../lib/session';
 import { useNow } from '../lib/use-now';
 import { kindWords, phoneWords } from '../lib/words';
@@ -58,8 +65,6 @@ export function CustomerPage() {
   );
 }
 
-const TONES = { green: 'success', red: 'danger', amber: 'neutral', neutral: 'neutral' } as const;
-
 function CustomerBody({ customer }: { customer: CustomerDetail }) {
   const me = useMe();
   const now = useNow();
@@ -88,15 +93,22 @@ function CustomerBody({ customer }: { customer: CustomerDetail }) {
   const orderedLately = [...days.values()].some((count) => count > 0);
   const events: TimelineEvent[] = customer.recentOrders.map((order) => {
     const state = paymentState(order);
+    const Icon = PAYMENT_ICONS[state.key];
     return {
       id: order.id,
       at: order.takenAt,
       title: `${order.displayNumber}, ${kindWords(order).toLowerCase()}: ${cedis(order.total)}, ${state.label.toLowerCase()}`,
-      meta: shortDate(order.businessDate),
-      tone: TONES[state.tone],
+      // The feed already heads each day; this line says what was ordered.
+      meta: orderLine(order.items),
+      tone: FEED_TONES[state.tone],
+      icon: <Icon />,
       detail: (
         <div className="flex flex-col items-start gap-2 text-sm">
-          <span>{orderLine(order.items)}</span>
+          <ul className="flex flex-col gap-0.5">
+            {order.items.map((item, index) => (
+              <li key={index}>{itemWords(item)}</li>
+            ))}
+          </ul>
           <Link
             to={`/orders/${order.id}`}
             state={back}

@@ -1,5 +1,20 @@
+import type { OrderStatus } from '@brixx/shared';
 import { useQuery } from '@tanstack/react-query';
-import { ArrowLeft } from 'lucide-react';
+import {
+  ArrowLeft,
+  Bell,
+  Bike,
+  Check,
+  CheckCheck,
+  Clock,
+  Flame,
+  Link2,
+  Plus,
+  ThumbsUp,
+  Undo2,
+  X,
+  type LucideIcon,
+} from 'lucide-react';
 import { useState } from 'react';
 import { Link, useLocation, useParams } from 'react-router';
 import { Alert } from '@/components/arc/alert/alert';
@@ -258,7 +273,21 @@ function CustomerTile({ order, className }: { order: OrderDetail; className: str
   );
 }
 
-const LINK_TONES = { green: 'success', red: 'danger', amber: 'neutral', blue: 'neutral' } as const;
+const LINK_TONES = { green: 'success', red: 'danger', amber: 'warning', blue: 'neutral' } as const;
+
+/** Each step of an order as the icon in its circle. */
+const STATUS_ICONS: Record<OrderStatus, LucideIcon> = {
+  NEW: Plus,
+  CONFIRMED: ThumbsUp,
+  PREPARING: Flame,
+  READY: Bell,
+  OUT_FOR_DELIVERY: Bike,
+  COMPLETED: CheckCheck,
+  CANCELLED: X,
+  REFUNDED: Undo2,
+};
+
+const icon = (Icon: LucideIcon) => <Icon />;
 
 /** The order's whole story in one feed: status changes, payments, links and refunds. */
 function OrderTimeline({ order }: { order: OrderDetail }) {
@@ -270,6 +299,7 @@ function OrderTimeline({ order }: { order: OrderDetail }) {
       title: STATUS_WORDS[event.to],
       ...(event.by ? { actor: event.by } : {}),
       tone: event.to === 'CANCELLED' ? ('danger' as const) : ('neutral' as const),
+      icon: icon(STATUS_ICONS[event.to]),
     })),
     ...order.payments.map((payment) => ({
       id: `payment-${payment.id}`,
@@ -282,6 +312,7 @@ function OrderTimeline({ order }: { order: OrderDetail }) {
           }
         : {}),
       tone: payment.status === 'CONFIRMED' ? ('success' as const) : ('neutral' as const),
+      icon: icon(payment.status === 'CONFIRMED' ? Check : Clock),
     })),
     ...order.links.map((link) => {
       const words = linkWords(link);
@@ -291,6 +322,7 @@ function OrderTimeline({ order }: { order: OrderDetail }) {
         title: words.text,
         meta: cedis(link.amount),
         tone: LINK_TONES[words.tone],
+        icon: icon(Link2),
       };
     }),
     ...order.refunds.map((refund) => ({
@@ -300,6 +332,7 @@ function OrderTimeline({ order }: { order: OrderDetail }) {
       ...(refund.by ? { actor: refund.by } : {}),
       meta: refund.reason,
       tone: 'danger' as const,
+      icon: icon(Undo2),
     })),
   ];
   return (
