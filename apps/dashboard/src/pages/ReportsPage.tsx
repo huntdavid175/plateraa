@@ -1,5 +1,5 @@
 import { useQuery } from '@tanstack/react-query';
-import { Banknote, Clock, ReceiptText, Users, UtensilsCrossed, Vault, Wallet } from 'lucide-react';
+import { Banknote, Clock, ReceiptText, Trophy, Users, Vault, Wallet } from 'lucide-react';
 import { Link, useLocation, useSearchParams } from 'react-router';
 import { ActivityHeatmap } from '@/components/arc/activity-heatmap/activity-heatmap';
 import { Alert } from '@/components/arc/alert/alert';
@@ -281,7 +281,7 @@ function Report({ period, back }: { period: Period; back: BackTo }) {
       <Tile title="Best sellers" className="col-span-2">
         {period.byItem.length === 0 ? (
           <EmptyState
-            icon={<UtensilsCrossed size={24} strokeWidth={1.75} />}
+            icon={<Trophy size={24} strokeWidth={1.75} />}
             title="No sales on these days"
             description="Your best-selling items show here once orders come in."
           />

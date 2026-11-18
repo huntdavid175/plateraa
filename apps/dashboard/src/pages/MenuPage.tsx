@@ -1,5 +1,5 @@
 import { useMutation, useQuery } from '@tanstack/react-query';
-import { ChevronRight, ImageOff, Plus, UtensilsCrossed } from 'lucide-react';
+import { BookOpenText, ChevronRight, ImageOff, Plus } from 'lucide-react';
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router';
 import { Alert } from '@/components/arc/alert/alert';
@@ -79,7 +79,7 @@ export function MenuPage() {
       <Page title="Menu">
         <div className="rounded-(--radius-surface) border bg-card">
           <EmptyState
-            icon={<UtensilsCrossed size={24} strokeWidth={1.75} />}
+            icon={<BookOpenText size={24} strokeWidth={1.75} />}
             title="No menu items yet"
             description="Add your first item to start taking orders on the tablet and your online store."
             action={

@@ -1,5 +1,6 @@
 import type { Capability } from '@brixx/shared';
 import {
+  BookOpenText,
   ChartColumn,
   Ellipsis,
   House,
@@ -10,7 +11,6 @@ import {
   Undo2,
   UserCog,
   Users,
-  UtensilsCrossed,
   Wallet,
   type LucideIcon,
 } from 'lucide-react';
@@ -92,7 +92,7 @@ const NAV: NavGroup[] = [
   {
     label: 'Menu & stock',
     items: [
-      { to: '/menu', label: 'Menu', Icon: UtensilsCrossed, needs: 'catalog.manage' },
+      { to: '/menu', label: 'Menu', Icon: BookOpenText, needs: 'catalog.manage' },
       { to: '/stock', label: 'Stock', Icon: Package, needs: 'catalog.manage' },
     ],
   },
