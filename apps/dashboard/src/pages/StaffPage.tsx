@@ -1,6 +1,6 @@
 import { pinProblem } from '@brixx/shared';
 import { useMutation, useQuery } from '@tanstack/react-query';
-import { Plus } from 'lucide-react';
+import { Plus, Tablet as TabletIcon } from 'lucide-react';
 import { useState } from 'react';
 import { Alert } from '@/components/arc/alert/alert';
 import { Avatar } from '@/components/arc/avatar/avatar';
@@ -8,6 +8,7 @@ import { Badge } from '@/components/arc/badge/badge';
 import { Button } from '@/components/arc/button/button';
 import { ConfirmMorph } from '@/components/arc/confirm-morph/confirm-morph';
 import { Dialog, DialogContent } from '@/components/arc/dialog/dialog';
+import { EmptyState } from '@/components/arc/empty-state/empty-state';
 import { Input } from '@/components/arc/input/input';
 import { RadioGroup } from '@/components/arc/radio-group/radio-group';
 import { Switch } from '@/components/arc/switch/switch';
@@ -222,9 +223,13 @@ function TabletsPanel({ tablets }: { tablets: Tablet[] }) {
         </p>
       </div>
       {tablets.length === 0 ? (
-        <p className="rounded-(--radius-surface) border bg-card p-5 text-sm text-muted-foreground">
-          No tablet is set up yet.
-        </p>
+        <div className="rounded-(--radius-surface) border bg-card p-5">
+          <EmptyState
+            icon={<TabletIcon size={24} strokeWidth={1.75} />}
+            title="No tablet set up yet"
+            description="Once a tablet signs in to this business, it shows here with who’s on it."
+          />
+        </div>
       ) : (
         <ul className="grid gap-3 md:grid-cols-2">
           {tablets.map((tablet) => (

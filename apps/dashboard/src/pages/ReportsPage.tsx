@@ -1,10 +1,12 @@
 import { useQuery } from '@tanstack/react-query';
+import { Banknote, Clock, ReceiptText, Users, UtensilsCrossed, Vault, Wallet } from 'lucide-react';
 import { Link, useLocation, useSearchParams } from 'react-router';
 import { ActivityHeatmap } from '@/components/arc/activity-heatmap/activity-heatmap';
 import { Alert } from '@/components/arc/alert/alert';
 import { Avatar } from '@/components/arc/avatar/avatar';
 import { BarChart } from '@/components/arc/bar-chart/bar-chart';
 import { DonutChart } from '@/components/arc/donut-chart/donut-chart';
+import { EmptyState } from '@/components/arc/empty-state/empty-state';
 import { LineChart } from '@/components/arc/line-chart/line-chart';
 import SegmentedControl from '@/components/arc/segmented-control/segmented-control';
 import { Sparkline } from '@/components/arc/sparkline/sparkline';
@@ -278,7 +280,11 @@ function Report({ period, back }: { period: Period; back: BackTo }) {
 
       <Tile title="Best sellers" className="col-span-2">
         {period.byItem.length === 0 ? (
-          <p className="text-sm text-muted-foreground">No sales on these days.</p>
+          <EmptyState
+            icon={<UtensilsCrossed size={24} strokeWidth={1.75} />}
+            title="No sales on these days"
+            description="Your best-selling items show here once orders come in."
+          />
         ) : (
           <TileRows>
             {period.byItem.slice(0, 6).map((item, index) => (
@@ -317,7 +323,11 @@ function Report({ period, back }: { period: Period; back: BackTo }) {
             height={170}
           />
         ) : (
-          <p className="text-sm text-muted-foreground">No orders on these days.</p>
+          <EmptyState
+            icon={<Clock size={24} strokeWidth={1.75} />}
+            title="No orders on these days"
+            description="The busiest hours show here once orders come in."
+          />
         )}
       </Tile>
 
@@ -337,7 +347,11 @@ function Report({ period, back }: { period: Period; back: BackTo }) {
 
       <Tile title="How they paid" className="col-span-2">
         {period.byMethod.length === 0 ? (
-          <p className="text-sm text-muted-foreground">No payments.</p>
+          <EmptyState
+            icon={<Banknote size={24} strokeWidth={1.75} />}
+            title="No payments on these days"
+            description="Cash and mobile money show here once orders are paid."
+          />
         ) : (
           <DonutChart
             label="Money in by how it was paid"
@@ -356,7 +370,11 @@ function Report({ period, back }: { period: Period; back: BackTo }) {
 
       <Tile title="Expenses by kind" to={links.expenses()} className="col-span-2">
         {period.byCategory.length === 0 ? (
-          <p className="text-sm text-muted-foreground">No expenses.</p>
+          <EmptyState
+            icon={<Wallet size={24} strokeWidth={1.75} />}
+            title="Nothing spent on these days"
+            description="Money out shows here by kind once expenses are recorded."
+          />
         ) : (
           <DonutChart
             label="Money out by kind"
@@ -375,7 +393,11 @@ function Report({ period, back }: { period: Period; back: BackTo }) {
 
       <Tile title="Dine-in, pickup and delivery" to={links.orders()} className="col-span-2">
         {period.byType.length === 0 ? (
-          <p className="text-sm text-muted-foreground">No orders.</p>
+          <EmptyState
+            icon={<ReceiptText size={24} strokeWidth={1.75} />}
+            title="No orders on these days"
+            description="Dine-in, pickup and delivery sales show here once orders come in."
+          />
         ) : (
           <DonutChart
             label="Sales by order type"
@@ -394,7 +416,11 @@ function Report({ period, back }: { period: Period; back: BackTo }) {
 
       <Tile title="Staff" className="col-span-2">
         {period.staff.length === 0 ? (
-          <p className="text-sm text-muted-foreground">No orders.</p>
+          <EmptyState
+            icon={<Users size={24} strokeWidth={1.75} />}
+            title="No orders on these days"
+            description="Each person’s orders and sales show here once they take orders."
+          />
         ) : (
           <TileRows>
             {period.staff.map((row) => (
@@ -421,7 +447,11 @@ function Report({ period, back }: { period: Period; back: BackTo }) {
 
       <Tile title="Drawer closes" className="col-span-2 lg:col-span-4">
         {period.drawerCloses.length === 0 ? (
-          <p className="text-sm text-muted-foreground">No drawer was closed on these days.</p>
+          <EmptyState
+            icon={<Vault size={24} strokeWidth={1.75} />}
+            title="No drawer closed on these days"
+            description="Each close shows here with the cash expected and counted."
+          />
         ) : (
           <TileRows>
             {period.drawerCloses.map((close) => (

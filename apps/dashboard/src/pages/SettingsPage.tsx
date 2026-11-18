@@ -1,6 +1,6 @@
 import { VENDOR_TYPES, type VendorType } from '@brixx/shared';
 import { useMutation, useQuery } from '@tanstack/react-query';
-import { Plus } from 'lucide-react';
+import { MapPin, Plus } from 'lucide-react';
 import { useState, type ReactNode } from 'react';
 import { useNavigate, useSearchParams } from 'react-router';
 import { ulid } from 'ulid';
@@ -8,13 +8,14 @@ import { Alert } from '@/components/arc/alert/alert';
 import { Badge } from '@/components/arc/badge/badge';
 import { Button } from '@/components/arc/button/button';
 import { Dialog, DialogContent } from '@/components/arc/dialog/dialog';
+import { EmptyState } from '@/components/arc/empty-state/empty-state';
 import { Input } from '@/components/arc/input/input';
 import SegmentedControl from '@/components/arc/segmented-control/segmented-control';
 import { Select } from '@/components/arc/select/select';
 import { Switch } from '@/components/arc/switch/switch';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/arc/tabs/tabs';
 import { CediInput } from '@/components/app/money-field';
-import { Panel, PanelEmpty, PanelRows } from '@/components/app/panel';
+import { Panel, PanelRows } from '@/components/app/panel';
 import { SettingRow, SwitchRow } from '@/components/app/setting-row';
 import { Skeleton } from '@/components/ui/skeleton';
 import { cedis } from '../lib/money';
@@ -302,7 +303,15 @@ function DeliveryPanel() {
           </Alert>
         </div>
       )}
-      {zones.data?.length === 0 && <PanelEmpty>No zones yet.</PanelEmpty>}
+      {zones.data?.length === 0 && (
+        <div className="border-t p-5">
+          <EmptyState
+            icon={<MapPin size={24} strokeWidth={1.75} />}
+            title="No delivery zones yet"
+            description="Until you add one, customers can only pick up. Add each area you deliver to, with its fee."
+          />
+        </div>
+      )}
       {zones.data && zones.data.length > 0 && (
         <PanelRows>
           {zones.data.map((zone) => (

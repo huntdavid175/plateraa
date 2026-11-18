@@ -1,5 +1,5 @@
 import { useQuery } from '@tanstack/react-query';
-import { ReceiptText } from 'lucide-react';
+import { Clock, ReceiptText } from 'lucide-react';
 import { useMemo, useState } from 'react';
 import { Link, useSearchParams } from 'react-router';
 import { Alert } from '@/components/arc/alert/alert';
@@ -307,9 +307,15 @@ function OrdersByHour({ day, isToday }: { day: DaySummary; isToday: boolean }) {
           height={160}
         />
       ) : (
-        <p className="text-sm text-muted-foreground">
-          {isToday ? 'No orders yet today.' : 'No orders on this day.'}
-        </p>
+        <EmptyState
+          icon={<Clock size={24} strokeWidth={1.75} />}
+          title={isToday ? 'No orders yet today' : 'No orders on this day'}
+          description={
+            isToday
+              ? 'Your busiest hours show here as orders come in.'
+              : 'Nothing was ordered on this day.'
+          }
+        />
       )}
     </Tile>
   );
