@@ -37,6 +37,13 @@
   --danger: #b42318;
   /* Not an Arc token: neutral information that isn't the accent (a delivery, a note). */
   --info: #1c5594;
+  /*
+   * Not Arc tokens: the status circles in a feed (orders on Home, a customer, an order's story).
+   * On white a 12% tint barely shows, so light mode tints them 18%. Their amber is brighter than
+   * --warning, which has to stay dark enough for text; an icon needs only 3:1 (3.4:1 here).
+   */
+  --feed-tint: 18%;
+  --feed-warning: #b36b00;
 
   --radius-control: 0.625rem;
   --radius-panel: 0.875rem;
@@ -68,4 +75,7 @@
   --warning: #f2b33d;
   --danger: #ff8a7a;
   --info: #7cb6fb;
+  /* On the dark card a 12% tint already shows, and --warning is bright enough. */
+  --feed-tint: 12%;
+  --feed-warning: var(--warning);
 }
