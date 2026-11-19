@@ -9287,14 +9287,23 @@
             "type": "string",
             "enum": [
               "classic",
+              "sand",
+              "espresso",
               "orange",
-              "red",
-              "pink",
-              "purple",
-              "blue",
-              "teal",
+              "mango",
+              "gold",
+              "kente",
+              "citrus",
               "green",
-              "gold"
+              "forest",
+              "teal",
+              "blue",
+              "midnight",
+              "purple",
+              "berry",
+              "pink",
+              "red",
+              "harmattan"
             ]
           },
           "area": {
@@ -9534,14 +9543,23 @@
             "type": "string",
             "enum": [
               "classic",
+              "sand",
+              "espresso",
               "orange",
-              "red",
-              "pink",
-              "purple",
-              "blue",
-              "teal",
+              "mango",
+              "gold",
+              "kente",
+              "citrus",
               "green",
-              "gold"
+              "forest",
+              "teal",
+              "blue",
+              "midnight",
+              "purple",
+              "berry",
+              "pink",
+              "red",
+              "harmattan"
             ]
           },
           "area": {
@@ -9936,14 +9954,23 @@
             "type": "string",
             "enum": [
               "classic",
+              "sand",
+              "espresso",
               "orange",
-              "red",
-              "pink",
-              "purple",
-              "blue",
-              "teal",
+              "mango",
+              "gold",
+              "kente",
+              "citrus",
               "green",
-              "gold"
+              "forest",
+              "teal",
+              "blue",
+              "midnight",
+              "purple",
+              "berry",
+              "pink",
+              "red",
+              "harmattan"
             ]
           },
           "coverUrl": {
@@ -10325,14 +10352,23 @@
             "type": "string",
             "enum": [
               "classic",
+              "sand",
+              "espresso",
               "orange",
-              "red",
-              "pink",
-              "purple",
-              "blue",
-              "teal",
+              "mango",
+              "gold",
+              "kente",
+              "citrus",
               "green",
-              "gold"
+              "forest",
+              "teal",
+              "blue",
+              "midnight",
+              "purple",
+              "berry",
+              "pink",
+              "red",
+              "harmattan"
             ]
           },
           "type": {

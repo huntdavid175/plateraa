@@ -2464,7 +2464,7 @@ export interface components {
             cashOnPickup: boolean;
             acceptFirst: boolean;
             /** @enum {string} */
-            theme: "classic" | "orange" | "red" | "pink" | "purple" | "blue" | "teal" | "green" | "gold";
+            theme: "classic" | "sand" | "espresso" | "orange" | "mango" | "gold" | "kente" | "citrus" | "green" | "forest" | "teal" | "blue" | "midnight" | "purple" | "berry" | "pink" | "red" | "harmattan";
             area: string | null;
             phone: string | null;
             hours: {
@@ -2517,7 +2517,7 @@ export interface components {
             cashOnPickup: boolean;
             acceptFirst: boolean;
             /** @enum {string} */
-            theme: "classic" | "orange" | "red" | "pink" | "purple" | "blue" | "teal" | "green" | "gold";
+            theme: "classic" | "sand" | "espresso" | "orange" | "mango" | "gold" | "kente" | "citrus" | "green" | "forest" | "teal" | "blue" | "midnight" | "purple" | "berry" | "pink" | "red" | "harmattan";
             area: string;
             phone: string;
             hours: {
@@ -2605,7 +2605,7 @@ export interface components {
             /** @enum {string} */
             today: "mon" | "tue" | "wed" | "thu" | "fri" | "sat" | "sun";
             /** @enum {string} */
-            theme: "classic" | "orange" | "red" | "pink" | "purple" | "blue" | "teal" | "green" | "gold";
+            theme: "classic" | "sand" | "espresso" | "orange" | "mango" | "gold" | "kente" | "citrus" | "green" | "forest" | "teal" | "blue" | "midnight" | "purple" | "berry" | "pink" | "red" | "harmattan";
             coverUrl: string | null;
             logoUrl: string | null;
             open: boolean;
@@ -2687,7 +2687,7 @@ export interface components {
             storeName: string;
             storePhone: string | null;
             /** @enum {string} */
-            theme: "classic" | "orange" | "red" | "pink" | "purple" | "blue" | "teal" | "green" | "gold";
+            theme: "classic" | "sand" | "espresso" | "orange" | "mango" | "gold" | "kente" | "citrus" | "green" | "forest" | "teal" | "blue" | "midnight" | "purple" | "berry" | "pink" | "red" | "harmattan";
             /** @enum {string} */
             type: "DINE_IN" | "PICKUP" | "DELIVERY";
             /** @enum {string} */
