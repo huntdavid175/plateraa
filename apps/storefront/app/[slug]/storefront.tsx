@@ -1304,9 +1304,13 @@ function Header({
   );
 }
 
-/** A box to type in: a hairline outline on the page's own colour, not a card. */
+/**
+ * A box to type in: a hairline outline on the page's own colour, not a card. Its words are 16px,
+ * never less: an iPhone zooms the page into any field smaller than that when it's tapped, and
+ * often stays zoomed (user request, 19 Nov). The same goes for the note.
+ */
 const field =
-  'w-full rounded-xl border border-border bg-page px-3.5 py-3 text-sm text-ink outline-none placeholder:text-muted focus:border-brand';
+  'w-full rounded-xl border border-border bg-page px-3.5 py-3 text-base text-ink outline-none placeholder:text-muted focus:border-brand';
 
 /**
  * The order: what's in it, and everything needed to send it, on one page (16 Sep, user request,
@@ -1389,6 +1393,65 @@ function OrderScreen({
     (fulfilment === 'PICKUP' || (zone !== null && address.trim().length >= 3)) &&
     payment !== null;
 
+  // What's still missing, first to last down the page. The button used to grey out without a
+  // word, and on a phone the form is mostly off screen, so a tap did nothing anyone could see
+  // (user request, 19 Nov). Now a tap goes to the first thing missing and says what it needs.
+  const spots = {
+    lines: useRef<HTMLUListElement>(null),
+    zones: useRef<HTMLUListElement>(null),
+    address: useRef<HTMLInputElement>(null),
+    name: useRef<HTMLInputElement>(null),
+    phone: useRef<HTMLInputElement>(null),
+    payment: useRef<HTMLElement>(null),
+  };
+  type Spot = keyof typeof spots;
+  const [nudge, setNudge] = useState<{ spot: Spot; words: string } | null>(null);
+  const missing = (): { spot: Spot; words: string } | null => {
+    if (blocked) return { spot: 'lines', words: 'Take off what’s marked before you order.' };
+    if (fulfilment === 'DELIVERY' && !zone) {
+      return { spot: 'zones', words: 'Choose the area to deliver to.' };
+    }
+    if (fulfilment === 'DELIVERY' && address.trim().length < 3) {
+      return { spot: 'address', words: 'Add where to deliver to: house, street or a landmark.' };
+    }
+    if (name.trim().length < 2) return { spot: 'name', words: 'Add your name.' };
+    if (normalizeGhanaPhone(phoneToSend) === null) {
+      return {
+        spot: 'phone',
+        words: digits.length
+          ? 'Check your number: 9 digits after +233, like 24 412 3456.'
+          : 'Add your phone number, so the store can reach you.',
+      };
+    }
+    if (payment === null)
+      return { spot: 'payment', words: 'There’s no way to pay for this here yet.' };
+    return null;
+  };
+  // A message goes as soon as anything it's about changes.
+  useEffect(() => setNudge(null), [name, phone, address, zoneId, fulfilment, priced.length]);
+  const tryToOrder = () => {
+    const gap = missing();
+    if (!gap) {
+      void submit();
+      return;
+    }
+    setNudge(gap);
+    const spot = spots[gap.spot].current;
+    spot?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    // Typing fields get the cursor (and the phone's keyboard), once the scroll has settled.
+    if (spot instanceof HTMLInputElement)
+      setTimeout(() => spot.focus({ preventScroll: true }), 350);
+  };
+  const say = (spot: Spot) =>
+    nudge?.spot === spot && (
+      <p className="text-sm text-red" role="alert">
+        {nudge.words}
+      </p>
+    );
+  // The field that needs something gets a red outline in place of its hairline.
+  const fieldFor = (spot: Spot) =>
+    nudge?.spot === spot ? field.replace('border-border', 'border-red') : field;
+
   const submit = async () => {
     if (!ready || busy || !payment) return;
     setBusy(true);
@@ -1454,7 +1517,8 @@ function OrderScreen({
       />
 
       <div className="flex-1 px-4 pb-36">
-        <ul className="divide-y divide-border">
+        {say('lines')}
+        <ul ref={spots.lines} className="divide-y divide-border">
           {priced.map((line) => (
             <li key={line.uid} className="flex items-center gap-3 py-4">
               <div className="h-14 w-14 shrink-0 overflow-hidden rounded-xl bg-tile">
@@ -1524,7 +1588,7 @@ function OrderScreen({
             rows={2}
             maxLength={300}
             aria-label="Note for the kitchen"
-            className="w-full resize-none bg-transparent text-sm text-ink outline-none placeholder:text-muted"
+            className="w-full resize-none bg-transparent text-base text-ink outline-none placeholder:text-muted"
           />
         </div>
 
@@ -1557,7 +1621,8 @@ function OrderScreen({
 
           {fulfilment === 'DELIVERY' && store.zones.length > 0 && (
             <div className="mt-4 space-y-3">
-              <ul className="divide-y divide-border border-y border-border">
+              {say('zones')}
+              <ul ref={spots.zones} className="divide-y divide-border border-y border-border">
                 {store.zones.map((row) => (
                   <li key={row.id}>
                     <button
@@ -1578,14 +1643,16 @@ function OrderScreen({
                 ))}
               </ul>
               <input
+                ref={spots.address}
                 value={address}
                 onChange={(event) => setAddress(event.target.value)}
                 placeholder="House no., street, landmark"
                 maxLength={300}
                 autoComplete="street-address"
                 aria-label="Where to deliver to"
-                className={field}
+                className={fieldFor('address')}
               />
+              {say('address')}
             </div>
           )}
         </section>
@@ -1594,19 +1661,22 @@ function OrderScreen({
           <h2 className="text-xl font-bold text-ink">Your details</h2>
           <div className="mt-3 space-y-3">
             <input
+              ref={spots.name}
               value={name}
               onChange={(event) => setName(event.target.value)}
               placeholder="Your name"
               maxLength={80}
               autoComplete="name"
               aria-label="Your name"
-              className={field}
+              className={fieldFor('name')}
             />
+            {say('name')}
             <div className="flex gap-2">
               <span className="flex items-center rounded-xl border border-border px-3 text-sm text-muted">
                 +233
               </span>
               <input
+                ref={spots.phone}
                 value={phone}
                 onChange={(event) => setPhone(event.target.value)}
                 placeholder="24 000 0000"
@@ -1614,9 +1684,10 @@ function OrderScreen({
                 autoComplete="tel-national"
                 maxLength={16}
                 aria-label="Your phone number"
-                className={`flex-1 ${field}`}
+                className={`flex-1 ${fieldFor('phone')}`}
               />
             </div>
+            {say('phone')}
             <p className="text-xs text-muted">
               The store calls or texts this number about your order.
             </p>
@@ -1635,7 +1706,7 @@ function OrderScreen({
           </div>
         </section>
 
-        <section className="border-b border-border py-5">
+        <section ref={spots.payment} className="border-b border-border py-5">
           <h2 className="text-xl font-bold text-ink">How you’ll pay</h2>
           <div className="mt-3 divide-y divide-border">
             {canOnline && (
@@ -1704,8 +1775,9 @@ function OrderScreen({
       <div className="fixed right-0 bottom-0 left-0 mx-auto max-w-[430px] border-t border-border bg-page px-4 pt-3 pb-6 lg:max-w-2xl">
         <button
           type="button"
-          onClick={() => void submit()}
-          disabled={!ready || busy}
+          onClick={tryToOrder}
+          // Only greyed out when there's nothing anyone can do here; otherwise a tap says what's missing.
+          disabled={busy || !store.open || priced.length === 0}
           className={primary}
         >
           {busy ? (

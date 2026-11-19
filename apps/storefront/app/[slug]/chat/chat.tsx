@@ -145,7 +145,7 @@ export function Chat({ store }: { store: Store }) {
           onChange={(event) => setDraft(event.target.value)}
           placeholder="Type your order…"
           aria-label="Message"
-          className="min-w-0 flex-1 rounded-full border border-border bg-page px-4 py-2.5 text-[15px] text-ink outline-none placeholder:text-muted focus:border-brand"
+          className="min-w-0 flex-1 rounded-full border border-border bg-page px-4 py-2.5 text-base text-ink outline-none placeholder:text-muted focus:border-brand"
         />
         <button
           type="submit"
