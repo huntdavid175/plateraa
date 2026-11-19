@@ -88,11 +88,42 @@ export function priceCart(store: Store, lines: CartLine[]): PricedLine[] {
 
 const keyOf = (slug: string) => `brixx-cart-${slug}`;
 
-/** The cart kept in this browser, so a refresh or a closed tab doesn't lose it. */
+/**
+ * How long a cart that isn't ordered is kept (user request, 19 Nov): a day since it last changed.
+ * Long enough for a refresh, a closed tab or coming back after lunch; not so long that last
+ * week's basket greets someone who has come for something else.
+ */
+export const CART_KEEPS_MS = 24 * 60 * 60 * 1000;
+
+/** The cart as it's kept: its lines and when it last changed. */
+interface KeptCart {
+  lines: CartLine[];
+  changedAt: number;
+}
+
+/**
+ * What was kept, if it's still worth bringing back. A cart from before carts were stamped
+ * (a bare list) comes back once and is stamped when it next changes.
+ */
+export function keptLines(raw: string | null, now: number): CartLine[] {
+  if (!raw) return [];
+  try {
+    const parsed: unknown = JSON.parse(raw);
+    if (Array.isArray(parsed)) return parsed as CartLine[];
+    const kept = parsed as Partial<KeptCart> | null;
+    if (!kept || !Array.isArray(kept.lines) || typeof kept.changedAt !== 'number') return [];
+    return now - kept.changedAt > CART_KEEPS_MS ? [] : kept.lines;
+  } catch {
+    return [];
+  }
+}
+
+/** The cart kept in this browser, so a refresh or a closed tab doesn't lose it, for a day. */
 export function loadCart(slug: string): CartLine[] {
   try {
-    const parsed: unknown = JSON.parse(localStorage.getItem(keyOf(slug)) ?? '[]');
-    return Array.isArray(parsed) ? (parsed as CartLine[]) : [];
+    const lines = keptLines(localStorage.getItem(keyOf(slug)), Date.now());
+    if (lines.length === 0) localStorage.removeItem(keyOf(slug));
+    return lines;
   } catch {
     return [];
   }
@@ -100,9 +131,59 @@ export function loadCart(slug: string): CartLine[] {
 
 export function saveCart(slug: string, lines: CartLine[]) {
   try {
-    if (lines.length) localStorage.setItem(keyOf(slug), JSON.stringify(lines));
-    else localStorage.removeItem(keyOf(slug));
+    if (lines.length) {
+      const kept: KeptCart = { lines, changedAt: Date.now() };
+      localStorage.setItem(keyOf(slug), JSON.stringify(kept));
+    } else localStorage.removeItem(keyOf(slug));
   } catch {
     // A private window or full storage: the cart just isn't kept.
+  }
+}
+
+/** The customer's name and number, remembered on their own phone for their next order. */
+export interface KnownCustomer {
+  name: string;
+  phone: string;
+}
+
+/** One key for every Brixx store: someone's name and number are the same at each. */
+const CUSTOMER_KEY = 'brixx-customer';
+
+/** Who ordered last on this phone, if they did (user request, 19 Nov: regulars typed it every time). */
+export function knownCustomer(raw: string | null): KnownCustomer | null {
+  if (!raw) return null;
+  try {
+    const parsed = JSON.parse(raw) as Partial<KnownCustomer> | null;
+    return parsed && typeof parsed.name === 'string' && typeof parsed.phone === 'string'
+      ? { name: parsed.name, phone: parsed.phone }
+      : null;
+  } catch {
+    return null;
+  }
+}
+
+export function loadCustomer(): KnownCustomer | null {
+  try {
+    return knownCustomer(localStorage.getItem(CUSTOMER_KEY));
+  } catch {
+    return null;
+  }
+}
+
+/** Kept after an order goes through, never while it's being typed. */
+export function saveCustomer(customer: KnownCustomer) {
+  try {
+    localStorage.setItem(CUSTOMER_KEY, JSON.stringify(customer));
+  } catch {
+    // Not kept: they'll type it next time.
+  }
+}
+
+/** "Not you?": a shared phone can forget them. */
+export function forgetCustomer() {
+  try {
+    localStorage.removeItem(CUSTOMER_KEY);
+  } catch {
+    // Nothing kept to forget.
   }
 }

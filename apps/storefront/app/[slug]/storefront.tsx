@@ -23,9 +23,12 @@ import {
 import type { Store, StoreGroup, StoreItem } from '../../lib/api';
 import {
   addLine,
+  forgetCustomer,
   loadCart,
+  loadCustomer,
   priceCart,
   saveCart,
+  saveCustomer,
   type CartLine,
   type PricedLine,
 } from '../../lib/cart';
@@ -42,6 +45,22 @@ const primary =
   'h-12 w-full rounded-xl bg-brand text-sm font-semibold text-on-brand transition-all hover:bg-brand-hover active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-40 disabled:active:scale-100';
 
 /** The store's page: its menu, an item's choices, the cart and checkout (the user's design). */
+/** Where the customer is, as kept in each history step the store adds (`history.state.brixx`). */
+interface Step {
+  screen: 'store' | 'order' | 'info';
+  /** An item's sheet is open over the screen. */
+  sheet: boolean;
+}
+const MENU_STEP: Step = { screen: 'store', sheet: false };
+
+/** The step a history entry holds; one the store didn't add is the menu. */
+function stepOf(state: unknown): Step {
+  const step = (state as { brixx?: Partial<Step> } | null)?.brixx;
+  return step && (step.screen === 'store' || step.screen === 'order' || step.screen === 'info')
+    ? { screen: step.screen, sheet: step.sheet === true }
+    : MENU_STEP;
+}
+
 export function Storefront({ store }: { store: Store }) {
   const router = useRouter();
   const [screen, setScreen] = useState<Screen>('store');
@@ -55,9 +74,49 @@ export function Storefront({ store }: { store: Store }) {
   // picked out of sight above (user report, 19 Nov). So the order and More info open at the top,
   // and coming back to the menu ("Add more", Back) returns to where it was left.
   const menuScroll = useRef(0);
-  const go = (next: Screen) => {
+
+  // The phone's own Back (user request, 19 Nov): the order, More info and an item's sheet are
+  // each a step in the browser's history, so Back from the order comes to the menu instead of
+  // leaving the store for wherever the link was tapped, and Back on a sheet closes it. The
+  // store's own back arrows and "Add more" go back through the same steps.
+  useEffect(() => {
+    window.history.replaceState({ ...window.history.state, brixx: MENU_STEP }, '');
+    const restoring = window.history.scrollRestoration;
+    // The page keeps the menu's place itself (above), so the browser mustn't move it too.
+    window.history.scrollRestoration = 'manual';
+    const onPop = (event: PopStateEvent) => {
+      const step = stepOf(event.state);
+      setScreen((current) => {
+        if (current === 'store' && step.screen !== 'store') menuScroll.current = window.scrollY;
+        return step.screen;
+      });
+      if (!step.sheet) setPicking(null);
+    };
+    window.addEventListener('popstate', onPop);
+    return () => {
+      window.removeEventListener('popstate', onPop);
+      window.history.scrollRestoration = restoring;
+    };
+  }, []);
+  const go = (next: Step['screen']) => {
+    if (next === 'store') {
+      // Back to the menu is a step back, when the step there was taken in this visit.
+      if (stepOf(window.history.state).screen !== 'store') window.history.back();
+      else setScreen('store');
+      return;
+    }
     if (screen === 'store') menuScroll.current = window.scrollY;
+    window.history.pushState({ brixx: { screen: next, sheet: false } satisfies Step }, '');
     setScreen(next);
+  };
+  const openSheet = (item: StoreItem) => {
+    const under = screen === 'paying' ? 'store' : screen;
+    window.history.pushState({ brixx: { screen: under, sheet: true } satisfies Step }, '');
+    setPicking(item);
+  };
+  const closeSheet = () => {
+    if (stepOf(window.history.state).sheet) window.history.back();
+    else setPicking(null);
   };
   const shown = useRef(screen);
   useLayoutEffect(() => {
@@ -104,10 +163,10 @@ export function Storefront({ store }: { store: Store }) {
   const sheet = picking && (
     <ItemSheet
       item={picking}
-      onClose={() => setPicking(null)}
+      onClose={closeSheet}
       onAdd={(line) => {
         change((lines) => addLine(lines, line));
-        setPicking(null);
+        closeSheet();
       }}
     />
   );
@@ -138,7 +197,7 @@ export function Storefront({ store }: { store: Store }) {
           onAddMore={() => go('store')}
           onEmpty={() => change(() => [])}
           setQuantity={setQuantity}
-          onPick={setPicking}
+          onPick={openSheet}
           onPlaced={placed}
         />
         {sheet}
@@ -155,7 +214,7 @@ export function Storefront({ store }: { store: Store }) {
         subtotal={subtotal}
         fulfilment={fulfilment}
         setFulfilment={setFulfilment}
-        onPick={setPicking}
+        onPick={openSheet}
         onCart={() => go('order')}
         onCheckout={() => go('order')}
         onInfo={() => go('info')}
@@ -1294,6 +1353,22 @@ function OrderScreen({
   const [chosenPayment, setPayment] = useState<'ONLINE' | 'CASH'>('ONLINE');
   const [busy, setBusy] = useState(false);
   const [problem, setProblem] = useState<string | null>(null);
+  // Someone who has ordered on this phone before finds their name and number already in.
+  const [remembered, setRemembered] = useState(false);
+  useEffect(() => {
+    const known = loadCustomer();
+    if (!known) return;
+    setName(known.name);
+    // The field sits after "+233", so it shows the number without its leading 0.
+    setPhone(known.phone.replace(/^0/, ''));
+    setRemembered(true);
+  }, []);
+  const forget = () => {
+    forgetCustomer();
+    setName('');
+    setPhone('');
+    setRemembered(false);
+  };
 
   const canOnline = store.payOnline;
   const canCash = store.cashOnPickup && fulfilment === 'PICKUP';
@@ -1339,6 +1414,8 @@ function OrderScreen({
       setBusy(false);
       return;
     }
+    // Only once the store has the order: a half-typed or refused one isn't remembered.
+    saveCustomer({ name: name.trim(), phone: phoneToSend });
     onPlaced(result);
   };
 
@@ -1543,6 +1620,18 @@ function OrderScreen({
             <p className="text-xs text-muted">
               The store calls or texts this number about your order.
             </p>
+            {remembered && (
+              <p className="text-xs text-muted">
+                Filled in from your last order on this phone.{' '}
+                <button
+                  type="button"
+                  onClick={forget}
+                  className="font-medium text-brand-ink underline underline-offset-2"
+                >
+                  Not you? Clear them
+                </button>
+              </p>
+            )}
           </div>
         </section>
 
