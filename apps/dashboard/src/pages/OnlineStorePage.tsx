@@ -12,9 +12,9 @@ import {
   type StorefrontTheme,
 } from '@brixx/shared';
 import { useMutation, useQuery } from '@tanstack/react-query';
-import { Check, ImageOff, QrCode } from 'lucide-react';
+import { Check, QrCode } from 'lucide-react';
 import qrcode from 'qrcode-generator';
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { Alert } from '@/components/arc/alert/alert';
 import { Badge } from '@/components/arc/badge/badge';
 import { Button } from '@/components/arc/button/button';
@@ -28,8 +28,8 @@ import { Bento, Cedis, Tile } from '@/components/app/bento';
 import { SwitchRow } from '@/components/app/setting-row';
 import { Skeleton } from '@/components/ui/skeleton';
 import { cn } from '@/lib/utils';
-import { fetchMenu, type Menu } from '../lib/menu';
-import { cedis, clock } from '../lib/money';
+import { fetchMenu } from '../lib/menu';
+import { clock } from '../lib/money';
 import { fetchOrders, paymentState } from '../lib/orders';
 import { PHOTO_SIZES, storePhotoPath } from '../lib/photos';
 import { saveInPlace } from '../lib/save-in-place';
@@ -111,6 +111,13 @@ function OnlineStore({ store }: { store: Storefront }) {
   };
   const set = (patch: Partial<SaveStorefront>) => saving.mutate({ ...saved, ...patch });
 
+  // The preview reloads when the store or the menu has changed on the server: their queries'
+  // last update, held while a save is on its way, so it never reloads onto the old page.
+  const storeQuery = useQuery({ queryKey: ['storefront', tenantId], queryFn: fetchStorefront });
+  const latest = `${storeQuery.dataUpdatedAt}-${menu.dataUpdatedAt}`;
+  const version = useRef(latest);
+  if (!saving.isPending) version.current = latest;
+
   return (
     <div className="flex flex-col gap-4">
       {saving.error && (
@@ -120,7 +127,7 @@ function OnlineStore({ store }: { store: Storefront }) {
       )}
       <Bento>
         <StatusTile store={store} onSet={set} />
-        <PreviewTile store={store} menu={menu.data} businessName={me.businessName} />
+        <PreviewTile store={store} version={version.current} />
 
         {store.enabled && (
           <>
@@ -272,103 +279,27 @@ function StatusTile({
   );
 }
 
+/** The width the store's page is laid out at inside the preview: a common phone's. */
+const PHONE_WIDTH = 390;
+
 /**
- * The store's page as a customer's phone shows it: the look's colours, the cover and logo, and
- * the first items on the menu. It follows every change on this page at once.
+ * The store's real page, as a customer's phone shows it (user report, 19 Nov: a hand-drawn
+ * picture of it had drifted and "looks nothing like the actual page"). The page itself is shown,
+ * laid out at a phone's width and shrunk to fit the frame, so it can't drift again. It reloads
+ * once each change here or on the menu has saved (`version`); the store page reads fresh data on
+ * every visit. It can be scrolled and tapped like the real thing.
  */
-function PreviewTile({
-  store,
-  menu,
-  businessName,
-}: {
-  store: Storefront;
-  menu: Menu | undefined;
-  businessName: string;
-}) {
-  const colours = STOREFRONT_LOOKS[store.theme].light;
-  const items = (menu?.items ?? []).filter((item) => !item.soldOutToday).slice(0, 4);
-  const initials = businessName
-    .split(/\s+/)
-    .map((word) => word.charAt(0))
-    .join('')
-    .slice(0, 2)
-    .toUpperCase();
+function PreviewTile({ store, version }: { store: Storefront; version: string }) {
   return (
     <Tile title="What customers see" className="col-span-2 lg:col-span-1 lg:row-span-3">
-      <div
-        className={cn(
-          'mx-auto flex w-full max-w-[15rem] flex-1 flex-col overflow-hidden rounded-[1.75rem] border-[6px] border-foreground/90 shadow-sm',
-          !store.enabled && 'opacity-50 grayscale',
-        )}
-        style={{ backgroundColor: colours.page, color: colours.ink }}
-        aria-label={`A picture of your store’s page in the ${STOREFRONT_LOOKS[store.theme].name} look`}
-        role="img"
-      >
-        <div className="relative h-20 shrink-0" style={{ backgroundColor: colours.hero }}>
-          {store.coverUrl && <img src={store.coverUrl} alt="" className="size-full object-cover" />}
-        </div>
-        <div className="flex flex-col gap-2 px-3 pb-3">
-          <div className="relative -mt-6 flex items-end gap-2">
-            <span
-              className="flex size-12 shrink-0 items-center justify-center overflow-hidden rounded-xl border-2 text-sm font-medium"
-              style={{
-                backgroundColor: colours.card,
-                borderColor: colours.page,
-                color: colours.ink,
-              }}
-            >
-              {store.logoUrl ? (
-                <img src={store.logoUrl} alt="" className="size-full object-cover" />
-              ) : (
-                initials
-              )}
-            </span>
-          </div>
-          <span className="text-sm font-medium leading-tight">{businessName}</span>
-          {store.area && (
-            <span className="text-[11px]" style={{ color: colours.muted }}>
-              {store.area}
-            </span>
-          )}
-          <div className="mt-1 flex flex-col gap-1.5">
-            {items.length === 0 && (
-              <span className="text-[11px]" style={{ color: colours.muted }}>
-                Your menu shows here.
-              </span>
-            )}
-            {items.map((item) => (
-              <span
-                key={item.id}
-                className="flex items-center gap-2 rounded-lg p-1.5"
-                style={{ backgroundColor: colours.card }}
-              >
-                <span
-                  className="flex size-8 shrink-0 items-center justify-center overflow-hidden rounded-md"
-                  style={{ backgroundColor: colours.tile, color: colours.muted }}
-                >
-                  {item.photoUrl ? (
-                    <img src={item.photoUrl} alt="" className="size-full object-cover" />
-                  ) : (
-                    <ImageOff size={12} aria-hidden />
-                  )}
-                </span>
-                <span className="flex min-w-0 flex-col">
-                  <span className="truncate text-[11px] font-medium">{item.name}</span>
-                  <span className="text-[10px] tabular-nums" style={{ color: colours.muted }}>
-                    {cedis(item.price)}
-                  </span>
-                </span>
-              </span>
-            ))}
-          </div>
-          <span
-            className="mt-1 rounded-lg py-2 text-center text-[11px] font-medium"
-            style={{ backgroundColor: colours.brand, color: colours.onBrand }}
-          >
-            View basket
-          </span>
-        </div>
+      <div className="mx-auto aspect-[390/760] w-full max-w-[15rem] overflow-hidden rounded-[1.75rem] border-[6px] border-foreground/90 bg-background shadow-sm">
+        <LivePage key={version} url={store.url} />
       </div>
+      {!store.enabled && (
+        <p className="text-center text-xs text-muted-foreground">
+          The store is switched off, so this is what customers see at its link.
+        </p>
+      )}
       <a
         href={store.url}
         target="_blank"
@@ -378,6 +309,46 @@ function PreviewTile({
         Open the real page
       </a>
     </Tile>
+  );
+}
+
+/** The store's page in a frame as wide as a phone, scaled to the box it's in. */
+function LivePage({ url }: { url: string }) {
+  const box = useRef<HTMLDivElement>(null);
+  const [size, setSize] = useState<{ width: number; height: number } | null>(null);
+  const [loaded, setLoaded] = useState(false);
+
+  useEffect(() => {
+    const node = box.current;
+    if (!node || typeof ResizeObserver === 'undefined') return;
+    const observer = new ResizeObserver(([entry]) => {
+      if (entry) setSize({ width: entry.contentRect.width, height: entry.contentRect.height });
+    });
+    observer.observe(node);
+    return () => observer.disconnect();
+  }, []);
+
+  const scale = size ? size.width / PHONE_WIDTH : 0;
+  return (
+    <div ref={box} className="relative size-full">
+      {!loaded && <Skeleton className="absolute inset-0 rounded-none" />}
+      {size && (
+        <iframe
+          src={url}
+          title="Your store’s page, as customers see it"
+          onLoad={() => setLoaded(true)}
+          className={cn(
+            'absolute top-0 left-0 origin-top-left border-0 transition-opacity',
+            loaded ? 'opacity-100' : 'opacity-0',
+          )}
+          style={{
+            width: PHONE_WIDTH,
+            height: size.height / scale,
+            transform: `scale(${scale})`,
+          }}
+        />
+      )}
+    </div>
   );
 }
 
@@ -624,7 +595,7 @@ function ThemePicker({
   return (
     <div className="flex flex-col gap-3">
       <p className="text-sm text-muted-foreground">
-        Now: {STOREFRONT_LOOKS[theme].describe}. The preview follows it at once.
+        Now: {STOREFRONT_LOOKS[theme].describe}. The preview shows it as soon as it’s saved.
       </p>
       <div className="grid grid-cols-3 gap-2" role="radiogroup" aria-label="Store look">
         {STOREFRONT_THEMES.map((key) => {
