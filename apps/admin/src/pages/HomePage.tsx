@@ -1,16 +1,18 @@
 import { useQuery } from '@tanstack/react-query';
-import { ChevronRight } from 'lucide-react';
+import { ChevronRight, CircleCheck, History } from 'lucide-react';
 import type { ReactNode } from 'react';
 import { Link } from 'react-router';
 import { Alert } from '@/components/arc/alert/alert';
 import { Badge } from '@/components/arc/badge/badge';
 import { BarChart } from '@/components/arc/bar-chart/bar-chart';
 import { Button } from '@/components/arc/button/button';
+import { EmptyState } from '@/components/arc/empty-state/empty-state';
 import { MetricCard } from '@/components/arc/metric-card/metric-card';
 import { Skeleton } from '@/components/arc/skeleton/skeleton';
 import { Timeline } from '@/components/arc/timeline/timeline';
 import { Loading } from '@/components/app/admin';
-import { Panel, PanelEmpty, PanelLink, PanelRows } from '@/components/app/panel';
+import { emptyIcon, Panel, PanelEmpty, PanelLink, PanelRows } from '@/components/app/panel';
+import { actionMarker } from '@/lib/activity';
 import { api, call, type Overview } from '@/lib/api';
 import {
   actionWords,
@@ -209,9 +211,11 @@ export function HomePage() {
             {!data ? (
               <Loading lines={6} />
             ) : needs.length === 0 ? (
-              <PanelEmpty>
-                Nothing needs anyone. Every tablet is in sync and no one is waiting.
-              </PanelEmpty>
+              <PanelEmpty
+                icon={emptyIcon(CircleCheck)}
+                title="Nothing needs anyone"
+                description="Every tablet is in sync and no one is waiting."
+              />
             ) : (
               <PanelRows>
                 {needs.map((need) => (
@@ -257,9 +261,11 @@ export function HomePage() {
             {!data ? (
               <Skeleton lines={4} />
             ) : data.recentActions.length === 0 ? (
-              <p className="text-sm text-muted-foreground">
-                Nothing yet. Approvals, PIN resets and suspensions show here.
-              </p>
+              <EmptyState
+                icon={emptyIcon(History)}
+                title="Nothing from the team yet"
+                description="Approvals, PIN resets and suspensions show here."
+              />
             ) : (
               <Timeline
                 label="Latest actions by the Brixx team"
@@ -271,6 +277,7 @@ export function HomePage() {
                   at: row.createdAt,
                   actor: row.actorName.replace(' (Brixx)', ''),
                   title: `${actionWords(row.action)} at ${row.businessName}`,
+                  ...actionMarker(row.action),
                 }))}
               />
             )}

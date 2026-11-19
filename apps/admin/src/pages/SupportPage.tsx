@@ -1,4 +1,5 @@
 import { keepPreviousData, useQuery } from '@tanstack/react-query';
+import { Search, SearchX } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { Link, useSearchParams } from 'react-router';
 import { Alert } from '@/components/arc/alert/alert';
@@ -10,7 +11,7 @@ import {
   type DataColumn,
 } from '@/components/arc/sortable-data-table/sortable-data-table';
 import { LinkBadge, Loading, TableScroll } from '@/components/app/admin';
-import { Panel } from '@/components/app/panel';
+import { emptyIcon, Panel } from '@/components/app/panel';
 import { api, call, type SearchResult } from '@/lib/api';
 import { cedis, localPhone, orderWord, sentence, stamp } from '@/lib/format';
 import { BusinessStatus } from '@/shell/Shell';
@@ -156,6 +157,7 @@ export function SupportPage() {
         {q.length < 2 ? (
           <div className="rounded-(--radius-surface) border bg-card">
             <EmptyState
+              icon={emptyIcon(Search)}
               title="Type what the vendor tells you"
               description="A business’s name or area, a phone number like 024 123 4567, an order number like W12 or 14 from the last 7 days, or an owner’s email."
             />
@@ -171,6 +173,7 @@ export function SupportPage() {
         ) : total === 0 ? (
           <div className="rounded-(--radius-surface) border bg-card">
             <EmptyState
+              icon={emptyIcon(SearchX)}
               title={`Nothing found for “${q}”`}
               description="Check the spelling, or try their phone number."
             />

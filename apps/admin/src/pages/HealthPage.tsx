@@ -1,4 +1,5 @@
 import { useQuery } from '@tanstack/react-query';
+import { CircleCheck, Tablet as TabletIcon, Wallet } from 'lucide-react';
 import { useState, type ReactNode } from 'react';
 import { Link } from 'react-router';
 import { Alert } from '@/components/arc/alert/alert';
@@ -13,7 +14,7 @@ import {
   type DataColumn,
 } from '@/components/arc/sortable-data-table/sortable-data-table';
 import { Loading, ShareDonut, TableScroll, TabletBadge } from '@/components/app/admin';
-import { Panel, PanelEmpty, PanelLine, PanelRows } from '@/components/app/panel';
+import { emptyIcon, Panel, PanelEmpty, PanelLine, PanelRows } from '@/components/app/panel';
 import { api, call, type Health, type Tablet } from '@/lib/api';
 import { ago, cedis, localPhone, NBSP, sentence, shortDay, stamp } from '@/lib/format';
 import { Page } from '@/ui/Page';
@@ -198,7 +199,19 @@ export function HealthPage() {
           {!h ? (
             <Loading lines={6} />
           ) : (which === 'problems' ? troubled : h.tablets).length === 0 ? (
-            <PanelEmpty>Every tablet is in sync.</PanelEmpty>
+            which === 'problems' ? (
+              <PanelEmpty
+                icon={emptyIcon(CircleCheck)}
+                title="Every tablet is in sync"
+                description="A tablet shows here when it hasn’t synced for a while or has changes waiting."
+              />
+            ) : (
+              <PanelEmpty
+                icon={emptyIcon(TabletIcon)}
+                title="No tablets yet"
+                description="Tablets show here once a business sets one up."
+              />
+            )
           ) : (
             <TableScroll>
               <SortableDataTable
@@ -387,7 +400,11 @@ export function HealthPage() {
             {!h ? (
               <Loading lines={3} />
             ) : h.storesWithoutPayments.length === 0 ? (
-              <PanelEmpty>None. Every open store can take payments.</PanelEmpty>
+              <PanelEmpty
+                icon={emptyIcon(Wallet)}
+                title="Every open store can take payments"
+                description="A store shows here when its online store is on but it has no payment account."
+              />
             ) : (
               <PanelRows>
                 {h.storesWithoutPayments.map((s) => (
@@ -410,7 +427,11 @@ export function HealthPage() {
             {!h ? (
               <Loading lines={3} />
             ) : h.refusals.length === 0 ? (
-              <PanelEmpty>None. Every tablet’s changes went through.</PanelEmpty>
+              <PanelEmpty
+                icon={emptyIcon(CircleCheck)}
+                title="Every tablet’s changes went through"
+                description="A change shows here when the server turns it down, with the reason."
+              />
             ) : (
               <PanelRows>
                 {h.refusals.map((r) => (

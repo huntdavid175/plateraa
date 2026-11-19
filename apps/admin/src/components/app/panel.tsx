@@ -1,4 +1,5 @@
-import { ChevronRight } from 'lucide-react';
+import { ChevronRight, type LucideIcon } from 'lucide-react';
+import { EmptyState } from '@/components/arc/empty-state/empty-state';
 import { useId, type ReactNode } from 'react';
 import { Link } from 'react-router';
 import { cn } from '@/lib/utils';
@@ -105,10 +106,28 @@ export function PanelLine({
   );
 }
 
-/** A panel with nothing in it yet: one quiet line. */
-export function PanelEmpty({ children }: { children: ReactNode }) {
-  return <p className="border-t px-5 py-5 text-sm text-muted-foreground">{children}</p>;
+/**
+ * A panel with nothing in it yet: the icon empty state, as on the vendor dashboard. The icon is
+ * the same one the panel's rows would show (a tablet, a note), drawn with `emptyIcon`.
+ */
+export function PanelEmpty({
+  icon,
+  title,
+  description,
+}: {
+  icon: ReactNode;
+  title: string;
+  description: string;
+}) {
+  return (
+    <div className="border-t px-5 py-6">
+      <EmptyState icon={icon} title={title} description={description} />
+    </div>
+  );
 }
+
+/** An icon at the size an empty state takes. */
+export const emptyIcon = (Icon: LucideIcon) => <Icon size={24} strokeWidth={1.75} aria-hidden />;
 
 /** The link at a panel's heading. */
 export function PanelLink({ to, children }: { to: string; children: ReactNode }) {

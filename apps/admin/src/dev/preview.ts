@@ -176,6 +176,12 @@ const ACTIONS: [string, string, boolean][] = [
   ['item.sold_out', 'Abla', false],
   ['payment.recorded', 'Kojo', false],
   ['tenant.declined', 'Kwame Asare (Brixx)', true],
+  ['settings.storefront', 'Ama Owusu', false],
+  ['item.updated', 'Ama Owusu', false],
+  ['settings.business', 'Ama Owusu', false],
+  ['tenant.suspended', 'Kwame Asare (Brixx)', true],
+  ['order.flagged', 'Kojo', false],
+  ['tenant.restored', 'Kwame Asare (Brixx)', true],
 ];
 
 const audit: AuditRow[] = Array.from({ length: 60 }, (_, i) => {

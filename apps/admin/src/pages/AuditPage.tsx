@@ -1,5 +1,5 @@
 import { useInfiniteQuery, useQuery } from '@tanstack/react-query';
-import { Download } from 'lucide-react';
+import { Download, ScrollText } from 'lucide-react';
 import { useState } from 'react';
 import { useSearchParams } from 'react-router';
 import { Alert } from '@/components/arc/alert/alert';
@@ -10,8 +10,9 @@ import SegmentedControl from '@/components/arc/segmented-control/segmented-contr
 import { Select } from '@/components/arc/select/select';
 import { Timeline } from '@/components/arc/timeline/timeline';
 import { Loading } from '@/components/app/admin';
-import { Panel, PanelEmpty } from '@/components/app/panel';
+import { emptyIcon, Panel, PanelEmpty } from '@/components/app/panel';
 import { api, call, downloadAuditCsv, type AuditRow, type BusinessRow } from '@/lib/api';
+import { actionMarker } from '@/lib/activity';
 import { actionWords } from '@/lib/format';
 import { useCan } from '@/lib/query';
 import { toast } from '@/ui/Toast';
@@ -180,7 +181,11 @@ export function AuditPage() {
             {!log.data ? (
               <Loading lines={10} />
             ) : rows.length === 0 ? (
-              <PanelEmpty>Nothing recorded for these filters.</PanelEmpty>
+              <PanelEmpty
+                icon={emptyIcon(ScrollText)}
+                title="Nothing recorded for these filters"
+                description="Try more days, or another business or kind of change."
+              />
             ) : (
               <div className="flex flex-col gap-4 border-t px-5 py-4">
                 <Timeline
@@ -195,7 +200,7 @@ export function AuditPage() {
                     actor: row.actorName,
                     title: `${actionWords(row.action)} at ${row.businessName}`,
                     meta: row.action,
-                    tone: row.byBrixx ? 'success' : 'neutral',
+                    ...actionMarker(row.action),
                     detail:
                       row.before !== null || row.after !== null ? (
                         <JsonViewer

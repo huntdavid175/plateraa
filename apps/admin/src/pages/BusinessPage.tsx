@@ -1,6 +1,15 @@
 import { pinProblem } from '@brixx/shared';
 import { useMutation, useQuery } from '@tanstack/react-query';
-import { ArrowLeft, ExternalLink, MessageCircle, Phone } from 'lucide-react';
+import {
+  ArrowLeft,
+  ExternalLink,
+  History,
+  Mail,
+  MessageCircle,
+  Phone,
+  StickyNote,
+  Tablet as TabletIcon,
+} from 'lucide-react';
 import { useState, type ReactNode } from 'react';
 import { Link, useParams, useSearchParams } from 'react-router';
 import { Alert } from '@/components/arc/alert/alert';
@@ -26,7 +35,8 @@ import {
   TableScroll,
   TabletBadge,
 } from '@/components/app/admin';
-import { Panel, PanelEmpty, PanelLink } from '@/components/app/panel';
+import { emptyIcon, Panel, PanelEmpty, PanelLink } from '@/components/app/panel';
+import { actionMarker } from '@/lib/activity';
 import { api, call, type BusinessDetail, type Tablet } from '@/lib/api';
 import {
   actionWords,
@@ -158,7 +168,11 @@ function Notes({ business }: { business: BusinessDetail }) {
         </form>
       )}
       {business.notes.length === 0 ? (
-        <PanelEmpty>No notes yet.</PanelEmpty>
+        <PanelEmpty
+          icon={emptyIcon(StickyNote)}
+          title="No notes yet"
+          description="Calls, visits and promises to this business show here for the whole team."
+        />
       ) : (
         <div className="border-t px-5 py-4">
           <Timeline
@@ -171,6 +185,7 @@ function Notes({ business }: { business: BusinessDetail }) {
               at: note.createdAt,
               actor: note.authorName,
               title: note.body,
+              icon: <StickyNote aria-hidden />,
             }))}
           />
         </div>
@@ -545,9 +560,11 @@ export function BusinessPage() {
               description="Signing one out stops it at once; setting it up again makes it a new tablet."
             >
               {b.tabletList.length === 0 ? (
-                <PanelEmpty>
-                  No tablet set up yet. The owner registers one from the tablet app.
-                </PanelEmpty>
+                <PanelEmpty
+                  icon={emptyIcon(TabletIcon)}
+                  title="No tablet set up yet"
+                  description="The owner registers one from the tablet app. It shows here once it signs in."
+                />
               ) : (
                 <TableScroll>
                   <SortableDataTable
@@ -573,7 +590,11 @@ export function BusinessPage() {
               </Panel>
               <Panel title="Email logins" description="Who signs in to the dashboard.">
                 {b.logins.length === 0 ? (
-                  <PanelEmpty>No one signs in to the dashboard.</PanelEmpty>
+                  <PanelEmpty
+                    icon={emptyIcon(Mail)}
+                    title="No one signs in to the dashboard"
+                    description="Owners and managers with an email login show here."
+                  />
                 ) : (
                   <ul className="flex flex-col divide-y border-t">
                     {b.logins.map((login) => (
@@ -637,7 +658,11 @@ export function BusinessPage() {
               action={<PanelLink to={`/audit?tenantId=${b.id}`}>Full log</PanelLink>}
             >
               {b.activity.length === 0 ? (
-                <PanelEmpty>Nothing recorded yet.</PanelEmpty>
+                <PanelEmpty
+                  icon={emptyIcon(History)}
+                  title="Nothing recorded yet"
+                  description="Changes by the business and by the Brixx team show here as they happen."
+                />
               ) : (
                 <div className="border-t px-5 py-4">
                   <Timeline
@@ -651,7 +676,7 @@ export function BusinessPage() {
                       actor: row.actorName,
                       title: actionWords(row.action),
                       meta: row.action,
-                      tone: row.byBrixx ? 'success' : 'neutral',
+                      ...actionMarker(row.action),
                       detail:
                         row.before !== null || row.after !== null ? (
                           <JsonViewer

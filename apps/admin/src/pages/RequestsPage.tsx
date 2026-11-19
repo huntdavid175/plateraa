@@ -1,5 +1,5 @@
 import { useMutation, useQuery } from '@tanstack/react-query';
-import { Check, MessageCircle, Phone } from 'lucide-react';
+import { Check, CircleX, Inbox, MessageCircle, Phone, PhoneCall } from 'lucide-react';
 import { useState, type ReactNode } from 'react';
 import { Link, useSearchParams } from 'react-router';
 import { Alert } from '@/components/arc/alert/alert';
@@ -13,8 +13,9 @@ import { Skeleton } from '@/components/arc/skeleton/skeleton';
 import { Textarea } from '@/components/arc/textarea/textarea';
 import { Timeline } from '@/components/arc/timeline/timeline';
 import { ButtonLink, Loading, ReasonDialog } from '@/components/app/admin';
-import { Panel, PanelEmpty } from '@/components/app/panel';
+import { emptyIcon, Panel, PanelEmpty } from '@/components/app/panel';
 import { api, call, type Request, type RequestDetail } from '@/lib/api';
+import { actionMarker } from '@/lib/activity';
 import { actionWords, ago, localPhone, orderWay, stamp, vendorType } from '@/lib/format';
 import { refreshAll, useCan } from '@/lib/query';
 import { cn } from '@/lib/utils';
@@ -90,7 +91,11 @@ function CallNotes({ request }: { request: RequestDetail }) {
         </form>
       )}
       {request.notes.length === 0 ? (
-        <PanelEmpty>No calls noted yet.</PanelEmpty>
+        <PanelEmpty
+          icon={emptyIcon(PhoneCall)}
+          title="No calls noted yet"
+          description="Note each call, so whoever picks this up next knows where it stands."
+        />
       ) : (
         <div className="border-t px-5 py-4">
           <Timeline
@@ -103,6 +108,7 @@ function CallNotes({ request }: { request: RequestDetail }) {
               at: note.createdAt,
               actor: note.authorName,
               title: note.body,
+              icon: <PhoneCall aria-hidden />,
             }))}
           />
         </div>
@@ -339,6 +345,7 @@ function RequestView({ id }: { id: string }) {
                   at: row.createdAt,
                   actor: row.actorName,
                   title: actionWords(row.action),
+                  ...actionMarker(row.action),
                 }))}
               />
             </div>
@@ -412,6 +419,7 @@ export function RequestsPage() {
           {requests.data && rows.length === 0 ? (
             <div className="rounded-(--radius-surface) border bg-card">
               <EmptyState
+                icon={emptyIcon(show === 'waiting' ? Inbox : CircleX)}
                 title={show === 'waiting' ? 'No one is waiting' : 'Nothing declined lately'}
                 description={
                   show === 'waiting'

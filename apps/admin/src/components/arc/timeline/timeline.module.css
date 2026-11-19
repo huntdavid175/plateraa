@@ -120,11 +120,19 @@
   background: var(--surface);
 }
 .marker[data-tone='success'] {
-  background: color-mix(in oklab, var(--success) 12%, var(--surface));
+  background: color-mix(in oklab, var(--success) var(--feed-tint, 12%), var(--surface));
   color: var(--success);
 }
+.marker[data-tone='warning'] {
+  background: color-mix(
+    in oklab,
+    var(--feed-warning, var(--warning)) var(--feed-tint, 12%),
+    var(--surface)
+  );
+  color: var(--feed-warning, var(--warning));
+}
 .marker[data-tone='danger'] {
-  background: color-mix(in oklab, var(--danger) 12%, var(--surface));
+  background: color-mix(in oklab, var(--danger) var(--feed-tint, 12%), var(--surface));
   color: var(--danger);
 }
 .marker svg {
