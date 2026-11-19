@@ -15,8 +15,8 @@ import { Timeline } from '@/components/arc/timeline/timeline';
 import { ButtonLink, Loading, ReasonDialog } from '@/components/app/admin';
 import { emptyIcon, Panel, PanelEmpty } from '@/components/app/panel';
 import { api, call, type Request, type RequestDetail } from '@/lib/api';
-import { actionMarker } from '@/lib/activity';
-import { actionWords, ago, localPhone, orderWay, stamp, vendorType } from '@/lib/format';
+import { activityEvents } from '@/lib/activity';
+import { ago, localPhone, orderWay, stamp, vendorType } from '@/lib/format';
 import { refreshAll, useCan } from '@/lib/query';
 import { cn } from '@/lib/utils';
 import { BusinessStatus } from '@/shell/Shell';
@@ -340,13 +340,7 @@ function RequestView({ id }: { id: string }) {
                 now={Date.now()}
                 timeZone="Africa/Accra"
                 locale="en-GB"
-                events={r.activity.map((row) => ({
-                  id: row.id,
-                  at: row.createdAt,
-                  actor: row.actorName,
-                  title: actionWords(row.action),
-                  ...actionMarker(row.action),
-                }))}
+                events={activityEvents(r.activity, { withBusiness: false })}
               />
             </div>
           </Panel>

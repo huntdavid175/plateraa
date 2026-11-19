@@ -5,15 +5,13 @@ import { useSearchParams } from 'react-router';
 import { Alert } from '@/components/arc/alert/alert';
 import { Button } from '@/components/arc/button/button';
 import { DateRangePicker } from '@/components/arc/date-range-picker/date-range-picker';
-import { JsonViewer } from '@/components/arc/json-viewer/json-viewer';
 import SegmentedControl from '@/components/arc/segmented-control/segmented-control';
 import { Select } from '@/components/arc/select/select';
 import { Timeline } from '@/components/arc/timeline/timeline';
 import { Loading } from '@/components/app/admin';
 import { emptyIcon, Panel, PanelEmpty } from '@/components/app/panel';
 import { api, call, downloadAuditCsv, type AuditRow, type BusinessRow } from '@/lib/api';
-import { actionMarker } from '@/lib/activity';
-import { actionWords } from '@/lib/format';
+import { activityEvents } from '@/lib/activity';
 import { useCan } from '@/lib/query';
 import { toast } from '@/ui/Toast';
 import { Page } from '@/ui/Page';
@@ -174,7 +172,7 @@ export function AuditPage() {
             title="Changes"
             description={
               log.data
-                ? `${rows.length}${log.hasNextPage ? '+' : ''} shown, newest first. Open one for before and after.`
+                ? `${rows.length}${log.hasNextPage ? '+' : ''} shown, newest first. Open one to see what changed.`
                 : undefined
             }
           >
@@ -194,26 +192,7 @@ export function AuditPage() {
                   timeZone="Africa/Accra"
                   locale="en-GB"
                   scrollToNew={false}
-                  events={rows.map((row) => ({
-                    id: row.id,
-                    at: row.createdAt,
-                    actor: row.actorName,
-                    title: `${actionWords(row.action)} at ${row.businessName}`,
-                    meta: row.action,
-                    ...actionMarker(row.action),
-                    detail:
-                      row.before !== null || row.after !== null ? (
-                        <JsonViewer
-                          data={{ before: row.before, after: row.after }}
-                          rootName="change"
-                          defaultExpandDepth={2}
-                          searchable={false}
-                          showPath={false}
-                          maxHeight={260}
-                          label="Before and after"
-                        />
-                      ) : undefined,
-                  }))}
+                  events={activityEvents(rows)}
                 />
                 {log.hasNextPage && (
                   <Button

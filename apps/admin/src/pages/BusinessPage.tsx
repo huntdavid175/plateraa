@@ -18,7 +18,6 @@ import { BarChart } from '@/components/arc/bar-chart/bar-chart';
 import { Button } from '@/components/arc/button/button';
 import { CopyButton } from '@/components/arc/copy-button/copy-button';
 import { Input } from '@/components/arc/input/input';
-import { JsonViewer } from '@/components/arc/json-viewer/json-viewer';
 import { MetricCard } from '@/components/arc/metric-card/metric-card';
 import { Skeleton } from '@/components/arc/skeleton/skeleton';
 import {
@@ -36,10 +35,9 @@ import {
   TabletBadge,
 } from '@/components/app/admin';
 import { emptyIcon, Panel, PanelEmpty, PanelLink } from '@/components/app/panel';
-import { actionMarker } from '@/lib/activity';
+import { activityEvents } from '@/lib/activity';
 import { api, call, type BusinessDetail, type Tablet } from '@/lib/api';
 import {
-  actionWords,
   ago,
   cedis,
   localPhone,
@@ -654,7 +652,7 @@ export function BusinessPage() {
           <div className="pt-4">
             <Panel
               title="Activity"
-              description="Changes by the business and by the Brixx team. Open one to see before and after."
+              description="Changes by the business and by the Brixx team. Open one to see what changed."
               action={<PanelLink to={`/audit?tenantId=${b.id}`}>Full log</PanelLink>}
             >
               {b.activity.length === 0 ? (
@@ -670,26 +668,7 @@ export function BusinessPage() {
                     now={Date.now()}
                     timeZone="Africa/Accra"
                     locale="en-GB"
-                    events={b.activity.map((row) => ({
-                      id: row.id,
-                      at: row.createdAt,
-                      actor: row.actorName,
-                      title: actionWords(row.action),
-                      meta: row.action,
-                      ...actionMarker(row.action),
-                      detail:
-                        row.before !== null || row.after !== null ? (
-                          <JsonViewer
-                            data={{ before: row.before, after: row.after }}
-                            rootName="change"
-                            defaultExpandDepth={2}
-                            searchable={false}
-                            showPath={false}
-                            maxHeight={240}
-                            label="Before and after"
-                          />
-                        ) : undefined,
-                    }))}
+                    events={activityEvents(b.activity, { withBusiness: false })}
                   />
                 </div>
               )}

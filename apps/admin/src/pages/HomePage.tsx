@@ -12,18 +12,9 @@ import { Skeleton } from '@/components/arc/skeleton/skeleton';
 import { Timeline } from '@/components/arc/timeline/timeline';
 import { Loading } from '@/components/app/admin';
 import { emptyIcon, Panel, PanelEmpty, PanelLink, PanelRows } from '@/components/app/panel';
-import { actionMarker } from '@/lib/activity';
+import { activityEvents } from '@/lib/activity';
 import { api, call, type Overview } from '@/lib/api';
-import {
-  actionWords,
-  ago,
-  change,
-  dayAgo,
-  longDay,
-  tabletAlertWords,
-  vendorType,
-  NBSP,
-} from '@/lib/format';
+import { ago, change, dayAgo, longDay, tabletAlertWords, vendorType, NBSP } from '@/lib/format';
 import { Page } from '@/ui/Page';
 
 interface Need {
@@ -272,13 +263,12 @@ export function HomePage() {
                 now={Date.now()}
                 timeZone="Africa/Accra"
                 locale="en-GB"
-                events={data.recentActions.map((row) => ({
-                  id: row.id,
-                  at: row.createdAt,
-                  actor: row.actorName.replace(' (Brixx)', ''),
-                  title: `${actionWords(row.action)} at ${row.businessName}`,
-                  ...actionMarker(row.action),
-                }))}
+                events={activityEvents(
+                  data.recentActions.map((row) => ({
+                    ...row,
+                    actorName: row.actorName.replace(' (Brixx)', ''),
+                  })),
+                )}
               />
             )}
           </div>

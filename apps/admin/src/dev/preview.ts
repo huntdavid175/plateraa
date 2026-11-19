@@ -184,6 +184,91 @@ const ACTIONS: [string, string, boolean][] = [
   ['tenant.restored', 'Kwame Asare (Brixx)', true],
 ];
 
+const open = { open: true, from: '08:00', to: '20:00' };
+const storeHours = { mon: open, tue: open, wed: open, thu: open, fri: open, sat: open, sun: open };
+const store = {
+  storefrontArea: 'Osu',
+  storefrontHours: storeHours,
+  storefrontPhone: null,
+  storefrontTheme: 'kente',
+  storefrontEnabled: true,
+  storefrontAcceptFirst: false,
+  storefrontCashOnPickup: false,
+  storefrontTakingOrders: true,
+};
+/** One owner going through the store's switches, a save per tap, as in the real log. */
+const storeSteps = [
+  { ...store, storefrontTheme: 'sand' },
+  { ...store, storefrontTheme: 'classic' },
+  { ...store, storefrontTheme: 'classic', storefrontCashOnPickup: true },
+  {
+    ...store,
+    storefrontTheme: 'classic',
+    storefrontCashOnPickup: true,
+    storefrontHours: { ...storeHours, sun: { ...open, open: false } },
+  },
+];
+const storeBurst: AuditRow[] = storeSteps
+  .map((after, i) => ({
+    id: id(2000 + i),
+    tenantId: businesses[1]!.id,
+    businessName: businesses[1]!.name,
+    actorName: 'Ama Owusu',
+    byBrixx: false,
+    action: 'settings.storefront',
+    entityType: 'tenant',
+    entityId: businesses[1]!.id,
+    before: i === 0 ? store : storeSteps[i - 1]!,
+    after,
+    createdAt: minutesAgo(14 - i * 3),
+  }))
+  .reverse();
+
+/** Example before and after for a row of the sample log. */
+function sampleChange(action: string, i: number): { before: unknown; after: unknown } {
+  switch (action) {
+    case 'tenant.approved':
+      return { before: { status: 'PENDING' }, after: { status: 'ACTIVE' } };
+    case 'tenant.suspended':
+      return {
+        before: { status: 'ACTIVE' },
+        after: { status: 'SUSPENDED', reason: 'Closed for renovation' },
+      };
+    case 'tenant.restored':
+      return { before: { status: 'SUSPENDED' }, after: { status: 'ACTIVE' } };
+    case 'staff.pin_reset':
+      return { before: null, after: { reason: 'Owner forgot it, called from the shop' } };
+    case 'item.updated':
+      return {
+        before: { name: 'Jollof rice', price: 4500 },
+        after: { name: 'Jollof rice', price: 5000 },
+      };
+    case 'settings.storefront':
+      return { before: store, after: { ...store, storefrontTakingOrders: i % 2 === 0 } };
+    case 'settings.business':
+      return {
+        before: { name: 'Chicken King', vendorType: 'CLOUD_KITCHEN' },
+        after: { name: 'Smoothie Bar', vendorType: 'JUICE' },
+      };
+    case 'refund.recorded':
+      return {
+        before: { amountPaid: 7000 },
+        after: { amount: 7000, method: 'CASH', reason: 'Order cancelled', amountPaid: 0 },
+      };
+    case 'payment.recorded':
+      return { before: null, after: { amount: 11000, method: 'CASH', orderId: id(9000 + i) } };
+    case 'shift.closed':
+      return {
+        before: null,
+        after: { float: 25000, counted: 98500, expected: 100500, variance: -2000 },
+      };
+    case 'order.flagged':
+      return { before: null, after: { reasons: ['Big discount', 'Cancelled after paying'] } };
+    default:
+      return { before: null, after: null };
+  }
+}
+
 const audit: AuditRow[] = Array.from({ length: 60 }, (_, i) => {
   const [action, actorName, byBrixx] = ACTIONS[i % ACTIONS.length]!;
   const b = businesses[i % 9]!;
@@ -196,16 +281,11 @@ const audit: AuditRow[] = Array.from({ length: 60 }, (_, i) => {
     action,
     entityType: action.split('.')[0]!,
     entityId: id(5000 + i),
-    before: action === 'tenant.approved' ? { status: 'PENDING' } : null,
-    after:
-      action === 'staff.pin_reset'
-        ? { reason: 'Owner forgot it, called from the shop' }
-        : action === 'tenant.approved'
-          ? { status: 'ACTIVE' }
-          : null,
+    ...sampleChange(action, i),
     createdAt: minutesAgo(18 + i * 47),
   };
 });
+audit.unshift(...storeBurst);
 
 const shape = [0, 0, 0, 0, 0, 0, 1, 3, 6, 9, 11, 16, 28, 31, 22, 14, 12, 15, 21, 24, 17, 9, 4, 1];
 const hourNow = Number(
