@@ -2,7 +2,7 @@
 
 import { STORE_DAYS, normalizeGhanaPhone, timeWords, type StoreDay } from '@brixx/shared';
 import { useRouter } from 'next/navigation';
-import { useEffect, useMemo, useState, type ReactNode } from 'react';
+import { useEffect, useLayoutEffect, useMemo, useRef, useState, type ReactNode } from 'react';
 import { ulid } from 'ulid';
 import {
   ArrowLeft,
@@ -49,6 +49,22 @@ export function Storefront({ store }: { store: Store }) {
   const [picking, setPicking] = useState<StoreItem | null>(null);
   const [fulfilment, setFulfilment] = useState<Fulfilment>('PICKUP');
   const [zoneId, setZoneId] = useState<string | null>(null);
+
+  // The screens share one page, so the window keeps its scroll from one to the next. A phone
+  // that had scrolled down the menu opened the order halfway down, at the form, with what was
+  // picked out of sight above (user report, 19 Nov). So the order and More info open at the top,
+  // and coming back to the menu ("Add more", Back) returns to where it was left.
+  const menuScroll = useRef(0);
+  const go = (next: Screen) => {
+    if (screen === 'store') menuScroll.current = window.scrollY;
+    setScreen(next);
+  };
+  const shown = useRef(screen);
+  useLayoutEffect(() => {
+    if (shown.current === screen) return;
+    shown.current = screen;
+    window.scrollTo(0, screen === 'store' ? menuScroll.current : 0);
+  }, [screen]);
 
   // The cart kept in this browser comes back once the page is on screen.
   useEffect(() => {
@@ -103,7 +119,7 @@ export function Storefront({ store }: { store: Store }) {
         store={store}
         fulfilment={fulfilment}
         setFulfilment={setFulfilment}
-        onBack={() => setScreen('store')}
+        onBack={() => go('store')}
       />
     );
   }
@@ -118,8 +134,8 @@ export function Storefront({ store }: { store: Store }) {
           setFulfilment={setFulfilment}
           zoneId={zoneId}
           setZoneId={setZoneId}
-          onBack={() => setScreen('store')}
-          onAddMore={() => setScreen('store')}
+          onBack={() => go('store')}
+          onAddMore={() => go('store')}
           onEmpty={() => change(() => [])}
           setQuantity={setQuantity}
           onPick={setPicking}
@@ -140,9 +156,9 @@ export function Storefront({ store }: { store: Store }) {
         fulfilment={fulfilment}
         setFulfilment={setFulfilment}
         onPick={setPicking}
-        onCart={() => setScreen('order')}
-        onCheckout={() => setScreen('order')}
-        onInfo={() => setScreen('info')}
+        onCart={() => go('order')}
+        onCheckout={() => go('order')}
+        onInfo={() => go('info')}
         setQuantity={setQuantity}
         remove={remove}
       />
