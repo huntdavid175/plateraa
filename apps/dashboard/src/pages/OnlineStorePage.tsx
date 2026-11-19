@@ -12,7 +12,7 @@ import {
   type StorefrontTheme,
 } from '@brixx/shared';
 import { useMutation, useQuery } from '@tanstack/react-query';
-import { Check, QrCode } from 'lucide-react';
+import { Check, Palette, QrCode } from 'lucide-react';
 import qrcode from 'qrcode-generator';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { Alert } from '@/components/arc/alert/alert';
@@ -588,7 +588,14 @@ function HoursEditor({
   );
 }
 
-/** Each look as a tiny store page: its page colour, band, a card and a button. */
+/** Looks shown on the page before "See all": the one in use first, then the next in order. */
+const LOOKS_SHOWN = 5;
+
+/**
+ * The store's look: a few to pick from on the page, and all of them in a window (user request,
+ * 19 Nov: eighteen at once was too many). The one in use always shows first, so a look picked
+ * from the window joins the short list.
+ */
 function ThemePicker({
   theme,
   onChange,
@@ -596,61 +603,92 @@ function ThemePicker({
   theme: StorefrontTheme;
   onChange: (theme: StorefrontTheme) => void;
 }) {
+  const [showAll, setShowAll] = useState(false);
+  const shown = [theme, ...STOREFRONT_THEMES.filter((key) => key !== theme)].slice(0, LOOKS_SHOWN);
   return (
     <div className="flex flex-col gap-3">
       <p className="text-sm text-muted-foreground">
         Now: {STOREFRONT_LOOKS[theme].describe}. The preview shows it as soon as it’s saved.
       </p>
       <div className="grid grid-cols-3 gap-2" role="radiogroup" aria-label="Store look">
-        {STOREFRONT_THEMES.map((key) => {
-          const look = STOREFRONT_LOOKS[key];
-          const colours = look.light;
-          const chosen = theme === key;
-          return (
-            <button
-              key={key}
-              type="button"
-              role="radio"
-              aria-checked={chosen}
-              aria-label={`${look.name}: ${look.describe}`}
-              title={look.describe}
-              onClick={() => onChange(key)}
-              className={cn(
-                'overflow-hidden rounded-(--radius-control) border text-left transition-colors',
-                chosen
-                  ? 'border-primary outline-2 outline-offset-1 outline-primary outline-solid'
-                  : 'hover:border-foreground',
-              )}
-            >
-              <span className="block p-2" style={{ backgroundColor: colours.page }}>
-                <span className="block h-3 rounded" style={{ backgroundColor: colours.hero }} />
-                <span className="mt-1.5 flex items-center gap-1.5">
-                  <span
-                    className="block h-4 flex-1 rounded"
-                    style={{ backgroundColor: colours.card }}
-                  />
-                  <span
-                    className="block h-4 w-7 rounded"
-                    style={{ backgroundColor: colours.brand }}
-                  />
-                </span>
-              </span>
-              <span className="flex items-center justify-between gap-1 bg-surface px-2 py-1.5 text-xs">
-                <span className="truncate">{look.name}</span>
-                {chosen && (
-                  <Check
-                    size={12}
-                    strokeWidth={2}
-                    className="shrink-0 text-accent-strong"
-                    aria-hidden
-                  />
-                )}
-              </span>
-            </button>
-          );
-        })}
+        {shown.map((key) => (
+          <LookSwatch key={key} look={key} chosen={theme === key} onPick={() => onChange(key)} />
+        ))}
+        <button
+          type="button"
+          onClick={() => setShowAll(true)}
+          className="flex flex-col items-center justify-center gap-1.5 rounded-(--radius-control) border border-dashed text-xs text-text-secondary transition-colors hover:border-foreground hover:text-foreground"
+        >
+          <Palette size={16} strokeWidth={1.75} aria-hidden />
+          See all {STOREFRONT_THEMES.length} looks
+        </button>
       </div>
+
+      <Dialog open={showAll} onOpenChange={setShowAll}>
+        <DialogContent
+          title="All looks"
+          description="Each look colours the band across the top of your store and its buttons. In daylight the page stays white."
+        >
+          <div className="grid grid-cols-3 gap-2" role="radiogroup" aria-label="Store look">
+            {STOREFRONT_THEMES.map((key) => (
+              <LookSwatch
+                key={key}
+                look={key}
+                chosen={theme === key}
+                onPick={() => {
+                  onChange(key);
+                  setShowAll(false);
+                }}
+              />
+            ))}
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
+  );
+}
+
+/** One look as a tiny store page: its page colour, band, a card and a button. */
+function LookSwatch({
+  look: key,
+  chosen,
+  onPick,
+}: {
+  look: StorefrontTheme;
+  chosen: boolean;
+  onPick: () => void;
+}) {
+  const look = STOREFRONT_LOOKS[key];
+  const colours = look.light;
+  return (
+    <button
+      type="button"
+      role="radio"
+      aria-checked={chosen}
+      aria-label={`${look.name}: ${look.describe}`}
+      title={look.describe}
+      onClick={onPick}
+      className={cn(
+        'overflow-hidden rounded-(--radius-control) border text-left transition-colors',
+        chosen
+          ? 'border-primary outline-2 outline-offset-1 outline-primary outline-solid'
+          : 'hover:border-foreground',
+      )}
+    >
+      <span className="block p-2" style={{ backgroundColor: colours.page }}>
+        <span className="block h-3 rounded" style={{ backgroundColor: colours.hero }} />
+        <span className="mt-1.5 flex items-center gap-1.5">
+          <span className="block h-4 flex-1 rounded" style={{ backgroundColor: colours.card }} />
+          <span className="block h-4 w-7 rounded" style={{ backgroundColor: colours.brand }} />
+        </span>
+      </span>
+      <span className="flex items-center justify-between gap-1 bg-surface px-2 py-1.5 text-xs">
+        <span className="truncate">{look.name}</span>
+        {chosen && (
+          <Check size={12} strokeWidth={2} className="shrink-0 text-accent-strong" aria-hidden />
+        )}
+      </span>
+    </button>
   );
 }
 
