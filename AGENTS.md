@@ -89,6 +89,7 @@ A solo founder (GitHub `huntdavid175`) builds it with an AI agent. Work started 
     - approvals;
     - digital receipts (printed receipts only).
   - **Pay before prep** is on by default, as a per-vendor setting. The payment that clears an order moves it to Preparing automatically.
+  - **An order waiting for payment isn't a sale** (19 Nov), on the dashboard, the tablet or the admin console: it shows apart as "waiting for payment". An order whose payment link ran out closes as not paid 2 hours later; one with no link (held for cash) is never closed. See `apps/api/AGENTS.md`, reports.
   - There are no WhatsApp or Instagram order sources; those customers use the storefront.
   - Menu setup, expenses and purchases are entered on the dashboard.
   - **Joining Brixx is a request Brixx approves** (24 Oct). A new business waits as `PENDING` until someone on the team approves it on the admin console; a declined one can be approved later.

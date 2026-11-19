@@ -1932,6 +1932,10 @@ export interface components {
         DaySummaryDto_Output: {
             date: string;
             orders: number;
+            awaiting: {
+                orders: number;
+                amount: number;
+            };
             sales: number;
             moneyIn: number;
             notYetCollected: number;
@@ -2750,6 +2754,10 @@ export interface components {
             today: string;
             ordersToday: number;
             valueToday: number;
+            awaitingToday: {
+                orders: number;
+                value: number;
+            };
             activeBusinessesToday: number;
             ordersSameTimeLastWeek: number;
             businesses: {

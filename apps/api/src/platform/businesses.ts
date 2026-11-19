@@ -51,8 +51,10 @@ import { platformTablets } from './tablets';
 export const TODAY = sql`(now() at time zone 'Africa/Accra')::date`;
 /** What the vendor collects on an order (as `dueSql`, for raw SQL over `orders o`). */
 export const DUE = sql`(o.total - case when o.delivery_fee_collected_by = 'RIDER' then o.delivery_fee else 0 end)`;
-/** Orders that went ahead (as `countsAsSale`, over `orders o`). */
-export const SALE = sql`o.status not in ('CANCELLED', 'REFUNDED') and o.deleted_at is null`;
+/** Waiting for payment before the kitchen starts (as `awaitingPayment`, over `orders o`). */
+export const AWAITING = sql`(o.status in ('NEW', 'CONFIRMED') and not o.pay_on_collection and o.amount_paid < ${DUE} and coalesce((select ts.require_payment_before_prep from tenant_settings ts where ts.tenant_id = o.tenant_id), true))`;
+/** Orders that went ahead (as `countsAsSale`, over `orders o`): not cancelled, and not waiting for payment. */
+export const SALE = sql`o.status not in ('CANCELLED', 'REFUNDED') and o.deleted_at is null and not ${AWAITING}`;
 
 const iso = (at: Date | string | null | undefined) => (at ? new Date(at).toISOString() : null);
 const isUlid = (id: string) => /^[0-9A-HJKMNP-TV-Z]{26}$/.test(id);

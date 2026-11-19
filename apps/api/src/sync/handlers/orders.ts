@@ -30,7 +30,12 @@ import {
   type SyncCommandOf,
 } from '@brixx/shared';
 import { recordAudit } from '../../audit/audit';
-import { CommandRejected, type CommandHandler, type HandlerContext } from '../sync.types';
+import {
+  CommandRejected,
+  type ActingContext,
+  type CommandHandler,
+  type HandlerContext,
+} from '../sync.types';
 import {
   adjustSellableStock,
   deviceTime,
@@ -399,16 +404,28 @@ export const orderResume: CommandHandler<'order.resume'> = (ctx) =>
  * order as a refund owed; a manager gives it back by hand and records it on the dashboard.
  */
 export const orderCancel: CommandHandler<'order.cancel'> = async (ctx) => {
-  const { tx } = ctx;
   const p = ctx.command.payload;
-  const order = await loadOrder(tx, p.orderId);
+  const order = await loadOrder(ctx.tx, p.orderId);
   if (!isActive(order.status)) {
     throw new CommandRejected('ORDER_CLOSED', 'This order is already finished');
   }
+  await cancelOrder(ctx, order, p.reason);
+  return { orderId: order.id, status: 'CANCELLED', refundOwed: order.amountPaid };
+};
 
+/**
+ * Cancels an open order: its status and story, and its portions back on today's counts. Shared by
+ * the tablet's Cancel and by the server closing an order that was never paid.
+ */
+export async function cancelOrder(
+  ctx: ActingContext,
+  order: Pick<typeof orders.$inferSelect, 'id' | 'status' | 'businessDate'>,
+  reason: string | null | undefined,
+) {
+  const { tx } = ctx;
   await tx
     .update(orders)
-    .set({ status: 'CANCELLED', cancelReason: p.reason })
+    .set({ status: 'CANCELLED', cancelReason: reason ?? null })
     .where(eq(orders.id, order.id));
   await recordOrderEvent(ctx, order.id, order.status, 'CANCELLED');
 
@@ -418,6 +435,4 @@ export const orderCancel: CommandHandler<'order.cancel'> = async (ctx) => {
     .where(and(eq(orderItems.orderId, order.id), isNull(orderItems.deletedAt)));
   const returned = new Map([...quantitiesByItem(lines)].map(([id, qty]) => [id, -qty]));
   await adjustSellableStock(ctx, order.businessDate, returned, order.id);
-
-  return { orderId: order.id, status: 'CANCELLED', refundOwed: order.amountPaid };
-};
+}

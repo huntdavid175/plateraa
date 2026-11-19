@@ -20,7 +20,7 @@ import {
   type OrderType,
   type PaymentMethod,
 } from '@brixx/shared';
-import { countsAsSale, dueSql } from './business-day';
+import { awaitingPayment, countsAsSale, dueSql } from './business-day';
 
 /**
  * One trading day's figures, in pesewas: what the day summary shows, and what a range of days
@@ -31,12 +31,18 @@ import { countsAsSale, dueSql } from './business-day';
  * was taken. Expenses count on the day they were spent.
  */
 export interface DayFigures {
-  /** Orders that count as sales (not cancelled or refunded). */
+  /** Orders that count as sales: not cancelled or refunded, and not waiting for payment. */
   orders: number;
   /** What those orders are worth to the vendor. */
   sales: number;
-  /** Still owed by customers on those orders. */
+  /** Still owed by customers on those orders (cooked before paying: pay before prep off). */
   unpaid: number;
+  /**
+   * Orders waiting for payment before the kitchen starts (pay before prep), and what they'd be
+   * worth. Not sales yet: they may never be paid, and close on their own once the link runs out.
+   */
+  awaitingOrders: number;
+  awaitingAmount: number;
   /** Cash and payment-link money collected on the day's orders, less refunds given back. */
   moneyIn: number;
   /** Paid via Bolt Food or Chowdeck: they owe it and pay it out later. */
@@ -70,6 +76,8 @@ export function emptyDay(): DayFigures {
     orders: 0,
     sales: 0,
     unpaid: 0,
+    awaitingOrders: 0,
+    awaitingAmount: 0,
     moneyIn: 0,
     platformOwed: 0,
     commissionEstimate: 0,
@@ -139,6 +147,16 @@ export async function workOutDays(
     .from(orders)
     .where(sales)
     .groupBy(orders.businessDate, orders.source, orders.type);
+
+  const awaiting = await tx
+    .select({
+      date: orders.businessDate,
+      orders: sql<number>`count(*)::int`,
+      amount: sql<string>`sum(${dueSql})`,
+    })
+    .from(orders)
+    .where(and(ofDays, awaitingPayment))
+    .groupBy(orders.businessDate);
 
   const byMethod = await tx
     .select({
@@ -269,6 +287,11 @@ export async function workOutDays(
       row.orders,
       n(row.sales),
     );
+  }
+  for (const row of awaiting) {
+    const d = day(row.date);
+    d.awaitingOrders = row.orders;
+    d.awaitingAmount = n(row.amount);
   }
   for (const row of byMethod) {
     day(row.date).byMethod.push({ method: row.method, amount: n(row.amount) });

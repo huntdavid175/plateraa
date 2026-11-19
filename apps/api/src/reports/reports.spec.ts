@@ -106,12 +106,14 @@ describe.skipIf(!hasDatabase())('reports and order lists (against Neon)', () => 
     const res = await dashboard('/api/reports/day').expect(200);
     expect(res.body).toMatchObject({
       date: today,
-      orders: 3, // D was cancelled
-      sales: 14500,
+      // D was cancelled, and B waits for payment: pay before prep is on, so it isn't cooked yet.
+      orders: 2,
+      awaiting: { orders: 1, amount: 1000 },
+      sales: 13500,
       moneyIn: 10000, // A's cash, and D's until its refund is recorded
       platformOwed: 4500,
-      unpaid: 1000,
-      notYetCollected: 5500,
+      unpaid: 0,
+      notYetCollected: 4500,
       commissionEstimate: 900,
       moneyOut: 2500,
       expenses: 1,
@@ -120,11 +122,11 @@ describe.skipIf(!hasDatabase())('reports and order lists (against Neon)', () => 
     });
     expect(res.body.bySource).toEqual(
       expect.arrayContaining([
-        { source: 'POS', orders: 2, sales: 10000 },
+        { source: 'POS', orders: 1, sales: 9000 },
         { source: 'BOLT_FOOD', orders: 1, sales: 4500 },
       ]),
     );
-    expect(res.body.byType).toEqual([{ type: 'DINE_IN', orders: 3, sales: 14500 }]);
+    expect(res.body.byType).toEqual([{ type: 'DINE_IN', orders: 2, sales: 13500 }]);
     expect(res.body.byMethod).toEqual(
       expect.arrayContaining([
         { method: 'CASH', amount: 10000 },
@@ -133,16 +135,16 @@ describe.skipIf(!hasDatabase())('reports and order lists (against Neon)', () => 
     );
     const byHour = res.body.byHour as { hour: number; orders: number; moneyIn: number }[];
     expect(byHour.reduce((sum, hour) => sum + hour.moneyIn, 0)).toBe(10000);
-    // The busy hours count the same orders as the day: D was cancelled.
-    expect(byHour.reduce((sum, hour) => sum + hour.orders, 0)).toBe(3);
+    // The busy hours count the same orders as the day: not D (cancelled) or B (waiting).
+    expect(byHour.reduce((sum, hour) => sum + hour.orders, 0)).toBe(2);
     expect(byHour.every(({ hour }) => hour >= 0 && hour <= 23)).toBe(true);
   });
 
   it('adds up a range of days: best sellers, staff, expenses and profit and loss', async () => {
     const res = await dashboard(`/api/reports/period?from=${today}&to=${today}`).expect(200);
     expect(res.body.totals).toEqual({
-      orders: 3,
-      sales: 14500,
+      orders: 2,
+      sales: 13500,
       moneyIn: 10000,
       platformOwed: 4500,
       commissionEstimate: 900,
@@ -153,20 +155,17 @@ describe.skipIf(!hasDatabase())('reports and order lists (against Neon)', () => 
       profit: 11100,
     });
     expect(res.body.byDay).toEqual([
-      { date: today, orders: 3, sales: 14500, moneyIn: 10000, moneyOut: 2500 },
+      { date: today, orders: 2, sales: 13500, moneyIn: 10000, moneyOut: 2500 },
     ]);
-    // D was cancelled, so its sobolo doesn't count.
-    expect(res.body.byItem).toEqual([
-      { name: 'Jollof rice', quantity: 3, sales: 13500 },
-      { name: 'Sobolo', quantity: 1, sales: 1000 },
-    ]);
+    // D was cancelled and B is waiting for payment, so neither sobolo counts.
+    expect(res.body.byItem).toEqual([{ name: 'Jollof rice', quantity: 3, sales: 13500 }]);
     expect(res.body.byCategory).toEqual([{ category: 'GAS', amount: 2500 }]);
-    expect(res.body.byType).toEqual([{ type: 'DINE_IN', orders: 3, sales: 14500 }]);
+    expect(res.body.byType).toEqual([{ type: 'DINE_IN', orders: 2, sales: 13500 }]);
     const byHour = res.body.byHour as { hour: number; orders: number }[];
-    expect(byHour.reduce((sum, hour) => sum + hour.orders, 0)).toBe(3);
+    expect(byHour.reduce((sum, hour) => sum + hour.orders, 0)).toBe(2);
     expect(byHour.every(({ orders }) => orders > 0)).toBe(true);
     expect(res.body.staff).toEqual([
-      { staffId: vendor.ownerStaffId, name: 'Adwoa', orders: 3, sales: 14500, cash: 10000 },
+      { staffId: vendor.ownerStaffId, name: 'Adwoa', orders: 2, sales: 13500, cash: 10000 },
     ]);
     expect(res.body.drawerCloses).toEqual([]);
 
@@ -282,5 +281,27 @@ describe.skipIf(!hasDatabase())('reports and order lists (against Neon)', () => 
     await dashboard(`/api/orders?from=${today}&to=2020-01-01`).expect(400);
     await dashboard('/api/orders?from=2026-01-01&to=2026-12-31').expect(400);
     await dashboard('/api/orders?method=CHEQUE').expect(400);
+  });
+
+  it('counts an unpaid order as a sale where the vendor cooks before payment', async () => {
+    await request(app.getHttpServer())
+      .put('/api/settings/orders')
+      .set('Authorization', `Bearer ${vendor.session}`)
+      .set('x-tenant-id', vendor.tenantId)
+      .send({
+        requirePaymentBeforePrep: false,
+        countPortions: false,
+        offersDineIn: true,
+        idleLockSeconds: 180,
+      })
+      .expect(204);
+    const res = await dashboard('/api/reports/day').expect(200);
+    expect(res.body).toMatchObject({
+      orders: 3,
+      awaiting: { orders: 0, amount: 0 },
+      sales: 14500,
+      unpaid: 1000, // B, cooked and not yet paid for
+      notYetCollected: 5500,
+    });
   });
 });

@@ -3,7 +3,7 @@ import { sql, withPlatform } from '@brixx/db';
 import { ApiBearerAuth, ApiOkResponse } from '@nestjs/swagger';
 import { DATABASE, type DatabaseHandle } from '../database/database.module';
 import { auditRows } from './audit-log';
-import { DUE, linksWhere, PlatformBusinesses, SALE, TODAY } from './businesses';
+import { AWAITING, DUE, linksWhere, PlatformBusinesses, SALE, TODAY } from './businesses';
 import { Platform } from './guard';
 import { AnalyticsDto, AnalyticsQueryDto, HealthDto, OverviewDto } from './schemas';
 import { platformTablets } from './tablets';
@@ -35,13 +35,17 @@ export class PlatformInsights {
         value: string;
         businesses: number;
         last_week: number;
+        awaiting: number;
+        awaiting_value: string;
       }>(sql`
         select ${TODAY}::text as today,
           (select count(*)::int from orders o where ${SALE} and o.business_date = ${TODAY}) as orders,
           (select coalesce(sum(${DUE}), 0)::text from orders o where ${SALE} and o.business_date = ${TODAY}) as value,
           (select count(distinct o.tenant_id)::int from orders o where ${SALE} and o.business_date = ${TODAY}) as businesses,
           (select count(*)::int from orders o where ${SALE} and o.business_date = ${TODAY} - 7
-             and o.created_at <= now() - interval '7 days') as last_week`);
+             and o.created_at <= now() - interval '7 days') as last_week,
+          (select count(*)::int from orders o where o.deleted_at is null and ${AWAITING} and o.business_date = ${TODAY}) as awaiting,
+          (select coalesce(sum(${DUE}), 0)::text from orders o where o.deleted_at is null and ${AWAITING} and o.business_date = ${TODAY}) as awaiting_value`);
 
       const statuses = await tx.execute<{ status: string; count: number }>(
         sql`select status, count(*)::int as count from tenants group by status`,
@@ -70,6 +74,7 @@ export class PlatformInsights {
         today: day.today,
         ordersToday: day.orders,
         valueToday: num(day.value),
+        awaitingToday: { orders: day.awaiting, value: num(day.awaiting_value) },
         activeBusinessesToday: day.businesses,
         ordersSameTimeLastWeek: day.last_week,
         businesses: {

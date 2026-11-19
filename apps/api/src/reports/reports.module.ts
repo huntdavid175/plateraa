@@ -25,8 +25,10 @@ const money = z.number().int();
 class DaySummaryDto extends createZodDto(
   z.object({
     date: z.string(),
-    /** Orders that count as sales (not cancelled or refunded). */
+    /** Orders that count as sales: not cancelled or refunded, and not waiting for payment. */
     orders: z.number().int(),
+    /** Orders waiting for payment before the kitchen starts, and what they'd be worth: not sales yet. */
+    awaiting: z.object({ orders: z.number().int(), amount: money }),
     /** What those orders are worth to the vendor. */
     sales: money,
     /** Cash and payment-link money collected on the day's orders, less refunds given back. */
@@ -81,6 +83,7 @@ export class DaySummaryService {
       return {
         date,
         orders: day.orders,
+        awaiting: { orders: day.awaitingOrders, amount: pesewas(day.awaitingAmount) },
         sales: pesewas(day.sales),
         moneyIn: pesewas(day.moneyIn),
         notYetCollected: pesewas(day.platformOwed + day.unpaid),

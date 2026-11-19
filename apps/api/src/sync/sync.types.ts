@@ -23,6 +23,12 @@ export interface HandlerContext {
   command: { deviceTs: string };
 }
 
+/**
+ * Enough of a context to change an order's story and stock: a change the server makes on its own
+ * (closing an order that was never paid) has no staff member behind it.
+ */
+export type ActingContext = Omit<HandlerContext, 'staff'> & { staff: { staffId: string | null } };
+
 /** A command from a tablet: always a registered one. */
 export interface CommandContext<
   T extends SyncCommandType = SyncCommandType,

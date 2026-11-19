@@ -14,7 +14,16 @@ import { Loading } from '@/components/app/admin';
 import { emptyIcon, Panel, PanelEmpty, PanelLink, PanelRows } from '@/components/app/panel';
 import { activityEvents } from '@/lib/activity';
 import { api, call, type Overview } from '@/lib/api';
-import { ago, change, dayAgo, longDay, tabletAlertWords, vendorType, NBSP } from '@/lib/format';
+import {
+  ago,
+  cedis,
+  change,
+  dayAgo,
+  longDay,
+  tabletAlertWords,
+  vendorType,
+  NBSP,
+} from '@/lib/format';
 import { Page } from '@/ui/Page';
 
 interface Need {
@@ -166,7 +175,12 @@ export function HomePage() {
               <MetricCard
                 label="Worth, in cedis"
                 value={Math.round(data.valueToday / 100)}
-                context="orders that went ahead"
+                context={
+                  // Optional for the minutes Vercel has this page out before Render has the API.
+                  (data.awaitingToday as Overview['awaitingToday'] | undefined)?.orders
+                    ? `not counting ${cedis(data.awaitingToday.value)} waiting for payment`
+                    : 'paid, or in the kitchen'
+                }
               />
               <MetricCard
                 label="Businesses trading"

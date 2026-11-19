@@ -298,6 +298,7 @@ const overview: Overview = {
   today,
   ordersToday,
   valueToday: ordersToday * 4380,
+  awaitingToday: { orders: 2, value: 14_000 },
   activeBusinessesToday: 9,
   ordersSameTimeLastWeek: Math.round(ordersToday * 0.86),
   businesses: { active: 11, pending: 3, suspended: 1 },

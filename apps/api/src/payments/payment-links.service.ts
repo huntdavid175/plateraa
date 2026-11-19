@@ -9,6 +9,7 @@ import {
   and,
   asc,
   eq,
+  inArray,
   isNull,
   lt,
   moolreAccounts,
@@ -24,14 +25,16 @@ import {
   withTenant,
   type Tx,
 } from '@brixx/db';
-import { amountDue, sub, type Pesewas } from '@brixx/shared';
+import { amountDue, isAwaitingPayment, sub, type Pesewas } from '@brixx/shared';
 import * as Sentry from '@sentry/nestjs';
 import { ulid } from 'ulid';
 import { recordAudit } from '../audit/audit';
 import { ENV, type Env } from '../config/env';
 import { DATABASE, type DatabaseHandle } from '../database/database.module';
+import { AWAITING } from '../platform/businesses';
 import { addToAmountPaid, startPrepIfPaid } from '../sync/handlers/money';
-import type { HandlerContext, TenantInfo } from '../sync/sync.types';
+import { cancelOrder } from '../sync/handlers/orders';
+import type { ActingContext, HandlerContext, TenantInfo } from '../sync/sync.types';
 import {
   MOOLRE,
   MOOLRE_CALLBACK_IPS,
@@ -51,6 +54,13 @@ const CHECK_EVERY_MS = 3 * 60_000;
 /** Moolre may confirm a payment a little after the link itself has expired. */
 const EXPIRY_GRACE_MS = 10 * 60_000;
 const TICK_MS = 60_000;
+/**
+ * An order waiting for payment closes this long after its last link ran out (19 Nov, user
+ * decision): it was never cooked, and may never be paid.
+ */
+export const CLOSE_UNPAID_AFTER_MS = 2 * 60 * 60_000;
+/** Why the order closed, as the tablet and the dashboard show it. */
+export const NOT_PAID_REASON = 'Not paid: the payment link ran out';
 
 type Outcome = 'PAID' | 'PENDING' | 'FAILED' | 'EXPIRED' | 'UNKNOWN';
 
@@ -156,6 +166,82 @@ export class PaymentLinks implements OnApplicationBootstrap, OnApplicationShutdo
   async work(): Promise<void> {
     await this.sendQueued();
     await this.checkOpen();
+    await this.closeUnpaid();
+  }
+
+  /**
+   * Orders waiting for payment whose links all ran out (or failed) over 2 hours ago, and none is
+   * still open, close as not paid: they leave the tablet's queue and the vendor's orders to chase.
+   * An order with no link at all (held at the counter, to be paid in cash) is left alone.
+   */
+  async closeUnpaid({
+    now = Date.now(),
+    onlyTenant,
+  }: { now?: number; onlyTenant?: string } = {}): Promise<number> {
+    const cutoff = new Date(now - CLOSE_UNPAID_AFTER_MS).toISOString();
+    // Tests close only their own business's orders: the test database is shared.
+    const ofTenant = onlyTenant ? sql`and o.tenant_id = ${onlyTenant}` : sql``;
+    const stale = await withPlatform(this.db, (tx) =>
+      tx.execute<{ id: string; tenant_id: string }>(sql`
+        select o.id, o.tenant_id from orders o
+        where o.deleted_at is null and ${AWAITING} ${ofTenant}
+          and exists (select 1 from payment_links l where l.order_id = o.id and l.deleted_at is null)
+          and not exists (select 1 from payment_links l where l.order_id = o.id and l.deleted_at is null
+            and l.status in ('QUEUED', 'SENT'))
+          and (select max(coalesce(l.expires_at, l.created_at)) from payment_links l
+            where l.order_id = o.id and l.deleted_at is null) < ${cutoff}::timestamptz
+        order by o.id limit 50`),
+    );
+    let closed = 0;
+    for (const row of stale.rows) {
+      try {
+        if (await this.closeOne(row.tenant_id, row.id)) closed += 1;
+      } catch (error) {
+        this.report(`Closing unpaid order ${row.id} failed`, error);
+      }
+    }
+    return closed;
+  }
+
+  /** Closes one order, checked again under a lock: a payment or a new link may have just come. */
+  private async closeOne(tenantId: string, orderId: string): Promise<boolean> {
+    return withTenant(this.db, tenantId, async (tx) => {
+      const [order] = await tx.select().from(orders).where(eq(orders.id, orderId)).for('update');
+      if (!order || order.deletedAt) return false;
+      const tenant = await tenantInfo(tx, tenantId);
+      if (!isAwaitingPayment(order, tenant.requirePaymentBeforePrep)) return false;
+      const [open] = await tx
+        .select({ id: paymentLinks.id })
+        .from(paymentLinks)
+        .where(
+          and(
+            eq(paymentLinks.orderId, order.id),
+            isNull(paymentLinks.deletedAt),
+            inArray(paymentLinks.status, ['QUEUED', 'SENT']),
+          ),
+        )
+        .limit(1);
+      if (open) return false;
+
+      const ctx: ActingContext = {
+        tx,
+        tenant,
+        device: { id: null, tenantId, locationId: order.locationId, code: '' },
+        // Nobody on the staff did this: the order's story shows no name.
+        staff: { staffId: null },
+        command: { deviceTs: new Date().toISOString() },
+      };
+      await cancelOrder(ctx, order, NOT_PAID_REASON);
+      await recordAudit(tx, {
+        tenantId,
+        action: 'order.closed_unpaid',
+        entityType: 'order',
+        entityId: order.id,
+        before: { status: order.status },
+        after: { status: 'CANCELLED', reason: NOT_PAID_REASON, amount: amountDue(order) },
+      });
+      return true;
+    });
   }
 
   /** An unexpected failure: logged, and reported to Sentry. */

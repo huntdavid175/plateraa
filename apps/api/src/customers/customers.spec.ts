@@ -11,7 +11,8 @@ import { createTestApp, hasDatabase, testEnv } from '../test/test-app';
 /**
  * Customers on the dashboard. Pushed the way a tablet would:
  * - A: a phone order from Kofi (+233241234567), jollof GH₵45, paid cash;
- * - B: another from the same number typed the local way (024…), sobolo GH₵10, not paid;
+ * - B: another from the same number typed the local way (024…), sobolo GH₵10, not paid, so it
+ *   waits for payment (pay before prep) and isn't counted in what Kofi ordered or spent;
  * - C: a walk-in with no number.
  */
 describe.skipIf(!hasDatabase())('customers (against Neon)', () => {
@@ -94,8 +95,8 @@ describe.skipIf(!hasDatabase())('customers (against Neon)', () => {
         phone: kofi,
         name: 'Kofi',
         notes: null,
-        orders: 2,
-        spent: 5500,
+        orders: 1,
+        spent: 4500,
         firstOrderOn: today,
         lastOrderOn: today,
       },
@@ -113,7 +114,7 @@ describe.skipIf(!hasDatabase())('customers (against Neon)', () => {
   it('shows one customer with their orders, and each order links back to them', async () => {
     const [customer] = await list();
     const res = await asOwner(request(server()).get(`/api/customers/${customer!.id}`)).expect(200);
-    expect(res.body).toMatchObject({ phone: kofi, orders: 2, spent: 5500 });
+    expect(res.body).toMatchObject({ phone: kofi, orders: 1, spent: 4500 });
     const orderIds = (res.body.recentOrders as { id: string }[]).map((order) => order.id);
     expect(orderIds.sort()).toEqual([ids.a, ids.b].sort());
 
@@ -171,7 +172,7 @@ describe.skipIf(!hasDatabase())('customers (against Neon)', () => {
         .set('Authorization', `Bearer ${login.body.token}`);
 
     const res = await asStaff(request(server()).get('/api/customers')).expect(200);
-    expect(res.body[0]).toMatchObject({ orders: 2, spent: null });
+    expect(res.body[0]).toMatchObject({ orders: 1, spent: null });
     await asStaff(request(server()).put(`/api/customers/${res.body[0].id}`))
       .send({ name: 'Someone', notes: '' })
       .expect(403);

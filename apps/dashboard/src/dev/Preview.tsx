@@ -48,6 +48,7 @@ const at = (hour: number, minute: number) => {
 const DAY = {
   date: today,
   orders: 38,
+  awaiting: { orders: 2, amount: 14_000 },
   sales: 248_000,
   moneyIn: 231_500,
   notYetCollected: 16_500,

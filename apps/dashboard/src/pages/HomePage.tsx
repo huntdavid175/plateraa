@@ -227,6 +227,8 @@ function MoneyTiles({
   }));
   const partsTotal = parts.reduce((sum, part) => sum + part.amount, 0);
   const takings = day.moneyIn + day.notYetCollected;
+  // Optional for the minutes Vercel has this page out before Render has the API that sends it.
+  const awaiting = day.awaiting as typeof day.awaiting | undefined;
   const collected = takings > 0 ? Math.round((day.moneyIn / takings) * 100) : null;
 
   return (
@@ -293,6 +295,12 @@ function MoneyTiles({
         </span>
         {compared && (
           <Change now={day.orders} before={compared.orders} against={compared.against} />
+        )}
+        {awaiting && awaiting.orders > 0 && (
+          <span className="text-xs text-muted-foreground">
+            {awaiting.orders === 1 ? '1 more' : `${awaiting.orders} more`} waiting for payment ·{' '}
+            {cedis(awaiting.amount)}
+          </span>
         )}
       </Tile>
 

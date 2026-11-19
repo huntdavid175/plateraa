@@ -6638,6 +6638,26 @@
             "minimum": -9007199254740991,
             "maximum": 9007199254740991
           },
+          "awaiting": {
+            "type": "object",
+            "properties": {
+              "orders": {
+                "type": "integer",
+                "minimum": -9007199254740991,
+                "maximum": 9007199254740991
+              },
+              "amount": {
+                "type": "integer",
+                "minimum": -9007199254740991,
+                "maximum": 9007199254740991
+              }
+            },
+            "required": [
+              "orders",
+              "amount"
+            ],
+            "additionalProperties": false
+          },
           "sales": {
             "type": "integer",
             "minimum": -9007199254740991,
@@ -6814,6 +6834,7 @@
         "required": [
           "date",
           "orders",
+          "awaiting",
           "sales",
           "moneyIn",
           "notYetCollected",
@@ -10669,6 +10690,26 @@
             "minimum": -9007199254740991,
             "maximum": 9007199254740991
           },
+          "awaitingToday": {
+            "type": "object",
+            "properties": {
+              "orders": {
+                "type": "integer",
+                "minimum": -9007199254740991,
+                "maximum": 9007199254740991
+              },
+              "value": {
+                "type": "integer",
+                "minimum": -9007199254740991,
+                "maximum": 9007199254740991
+              }
+            },
+            "required": [
+              "orders",
+              "value"
+            ],
+            "additionalProperties": false
+          },
           "activeBusinessesToday": {
             "type": "integer",
             "minimum": -9007199254740991,
@@ -11024,6 +11065,7 @@
           "today",
           "ordersToday",
           "valueToday",
+          "awaitingToday",
           "activeBusinessesToday",
           "ordersSameTimeLastWeek",
           "businesses",

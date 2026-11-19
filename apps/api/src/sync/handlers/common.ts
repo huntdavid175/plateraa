@@ -14,9 +14,9 @@ import {
 } from '@brixx/db';
 import type { OrderStatus } from '@brixx/shared';
 import { ulid } from 'ulid';
-import { CommandRejected, type HandlerContext } from '../sync.types';
+import { CommandRejected, type ActingContext, type HandlerContext } from '../sync.types';
 
-export const deviceTime = (ctx: HandlerContext) => new Date(ctx.command.deviceTs);
+export const deviceTime = (ctx: Pick<HandlerContext, 'command'>) => new Date(ctx.command.deviceTs);
 
 export async function loadOrder(tx: Tx, orderId: string) {
   const [order] = await tx
@@ -28,7 +28,7 @@ export async function loadOrder(tx: Tx, orderId: string) {
 }
 
 export async function recordOrderEvent(
-  ctx: HandlerContext,
+  ctx: ActingContext,
   orderId: string,
   fromStatus: OrderStatus | null,
   toStatus: OrderStatus,
@@ -82,7 +82,7 @@ export async function upsertCustomer(
  * clears that. Items nobody counted today aren't tracked.
  */
 export async function adjustSellableStock(
-  ctx: HandlerContext,
+  ctx: ActingContext,
   businessDate: string,
   soldByItem: Map<string, number>,
   orderId: string,

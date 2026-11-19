@@ -238,4 +238,93 @@ describe.skipIf(!hasDatabase())('payment links (against Neon, pretend Moolre)', 
       status: 'APPLIED',
     });
   });
+
+  describe('an order whose link ran out, and was never paid', () => {
+    /** A phone order with one link, which ran out `minutesAgo`. */
+    const ranOut = async (displayNumber: string, minutesAgo: number) => {
+      const order = phoneOrder(displayNumber);
+      const link = ulid();
+      await sync.pushOne(order);
+      await sync.pushOne(askForLink(order.payload.orderId, link));
+      await links.send(vendor.tenantId, link);
+      await inTenant((tx) =>
+        tx
+          .update(paymentLinks)
+          .set({ status: 'EXPIRED', expiresAt: new Date(Date.now() - minutesAgo * 60_000) })
+          .where(eq(paymentLinks.id, link)),
+      );
+      return order.payload.orderId;
+    };
+    const orderNow = async (id: string) =>
+      (
+        await inTenant((tx) =>
+          tx
+            .select({ status: orders.status, reason: orders.cancelReason })
+            .from(orders)
+            .where(eq(orders.id, id)),
+        )
+      )[0]!;
+    const day = async () =>
+      (
+        await request(app.getHttpServer())
+          .get('/api/reports/day')
+          .set('Authorization', `Bearer ${vendor.session}`)
+          .set('x-tenant-id', vendor.tenantId)
+          .expect(200)
+      ).body as { orders: number; sales: number; awaiting: { orders: number; amount: number } };
+
+    let stale: string;
+    let recent: string;
+    let held: string;
+
+    it('isn’t a sale while it waits for payment', async () => {
+      const before = await day();
+      stale = await ranOut('C1', 3 * 60);
+      recent = await ranOut('C2', 60);
+      const after = await day();
+      expect(after.orders).toBe(before.orders);
+      expect(after.sales).toBe(before.sales);
+      expect(after.awaiting.orders).toBe(before.awaiting.orders + 2);
+      expect(after.awaiting.amount).toBe(before.awaiting.amount + 2 * 4500);
+    });
+
+    it('closes 2 hours after the link ran out, not before, and never one with no link', async () => {
+      const order = phoneOrder('C3'); // held at the counter, to be paid in cash
+      held = order.payload.orderId;
+      await sync.pushOne(order);
+
+      expect(await links.closeUnpaid({ onlyTenant: vendor.tenantId })).toBe(1);
+      expect(await orderNow(stale)).toEqual({
+        status: 'CANCELLED',
+        reason: 'Not paid: the payment link ran out',
+      });
+      expect((await orderNow(recent)).status).toBe('CONFIRMED');
+      expect((await orderNow(held)).status).toBe('CONFIRMED');
+      // A second round finds nothing new.
+      expect(await links.closeUnpaid({ onlyTenant: vendor.tenantId })).toBe(0);
+    });
+
+    it('closes the rest once their 2 hours are up, unless a new link is out', async () => {
+      await sync.pushOne(askForLink(recent)); // a new link, still queued
+      const later = Date.now() + 2 * 60 * 60_000;
+      expect(await links.closeUnpaid({ now: later, onlyTenant: vendor.tenantId })).toBe(0);
+      expect((await orderNow(recent)).status).toBe('CONFIRMED');
+    });
+
+    it('tells the tablet, and leaves a trail with no staff name on it', async () => {
+      const res = await request(app.getHttpServer())
+        .get('/api/sync/pull')
+        .set('x-device-token', vendor.deviceToken)
+        .expect(200);
+      expect(res.body.changes.orders).toEqual(
+        expect.arrayContaining([expect.objectContaining({ id: stale, status: 'CANCELLED' })]),
+      );
+      const story = await request(app.getHttpServer())
+        .get(`/api/orders/${stale}`)
+        .set('Authorization', `Bearer ${vendor.session}`)
+        .set('x-tenant-id', vendor.tenantId)
+        .expect(200);
+      expect(story.body.history.at(-1)).toMatchObject({ to: 'CANCELLED', by: null });
+    });
+  });
 });

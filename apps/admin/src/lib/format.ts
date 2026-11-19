@@ -141,6 +141,7 @@ const ACTIONS: Record<string, string> = {
   'refund.recorded': 'recorded a refund',
   'order.discount_set': 'discounted an order',
   'order.flagged': 'flagged an order',
+  'order.closed_unpaid': 'closed an order that was never paid',
   'payment.recorded': 'recorded a payment',
   'payment_link.requested': 'sent a payment link',
   'shift.opened': 'opened a drawer',

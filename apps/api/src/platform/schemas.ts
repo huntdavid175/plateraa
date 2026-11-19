@@ -181,6 +181,8 @@ export class OverviewDto extends createZodDto(
     today: z.string(),
     ordersToday: z.number().int(),
     valueToday: z.number().int(),
+    /** Orders waiting for payment before the kitchen starts: not in the figures above yet. */
+    awaitingToday: z.object({ orders: z.number().int(), value: z.number().int() }),
     activeBusinessesToday: z.number().int(),
     /** Same weekday last week, up to the same time of day, for comparison. */
     ordersSameTimeLastWeek: z.number().int(),
