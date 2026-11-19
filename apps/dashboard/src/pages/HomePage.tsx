@@ -1,18 +1,26 @@
 import { useQuery } from '@tanstack/react-query';
-import { Clock, ReceiptText } from 'lucide-react';
-import { useMemo, useState } from 'react';
+import { ArrowUpRight, Clock, ReceiptText } from 'lucide-react';
+import { useMemo, useState, type ReactNode } from 'react';
 import { Link, useSearchParams } from 'react-router';
 import { Alert } from '@/components/arc/alert/alert';
 import { BarChart } from '@/components/arc/bar-chart/bar-chart';
 import { Button } from '@/components/arc/button/button';
 import { EmptyState } from '@/components/arc/empty-state/empty-state';
 import { Timeline, type TimelineEvent } from '@/components/arc/timeline/timeline';
-import { Bento, Cedis, Tile } from '@/components/app/bento';
+import { Cedis, Tile } from '@/components/app/bento';
 import { DayPicker } from '@/components/app/day-picker';
 import { Skeleton } from '@/components/ui/skeleton';
 import { cn } from '@/lib/utils';
 import { fetchDrawers, type Drawer } from '../lib/manager';
-import { cedis, clock, hourLabel, hourRange, longDate, shortDate, todayHere } from '../lib/money';
+import {
+  clock,
+  hourLabel,
+  hourRange,
+  longDate,
+  plainCedis,
+  shortDate,
+  todayHere,
+} from '../lib/money';
 import {
   FEED_TONES,
   fetchOrders,
@@ -86,6 +94,7 @@ export function HomePage() {
   const pick = (value: string) =>
     setParams(value && value < here ? { date: value } : {}, { replace: true });
   const openDrawers = isToday ? (drawers.data ?? []) : [];
+  const chart = seesMoney && day.data ? <OrdersByHour day={day.data} isToday={isToday} /> : null;
 
   return (
     <Page
@@ -93,7 +102,7 @@ export function HomePage() {
       subtitle={longDate(date)}
       actions={<DayPicker date={date} today={here} onPick={pick} />}
     >
-      <div className="flex flex-col gap-4">
+      <div className="flex flex-col gap-6">
         <NeedsYou tablets={tablets.data} owed={owed.data} />
         {!seesMoney && (
           <Alert tone="info" title="Sales totals are hidden for you">
@@ -120,19 +129,31 @@ export function HomePage() {
             className="lg:w-[calc(50%-0.5rem)]"
           />
         )}
-        <Bento>
-          {seesMoney && day.isPending && <MoneySkeleton />}
-          {seesMoney && day.data && <MoneyTiles day={day.data} isToday={isToday} />}
-          {seesMoney && day.data && <OrdersByHour day={day.data} isToday={isToday} />}
+        {seesMoney && day.isPending && <MoneySkeleton />}
+        {seesMoney && day.data && (
+          <>
+            <MoneyIn day={day.data} isToday={isToday} />
+            <Figures day={day.data} isToday={isToday} />
+          </>
+        )}
+
+        {/* The chart and the drawers share a column beside the feed, so neither leaves a hole. */}
+        <div className="grid gap-4 lg:grid-cols-2 lg:items-start">
+          {(chart || openDrawers.length > 0) && (
+            <div className="flex min-w-0 flex-col gap-4">
+              {chart}
+              {openDrawers.length > 0 && <OpenDrawers drawers={openDrawers} />}
+            </div>
+          )}
           <Feed
             orders={recent.data}
             loading={recent.isPending}
             error={recent.error?.message}
             date={isToday ? null : date}
             total={day.data?.orders}
+            className={chart || openDrawers.length > 0 ? undefined : 'lg:col-span-2'}
           />
-          {openDrawers.length > 0 && <OpenDrawers drawers={openDrawers} />}
-        </Bento>
+        </div>
       </div>
     </Page>
   );
@@ -155,122 +176,190 @@ const MONEY_IN = [
   { method: 'LINK', words: 'Mobile money', swatch: 'bg-primary' },
 ] as const;
 
-function MoneyTiles({ day, isToday }: { day: DaySummary; isToday: boolean }) {
+/**
+ * The one big figure, standing on the page rather than in a card: money in, and how it came
+ * (cash and mobile money) as a single bar beside it.
+ */
+function MoneyIn({ day, isToday }: { day: DaySummary; isToday: boolean }) {
   const links = dayLinks(day.date);
   const parts = MONEY_IN.map((part) => ({
     ...part,
     amount: day.byMethod.find((row) => row.method === part.method)?.amount ?? 0,
   }));
   const partsTotal = parts.reduce((sum, part) => sum + part.amount, 0);
+
+  return (
+    <section
+      aria-labelledby="money-in"
+      className="flex flex-col gap-6 md:flex-row md:items-end md:justify-between md:gap-10"
+    >
+      <div className="flex flex-col gap-3">
+        <h2 id="money-in" className="text-sm text-text-secondary">
+          <Link
+            to={links.orders({ method: 'CASH,LINK' })}
+            className="group inline-flex items-center gap-1 rounded-sm transition-colors hover:text-foreground"
+          >
+            {isToday ? 'Money in today' : 'Money in'}
+            <ArrowUpRight
+              size={14}
+              strokeWidth={1.75}
+              aria-hidden
+              className="opacity-0 transition-opacity group-hover:opacity-100 group-focus-visible:opacity-100"
+            />
+          </Link>
+        </h2>
+        <Cedis amount={day.moneyIn} big />
+        <span className="text-sm text-muted-foreground">
+          From {day.orders === 1 ? '1 order' : `${day.orders} orders`}
+        </span>
+      </div>
+      {partsTotal > 0 && (
+        <div className="flex w-full flex-col gap-3 md:max-w-sm md:pb-1">
+          <div
+            role="img"
+            aria-label={parts.map((part) => `${part.words} ${plainCedis(part.amount)}`).join(', ')}
+            className="flex h-1.5 gap-0.5 overflow-hidden rounded-full bg-muted"
+          >
+            {parts
+              .filter((part) => part.amount > 0)
+              .map((part) => (
+                <div
+                  key={part.method}
+                  className={part.swatch}
+                  style={{ width: `${(part.amount / partsTotal) * 100}%` }}
+                />
+              ))}
+          </div>
+          <ul className="flex flex-wrap justify-between gap-x-6 gap-y-2">
+            {parts.map((part) => (
+              <li key={part.method}>
+                <Link
+                  to={links.orders({ method: part.method })}
+                  className="flex items-center gap-2 text-sm hover:underline"
+                >
+                  <span className={cn('size-2 rounded-full', part.swatch)} aria-hidden />
+                  <span className="text-text-secondary">{part.words}</span>
+                  <span className="font-mono">{plainCedis(part.amount)}</span>
+                </Link>
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
+    </section>
+  );
+}
+
+/**
+ * The day's other figures in one strip, split by hairlines rather than boxed one by one. Each
+ * opens the rows behind it; its arrow shows on hover. Nothing in it is a chart, so a whole
+ * figure can be the link.
+ */
+function Figures({ day, isToday }: { day: DaySummary; isToday: boolean }) {
+  const links = dayLinks(day.date);
   const takings = day.moneyIn + day.notYetCollected;
   const collected = takings > 0 ? Math.round((day.moneyIn / takings) * 100) : null;
 
   return (
-    <>
-      {/* The one big tile. */}
-      <Tile
-        title={isToday ? 'Money in today' : 'Money in'}
-        to={links.orders({ method: 'CASH,LINK' })}
-        toLabel="Open the orders that paid"
-        className="col-span-2 lg:row-span-2"
-      >
-        <div className="flex flex-col gap-1">
-          <Cedis amount={day.moneyIn} big />
-          <span className="text-sm text-muted-foreground">
-            From {day.orders === 1 ? '1 order' : `${day.orders} orders`}
-          </span>
-        </div>
-        {partsTotal > 0 && (
-          <div className="mt-auto flex flex-col gap-3">
-            <div
-              role="img"
-              aria-label={parts.map((part) => `${part.words} ${cedis(part.amount)}`).join(', ')}
-              className="flex h-2 gap-0.5 overflow-hidden rounded-full bg-muted"
-            >
-              {parts
-                .filter((part) => part.amount > 0)
-                .map((part) => (
-                  <div
-                    key={part.method}
-                    className={part.swatch}
-                    style={{ width: `${(part.amount / partsTotal) * 100}%` }}
-                  />
-                ))}
-            </div>
-            <ul className="flex flex-wrap gap-x-6 gap-y-2">
-              {parts.map((part) => (
-                <li key={part.method}>
-                  <Link
-                    to={links.orders({ method: part.method })}
-                    className="flex items-center gap-2 text-sm hover:underline"
-                  >
-                    <span className={cn('size-2 rounded-full', part.swatch)} aria-hidden />
-                    <span className="text-text-secondary">{part.words}</span>
-                    <span className="font-mono">{cedis(part.amount)}</span>
-                  </Link>
-                </li>
-              ))}
-            </ul>
-          </div>
-        )}
-      </Tile>
-
-      <Tile title="Orders" to={links.orders()} toLabel="Open the day’s orders">
-        <span className="font-heading text-2xl leading-none tracking-[-0.03em] tabular-nums">
+    <section
+      aria-label="The day’s figures"
+      // The 1px gaps over a border-coloured back are the hairlines, on a phone's 2×2 as well.
+      className="grid grid-cols-2 gap-px overflow-hidden rounded-(--radius-surface) border bg-border lg:grid-cols-4"
+    >
+      <Figure label="Orders" to={links.orders()} toLabel="Open the day’s orders">
+        <span className="font-heading text-xl leading-none tracking-[-0.03em] tabular-nums sm:text-2xl">
           {day.orders}
         </span>
-      </Tile>
-
-      <Tile
-        title={isToday ? 'Profit today' : 'Profit'}
+        <FigureNote>{isToday ? 'So far today' : 'That day'}</FigureNote>
+      </Figure>
+      <Figure
+        label={isToday ? 'Profit today' : 'Profit'}
         to={links.reports}
         toLabel="Open the day’s report"
       >
         <Cedis amount={day.profit} />
-        <span className="text-xs text-muted-foreground">
+        <FigureNote>
           {day.commissionEstimate > 0 ? 'After expenses and commission' : 'After expenses'}
-        </span>
-      </Tile>
-
-      <Tile
-        title="Not yet collected"
+        </FigureNote>
+      </Figure>
+      <Figure
+        label="Not yet collected"
         to={
           day.platformOwed > 0 && day.unpaid === 0
             ? links.orders({ method: 'PLATFORM' })
             : links.orders({ paid: 'UNPAID' })
         }
         toLabel="Open the unpaid orders"
-        tone={day.unpaid > 0 ? 'warning' : undefined}
+        attention={day.unpaid > 0}
       >
         <Cedis amount={day.notYetCollected} />
-        <span className="text-xs text-muted-foreground">
+        <FigureNote>
           {day.platformOwed > 0
-            ? `${cedis(day.platformOwed)} from Bolt and Chowdeck`
+            ? `${plainCedis(day.platformOwed)} from Bolt and Chowdeck`
             : collected === null
               ? 'Nothing to collect yet'
               : `${collected}% of the day’s takings is in`}
-        </span>
-      </Tile>
-
-      <Tile title="Money out" to={links.expenses} toLabel="Open the day’s expenses">
+        </FigureNote>
+      </Figure>
+      <Figure label="Money out" to={links.expenses} toLabel="Open the day’s expenses">
         <Cedis amount={day.moneyOut} />
-        <span className="text-xs text-muted-foreground">{cedis(day.left)} left after it</span>
-      </Tile>
-    </>
+        <FigureNote>{plainCedis(day.left)} left after it</FigureNote>
+      </Figure>
+    </section>
   );
+}
+
+function Figure({
+  label,
+  to,
+  toLabel,
+  attention,
+  children,
+}: {
+  label: string;
+  to: string;
+  toLabel: string;
+  /** Something here needs chasing: a small amber dot by the label, not a coloured box. */
+  attention?: boolean;
+  children: ReactNode;
+}) {
+  return (
+    <Link
+      to={to}
+      aria-label={`${label}. ${toLabel}`}
+      className="group flex min-w-0 flex-col gap-3 bg-card p-4 transition-colors hover:bg-muted/50 focus-visible:relative focus-visible:z-10 sm:p-5"
+    >
+      <span className="flex items-center justify-between gap-2 text-sm text-text-secondary">
+        <span className="flex items-center gap-2">
+          {attention && <span className="size-1.5 shrink-0 rounded-full bg-warning" aria-hidden />}
+          {label}
+        </span>
+        <ArrowUpRight
+          size={14}
+          strokeWidth={1.75}
+          aria-hidden
+          className="text-muted-foreground opacity-0 transition-opacity group-hover:opacity-100 group-focus-visible:opacity-100"
+        />
+      </span>
+      <span className="flex flex-col gap-1.5">{children}</span>
+    </Link>
+  );
+}
+
+function FigureNote({ children }: { children: ReactNode }) {
+  return <span className="truncate text-xs text-muted-foreground">{children}</span>;
 }
 
 function MoneySkeleton() {
   return (
-    <>
-      <Skeleton
-        className="col-span-2 h-56 rounded-(--radius-surface) lg:row-span-2 lg:h-auto"
-        aria-label="Loading the day’s figures"
-      />
-      {[0, 1, 2, 3].map((tile) => (
-        <Skeleton key={tile} className="h-28 rounded-(--radius-surface)" />
-      ))}
-    </>
+    <div className="flex flex-col gap-6" aria-label="Loading the day’s figures">
+      <div className="flex flex-col gap-3">
+        <Skeleton className="h-4 w-28" />
+        <Skeleton className="h-12 w-64" />
+        <Skeleton className="h-4 w-24" />
+      </div>
+      <Skeleton className="h-32 rounded-(--radius-surface) lg:h-28" />
+    </div>
   );
 }
 
@@ -294,15 +383,14 @@ function OrdersByHour({ day, isToday }: { day: DaySummary; isToday: boolean }) {
   }, [day.byHour]);
 
   return (
-    <Tile
-      title={busiest ? `Busiest ${hourRange(busiest.hour)}` : 'Orders by hour'}
-      className="col-span-2"
-    >
+    <Tile title="Orders by hour">
       {bars.length > 0 ? (
+        // The chart's own header is its readout (it follows the bar under the pointer), so the
+        // tile's title names the chart and the busiest hour rests under the average.
         <BarChart
           data={bars}
           label="Orders"
-          period={isToday ? 'Today, by hour' : 'By hour'}
+          period={busiest ? `Busiest ${hourRange(busiest.hour)}` : isToday ? 'Today' : 'This day'}
           unit="orders"
           averageLabel="An hour, on average"
           valueLabel="Orders"
@@ -331,12 +419,14 @@ function Feed({
   error,
   date,
   total,
+  className,
 }: {
   orders: OrderRow[] | undefined;
   loading: boolean;
   error: string | undefined;
   date: string | null;
   total: number | undefined;
+  className?: string | undefined;
 }) {
   const now = useNow();
   const back = date
@@ -348,7 +438,7 @@ function Feed({
     return {
       id: order.id,
       at: order.takenAt,
-      title: `${order.displayNumber}, ${kindWords(order).toLowerCase()}: ${cedis(order.total)}, ${state.label.toLowerCase()}`,
+      title: `${order.displayNumber}, ${kindWords(order).toLowerCase()}: ${plainCedis(order.total)}, ${state.label.toLowerCase()}`,
       ...(order.takenBy ? { actor: order.takenBy } : {}),
       // The time is already on the right; this line says what was ordered.
       meta: orderLine(order.items),
@@ -378,7 +468,7 @@ function Feed({
       title={date ? 'Latest orders' : 'What’s happening'}
       to={date ? `/orders?date=${date}` : '/orders'}
       toLabel={total !== undefined ? `Open all ${total} orders` : 'Open the orders'}
-      className="col-span-2"
+      {...(className ? { className } : {})}
     >
       {loading && (
         <div className="flex flex-col gap-3" aria-busy="true">
@@ -440,7 +530,7 @@ function NeedsYou({
         >
           <p>
             {refunds.length === 1
-              ? `${cedis(first.refundOwed)} back for order ${first.displayNumber}. `
+              ? `${plainCedis(first.refundOwed)} back for order ${first.displayNumber}. `
               : 'Give the money back, then record it. '}
             <Link to="/refunds" className="font-medium underline underline-offset-2">
               Open refunds
@@ -470,7 +560,7 @@ function NeedsYou({
 function OpenDrawers({ drawers }: { drawers: Drawer[] }) {
   const [paying, setPaying] = useState<Drawer | null>(null);
   return (
-    <Tile title="Open drawers" className="col-span-2">
+    <Tile title="Open drawers">
       <ul className="flex flex-col gap-3">
         {drawers.map((drawer) => (
           <li key={drawer.shiftId} className="flex items-center justify-between gap-3">
@@ -479,7 +569,7 @@ function OpenDrawers({ drawers }: { drawers: Drawer[] }) {
               <span className="text-xs text-muted-foreground">
                 Since {clock(drawer.openedAt)}
                 {drawer.openedBy ? ` by ${drawer.openedBy}` : ''}
-                {drawer.expectedCash !== null ? `, ${cedis(drawer.expectedCash)} in it` : ''}
+                {drawer.expectedCash !== null ? `, ${plainCedis(drawer.expectedCash)} in it` : ''}
               </span>
             </span>
             <Button variant="secondary" size="sm" onClick={() => setPaying(drawer)}>

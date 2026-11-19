@@ -77,8 +77,11 @@ export function TileRows({ children }: { children: ReactNode }) {
 }
 
 /**
- * A cedi amount in a tile, from pesewas. The digits roll when it changes (Arc's animated
- * counter); `big` is the one figure a screen is about, which also rolls up the first time it's seen.
+ * A cedi amount, from pesewas. The whole cedis roll when they change (Arc's animated counter);
+ * `big` is the one figure a screen is about, which also rolls up the first time it's seen.
+ *
+ * Set the way money products set money: the GH₵ and the pesewas are smaller and quieter than
+ * the cedis, and pesewas show only when there are some ("GH₵2,315", "GH₵73.64").
  */
 export function Cedis({
   amount,
@@ -90,19 +93,38 @@ export function Cedis({
   big?: boolean;
   className?: string;
 }) {
+  // Display only: the amount stays integer pesewas everywhere else.
+  const whole = Math.floor(Math.abs(amount) / 100);
+  const pesewas = Math.abs(amount) % 100;
+  const fraction = pesewas > 0 ? `.${String(pesewas).padStart(2, '0')}` : '';
   return (
     <span
       className={cn(
-        // Arc's counter sizes itself by --text-3xl; the tile sets it, rather than restyling Arc.
+        // Arc's counter sizes itself by --text-3xl; this sets it, rather than restyling Arc, and
+        // the symbol and pesewas size themselves from the same value.
         big
-          ? '[--text-3xl:2.5rem] md:[--text-3xl:var(--text-4xl)]'
+          ? '[--text-3xl:2.75rem] md:[--text-3xl:3.5rem]'
           : '[--text-3xl:var(--text-xl)] sm:[--text-3xl:var(--text-2xl)]',
-        amount < 0 && '[--foreground:var(--danger)]',
+        'inline-flex items-baseline font-heading text-(length:--text-3xl) leading-none tabular-nums',
+        amount < 0 && '[--foreground:var(--danger)] text-danger',
         className,
       )}
     >
-      {/* Display only: the amount stays integer pesewas everywhere else. */}
-      <AnimatedCounter value={amount / 100} prefix="GH₵" decimals={2} animateOnView={big} />
+      <span className="sr-only">
+        {amount < 0 ? 'minus ' : ''}GH₵{whole.toLocaleString('en-GB')}
+        {fraction}
+      </span>
+      <span aria-hidden className="inline-flex items-baseline">
+        <span className="mr-[0.1em] text-[0.5em] tracking-normal text-muted-foreground">
+          {amount < 0 ? '−' : ''}GH₵
+        </span>
+        <AnimatedCounter value={whole} animateOnView={big} locale="en-GB" />
+        {fraction && (
+          <span className="ml-[0.04em] text-[0.5em] tracking-normal text-muted-foreground">
+            {fraction}
+          </span>
+        )}
+      </span>
     </span>
   );
 }
