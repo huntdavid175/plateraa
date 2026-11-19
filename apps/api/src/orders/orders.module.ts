@@ -19,6 +19,7 @@ import {
   inArray,
   isNull,
   lte,
+  or,
   orderEvents,
   orderItems,
   orders,
@@ -80,6 +81,11 @@ const ordersQuerySchema = z.object({
   item: z.string().trim().min(1).max(80).optional(),
   /** Taken by this staff member. */
   staffId: z.ulid().optional(),
+  /**
+   * Search within the days asked for: an order number ("A23", or "23" for any tablet's), part of
+   * an item's name, the customer's name, or part of their number in any form ("024 412", "+233").
+   */
+  q: z.string().trim().max(80).optional(),
   limit: z.coerce.number().int().min(1).max(500).default(50),
 });
 
@@ -257,7 +263,33 @@ function filtersOf(query: OrdersQuery) {
       ? sql`exists (select 1 from ${orderItems} where ${orderItems.orderId} = ${orders.id} and ${orderItems.deletedAt} is null and ${orderItems.name} = ${query.item})`
       : undefined,
     query.staffId ? eq(orders.createdBy, query.staffId) : undefined,
+    searching(query.q),
   ];
+}
+
+/**
+ * What the Orders page's search box matches (user request, 19 Nov), any of: the order number
+ * ("a23" is A23; "23" is A23, B23 or W23, but not A123), part of an item's name, part of the
+ * customer's name, or part of their number however it's typed ("024 412 3456", "+233 24 412",
+ * "244123"; numbers are kept as +233…, so the leading 0 or 233 is dropped first).
+ */
+function searching(q: string | undefined) {
+  const text = q?.trim();
+  if (!text) return undefined;
+  const like = `%${text.replace(/[\\%_]/g, (c) => `\\${c}`)}%`;
+  const matches = [
+    sql`${orders.displayNumber} ilike ${text.replace(/[\\%_]/g, (c) => `\\${c}`)}`,
+    sql`exists (select 1 from ${orderItems} where ${orderItems.orderId} = ${orders.id} and ${orderItems.deletedAt} is null and ${orderItems.name} ilike ${like})`,
+    sql`${customers.name} ilike ${like}`,
+  ];
+  if (/^\d{1,4}$/.test(text)) {
+    // Digits alone: that number on any tablet (letters, then exactly these digits).
+    matches.push(sql`${orders.displayNumber} ~* ${`^[a-z]+${text}$`}`);
+  }
+  const digits = text.replace(/\D/g, '');
+  const national = digits.startsWith('233') ? digits.slice(3) : digits.replace(/^0/, '');
+  if (national.length >= 5) matches.push(sql`${customers.phone} like ${`%${national}%`}`);
+  return or(...matches);
 }
 
 @Injectable()

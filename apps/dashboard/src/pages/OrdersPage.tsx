@@ -2,16 +2,19 @@ import type { OrderSource, PaymentMethod } from '@brixx/shared';
 import { ORDER_SOURCES } from '@brixx/shared';
 import { useQuery } from '@tanstack/react-query';
 import { ChevronRight, ReceiptText } from 'lucide-react';
+import { useEffect, useState } from 'react';
 import { Link, useLocation, useSearchParams } from 'react-router';
 import { Alert } from '@/components/arc/alert/alert';
 import { Button } from '@/components/arc/button/button';
 import { Drawer, DrawerContent } from '@/components/arc/drawer/drawer';
 import { EmptyState } from '@/components/arc/empty-state/empty-state';
 import { FilterToolbar } from '@/components/arc/filter-toolbar/filter-toolbar';
+import { SearchField } from '@/components/arc/search-field/search-field';
 import SegmentedControl from '@/components/arc/segmented-control/segmented-control';
 import { DayPicker } from '@/components/app/day-picker';
 import { StatusBadge } from '@/components/app/status-badge';
 import { Skeleton } from '@/components/ui/skeleton';
+import { shiftDays } from '../lib/expenses';
 import { cedis, clock, longDate, shortDate, todayHere } from '../lib/money';
 import {
   fetchOrders,
@@ -23,6 +26,7 @@ import {
 } from '../lib/orders';
 import { useSession } from '../lib/session';
 import { fetchTeam } from '../lib/team';
+import { useSettled } from '../lib/use-settled';
 import { METHOD_WORDS, SOURCE_WORDS, kindWords } from '../lib/words';
 import { useMe } from '../shell/Shell';
 import { Page } from '../ui/Page';
@@ -80,6 +84,10 @@ export function OrdersPage() {
   const method = params.get('method');
   const item = params.get('item');
   const staff = params.get('staff');
+  // The search box: what's typed, and once typing pauses, the search itself (in `?q=`).
+  const [typed, setTyped] = useState(params.get('q') ?? '');
+  const settled = useSettled(typed.trim());
+  const q = params.get('q') ?? '';
   const sourceParam = params.get('source');
   const source = ORDER_SOURCES.find((value) => value === sourceParam) as OrderSource | undefined;
   // Dine-in shows where the owner offers it, or when a link asks for it.
@@ -100,6 +108,12 @@ export function OrdersPage() {
       { replace: true },
     );
 
+  // The settled search goes into the address, so it can be shared and Back keeps it.
+  useEffect(() => {
+    if (settled !== q) change({ q: settled || null });
+    // `change` and `q` follow the address; only a new settled search should write it.
+  }, [settled]);
+
   const query: OrdersQuery = {
     ...(range ?? { date }),
     ...(type !== 'ALL' ? { type } : {}),
@@ -108,11 +122,14 @@ export function OrdersPage() {
     ...(method ? { method } : {}),
     ...(item ? { item } : {}),
     ...(staff ? { staffId: staff } : {}),
+    ...(q ? { q } : {}),
     limit: LIMIT,
   };
   const orders = useQuery({
     queryKey: ['orders', tenantId, query],
     queryFn: () => fetchOrders(query),
+    // While a new search loads, the last results stay, rather than flashing empty per key typed.
+    placeholderData: (previous) => previous,
   });
   const team = useQuery({
     queryKey: ['team', tenantId],
@@ -135,7 +152,11 @@ export function OrdersPage() {
   const listOnly = new URLSearchParams(search);
   listOnly.delete('order');
   const back: BackTo = { back: `/orders?${listOnly}`, label: 'Orders' };
-  const filtered = type !== 'ALL' || source || paid !== 'ALL' || method || item || staff;
+  const filtered = type !== 'ALL' || source || paid !== 'ALL' || method || item || staff || q;
+  // Order numbers start again every day, so a search on one day that finds nothing can look
+  // further back: the last 92 days, the most one list covers.
+  const lookBack = { from: shiftDays(here, -91), to: here };
+  const wideAlready = range?.from === lookBack.from && range.to === lookBack.to;
 
   // Filters that arrive from a figure elsewhere (Home, Reports), each one removable.
   const chips = [
@@ -181,6 +202,14 @@ export function OrdersPage() {
     >
       <div className="flex flex-col gap-6">
         <div className="flex flex-col gap-3">
+          <div className="md:max-w-md">
+            <SearchField
+              label="Search orders"
+              placeholder="Order number, phone, name or item"
+              value={typed}
+              onValueChange={setTyped}
+            />
+          </div>
           <div className="flex flex-wrap gap-3">
             <SegmentedControl
               label="Dine-in, pickup or delivery"
@@ -266,12 +295,26 @@ export function OrdersPage() {
               icon={<ReceiptText size={24} strokeWidth={1.75} />}
               title={filtered ? 'No orders match' : 'No orders'}
               description={
-                filtered
-                  ? 'Try another filter, or clear them to see every order.'
-                  : range
-                    ? 'Nothing was ordered on these days.'
-                    : 'Nothing was ordered on this day.'
+                q
+                  ? `Nothing ${range ? 'on these days' : 'on this day'} matches “${q}”.`
+                  : filtered
+                    ? 'Try another filter, or clear them to see every order.'
+                    : range
+                      ? 'Nothing was ordered on these days.'
+                      : 'Nothing was ordered on this day.'
               }
+              {...(q && !wideAlready
+                ? {
+                    action: (
+                      <Button
+                        variant="secondary"
+                        onClick={() => change({ date: null, ...lookBack })}
+                      >
+                        Look in the last 3 months
+                      </Button>
+                    ),
+                  }
+                : {})}
             />
           )}
           {rows.length > 0 && (

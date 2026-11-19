@@ -11,19 +11,10 @@ import { cn } from '@/lib/utils';
 import { CUSTOMER_LIST_SIZE, fetchCustomers, type CustomerRow } from '../lib/customers';
 import { cedis, shortDate } from '../lib/money';
 import { useSession } from '../lib/session';
+import { useSettled } from '../lib/use-settled';
 import { phoneWords } from '../lib/words';
 import { useMe } from '../shell/Shell';
 import { Page } from '../ui/Page';
-
-/** `value`, once it has stopped changing for a moment, so each key typed doesn't ask the server. */
-function useSettled<T>(value: T, ms = 300): T {
-  const [settled, setSettled] = useState(value);
-  useEffect(() => {
-    const timer = setTimeout(() => setSettled(value), ms);
-    return () => clearTimeout(timer);
-  }, [value, ms]);
-  return settled;
-}
 
 const orderWords = (orders: number) => (orders === 1 ? '1 order' : `${orders} orders`);
 

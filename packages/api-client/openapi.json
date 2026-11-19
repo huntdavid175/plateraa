@@ -630,6 +630,15 @@
             }
           },
           {
+            "name": "q",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "maxLength": 80,
+              "type": "string"
+            }
+          },
+          {
             "name": "limit",
             "required": false,
             "in": "query",

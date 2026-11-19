@@ -66,6 +66,7 @@ describe.skipIf(!hasDatabase())('reports and order lists (against Neon)', () => 
       quantity: number,
       unitPrice: number,
       source: 'POS' | 'BOLT_FOOD' = 'POS',
+      customer?: { phone: string; name: string },
     ) =>
       sync.command('order.create', {
         orderId,
@@ -74,6 +75,7 @@ describe.skipIf(!hasDatabase())('reports and order lists (against Neon)', () => 
         source,
         type: 'DINE_IN',
         lines: [{ lineId: ulid(), itemId, quantity, unitPrice }],
+        ...(customer ? { customer } : {}),
       });
     const cash = (orderId: string, amount: number) =>
       sync.command('payment.record_cash', { paymentId: ulid(), orderId, shiftId, amount });
@@ -82,7 +84,10 @@ describe.skipIf(!hasDatabase())('reports and order lists (against Neon)', () => 
       sync.command('shift.open', { shiftId, float: 5000 }),
       order(ids.a, 'A1', menu.jollof, 2, 4500),
       cash(ids.a, 9000),
-      order(ids.b, 'A2', menu.sobolo, 1, 1000),
+      order(ids.b, 'A2', menu.sobolo, 1, 1000, 'POS', {
+        phone: '0244123456',
+        name: 'Kwesi Mensah',
+      }),
       order(ids.c, 'A3', menu.jollof, 1, 4500, 'BOLT_FOOD'),
       sync.command('payment.record_platform', { paymentId: ulid(), orderId: ids.c, amount: 4500 }),
       order(ids.d, 'A4', menu.sobolo, 1, 1000),
@@ -260,6 +265,18 @@ describe.skipIf(!hasDatabase())('reports and order lists (against Neon)', () => 
     expect(await found('method=PLATFORM')).toEqual([ids.c]);
     expect(await found('item=Sobolo')).toEqual(sorted(ids.b, ids.d));
     expect(await found(`staffId=${vendor.ownerStaffId}&source=POS&paid=PAID`)).toEqual([ids.a]);
+
+    // The search box: order numbers, items, the customer's name and number.
+    expect(await found('q=a3')).toEqual([ids.c]);
+    expect(await found('q=3')).toEqual([ids.c]); // A3, on any tablet
+    expect(await found('q=SOBO')).toEqual(sorted(ids.b, ids.d));
+    expect(await found('q=jollof%20rice')).toEqual(sorted(ids.a, ids.c));
+    expect(await found('q=kwesi')).toEqual([ids.b]);
+    expect(await found(`q=${encodeURIComponent('024 412 3456')}`)).toEqual([ids.b]);
+    expect(await found(`q=${encodeURIComponent('+233 24412')}`)).toEqual([ids.b]);
+    expect(await found('q=sobolo&paid=UNPAID')).toEqual([ids.b]);
+    expect(await found('q=50%25')).toEqual([]); // a % is a percent sign, not "anything"
+    expect(await found('q=pizza')).toEqual([]);
 
     await dashboard(`/api/orders?from=${today}`).expect(400);
     await dashboard(`/api/orders?from=${today}&to=2020-01-01`).expect(400);
