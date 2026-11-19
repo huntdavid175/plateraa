@@ -3,12 +3,6 @@ import { formatCedis, pesewas } from '@brixx/shared';
 /** Pesewas from the API, shown as GH₵1,085.00. */
 export const cedis = (amount: number): string => formatCedis(pesewas(amount));
 
-/**
- * "GH₵1,580" or "GH₵73.64": pesewas only when there are some, as `Cedis` shows a figure. For
- * amounts in a sentence beside those figures (Home), so they read alike.
- */
-export const plainCedis = (amount: number): string => cedis(amount).replace(/\.00$/, '');
-
 /** Pesewas as whole cedis, "GH₵2,315": for charts, where the exact figure is a tap away. */
 export const wholeCedis = (amount: number): string => cedis(amount).replace(/\.\d\d$/, '');
 

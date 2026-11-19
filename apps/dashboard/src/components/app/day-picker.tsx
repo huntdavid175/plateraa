@@ -58,8 +58,7 @@ export function DayPicker({
       )}
       <DatePicker
         label="Day"
-        // The date speaks for itself; "Day" above it is for screen readers only.
-        className="w-80 max-w-full [&>label]:sr-only"
+        className="w-80 max-w-full"
         value={toDate(date)}
         maxDate={toDate(today)}
         locale="en-GB"
