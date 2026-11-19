@@ -55,6 +55,7 @@ const SCREENS: RouteObject[] = [
   { path: 'staff', lazy: later(async () => (await import('./pages/StaffPage')).StaffPage) },
   { path: 'refunds', lazy: later(async () => (await import('./pages/RefundsPage')).RefundsPage) },
   { path: 'reports', lazy: later(async () => (await import('./pages/ReportsPage')).ReportsPage) },
+  { path: 'cash', lazy: later(async () => (await import('./pages/CashPage')).CashPage) },
   {
     path: 'expenses',
     lazy: later(async () => (await import('./pages/ExpensesPage')).ExpensesPage),

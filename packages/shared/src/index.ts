@@ -1,6 +1,7 @@
 // Shared across api, mobile, dashboard and storefront. Must stay free of Node and DOM APIs.
 export * from './business-date.js';
 export * from './capabilities.js';
+export * from './drawer.js';
 export * from './enums.js';
 export * from './menu-templates.js';
 export * from './money.js';

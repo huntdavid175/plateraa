@@ -1,6 +1,7 @@
+import { DRAWER_TOLERANCE, drawerResult } from '@brixx/shared';
 import { useQuery } from '@tanstack/react-query';
-import { Banknote, Clock, ReceiptText, Trophy, Users, Vault, Wallet } from 'lucide-react';
-import { useLocation, useSearchParams } from 'react-router';
+import { Banknote, Clock, Coins, ReceiptText, Trophy, Users, Wallet } from 'lucide-react';
+import { useLocation } from 'react-router';
 import { ActivityHeatmap } from '@/components/arc/activity-heatmap/activity-heatmap';
 import { Alert } from '@/components/arc/alert/alert';
 import { Avatar } from '@/components/arc/avatar/avatar';
@@ -8,48 +9,20 @@ import { BarChart } from '@/components/arc/bar-chart/bar-chart';
 import { DonutChart } from '@/components/arc/donut-chart/donut-chart';
 import { EmptyState } from '@/components/arc/empty-state/empty-state';
 import { LineChart } from '@/components/arc/line-chart/line-chart';
-import SegmentedControl from '@/components/arc/segmented-control/segmented-control';
 import { Sparkline } from '@/components/arc/sparkline/sparkline';
-import { DateField } from '@/components/app/day-picker';
 import { Bento, Cedis, Tile, TileRows } from '@/components/app/bento';
+import { DAY_MS, DayRangePicker, useDayRange, type Range } from '@/components/app/day-range';
 import { Change } from '@/components/app/change';
 import { PanelLine } from '@/components/app/panel';
 import { Skeleton } from '@/components/ui/skeleton';
 import { lastMonth, shiftDays } from '../lib/expenses';
-import {
-  cedis,
-  clock,
-  hourLabel,
-  hourRange,
-  longDate,
-  shortDate,
-  todayHere,
-  chartCedis,
-} from '../lib/money';
+import { cedis, hourLabel, hourRange, longDate, shortDate, chartCedis } from '../lib/money';
 import type { BackTo } from '../lib/orders';
 import { busiestHour, fetchPeriod, type Period } from '../lib/reports';
 import { useSession } from '../lib/session';
 import { EXPENSE_WORDS, METHOD_WORDS, TYPE_WORDS } from '../lib/words';
 import { Page } from '../ui/Page';
 import { ReportDays } from './report-days';
-
-const RANGES = [
-  { value: 'week', label: 'Last 7 days' },
-  { value: 'month', label: 'This month' },
-  { value: 'last', label: 'Last month' },
-  { value: 'pick', label: 'Pick days' },
-] as const;
-type Range = (typeof RANGES)[number]['value'];
-
-/** The most the API reports on at once. */
-const MAX_DAYS = 92;
-const DAY_MS = 86_400_000;
-
-function rangeOf(range: Exclude<Range, 'pick'>, today: string): { from: string; to: string } {
-  if (range === 'week') return { from: shiftDays(today, -6), to: today };
-  if (range === 'month') return { from: `${today.slice(0, 7)}-01`, to: today };
-  return lastMonth(today);
-}
 
 /**
  * The days a report is held against, and how to say them after "on": the 7 days before the last
@@ -80,15 +53,6 @@ function beforeOf(
   };
 }
 
-/** What's wrong with a picked range, in words, or null. */
-function rangeProblem(from: string, to: string): string | null {
-  if (from > to) return 'The first day comes after the last.';
-  if ((Date.parse(to) - Date.parse(from)) / DAY_MS >= MAX_DAYS) {
-    return `Pick ${MAX_DAYS} days or fewer.`;
-  }
-  return null;
-}
-
 const orderWords = (orders: number) => (orders === 1 ? '1 order' : `${orders} orders`);
 
 /**
@@ -98,14 +62,8 @@ const orderWords = (orders: number) => (orders === 1 ? '1 order' : `${orders} or
 export function ReportsPage() {
   const { tenantId } = useSession();
   const { search } = useLocation();
-  const [params, setParams] = useSearchParams();
-  const today = todayHere();
-  const range = RANGES.find((r) => r.value === params.get('range'))?.value ?? 'week';
-  const { from, to } =
-    range === 'pick'
-      ? { from: params.get('from') ?? shiftDays(today, -6), to: params.get('to') ?? today }
-      : rangeOf(range, today);
-  const problem = range === 'pick' ? rangeProblem(from, to) : null;
+  const days = useDayRange();
+  const { range, from, to, problem } = days;
 
   const period = useQuery({
     queryKey: ['period', tenantId, from, to],
@@ -120,37 +78,10 @@ export function ReportsPage() {
     enabled: !problem,
   });
 
-  const choose = (next: Range) =>
-    setParams(
-      next === 'week' ? {} : next === 'pick' ? { range: next, from, to } : { range: next },
-      { replace: true },
-    );
-  const pickDay = (key: 'from' | 'to', value: string) => {
-    if (value) setParams({ range: 'pick', from, to, [key]: value }, { replace: true });
-  };
-
   return (
     <Page title="Reports" subtitle={`${longDate(from)} to ${longDate(to)}`}>
       <div className="flex flex-col gap-6">
-        <div className="flex flex-wrap items-end gap-3">
-          <SegmentedControl
-            label="Which days"
-            options={[...RANGES]}
-            value={range}
-            onValueChange={(value) => choose(value as Range)}
-          />
-          {range === 'pick' && (
-            <>
-              <DateField
-                label="From"
-                date={from}
-                max={today}
-                onPick={(day) => pickDay('from', day)}
-              />
-              <DateField label="To" date={to} max={today} onPick={(day) => pickDay('to', day)} />
-            </>
-          )}
-        </div>
+        <DayRangePicker days={days} />
         {problem && (
           <Alert tone="warning" title="Those days don’t work">
             {problem}
@@ -500,53 +431,74 @@ function Report({
         )}
       </Tile>
 
-      <Tile title="Drawer closes" className="col-span-2 lg:col-span-4">
+      {/* A summary; every close, and who was on the drawers, are on the Cash page. */}
+      <Tile
+        title="Drawer closes"
+        to={back.back.replace(/^\/reports/, '/cash')}
+        toLabel="Open the drawer closes on the Cash page"
+        className="col-span-2 lg:col-span-4"
+      >
         {period.drawerCloses.length === 0 ? (
           <EmptyState
-            icon={<Vault size={24} strokeWidth={1.75} />}
+            icon={<Coins size={24} strokeWidth={1.75} />}
             title="No drawer closed on these days"
-            description="Each close shows here with the cash expected and counted."
+            description="Each close shows on the Cash page with the cash expected, counted and the difference."
           />
         ) : (
-          <TileRows>
-            {period.drawerCloses.map((close) => (
-              <PanelLine
-                key={close.shiftId}
-                label={close.tablet}
-                note={[
-                  `${shortDate(close.closedAt.slice(0, 10))} at ${clock(close.closedAt)}`,
-                  close.closedBy,
-                  close.expected !== null && close.counted !== null
-                    ? `expected ${cedis(close.expected)}, counted ${cedis(close.counted)}`
-                    : null,
-                ]
-                  .filter(Boolean)
-                  .join(', ')}
-                value={
-                  close.variance === null
-                    ? 'Not counted'
-                    : close.variance === 0
-                      ? 'Exact'
-                      : `${close.variance > 0 ? '+' : ''}${cedis(close.variance)}`
-                }
-                tone={
-                  close.variance === null
-                    ? 'text-muted-foreground'
-                    : close.variance < 0
-                      ? 'text-danger'
-                      : close.variance > 0
-                        ? 'text-warning'
-                        : 'text-success'
-                }
-              />
-            ))}
-          </TileRows>
+          <DrawerSummary
+            closes={period.drawerCloses}
+            to={back.back.replace(/^\/reports/, '/cash')}
+          />
         )}
       </Tile>
 
       {/* Day by day, ten to a page; each day opens its orders. */}
       <ReportDays key={`${period.from}-${period.to}`} period={period} back={back} />
     </Bento>
+  );
+}
+
+/** Short, over and exact over the report's days, each opening the Cash page for them. */
+function DrawerSummary({ closes, to }: { closes: Period['drawerCloses']; to: string }) {
+  let short = 0;
+  let shortAmount = 0;
+  let over = 0;
+  let overAmount = 0;
+  let exact = 0;
+  for (const close of closes) {
+    const result = drawerResult(close.variance ?? 0);
+    if (result === 'SHORT') {
+      short++;
+      shortAmount -= close.variance ?? 0;
+    } else if (result === 'OVER') {
+      over++;
+      overAmount += close.variance ?? 0;
+    } else exact++;
+  }
+  const closeWords = (count: number) => (count === 1 ? '1 close' : `${count} closes`);
+  return (
+    <TileRows>
+      <PanelLine
+        label="Short"
+        note={short ? closeWords(short) : 'Nothing missing'}
+        value={cedis(shortAmount)}
+        tone={short > 0 && 'text-danger'}
+        to={to}
+      />
+      <PanelLine
+        label="Over"
+        note={over ? closeWords(over) : 'Nothing extra'}
+        value={cedis(overAmount)}
+        tone={over > 0 && 'text-warning'}
+        to={to}
+      />
+      <PanelLine
+        label="Exact"
+        note={`Within ${cedis(DRAWER_TOLERANCE)} either way`}
+        value={`${exact} of ${closes.length}`}
+        to={to}
+      />
+    </TileRows>
   );
 }
 

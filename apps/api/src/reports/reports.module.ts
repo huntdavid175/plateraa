@@ -8,6 +8,7 @@ import { DATABASE, type DatabaseHandle } from '../database/database.module';
 import { Authorized, CurrentActor } from '../identity/guards';
 import type { Actor } from '../identity/request-context';
 import { businessToday } from './business-day';
+import { CashController, CashService } from './cash';
 import { DailyReports } from './daily';
 import { emptyDay } from './figures';
 import { PeriodController, PeriodService } from './period';
@@ -114,7 +115,7 @@ export class ReportsController {
 }
 
 @Module({
-  controllers: [ReportsController, PeriodController],
-  providers: [DaySummaryService, PeriodService, DailyReports],
+  controllers: [ReportsController, PeriodController, CashController],
+  providers: [DaySummaryService, PeriodService, CashService, DailyReports],
 })
 export class ReportsModule {}

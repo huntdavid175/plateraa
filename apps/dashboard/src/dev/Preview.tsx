@@ -528,6 +528,87 @@ function seed(tenant: string | null) {
     ],
   );
   const day = (open: boolean) => ({ open, from: '08:00', to: '20:00' });
+  // The Cash page: a week of drawer closes on two counters, and one of them in full.
+  {
+    const close = (
+      id: string,
+      ago: number,
+      tablet: string,
+      openedBy: string,
+      closedBy: string,
+      expected: number,
+      counted: number,
+    ) => {
+      const day = daysAgo(ago);
+      const variance = counted - expected;
+      return {
+        shiftId: id,
+        tablet,
+        openedBy,
+        openedAt: `${day}T06:45:00.000Z`,
+        closedBy,
+        closedAt: `${day}T21:05:00.000Z`,
+        float: 20_000,
+        expected,
+        counted,
+        variance,
+        result: Math.abs(variance) <= 100 ? 'EXACT' : variance < 0 ? 'SHORT' : 'OVER',
+      };
+    };
+    const closes = [
+      close('sh1', 0, 'Counter 1', 'Kofi', 'Kofi', 142_000, 140_500),
+      close('sh2', 0, 'Counter 2', 'Esi', 'Esi', 96_000, 96_000),
+      close('sh3', 1, 'Counter 1', 'Kofi', 'Esi', 151_000, 151_050),
+      close('sh4', 2, 'Counter 1', 'Kofi', 'Kofi', 133_500, 130_000),
+      close('sh5', 3, 'Counter 2', 'Esi', 'Esi', 88_000, 90_000),
+      close('sh6', 4, 'Counter 1', 'Esi', 'Esi', 120_000, 120_000),
+      close('sh7', 5, 'Counter 1', 'Kofi', 'Kofi', 118_500, 118_000),
+    ];
+    queryClient.setQueryData(['cash', tenant, daysAgo(6), today], {
+      from: daysAgo(6),
+      to: today,
+      tolerance: 100,
+      summary: { closes: 7, exact: 4, short: 2, over: 1, shortAmount: 5_000, overAmount: 2_000 },
+      closes,
+      people: [
+        {
+          staffId: 's1',
+          name: 'Kofi',
+          closes: 4,
+          short: 2,
+          over: 0,
+          shortAmount: 5_000,
+          overAmount: 0,
+        },
+        {
+          staffId: 's2',
+          name: 'Esi',
+          closes: 4,
+          short: 0,
+          over: 1,
+          shortAmount: 0,
+          overAmount: 2_000,
+        },
+      ],
+    });
+    queryClient.setQueryData(['cash-close', tenant, 'sh1'], {
+      ...closes[0],
+      status: 'CLOSED',
+      cashSales: 152_000,
+      payIns: 0,
+      payouts: 5_000,
+      drops: 25_000,
+      expectedNow: 142_000,
+      movements: [
+        { id: 'm1', type: 'DROP', amount: 25_000, note: 'To the safe', by: 'Kofi', at: at(14, 10) },
+        { id: 'm2', type: 'PAYOUT', amount: 5_000, note: 'Gas refill', by: 'Ama', at: at(16, 30) },
+      ],
+      cashBy: [
+        { staffId: 's1', name: 'Kofi', amount: 112_000, payments: 21 },
+        { staffId: 's2', name: 'Esi', amount: 40_000, payments: 8 },
+      ],
+    });
+  }
   // This month so far (Reports → This month): enough days for the day table's pages, with a few
   // closed days among them.
   {

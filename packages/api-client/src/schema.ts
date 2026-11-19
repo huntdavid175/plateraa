@@ -356,6 +356,38 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/cash/closes": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["CashController_closes"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/cash/closes/{shiftId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["CashController_close"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/orders/{orderId}/refunds": {
         parameters: {
             query?: never;
@@ -2003,6 +2035,78 @@ export interface components {
                 variance: number | null;
             }[];
         };
+        CashClosesDto_Output: {
+            from: string;
+            to: string;
+            tolerance: number;
+            summary: {
+                closes: number;
+                exact: number;
+                short: number;
+                over: number;
+                shortAmount: number;
+                overAmount: number;
+            };
+            closes: {
+                shiftId: string;
+                tablet: string;
+                openedBy: string | null;
+                openedAt: string;
+                closedBy: string | null;
+                closedAt: string;
+                float: number;
+                expected: number;
+                counted: number;
+                variance: number;
+                /** @enum {string} */
+                result: "EXACT" | "SHORT" | "OVER";
+            }[];
+            people: {
+                staffId: string;
+                name: string;
+                closes: number;
+                short: number;
+                over: number;
+                shortAmount: number;
+                overAmount: number;
+            }[];
+        };
+        CashCloseDto_Output: {
+            shiftId: string;
+            tablet: string;
+            openedBy: string | null;
+            openedAt: string;
+            closedBy: string | null;
+            closedAt: string;
+            float: number;
+            expected: number;
+            counted: number;
+            variance: number;
+            /** @enum {string} */
+            result: "EXACT" | "SHORT" | "OVER";
+            /** @enum {string} */
+            status: "OPEN" | "CLOSED";
+            cashSales: number;
+            payIns: number;
+            payouts: number;
+            drops: number;
+            expectedNow: number;
+            movements: {
+                id: string;
+                /** @enum {string} */
+                type: "DROP" | "PAY_IN" | "PAYOUT";
+                amount: number;
+                note: string | null;
+                by: string | null;
+                at: string;
+            }[];
+            cashBy: {
+                staffId: string;
+                name: string;
+                amount: number;
+                payments: number;
+            }[];
+        };
         RecordRefundDto: {
             /** Format: ulid */
             refundId: string;
@@ -3612,6 +3716,49 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["PeriodDto_Output"];
+                };
+            };
+        };
+    };
+    CashController_closes: {
+        parameters: {
+            query: {
+                from: string;
+                to: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CashClosesDto_Output"];
+                };
+            };
+        };
+    };
+    CashController_close: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                shiftId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CashCloseDto_Output"];
                 };
             };
         };

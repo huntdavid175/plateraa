@@ -944,6 +944,88 @@
         ]
       }
     },
+    "/api/cash/closes": {
+      "get": {
+        "operationId": "CashController_closes",
+        "parameters": [
+          {
+            "name": "from",
+            "required": true,
+            "in": "query",
+            "schema": {
+              "format": "date",
+              "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))$",
+              "type": "string"
+            }
+          },
+          {
+            "name": "to",
+            "required": true,
+            "in": "query",
+            "schema": {
+              "format": "date",
+              "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))$",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CashClosesDto_Output"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "Cash"
+        ]
+      }
+    },
+    "/api/cash/closes/{shiftId}": {
+      "get": {
+        "operationId": "CashController_close",
+        "parameters": [
+          {
+            "name": "shiftId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CashCloseDto_Output"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "Cash"
+        ]
+      }
+    },
     "/api/orders/{orderId}/refunds": {
       "post": {
         "operationId": "OrderMoneyController_recordRefund",
@@ -7143,6 +7225,376 @@
           "byCategory",
           "staff",
           "drawerCloses"
+        ],
+        "additionalProperties": false
+      },
+      "CashClosesDto_Output": {
+        "type": "object",
+        "properties": {
+          "from": {
+            "type": "string"
+          },
+          "to": {
+            "type": "string"
+          },
+          "tolerance": {
+            "type": "integer",
+            "minimum": -9007199254740991,
+            "maximum": 9007199254740991
+          },
+          "summary": {
+            "type": "object",
+            "properties": {
+              "closes": {
+                "type": "integer",
+                "minimum": -9007199254740991,
+                "maximum": 9007199254740991
+              },
+              "exact": {
+                "type": "integer",
+                "minimum": -9007199254740991,
+                "maximum": 9007199254740991
+              },
+              "short": {
+                "type": "integer",
+                "minimum": -9007199254740991,
+                "maximum": 9007199254740991
+              },
+              "over": {
+                "type": "integer",
+                "minimum": -9007199254740991,
+                "maximum": 9007199254740991
+              },
+              "shortAmount": {
+                "type": "integer",
+                "minimum": -9007199254740991,
+                "maximum": 9007199254740991
+              },
+              "overAmount": {
+                "type": "integer",
+                "minimum": -9007199254740991,
+                "maximum": 9007199254740991
+              }
+            },
+            "required": [
+              "closes",
+              "exact",
+              "short",
+              "over",
+              "shortAmount",
+              "overAmount"
+            ],
+            "additionalProperties": false
+          },
+          "closes": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "shiftId": {
+                  "type": "string"
+                },
+                "tablet": {
+                  "type": "string"
+                },
+                "openedBy": {
+                  "type": "string",
+                  "nullable": true
+                },
+                "openedAt": {
+                  "type": "string"
+                },
+                "closedBy": {
+                  "type": "string",
+                  "nullable": true
+                },
+                "closedAt": {
+                  "type": "string"
+                },
+                "float": {
+                  "type": "integer",
+                  "minimum": -9007199254740991,
+                  "maximum": 9007199254740991
+                },
+                "expected": {
+                  "type": "integer",
+                  "minimum": -9007199254740991,
+                  "maximum": 9007199254740991
+                },
+                "counted": {
+                  "type": "integer",
+                  "minimum": -9007199254740991,
+                  "maximum": 9007199254740991
+                },
+                "variance": {
+                  "type": "integer",
+                  "minimum": -9007199254740991,
+                  "maximum": 9007199254740991
+                },
+                "result": {
+                  "type": "string",
+                  "enum": [
+                    "EXACT",
+                    "SHORT",
+                    "OVER"
+                  ]
+                }
+              },
+              "required": [
+                "shiftId",
+                "tablet",
+                "openedBy",
+                "openedAt",
+                "closedBy",
+                "closedAt",
+                "float",
+                "expected",
+                "counted",
+                "variance",
+                "result"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "people": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "staffId": {
+                  "type": "string"
+                },
+                "name": {
+                  "type": "string"
+                },
+                "closes": {
+                  "type": "integer",
+                  "minimum": -9007199254740991,
+                  "maximum": 9007199254740991
+                },
+                "short": {
+                  "type": "integer",
+                  "minimum": -9007199254740991,
+                  "maximum": 9007199254740991
+                },
+                "over": {
+                  "type": "integer",
+                  "minimum": -9007199254740991,
+                  "maximum": 9007199254740991
+                },
+                "shortAmount": {
+                  "type": "integer",
+                  "minimum": -9007199254740991,
+                  "maximum": 9007199254740991
+                },
+                "overAmount": {
+                  "type": "integer",
+                  "minimum": -9007199254740991,
+                  "maximum": 9007199254740991
+                }
+              },
+              "required": [
+                "staffId",
+                "name",
+                "closes",
+                "short",
+                "over",
+                "shortAmount",
+                "overAmount"
+              ],
+              "additionalProperties": false
+            }
+          }
+        },
+        "required": [
+          "from",
+          "to",
+          "tolerance",
+          "summary",
+          "closes",
+          "people"
+        ],
+        "additionalProperties": false
+      },
+      "CashCloseDto_Output": {
+        "type": "object",
+        "properties": {
+          "shiftId": {
+            "type": "string"
+          },
+          "tablet": {
+            "type": "string"
+          },
+          "openedBy": {
+            "type": "string",
+            "nullable": true
+          },
+          "openedAt": {
+            "type": "string"
+          },
+          "closedBy": {
+            "type": "string",
+            "nullable": true
+          },
+          "closedAt": {
+            "type": "string"
+          },
+          "float": {
+            "type": "integer",
+            "minimum": -9007199254740991,
+            "maximum": 9007199254740991
+          },
+          "expected": {
+            "type": "integer",
+            "minimum": -9007199254740991,
+            "maximum": 9007199254740991
+          },
+          "counted": {
+            "type": "integer",
+            "minimum": -9007199254740991,
+            "maximum": 9007199254740991
+          },
+          "variance": {
+            "type": "integer",
+            "minimum": -9007199254740991,
+            "maximum": 9007199254740991
+          },
+          "result": {
+            "type": "string",
+            "enum": [
+              "EXACT",
+              "SHORT",
+              "OVER"
+            ]
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "OPEN",
+              "CLOSED"
+            ]
+          },
+          "cashSales": {
+            "type": "integer",
+            "minimum": -9007199254740991,
+            "maximum": 9007199254740991
+          },
+          "payIns": {
+            "type": "integer",
+            "minimum": -9007199254740991,
+            "maximum": 9007199254740991
+          },
+          "payouts": {
+            "type": "integer",
+            "minimum": -9007199254740991,
+            "maximum": 9007199254740991
+          },
+          "drops": {
+            "type": "integer",
+            "minimum": -9007199254740991,
+            "maximum": 9007199254740991
+          },
+          "expectedNow": {
+            "type": "integer",
+            "minimum": -9007199254740991,
+            "maximum": 9007199254740991
+          },
+          "movements": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "id": {
+                  "type": "string"
+                },
+                "type": {
+                  "type": "string",
+                  "enum": [
+                    "DROP",
+                    "PAY_IN",
+                    "PAYOUT"
+                  ]
+                },
+                "amount": {
+                  "type": "integer",
+                  "minimum": -9007199254740991,
+                  "maximum": 9007199254740991
+                },
+                "note": {
+                  "type": "string",
+                  "nullable": true
+                },
+                "by": {
+                  "type": "string",
+                  "nullable": true
+                },
+                "at": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "id",
+                "type",
+                "amount",
+                "note",
+                "by",
+                "at"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "cashBy": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "staffId": {
+                  "type": "string"
+                },
+                "name": {
+                  "type": "string"
+                },
+                "amount": {
+                  "type": "integer",
+                  "minimum": -9007199254740991,
+                  "maximum": 9007199254740991
+                },
+                "payments": {
+                  "type": "integer",
+                  "minimum": -9007199254740991,
+                  "maximum": 9007199254740991
+                }
+              },
+              "required": [
+                "staffId",
+                "name",
+                "amount",
+                "payments"
+              ],
+              "additionalProperties": false
+            }
+          }
+        },
+        "required": [
+          "shiftId",
+          "tablet",
+          "openedBy",
+          "openedAt",
+          "closedBy",
+          "closedAt",
+          "float",
+          "expected",
+          "counted",
+          "variance",
+          "result",
+          "status",
+          "cashSales",
+          "payIns",
+          "payouts",
+          "drops",
+          "expectedNow",
+          "movements",
+          "cashBy"
         ],
         "additionalProperties": false
       },

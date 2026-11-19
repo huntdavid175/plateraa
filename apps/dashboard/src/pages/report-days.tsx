@@ -1,9 +1,9 @@
-import { ChevronLeft, ChevronRight } from 'lucide-react';
+import { ChevronRight } from 'lucide-react';
 import { useState } from 'react';
 import { Link } from 'react-router';
-import { Button } from '@/components/arc/button/button';
 import { Switch } from '@/components/arc/switch/switch';
 import { Tile } from '@/components/app/bento';
+import { Pager } from '@/components/app/pager';
 import { cn } from '@/lib/utils';
 import { cedis, shortDate } from '../lib/money';
 import type { BackTo } from '../lib/orders';
@@ -35,8 +35,6 @@ export function ReportDays({ period, back }: { period: Period; back: BackTo }) {
   const shown = days.slice(current * PAGE_SIZE, (current + 1) * PAGE_SIZE);
   const best = Math.max(0, ...period.byDay.map((day) => day.sales));
   const { totals } = period;
-  const first = current * PAGE_SIZE + 1;
-  const last = current * PAGE_SIZE + shown.length;
 
   const toggleQuiet = (hide: boolean) => {
     setHideQuiet(hide);
@@ -109,38 +107,13 @@ export function ReportDays({ period, back }: { period: Period; back: BackTo }) {
           </tfoot>
         </table>
 
-        {pages > 1 && (
-          <nav
-            aria-label="Pages of days"
-            className="flex items-center justify-between gap-3 border-t px-4 py-3 sm:px-5"
-          >
-            <span className="text-sm text-muted-foreground tabular-nums">
-              {first}–{last} of {days.length} days
-            </span>
-            <div className="flex items-center gap-2">
-              <Button
-                variant="secondary"
-                size="sm"
-                onClick={() => setPage(current - 1)}
-                disabled={current === 0}
-                aria-label="Newer days"
-              >
-                <ChevronLeft size={16} strokeWidth={1.75} aria-hidden />
-                Newer
-              </Button>
-              <Button
-                variant="secondary"
-                size="sm"
-                onClick={() => setPage(current + 1)}
-                disabled={current === pages - 1}
-                aria-label="Older days"
-              >
-                Older
-                <ChevronRight size={16} strokeWidth={1.75} aria-hidden />
-              </Button>
-            </div>
-          </nav>
-        )}
+        <Pager
+          page={current}
+          pageSize={PAGE_SIZE}
+          total={days.length}
+          noun="days"
+          onPage={setPage}
+        />
       </div>
     </Tile>
   );

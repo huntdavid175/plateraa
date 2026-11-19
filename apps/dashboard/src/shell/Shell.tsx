@@ -2,6 +2,7 @@ import type { Capability } from '@brixx/shared';
 import {
   BookOpenText,
   ChartColumn,
+  Coins,
   Ellipsis,
   House,
   Package,
@@ -101,6 +102,7 @@ const NAV: NavGroup[] = [
     items: [
       { to: '/expenses', label: 'Expenses', Icon: Wallet, needs: 'expenses.manage' },
       { to: '/refunds', label: 'Refunds', Icon: Undo2, needs: 'refunds.record' },
+      { to: '/cash', label: 'Cash', Icon: Coins, needs: 'reports.revenue.view' },
       { to: '/reports', label: 'Reports', Icon: ChartColumn, needs: 'reports.revenue.view' },
     ],
   },

@@ -130,6 +130,7 @@ packages/ui         web components (empty so far)
 - `order-state.ts`: `canTransition`, `nextStatus`, `canEditItems`.
 - `order-payment.ts`: `amountDue`, `isAwaitingPayment`, `paymentStartsPrep`, `refundOwed`.
 - `capabilities.ts`: role → capabilities (STAFF / MANAGER / OWNER).
+- `drawer.ts`: `DRAWER_TOLERANCE` (100 pesewas) and `drawerResult(variance)`: a drawer close within GH₵1 either way is EXACT, otherwise SHORT or OVER (19 Nov, user decision).
 - `platform.ts`: Brixx's own team: `PLATFORM_ROLES` (ADMIN, SUPPORT), `PLATFORM_CAPABILITIES`, `PLATFORM_ROLE_CAPABILITIES` and `platformCan`.
 - `sync-commands.ts`: Zod command schemas plus `COMMAND_CAPABILITY`.
 - `storefront.ts`: `STOREFRONT_THEMES` and `STOREFRONT_LOOKS`, each store look's light and dark colours. In light mode every look now stands on white and shows its colour in the top band and the buttons (16 Sep); dark mode keeps the look's own dark shade. `storefront.test.ts` checks every look's contrast.
