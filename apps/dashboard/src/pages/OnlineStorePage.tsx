@@ -287,7 +287,7 @@ const PHONE_WIDTH = 390;
  * picture of it had drifted and "looks nothing like the actual page"). The page itself is shown,
  * laid out at a phone's width and shrunk to fit the frame, so it can't drift again. It reloads
  * once each change here or on the menu has saved (`version`); the store page reads fresh data on
- * every visit. It can be scrolled and tapped like the real thing.
+ * every visit. It's a still picture of the top of the page: no scrolling or tapping.
  */
 function PreviewTile({ store, version }: { store: Storefront; version: string }) {
   return (
@@ -337,8 +337,12 @@ function LivePage({ url }: { url: string }) {
           src={url}
           title="Your store’s page, as customers see it"
           onLoad={() => setLoaded(true)}
+          // A still picture of the top of the page (user request, 19 Nov): it doesn't scroll and
+          // can't be tapped or tabbed into; "Open the real page" is there to use it.
+          scrolling="no"
+          tabIndex={-1}
           className={cn(
-            'absolute top-0 left-0 origin-top-left border-0 transition-opacity',
+            'pointer-events-none absolute top-0 left-0 origin-top-left border-0 transition-opacity',
             loaded ? 'opacity-100' : 'opacity-0',
           )}
           style={{
