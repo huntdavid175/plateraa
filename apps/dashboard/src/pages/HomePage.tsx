@@ -8,9 +8,11 @@ import { Button } from '@/components/arc/button/button';
 import { EmptyState } from '@/components/arc/empty-state/empty-state';
 import { Timeline, type TimelineEvent } from '@/components/arc/timeline/timeline';
 import { Bento, Cedis, Tile } from '@/components/app/bento';
+import { Change } from '@/components/app/change';
 import { DayPicker } from '@/components/app/day-picker';
 import { Skeleton } from '@/components/ui/skeleton';
 import { cn } from '@/lib/utils';
+import { shiftDays } from '../lib/expenses';
 import { fetchDrawers, type Drawer } from '../lib/manager';
 import { cedis, clock, hourLabel, hourRange, longDate, shortDate, todayHere } from '../lib/money';
 import {
@@ -73,6 +75,13 @@ export function HomePage() {
     enabled: seesMoney,
   });
   const date = isToday ? (day.data?.date ?? here) : picked!;
+  // The same weekday a week earlier, to say how the day compares (user request, 19 Nov).
+  const weekAgo = day.data ? shiftDays(day.data.date, -7) : null;
+  const lastWeek = useQuery({
+    queryKey: ['day', tenantId, weekAgo],
+    queryFn: () => fetchDay(weekAgo!),
+    enabled: seesMoney && weekAgo !== null,
+  });
   const recent = useQuery({
     queryKey: ['orders', tenantId, { date: isToday ? undefined : picked, limit: FEED_SIZE }],
     queryFn: () => fetchOrders({ ...(isToday ? {} : { date: picked! }), limit: FEED_SIZE }),
@@ -122,7 +131,13 @@ export function HomePage() {
         )}
         <Bento>
           {seesMoney && day.isPending && <MoneySkeleton />}
-          {seesMoney && day.data && <MoneyTiles day={day.data} isToday={isToday} />}
+          {seesMoney && day.data && (
+            <MoneyTiles
+              day={day.data}
+              isToday={isToday}
+              lastWeek={lastWeek.data ? weekBefore(lastWeek.data, isToday) : null}
+            />
+          )}
           {seesMoney && day.data && <OrdersByHour day={day.data} isToday={isToday} />}
           <Feed
             orders={recent.data}
@@ -155,8 +170,57 @@ const MONEY_IN = [
   { method: 'LINK', words: 'Mobile money', swatch: 'bg-primary' },
 ] as const;
 
-function MoneyTiles({ day, isToday }: { day: DaySummary; isToday: boolean }) {
+/**
+ * Fewer orders than this by now last week and there's nothing fair to compare with: early in the
+ * morning a single order against a third of one reads as "↑ 9,000%".
+ */
+const MIN_ORDERS_TO_COMPARE = 3;
+
+/** The same weekday a week earlier, as Home compares with it. */
+interface WeekBefore {
+  moneyIn: number;
+  orders: number;
+  /** After "on": "last Thursday by now", "Thu 12 Nov". */
+  against: string;
+}
+
+/**
+ * Last week's figures to hold today's against. Today isn't over, so last week's same weekday
+ * counts only up to this time of day (its hours before this one, and the share of this hour
+ * that has passed), or a morning would always look worse than a whole day. A finished day is
+ * held against the whole of the one a week before.
+ */
+function weekBefore(before: DaySummary, isToday: boolean): WeekBefore {
+  if (!isToday) {
+    return { moneyIn: before.moneyIn, orders: before.orders, against: shortDate(before.date) };
+  }
+  const now = new Date();
+  const hour = now.getHours();
+  const share = (rowHour: number) =>
+    rowHour < hour ? 1 : rowHour === hour ? now.getMinutes() / 60 : 0;
+  let moneyIn = 0;
+  let orders = 0;
+  for (const row of before.byHour) {
+    moneyIn += row.moneyIn * share(row.hour);
+    orders += row.orders * share(row.hour);
+  }
+  const weekday = new Intl.DateTimeFormat('en-GB', { weekday: 'long', timeZone: 'UTC' }).format(
+    new Date(`${before.date}T12:00:00Z`),
+  );
+  return { moneyIn, orders, against: `last ${weekday} by now` };
+}
+
+function MoneyTiles({
+  day,
+  isToday,
+  lastWeek,
+}: {
+  day: DaySummary;
+  isToday: boolean;
+  lastWeek: WeekBefore | null;
+}) {
   const links = dayLinks(day.date);
+  const compared = lastWeek && lastWeek.orders >= MIN_ORDERS_TO_COMPARE ? lastWeek : null;
   const parts = MONEY_IN.map((part) => ({
     ...part,
     amount: day.byMethod.find((row) => row.method === part.method)?.amount ?? 0,
@@ -179,6 +243,14 @@ function MoneyTiles({ day, isToday }: { day: DaySummary; isToday: boolean }) {
           <span className="text-sm text-muted-foreground">
             From {day.orders === 1 ? '1 order' : `${day.orders} orders`}
           </span>
+          {compared && (
+            <Change
+              now={day.moneyIn}
+              before={compared.moneyIn}
+              against={compared.against}
+              className="mt-1 text-sm"
+            />
+          )}
         </div>
         {partsTotal > 0 && (
           <div className="mt-auto flex flex-col gap-3">
@@ -219,6 +291,9 @@ function MoneyTiles({ day, isToday }: { day: DaySummary; isToday: boolean }) {
         <span className="font-heading text-2xl leading-none tracking-[-0.03em] tabular-nums">
           {day.orders}
         </span>
+        {compared && (
+          <Change now={day.orders} before={compared.orders} against={compared.against} />
+        )}
       </Tile>
 
       <Tile

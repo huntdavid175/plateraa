@@ -360,6 +360,26 @@ function seed(tenant: string | null) {
   // Sample data never goes stale here, so nothing is fetched over it.
   queryClient.setDefaultOptions({ queries: { staleTime: Infinity, retry: false } });
   queryClient.setQueryData(['day', tenant, 'today'], DAY);
+  // Yesterday and the day a week before it, for a past day's comparison (/__preview?date=…).
+  queryClient.setQueryData(['day', tenant, daysAgo(1)], { ...DAY, date: daysAgo(1) });
+  queryClient.setQueryData(['day', tenant, daysAgo(8)], {
+    ...DAY,
+    date: daysAgo(8),
+    orders: 41,
+    moneyIn: 252_000,
+  });
+  // The same weekday last week, for Home's "on last Thursday by now".
+  queryClient.setQueryData(['day', tenant, daysAgo(7)], {
+    ...DAY,
+    date: daysAgo(7),
+    orders: 33,
+    moneyIn: 198_000,
+    byHour: DAY.byHour.map((row) => ({
+      ...row,
+      orders: Math.max(1, row.orders - 1),
+      moneyIn: Math.round(row.moneyIn * 0.86),
+    })),
+  });
   queryClient.setQueryData(['orders', tenant, { limit: 8 }], DAY_ORDERS.slice(0, 8));
   queryClient.setQueryData(['refunds-owed', tenant], [{ ...RECENT[4], paidWith: ['LINK'] }]);
   queryClient.setQueryData(['tablets', tenant], TABLETS);
@@ -401,6 +421,22 @@ function seed(tenant: string | null) {
       order('W10', 'PICKUP', [['Fried rice', 1]], 4_000, 0, { takenAt: at(11, 48) }),
     ],
   );
+  // The 7 days before, for Reports' comparisons (only its totals are read).
+  queryClient.setQueryData(['period', tenant, daysAgo(13), daysAgo(7)], {
+    from: daysAgo(13),
+    to: daysAgo(7),
+    totals: {
+      sales: 1_261_000,
+      orders: 219,
+      moneyIn: 1_204_000,
+      moneyOut: 88_000,
+      profit: 1_116_000,
+      platformOwed: 0,
+      commissionEstimate: 0,
+      purchases: 40_000,
+      otherExpenses: 48_000,
+    },
+  });
   queryClient.setQueryData(['period', tenant, daysAgo(6), today], {
     from: daysAgo(6),
     to: today,

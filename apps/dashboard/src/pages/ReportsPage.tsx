@@ -12,6 +12,7 @@ import SegmentedControl from '@/components/arc/segmented-control/segmented-contr
 import { Sparkline } from '@/components/arc/sparkline/sparkline';
 import { DateField } from '@/components/app/day-picker';
 import { Bento, Cedis, Tile, TileRows } from '@/components/app/bento';
+import { Change } from '@/components/app/change';
 import { PanelLine } from '@/components/app/panel';
 import { Skeleton } from '@/components/ui/skeleton';
 import { lastMonth, shiftDays } from '../lib/expenses';
@@ -49,6 +50,35 @@ function rangeOf(range: Exclude<Range, 'pick'>, today: string): { from: string; 
   return lastMonth(today);
 }
 
+/**
+ * The days a report is held against, and how to say them after "on": the 7 days before the last
+ * 7; the same days last month for this month so far; the month before for last month; and as
+ * many days again before picked days.
+ */
+function beforeOf(
+  range: Range,
+  from: string,
+  to: string,
+): { from: string; to: string; words: string } {
+  if (range === 'month') {
+    const start = lastMonth(from);
+    // The same days of last month, as far as it has them (the 31st of a 30-day month stops at the 30th).
+    const sameDay = `${start.from.slice(0, 8)}${to.slice(8)}`;
+    return {
+      from: start.from,
+      to: sameDay < start.to ? sameDay : start.to,
+      words: 'the same days last month',
+    };
+  }
+  if (range === 'last') return { ...lastMonth(from), words: 'the month before' };
+  const days = Math.round((Date.parse(to) - Date.parse(from)) / DAY_MS) + 1;
+  return {
+    from: shiftDays(from, -days),
+    to: shiftDays(from, -1),
+    words: days === 1 ? 'the day before' : `the ${days} days before`,
+  };
+}
+
 /** What's wrong with a picked range, in words, or null. */
 function rangeProblem(from: string, to: string): string | null {
   if (from > to) return 'The first day comes after the last.';
@@ -79,6 +109,13 @@ export function ReportsPage() {
   const period = useQuery({
     queryKey: ['period', tenantId, from, to],
     queryFn: () => fetchPeriod(from, to),
+    enabled: !problem,
+  });
+  // The period before, to say how this one compares (user request, 19 Nov).
+  const before = beforeOf(range, from, to);
+  const earlier = useQuery({
+    queryKey: ['period', tenantId, before.from, before.to],
+    queryFn: () => fetchPeriod(before.from, before.to),
     enabled: !problem,
   });
 
@@ -133,7 +170,11 @@ export function ReportsPage() {
           </Alert>
         )}
         {!problem && period.data && (
-          <Report period={period.data} back={{ back: `/reports${search}`, label: 'Reports' }} />
+          <Report
+            period={period.data}
+            before={earlier.data ? { totals: earlier.data.totals, words: before.words } : null}
+            back={{ back: `/reports${search}`, label: 'Reports' }}
+          />
         )}
       </div>
     </Page>
@@ -163,7 +204,16 @@ function series(period: Period, pick: (day: Period['byDay'][number]) => number) 
   };
 }
 
-function Report({ period, back }: { period: Period; back: BackTo }) {
+function Report({
+  period,
+  before,
+  back,
+}: {
+  period: Period;
+  /** The period before, once it's loaded. */
+  before: { totals: Period['totals']; words: string } | null;
+  back: BackTo;
+}) {
   const { totals } = period;
   const links = linksFor(period);
   const busiest = busiestHour(period.byHour);
@@ -200,6 +250,7 @@ function Report({ period, back }: { period: Period; back: BackTo }) {
         note={orderWords(totals.orders)}
         to={links.orders()}
         trend={days > 1 ? trends.sales : null}
+        change={before && { before: before.totals.sales, words: before.words }}
       />
       <FigureTile
         title="Money in"
@@ -207,6 +258,7 @@ function Report({ period, back }: { period: Period; back: BackTo }) {
         note="Cash and mobile money"
         to={links.orders({ method: 'CASH,LINK' })}
         trend={days > 1 ? trends.moneyIn : null}
+        change={before && { before: before.totals.moneyIn, words: before.words }}
       />
       <FigureTile
         title="Money out"
@@ -214,12 +266,14 @@ function Report({ period, back }: { period: Period; back: BackTo }) {
         note="Expenses and payouts"
         to={links.expenses()}
         trend={days > 1 ? trends.moneyOut : null}
+        change={before && { before: before.totals.moneyOut, words: before.words, upIsGood: false }}
       />
       <FigureTile
         title="Profit"
         amount={totals.profit}
         note="After expenses"
         trend={days > 1 ? trends.left : null}
+        change={before && { before: before.totals.profit, words: before.words }}
         tone={totals.profit < 0 ? 'danger' : 'success'}
       />
 
@@ -528,6 +582,7 @@ function FigureTile({
   note,
   to,
   trend,
+  change,
   tone,
 }: {
   title: string;
@@ -535,12 +590,22 @@ function FigureTile({
   note: string;
   to?: string;
   trend: { data: number[]; labels: string[] } | null;
+  /** The same figure for the period before, once it's loaded. */
+  change: { before: number; words: string; upIsGood?: boolean } | null;
   tone?: 'success' | 'danger';
 }) {
   return (
     <Tile title={title} {...(to ? { to } : {})}>
       <Cedis amount={amount} />
       <span className="text-xs text-muted-foreground">{note}</span>
+      {change && (
+        <Change
+          now={amount}
+          before={change.before}
+          against={change.words}
+          {...(change.upIsGood === false ? { upIsGood: false } : {})}
+        />
+      )}
       {trend && (
         <div className="mt-auto">
           <Sparkline
