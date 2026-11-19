@@ -1,6 +1,6 @@
 import { useQuery } from '@tanstack/react-query';
 import { Banknote, Clock, ReceiptText, Trophy, Users, Vault, Wallet } from 'lucide-react';
-import { Link, useLocation, useSearchParams } from 'react-router';
+import { useLocation, useSearchParams } from 'react-router';
 import { ActivityHeatmap } from '@/components/arc/activity-heatmap/activity-heatmap';
 import { Alert } from '@/components/arc/alert/alert';
 import { Avatar } from '@/components/arc/avatar/avatar';
@@ -31,6 +31,7 @@ import { busiestHour, fetchPeriod, type Period } from '../lib/reports';
 import { useSession } from '../lib/session';
 import { EXPENSE_WORDS, METHOD_WORDS, TYPE_WORDS } from '../lib/words';
 import { Page } from '../ui/Page';
+import { ReportDays } from './report-days';
 
 const RANGES = [
   { value: 'week', label: 'Last 7 days' },
@@ -543,34 +544,8 @@ function Report({
         )}
       </Tile>
 
-      {/* Day-by-day rows, each opening that day's orders. */}
-      <Tile title="Each day" className="col-span-2 lg:col-span-4">
-        <TileRows>
-          {[...period.byDay].reverse().map((day) => (
-            <li key={day.date}>
-              <Link
-                to={`/orders?date=${day.date}`}
-                state={back}
-                className="grid grid-cols-[1fr_auto] items-center gap-x-4 gap-y-0.5 px-5 py-3 text-sm transition-colors hover:bg-muted/60 md:grid-cols-[minmax(0,1.5fr)_5rem_minmax(0,1fr)_minmax(0,1fr)_minmax(0,1fr)]"
-              >
-                <span>{shortDate(day.date)}</span>
-                <span className="text-right font-mono text-muted-foreground md:text-foreground">
-                  <span className="font-sans md:hidden">{orderWords(day.orders)}, </span>
-                  <span className="hidden md:inline">{orderWords(day.orders)}</span>
-                  <span className="text-foreground md:hidden">{cedis(day.sales)}</span>
-                </span>
-                <span className="hidden text-right font-mono md:block">{cedis(day.sales)}</span>
-                <span className="hidden text-right font-mono md:block">
-                  in {cedis(day.moneyIn)}
-                </span>
-                <span className="hidden text-right font-mono md:block">
-                  out {cedis(day.moneyOut)}
-                </span>
-              </Link>
-            </li>
-          ))}
-        </TileRows>
-      </Tile>
+      {/* Day by day, ten to a page; each day opens its orders. */}
+      <ReportDays key={`${period.from}-${period.to}`} period={period} back={back} />
     </Bento>
   );
 }

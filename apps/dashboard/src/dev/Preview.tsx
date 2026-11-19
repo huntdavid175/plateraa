@@ -528,6 +528,43 @@ function seed(tenant: string | null) {
     ],
   );
   const day = (open: boolean) => ({ open, from: '08:00', to: '20:00' });
+  // This month so far (Reports → This month): enough days for the day table's pages, with a few
+  // closed days among them.
+  {
+    const week = queryClient.getQueryData(['period', tenant, daysAgo(6), today]) as object;
+    const first = `${today.slice(0, 7)}-01`;
+    const count = Number(today.slice(8));
+    const byDay = Array.from({ length: count }, (_, index) => {
+      const date = daysAgo(count - 1 - index);
+      const closed = index % 7 === 6 || index === 3;
+      return {
+        date,
+        orders: closed ? 0 : 24 + ((index * 7) % 15),
+        sales: closed ? 0 : 150_000 + ((index * 23_000) % 110_000),
+        moneyIn: closed ? 0 : 140_000 + ((index * 21_000) % 100_000),
+        moneyOut: closed ? 0 : index % 3 === 0 ? 30_000 : 8_500,
+      };
+    });
+    const sum = (key: 'orders' | 'sales' | 'moneyIn' | 'moneyOut') =>
+      byDay.reduce((total, day) => total + day[key], 0);
+    queryClient.setQueryData(['period', tenant, first, today], {
+      ...week,
+      from: first,
+      to: today,
+      totals: {
+        sales: sum('sales'),
+        orders: sum('orders'),
+        moneyIn: sum('moneyIn'),
+        moneyOut: sum('moneyOut'),
+        profit: sum('moneyIn') - sum('moneyOut'),
+        platformOwed: 0,
+        commissionEstimate: 0,
+        purchases: 0,
+        otherExpenses: sum('moneyOut'),
+      },
+      byDay,
+    });
+  }
   queryClient.setQueryData(['storefront', tenant], {
     enabled: true,
     takingOrders: true,
