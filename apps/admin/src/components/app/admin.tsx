@@ -236,12 +236,13 @@ export function ShareDonut({
   const active = hovered ?? picked;
   return (
     <div className="flex flex-col items-center gap-5 sm:flex-row sm:gap-8">
-      <div className="w-[150px] shrink-0">
+      <div className="w-[200px] shrink-0">
         <DonutChart
           label={label}
           unit={unit}
           totalLabel={totalLabel}
-          size={150}
+          size={200}
+          thickness={18}
           legend={false}
           emptyLabel={emptyLabel}
           data={parts}
