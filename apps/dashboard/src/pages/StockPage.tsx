@@ -179,15 +179,15 @@ function ItemForm({ item, onClose }: { item?: StockItem; onClose: () => void }) 
           if (!problem) saving.mutate();
         }}
       >
-        <div className="grid grid-cols-[1fr_8rem] gap-3">
-          <Input
-            label="Name"
-            autoFocus
-            maxLength={60}
-            placeholder="For example: Rice"
-            value={name}
-            onChange={(event) => setName(event.target.value)}
-          />
+        <Input
+          label="Name"
+          autoFocus
+          maxLength={60}
+          placeholder="For example: Rice"
+          value={name}
+          onChange={(event) => setName(event.target.value)}
+        />
+        <div className={cn('grid gap-3', item ? 'grid-cols-2' : 'grid-cols-3')}>
           <Input
             label="Counted in"
             maxLength={20}
@@ -195,12 +195,10 @@ function ItemForm({ item, onClose }: { item?: StockItem; onClose: () => void }) 
             value={unit}
             onChange={(event) => setUnit(event.target.value)}
           />
-        </div>
-        <div className="grid grid-cols-2 gap-3">
           <Input
             label="Low at"
-            description="Optional. Warns when it gets this low."
             inputMode="numeric"
+            placeholder="Optional"
             value={lowText}
             onChange={(event) => setLowText(event.target.value)}
           />
@@ -214,6 +212,9 @@ function ItemForm({ item, onClose }: { item?: StockItem; onClose: () => void }) 
             />
           )}
         </div>
+        <p className="-mt-2 text-xs text-muted-foreground">
+          “Low at” is optional. It warns you when stock gets this low.
+        </p>
         {error && (
           <Alert tone="danger" title="Couldn’t save">
             {error.message}

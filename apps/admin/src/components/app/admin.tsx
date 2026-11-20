@@ -229,6 +229,11 @@ export function ShareDonut({
 }) {
   const parts = data.map((d, i) => ({ ...d, color: d.color ?? SERIES[i % SERIES.length]! }));
   const total = parts.reduce((sum, d) => sum + d.value, 0);
+  // Hovering a row lights its part of the ring, as the dashboard's built-in legend does; a part
+  // clicked on the ring stays picked once the pointer leaves the list.
+  const [hovered, setHovered] = useState<string | null>(null);
+  const [picked, setPicked] = useState<string | null>(null);
+  const active = hovered ?? picked;
   return (
     <div className="flex flex-col items-center gap-5 sm:flex-row sm:gap-8">
       <div className="w-[150px] shrink-0">
@@ -240,12 +245,24 @@ export function ShareDonut({
           legend={false}
           emptyLabel={emptyLabel}
           data={parts}
+          activeKey={active}
+          onActiveChange={setPicked}
         />
       </div>
       {total > 0 && (
-        <ul className="flex w-full min-w-0 flex-1 flex-col divide-y">
+        <ul
+          className="flex w-full min-w-0 flex-1 flex-col divide-y"
+          onMouseLeave={() => setHovered(null)}
+        >
           {parts.map((d) => (
-            <li key={d.key} className="flex items-center gap-3 py-2 text-sm">
+            <li
+              key={d.key}
+              className={cn(
+                'flex cursor-default items-center gap-3 py-2 text-sm transition-opacity',
+                active && active !== d.key && 'opacity-50',
+              )}
+              onMouseEnter={() => setHovered(d.key)}
+            >
               <span
                 className="size-2.5 shrink-0 rounded-full"
                 style={{ background: d.color }}
