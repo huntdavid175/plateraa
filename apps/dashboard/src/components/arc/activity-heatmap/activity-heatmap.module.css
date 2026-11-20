@@ -13,7 +13,9 @@
 
 /* The scroller starts at its right edge on narrow screens (the most recent weeks) without script, through its writing direction. */
 .scroller { direction: rtl; overflow-x: auto; overflow-y: hidden; margin: -6px; padding: 6px; overscroll-behavior-x: contain; scrollbar-color: var(--border-strong) transparent; scrollbar-width: thin; }
-.canvas { --gap: 3px; --label: 30px; --cell: clamp(9px, calc((100cqi - var(--label) - var(--gap) * 53) / 53), 15px); --step: calc(var(--cell) + var(--gap)); direction: ltr; display: grid; width: max-content; grid-template-columns: var(--label) auto; grid-template-rows: auto auto; column-gap: var(--gap); row-gap: var(--space-2); }
+/* Brixx: squares share the card's width among the weeks actually shown (--weeks, set by the component), not a fixed year, so 12 weeks fill the card too. */
+/* Brixx: margin-right auto lines a grid that fits up on the left; one that overflows still opens at the right (the rtl scroller ignores the left margin then). */
+.canvas { --gap: 4px; --label: 30px; --cell: clamp(9px, calc((100cqi - var(--label) - var(--gap) * var(--weeks, 53)) / var(--weeks, 53)), 32px); --step: calc(var(--cell) + var(--gap)); direction: ltr; display: grid; width: max-content; margin-right: auto; grid-template-columns: var(--label) auto; grid-template-rows: auto auto; column-gap: var(--gap); row-gap: var(--space-2); }
 .months { position: relative; grid-row: 1; grid-column: 2; height: 1rem; color: var(--text-muted); font-size: var(--text-xs); line-height: 1rem; }
 /* Month labels glide to their new week when a range starts on a different weekday. */
 .month { position: absolute; top: 0; left: 0; white-space: nowrap; transform: translateX(calc(var(--col) * var(--step))); transition: transform var(--duration-spring) var(--ease-spring); }
