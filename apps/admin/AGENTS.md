@@ -32,7 +32,7 @@ The server checks every permission (`@Platform(...)`); the console only hides wh
   - `metric-card` for headline figures (Home, Analytics, a business's Overview);
   - `sortable-data-table` for every table, inside a `Panel` with `TableScroll`;
   - `timeline` for the team's actions, notes and the audit log, with `json-viewer` for before and after;
-  - charts: `bar-chart` (orders by hour, a business's 30 days), `line-chart` (orders per day), `donut-chart` through `ShareDonut` (it hides Arc's legend and lists the parts itself, because Arc's squeezes labels to a letter in a half-width panel), `progress` for the sign-up funnel;
+  - charts: `bar-chart` (orders by hour, a business's 30 days), `line-chart` (orders per day), `donut-chart` through `ShareDonut` (it hides Arc's legend and lists the parts itself, because Arc's squeezes labels to a letter in a half-width panel; hovering a row lights its part of the ring as the dashboard's legend does, and the ring is the dashboard's size, 200px with an 18px band, so the middle text fits), `progress` for the sign-up funnel;
   - `segmented-control` for filters and periods, `tabs` on one business (`?tab=`), `search-field`, `select`, `date-range-picker`, `switch`;
   - `badge` for every state, `alert`, `empty-state`, `skeleton`;
   - `dialog` (every change asks why: `ReasonDialog`), `copy-button`, `avatar`, `user-menu`, `toast-stack` (via `ui/Toast.tsx`);

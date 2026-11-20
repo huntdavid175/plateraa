@@ -342,8 +342,9 @@ export function ActivityHeatmap({ days, label, period, unit: unitProp = CONTRIBU
 
   const weekdayLabels = useMemo(() => Array.from({ length: 7 }, (_, row) => {
     const weekday = (row + weekStartsOn) % 7;
-    // January 4, 1970 was a Sunday.
-    return weekday % 2 === 1 ? formats.weekday.format(new Date((3 + weekday) * DAY)) : "";
+    // January 4, 1970 was a Sunday. Brixx: every day is named (Arc names every other one), since
+    // our grids are a few weeks wide and their rows tall enough for all seven (20 Nov).
+    return formats.weekday.format(new Date((3 + weekday) * DAY));
   }), [formats, weekStartsOn]);
 
   const selectedCol = hasSelection ? Math.floor((selectedIndex + model.lead) / 7) : 0;

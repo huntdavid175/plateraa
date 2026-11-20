@@ -53,7 +53,7 @@ The web dashboard for owners and managers (plan.md §3.1). It uses:
   - It loads `GET /api/me/context`: name, role, permissions and business.
   - It hides navigation the person can't use.
   - Screens read that context with `useMe()`.
-- Components: `components/ui` (shadcn, ours to edit), `components/arc` (Arc, as installed), `components/app` (ours: Panel, PanelRows, PanelLine, PanelLink, PanelEmpty, SettingRow, SwitchRow, StatusBadge, OrderListRow, MoneyField, PlainField, DayPicker, DateField, ScreenLoading). `ui/` keeps `Page.tsx` (Page and Centered, the frames of a screen), `PhotoPicker.tsx` and `Toast.tsx`; the old hand-made controls were removed on 9 Oct.
+- Components: `components/ui` (shadcn, ours to edit), `components/arc` (Arc, as installed, with one change: the activity heatmap sizes its squares to the weeks shown, up to 32px, lines up a grid that fits on the left, and names all seven days, not every other one, so a customer's 12 weeks fill the card (20 Nov). Reinstalling it with the shadcn CLI would undo that, marked `Brixx:` in its `.tsx` and `.module.css`), `components/app` (ours: Panel, PanelRows, PanelLine, PanelLink, PanelEmpty, SettingRow, SwitchRow, StatusBadge, OrderListRow, MoneyField, PlainField, DayPicker, DateField, ScreenLoading). `ui/` keeps `Page.tsx` (Page and Centered, the frames of a screen), `PhotoPicker.tsx` and `Toast.tsx`; the old hand-made controls were removed on 9 Oct.
 - `lib/orders.ts`, `lib/reports.ts`: fetchers, with row types taken from the generated client, and `paymentState()` (Paid / Unpaid / Refund owed / Cancelled).
 - `lib/money.ts`: `cedis()`, `longDate()`, `hourLabel()`. `lib/words.ts`: plain words for enums.
 - `router.tsx` holds the routes; `pages/` holds the screens.
